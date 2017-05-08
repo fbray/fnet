@@ -93,7 +93,7 @@ abstract class ApiResource extends StripeObject
         return static::resourceUrl($this['id']);
     }
 
-    protected static function _validateParams($params = null)
+    private static function _validateParams($params = null)
     {
         if ($params && !is_array($params)) {
             $message = "You must pass an array as the first argument to Stripe API "
@@ -154,6 +154,7 @@ abstract class ApiResource extends StripeObject
     protected static function _create($params = null, $options = null)
     {
         self::_validateParams($params);
+        $base = static::baseUrl();
         $url = static::classUrl();
 
         list($response, $opts) = static::_staticRequest('post', $url, $params, $options);
@@ -172,6 +173,7 @@ abstract class ApiResource extends StripeObject
     protected static function _update($id, $params = null, $options = null)
     {
         self::_validateParams($params);
+        $base = static::baseUrl();
         $url = static::resourceUrl($id);
 
         list($response, $opts) = static::_staticRequest('post', $url, $params, $options);

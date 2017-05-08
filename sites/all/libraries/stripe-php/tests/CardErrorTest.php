@@ -31,7 +31,6 @@ class CardErrorTest extends TestCase
                     'message' => 'Your card was declined.',
                     'type' => 'card_error',
                     'code' => 'card_declined',
-                    'decline_code' => 'generic_decline',
                     'charge' => $actual['error']['charge'],
                 )),
                 $actual
