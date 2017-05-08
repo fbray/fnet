@@ -1,0 +1,5 @@
+name = Custom Blocks
+description = Contain custom blocks creation and configuration
+package = Fluke Networks
+version = "7.x-1.0-20150625"
+core = 7.x

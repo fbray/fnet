@@ -1,0 +1,179 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Install file for FindIt module
+ *
+ */
+
+/**
+ * Implementation of hook_install
+ */
+function findit_install() {
+}
+
+/**
+ * Implementation of hook_uninstall
+ */
+function findit_uninstall() {
+  variable_del('findit_cron_last');
+  variable_del('findit_date_range_message');
+  variable_del('findit_date_range_redirect_path');
+  variable_del('findit_download_base_url');
+  variable_del('findit_gold_required_message');
+  variable_del('findit_gold_required_redirect_path');
+  variable_del('findit_level3_base_http_url');
+  variable_del('findit_login_required_message');
+  variable_del('findit_not_found_message');
+  variable_del('findit_not_found_redirect_path');
+  variable_del('findit_ocr_email');
+  variable_del('findit_ocr_username');
+  variable_del('findit_restricted_message');
+  variable_del('findit_restricted_redirect_path');
+  variable_del('findit_tek_geoip_url');
+  variable_del('findit_web_service_url');
+  drupal_uninstall_schema('findit');
+}
+
+/**
+ * Implementation of hook_schema
+ *
+ * @return mixed
+ */
+function findit_schema() {
+  $schema['ocr_log'] = array(
+    'description' => t('Log for OCR export compliance checks'),
+    'fields' => array(
+      'oid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'locale' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+        'default' => '',
+      ),
+      'document_id' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'date_created' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'date_updated' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'entity_name' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'entity_type' => array(
+        'type' => 'char',
+        'length' => '1',
+        'not null' => FALSE,
+      ),
+      'ocr_key' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'ocr_status' => array(
+        'type' => 'varchar',
+        'length' => '20',
+        'not null' => FALSE,
+      ),
+      'ocr_dpl_date' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'email_sent' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'ocr_check_count' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+    ),
+    'primary key' => array('oid'),
+    'indexes' => array(
+      'ocr_log_uid' => array('uid', 'entity_type'),
+    ),
+  );
+
+  $schema['findit_log'] = array(
+    'description' => 'Log of findit downloads',
+    'fields' => array(
+      'did' => array(
+        'description' => 'download id',
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'user_id' => array(
+        'description' => 'uid of user downloading the file',
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'asset_id' => array(
+        'description' => 'nid of the file that was downloaded',
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'date_downloaded' => array(
+        'description' => 'date that the download occurred',
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('did'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Create findit_log table in database
+ */
+function findit_update_7100() {
+  $schema['findit_log'] = array(
+    'description' => 'Log of findit downloads',
+    'fields' => array(
+      'did' => array(
+        'description' => 'download id',
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'user_id' => array(
+        'description' => 'uid of user downloading the file',
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'asset_id' => array(
+        'description' => 'nid of the file that was downloaded',
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'date_downloaded' => array(
+        'description' => 'date that the download occurred',
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('did'),
+  );
+  db_create_table('findit_log', $schema['findit_log']);
+  return 'Created table findit_log.';
+}

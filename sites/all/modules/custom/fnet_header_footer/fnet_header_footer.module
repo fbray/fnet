@@ -1,0 +1,677 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Provide header and footer blocks for fnet site
+ *
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function fnet_header_footer_menu() {
+
+  $items['admin/fnet/header_footer_branded_display'] = array(
+    'title' => 'Header and Footer',
+    'description' => 'Configure Header and Footer settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fnet_header_footer_branded_node_type_form'),
+    'access arguments' => array('administer header footer'),
+  );
+  return $items;
+
+}
+
+/**
+ * Implements hook_permission().
+ */
+function fnet_header_footer_permission() {
+  return array(
+    'administer header footer' => array(
+      'title' => t('administer header footer'),
+      'description' => t('Administer Header and Footer Setting'),
+    ),
+  );
+}
+
+/**
+ * Administrator configuration form for Header & Footer Branded Display
+ */
+function fnet_header_footer_branded_node_type_form($form, &$form_state) {
+  $form = array(
+  );
+
+  $node_types     = node_type_get_types();
+  $node_types_arr = array();
+
+  foreach ($node_types as $type) {
+    $node_types_arr[$type->type] = $type->name;
+  }
+  natcasesort($node_types_arr);
+
+  $form['node_type_options'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Select node types for Header & Footer Branded Selection capability:'),
+    '#default_value' => variable_get('header_footer_branded_display_node_types', array()),
+    '#options' => $node_types_arr,
+    '#description' => '<b>' . t('Select node types for which you want to add Header & Footer Branded Selection.') . '</b>',
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  );
+  return $form;
+}
+
+/**
+ * submit function for header_footer_branded_node_type_form
+ */
+function fnet_header_footer_branded_node_type_form_submit($form, &$form_state) {
+  $header_footer_branded_node_types = array();
+  foreach ($form_state['values']['node_type_options'] as $key => $value) {
+    if ($value) {
+      $header_footer_branded_node_types[] = $value;
+    }
+  }
+  variable_set('header_footer_branded_display_node_types', $header_footer_branded_node_types);
+  drupal_set_message(t('<strong>Configuration options have been saved.</strong>'));
+}
+
+/**
+ * header footer branded choice
+ */
+function _fnet_header_footer_branded_choice() {
+  return array(
+    "fnet_with_navi" => "Fluke Networks with Navigation",
+    "fnet_no_navi" => "Fluke Networks without Navigation",
+    "fnet_ntct_dual_branded" => "Dual Branded (NETSCOUT & Fluke Networks logo)",
+    "ntct_no_navi" => "NETSCOUT without Navigation",
+    "blank" => "Blank (No Header and Footer)"
+  );
+}
+
+/**
+ * Implementation of content specific form alteration form().
+ * hook_form_alter(&$form, &$form_state, $form_id)
+ */
+function fnet_header_footer_form_alter(&$form, &$form_state, $form_id) {
+  if ( substr($form_id, -9) != "node_form")  return;
+  $display_node_types = variable_get('header_footer_branded_display_node_types', array());
+  if (isset($form['type']) && in_array($form['type']['#value'], $display_node_types)) {
+    if ($form_id == $form['type']['#value'] . '_node_form') {
+      $brand_sel = '';
+      if ($form['nid']['#value']) {
+        $results = db_query('SELECT branded_display FROM {fnet_header_footer} WHERE nid = :nid', array(':nid' => $form['nid']['#value']));
+        foreach ($results as $record) {
+          $brand_sel = $record->branded_display;
+        }
+      }
+
+      $form['header_footer_branded_display'] = array(
+        '#type' => 'select',
+        '#title' => t('Header & Footer Branded Display'),
+        '#options' => _fnet_header_footer_branded_choice(),
+        '#default_value' => $brand_sel,
+        '#weight' => 1,
+      );
+    }
+  }
+}
+
+/**
+ * Implements hook_node_load().
+ */
+function fnet_header_footer_node_load($nodes, $type) {
+  $enabled_node_types = variable_get('header_footer_branded_display_node_types', array());
+  if (in_array($type[0], $enabled_node_types)) {
+    $result = db_query('SELECT nid, branded_display FROM {fnet_header_footer} WHERE nid IN (:nids)', array(':nids' => array_keys($nodes)));
+    // Add our extra data to the node objects.
+    foreach ($result as $record) {
+      $nodes[$record->nid]->header_footer = $record->branded_display;
+    }
+  }
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+function fnet_header_footer_node_insert($node) {
+  $display_node_types = variable_get('header_footer_branded_display_node_types', array());
+  if (in_array($node->type, $display_node_types) && isset($node->header_footer_branded_display)) {
+    _fnet_header_footer_write_record($node->nid, $node->header_footer_branded_display);
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function fnet_header_footer_node_update($node) {
+  $display_node_types = variable_get('header_footer_branded_display_node_types', array());
+  if (in_array($node->type, $display_node_types) && isset($node->header_footer_branded_display)) {
+    _fnet_header_footer_write_record($node->nid, $node->header_footer_branded_display);
+  }
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function fnet_header_footer_node_delete($node) {
+  $display_node_types = variable_get('header_footer_branded_display_node_types', array());
+  if (in_array($node->type, $display_node_types)) {
+    db_delete('fnet_header_footer')
+      ->condition('nid', $node->nid)
+      ->execute();
+  }
+}
+
+/**
+ * Helper function to write fnet_header_footer record
+ * @param $nid - node id
+ * @param $branded_display - branded type
+ */
+function _fnet_header_footer_write_record($nid, $branded_display_selected) {
+  $results = db_query('SELECT branded_display FROM {fnet_header_footer} WHERE nid = :nid', array(':nid' => $nid));
+  $brandedDisplay = '';
+  foreach ($results as $row) {
+    $brandedDisplay = $row->branded_display;
+  }
+  $record = new stdClass();
+  $record->nid = $nid;
+  $record->branded_display = $branded_display_selected;
+
+  if (empty($brandedDisplay)) {
+    $result = drupal_write_record('fnet_header_footer', $record);
+    if (($result != SAVED_NEW) && ($result != SAVED_UPDATED)) {
+      watchdog('fnet_header_footer', 'fnet_header_footer record insert failed for node %node with %branded_display', array('%node' => $nid, '%branded_display' => $branded_display_selected), WATCHDOG_ERROR);
+    }
+  } else if ($branded_display_selected != $brandedDisplay) {
+    $result = drupal_write_record('fnet_header_footer', $record, array('nid'));
+    if (($result != SAVED_NEW) && ($result != SAVED_UPDATED)) {
+      watchdog('fnet_header_footer', 'fnet_header_footer record update failed for node %node with %branded_display', array('%node' => $nid, '%branded_display' => $branded_display_selected), WATCHDOG_ERROR);
+    }
+  }
+}
+
+function fnet_header_footer_block_visibility ($brandedType) {
+  $headerFooter = 'fnet_with_navi';
+  $obj = menu_get_item();
+  if (isset($obj['map'][1]->header_footer) && $obj['map'][1]->header_footer) $headerFooter = $obj['map'][1]->header_footer;
+  if ($headerFooter == $brandedType) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Implements hook_preprocess_html().
+ */
+function fnet_header_footer_preprocess_html(&$variables) {
+  // Add necessary JavaScript and CSS
+  //drupal_add_js(drupal_get_path('module', 'fnet_header_footer') . '/javascript/fnet_header_footer.js');
+  drupal_add_css(drupal_get_path('module', 'fnet_header_footer') . '/css/fnet_header_footer.css');
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function fnet_header_footer_block_info() {
+  $blocks = array();
+  $blocks['fnet_header_footer_top_menu'] = array(
+    'info' => t('FNET Header.Footer Top Menu'),
+  );
+  $blocks['fnet_header_footer_top_menu_b'] = array(
+    'info' => t('FNET Header.Footer Top Menu Blank'),
+  );
+  $blocks['fnet_header_footer_main_menu'] = array(
+    'info' => t('FNET Header/Footer Main Menu'),
+  );
+  $blocks['fnet_header_footer_footer_menu'] = array(
+    'info' => t('FNET Header/Footer Footer Menu'),
+  );
+  $blocks['fnet_header_footer_bottom_menu'] = array(
+    'info' => t('FNET Header/Footer Bottom Menu'),
+  );
+  $blocks['fnet_header_footer_bottom_ntct'] = array(
+    'info' => t('NETSCOUT Header/Footer Bottom Menu'),
+  );
+  $blocks['fnet_header_footer_bottom_dual'] = array(
+    'info' => t('Fluke Networks & NETSCOUT Header/Footer Bottom Menu'),
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function fnet_header_footer_block_view($delta = '') {
+  global $user;
+  switch ($delta) {
+    case 'fnet_header_footer_top_menu':
+      $block['subject'] = t('Top Menu');
+      $block['content'] = theme('top_menu_block', array('user' => $user));
+      break;
+    case 'fnet_header_footer_top_menu_b':
+      $block['subject'] = t('Top Menu Blank');
+      $block['content'] = theme('top_menu_blank_block', array('user' => $user));
+      break;
+    case 'fnet_header_footer_main_menu':
+      $block['subject'] = t('Main Menu');
+      $block['content'] = theme('main_menu_block');
+      break;
+    case 'fnet_header_footer_footer_menu':
+      $block['subject'] = t('Footer Menu');
+      $block['content'] = theme('footer_menu_block');
+      break;
+    case 'fnet_header_footer_bottom_menu':
+      $block['subject'] = t('Bottom Menu');
+      $block['content'] = theme('bottom_menu_block');
+      break;
+    case 'fnet_header_footer_bottom_ntct':
+      $block['subject'] = t('NETSCOUT Bottom Menu');
+      $block['content'] = theme('bottom_menu_ntct_block');
+      break;
+    case 'fnet_header_footer_bottom_dual':
+      $block['subject'] = t('Fluke Networks & NETSCOUT Bottom Menu');
+      $block['content'] = theme('bottom_menu_dual_block');
+      break;
+  }
+  return $block;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function fnet_header_footer_theme($existing, $type, $theme, $path) {
+  $hooks = array();
+  $hooks['top_menu_block'] = array(
+    'template' => 'theme/top_menu_block',
+    'variables' => array(),
+  );
+  $hooks['top_menu_blank_block'] = array(
+    'template' => 'theme/top_menu_blank_block',
+    'variables' => array(),
+  );
+  $hooks['main_menu_block'] = array(
+    'template' => 'theme/main_menu_block',
+    'variables' => array(),
+  );
+  $hooks['footer_menu_block'] = array(
+    'template' => 'theme/footer_menu_block',
+    'variables' => array(),
+  );
+  $hooks['bottom_menu_block'] = array(
+    'template' => 'theme/bottom_menu_block',
+    'variables' => array(),
+  );
+  $hooks['bottom_menu_ntct_block'] = array(
+    'template' => 'theme/bottom_menu_ntct_block',
+    'variables' => array(),
+  );
+  $hooks['bottom_menu_dual_block'] = array(
+    'template' => 'theme/bottom_menu_dual_block',
+    'variables' => array(),
+  );
+  return $hooks;
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function fnet_header_footer_preprocess_page(&$variables) {
+  if (isset($variables['node'])) {
+    $variables['show_nav'] = TRUE;
+    $variables['show_breadcrumb'] = TRUE;
+    if (isset($variables['node']->header_footer)) {
+      switch ($variables['node']->header_footer) {
+        case 'blank':
+          $variables['show_nav'] = FALSE;
+          $variables['show_breadcrumb'] = FALSE;
+          drupal_add_css(drupal_get_path('module','fnet_header_footer').'/css/fnet_header_footer_blank.css');
+          break;
+        case 'fnet_no_navi':
+          $variables['show_breadcrumb'] = FALSE;
+          drupal_add_css(drupal_get_path('module','fnet_header_footer').'/css/fnet_header_footer_fnet_no_navi.css');
+          break;
+        case 'ntct_no_navi':
+          $variables['logo'] = drupal_get_path('module','fnet_header_footer') . '/css/images/netscout_logo_white.png';
+          $variables['show_breadcrumb'] = FALSE;
+          drupal_add_css(drupal_get_path('module','fnet_header_footer').'/css/fnet_header_footer_netscout.css');
+          break;
+        case 'fnet_ntct_dual_branded':
+          $variables['logo'] = drupal_get_path('module','fnet_header_footer') . '/css/images/netscout_fnet_logo_white.png';
+          $variables['show_breadcrumb'] = FALSE;
+          drupal_add_css(drupal_get_path('module','fnet_header_footer').'/css/fnet_header_footer_dual.css');
+          break;
+        default:
+      }
+    } else if (isset($variables['node']->field_removenav)) {
+      $variables['show_nav'] = !$variables['node']->field_removenav[LANGUAGE_NONE][0]['value'];
+      //$variables['show_breadcrumb'] = FALSE;
+    }
+  }
+  else {
+    $variables['show_nav'] = TRUE;
+    $variables['show_breadcrumb'] = TRUE;
+  }
+}
+
+function fnet_header_footer_breadcrumb($breadcrumb) {
+  $path = $_GET['q'];
+  switch ($path) {
+    case 'solutions':
+      $breadcrumb = array(l('Home', '/'));
+      break;
+    case 'solutions/topics':
+    case 'solutions/roles':
+    case 'solutions/industries':
+    case 'solutions/learn-about':
+    case 'solutions/case-studies':
+      $breadcrumb = array(l('Home', '/'));
+      $breadcrumb[] = l('Solutions', '/solutions');
+      break;
+    case 'node/203618':
+    case 'node/179086':
+    case 'node/163714':
+    case 'node/163563':
+    case 'node/125213':
+    case 'node/15884':
+    case 'node/15341':
+    case 'node/13741':
+    case 'node/13713':
+    case 'node/13712':
+    case 'node/13568':
+      $breadcrumb = array(l('Home', '/'));
+      $breadcrumb[] = l('Solutions', '/solutions');
+      $breadcrumb[] = l('Topics', '/solutions/topics');
+      break;
+    case 'node/135493':
+    case 'node/13683':
+    case 'node/13644':
+    case 'node/13643':
+    case 'node/13636':
+      $breadcrumb = array(l('Home', '/'));
+      $breadcrumb[] = l('Solutions', '/solutions');
+      $breadcrumb[] = l('Roles', '/solutions/roles');
+      break;
+    case 'node/15140':
+    case 'node/13716':
+    case 'node/13714':
+    case 'node/13638':
+      $breadcrumb = array(l('Home', '/'));
+      $breadcrumb[] = l('Solutions', '/solutions');
+      $breadcrumb[] = l('Industries', '/solutions/industries');
+      break;
+    case 'node/3420':
+    case 'node/3419':
+    case 'node/3418':
+    case 'node/3417':
+    case 'node/3416':
+    case 'node/3415':
+    case 'node/3414':
+    case 'node/3413':
+    case 'node/3411':
+    case 'node/3297':
+    case 'node/3292':
+    case 'node/3279':
+    case 'node/3278':
+    case 'node/3277':
+    case 'node/3275':
+      $breadcrumb = array(l('Home', '/'));
+      $breadcrumb[] = l('Solutions', '/solutions');
+      $breadcrumb[] = l('Learn About', '/solutions/learn-about');
+      break;
+    case 'node/203630':
+    case 'node/203627':
+    case 'node/203625':
+    case 'node/198109':
+    case 'node/187497':
+    case 'node/187238':
+    case 'node/187229':
+    case 'node/187227':
+    case 'node/187226':
+    case 'node/186724':
+    case 'node/186528':
+    case 'node/182412':
+    case 'node/176335':
+    case 'node/171886':
+    case 'node/171832':
+    case 'node/171534':
+    case 'node/169148':
+    case 'node/164893':
+    case 'node/164811':
+    case 'node/164524':
+    case 'node/164522':
+    case 'node/161835':
+    case 'node/161829':
+    case 'node/147510':
+    case 'node/147048':
+    case 'node/146871':
+    case 'node/143553':
+    case 'node/143549':
+    case 'node/141138':
+    case 'node/135524':
+    case 'node/129121':
+    case 'node/125663':
+    case 'node/123423':
+    case 'node/122401':
+    case 'node/120678':
+    case 'node/16017':
+    case 'node/15975':
+    case 'node/15623':
+    case 'node/15235':
+    case 'node/15126':
+    case 'node/14903':
+    case 'node/14902':
+    case 'node/14772':
+    case 'node/14711':
+    case 'node/14710':
+    case 'node/14686':
+    case 'node/14516':
+    case 'node/14515':
+    case 'node/14514':
+    case 'node/14513':
+    case 'node/14428':
+    case 'node/14427':
+    case 'node/14311':
+    case 'node/13848':
+    case 'node/13847':
+    case 'node/13745':
+    case 'node/13744':
+    case 'node/13349':
+    case 'node/13268':
+    case 'node/13147':
+    case 'node/12789':
+    case 'node/12699':
+    case 'node/12678':
+    case 'node/12672':
+    case 'node/12637':
+    case 'node/12635':
+    case 'node/12566':
+    case 'node/12412':
+    case 'node/12411':
+    case 'node/12338':
+    case 'node/12239':
+    case 'node/12178':
+    case 'node/12014':
+    case 'node/11997':
+    case 'node/11686':
+    case 'node/11685':
+    case 'node/11684':
+    case 'node/4391':
+    case 'node/3561':
+    case 'node/3560':
+    case 'node/3268':
+    case 'node/3267':
+    case 'node/3266':
+    case 'node/3265':
+    case 'node/3264':
+    case 'node/3263':
+    case 'node/3262':
+    case 'node/3261':
+    case 'node/3260':
+    case 'node/3259':
+    case 'node/3258':
+    case 'node/3255':
+    case 'node/3254':
+    case 'node/3253':
+    case 'node/3252':
+    case 'node/3205':
+    case 'node/3203':
+    case 'node/3202':
+    case 'node/3201':
+    case 'node/3199':
+    case 'node/3198':
+      $breadcrumb = array(l('Home', '/'));
+      $breadcrumb[] = l('Solutions', '/solutions');
+      $breadcrumb[] = l('Case Studies', '/solutions/case-studies');
+      break;
+    case 'node/162858':
+    case 'node/143579':
+    case 'node/14724':
+    case 'node/14720':
+    case 'node/14403':
+    case 'node/12571':
+    case 'node/12278':
+    case 'node/12270':
+    case 'node/12268':
+    case 'node/11613':
+    case 'node/4598':
+    case 'node/4591':
+    case 'node/3606':
+    case 'node/3579':
+    case 'node/3360':
+    case 'node/164':
+    case 'node/160':
+    case 'node/161':
+    case 'node/158':
+    case 'node/159':
+    case 'node/156':
+    case 'node/157':
+    case 'node/154':
+    case 'node/153':
+    case 'node/151':
+    case 'node/143':
+    case 'node/141':
+    case 'node/136':
+    case 'node/135':
+    case 'node/132':
+    case 'node/133':
+    case 'node/122':
+    case 'node/110':
+    case 'node/108':
+    case 'node/109':
+    case 'node/105':
+    case 'node/103':
+    case 'node/100':
+    case 'node/99':
+    case 'node/93':
+    case 'node/95':
+    case 'node/89':
+    case 'node/87':
+    case 'node/88':
+    case 'node/86':
+    case 'node/80':
+    case 'node/81':
+    case 'node/78':
+    case 'node/79':
+    case 'node/67':
+    case 'node/68':
+    case 'node/69':
+    case 'node/70':
+    case 'node/59':
+    case 'node/58':
+    case 'node/57':
+    case 'node/56':
+    case 'node/55':
+    case 'node/44':
+      $breadcrumb = array(l('Home', '/'));
+      $breadcrumb[] = l('Products', '/products');
+      $breadcrumb[] = l('Datacom Cabling', '/datacom-cabling');
+      break;
+    case 'node/206956':
+    case 'node/198595':
+    case 'node/135450':
+    case 'node/153872':
+    case 'node/136878':
+    case 'node/50':
+    case 'node/15886':
+    case 'node/14919':
+    case 'node/13646':
+    case 'node/13645':
+    case 'node/12889':
+    case 'node/12473':
+    case 'node/11990':
+    case 'node/11525':
+    case 'node/82':
+    case 'node/3421':
+    case 'node/52':
+    case 'node/126':
+    case 'node/118':
+    case 'node/117':
+    case 'node/111':
+    case 'node/97':
+    case 'node/63':
+    case 'node/53':
+    case 'node/51':
+    case 'node/49':
+    case 'node/46':
+    case 'node/47':
+    case 'node/48':
+      $breadcrumb = array(l('Home', '/'));
+      $breadcrumb[] = l('Products', '/products');
+      $breadcrumb[] = l('IT Networking', '/enterprise-network');
+      break;
+    case 'node/163915':
+    case 'node/144414':
+    case 'node/13252':
+    case 'node/12821':
+    case 'node/150':
+    case 'node/147':
+    case 'node/146':
+    case 'node/138':
+    case 'node/116':
+    case 'node/102':
+    case 'node/85':
+    case 'node/74':
+    case 'node/76':
+    case 'node/65':
+    case 'node/61':
+    case 'node/41':
+    case 'node/42':
+    case 'node/40':
+    case 'node/39':
+      $breadcrumb = array(l('Home', '/'));
+      $breadcrumb[] = l('Products', '/products');
+      $breadcrumb[] = l('Telecom', '/telecom');
+      break;
+    case 'node/6':
+    case 'node/7':
+    case 'node/8':
+      $breadcrumb = array(l('Home', '/'));
+      $breadcrumb[] = l('Products', '/products');
+    break;
+    case 'node/3489':
+    case 'node/3536':
+    case 'node/13577':
+    case 'node/3538':
+    case 'node/13573':
+    case 'node/3537':
+    case 'node/3539':
+    case 'node/3540':
+    case 'node/165578':
+    case 'support/downloads':
+    case 'knowledge-base':
+    case 'support/application-notes':
+    case 'support/manuals':
+    case 'node/3541':
+    case 'node/3485':
+    case 'node/3486':
+    case 'node/3487':
+    case 'node/3488':
+      $breadcrumb = array(l('Home', '/'));
+      $breadcrumb[] = l('Support', '/support');
+    break;
+  }
+  return $breadcrumb;
+}

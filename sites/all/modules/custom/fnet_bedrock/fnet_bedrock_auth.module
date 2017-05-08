@@ -1,0 +1,225 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Authenticate drupal user with bedrock
+ *
+ */
+
+/**
+ * Implement hook_help() to display a small help message
+ * if somebody clicks the "Help" link on the modules list.
+ */
+function fnet_bedrock_auth_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#fnet_bedrock_auth': {
+      return ('<p>' . t('This module allows users who login with e-mail addresses to authenticate with Bedrock.') . '</p>');
+    }
+  }
+}
+
+/**
+ * Implement hook_form_user_login_alter
+ * @param $form
+ * @param $form_state
+ */
+function fnet_bedrock_auth_form_user_login_alter(&$form, &$form_state) {
+  // Replace the drupal authenticate function used as validation.
+  // if ldap_authentication has already replaced it, replace that.
+  if (variable_get('fnet_bedrock_authentication', FALSE)) {
+    $validations = array();
+    $bedrock_validation_inserted = FALSE;
+    foreach ($form['#validate'] as $validation) {
+      switch ($validation) {
+        case 'user_login_authenticate_validate':
+        case 'ldap_authentication_core_override_user_login_authenticate_validate':
+          if (!$bedrock_validation_inserted) {
+            $validations[] = 'fnet_bedrock_auth_user_login_validate';
+            $bedrock_validation_inserted = TRUE;
+          }
+          $validations[] = $validation;
+          break;
+        default:
+          $validations[] = $validation;
+          break;
+      }
+    }
+    $form['#validate'] = $validations;
+  }
+}
+
+/**
+ * Implement hook_form_user_login_block_alter
+ * @param $form
+ * @param $form_state
+ */
+function fnet_bedrock_auth_form_user_login_block_alter(&$form, $form_state) {
+  fnet_bedrock_auth_form_user_login_alter($form, $form_state);
+}
+
+/**
+ * Implement hook_user_profile_form_alter() to disable the ability to change email address
+ * for externally authenticated users.
+ */
+function fnet_bedrock_auth_form_user_profile_form_alter(&$form, $form_state) {
+  global $user;
+  $admin = user_access('administer users');
+  if ($form['#user_category'] != 'account') {
+    // Do not alter this form for different categories.
+    return;
+  }
+  $form['account']['name']['#disabled'] = TRUE;
+  $form['account']['name']['#description'] = t('The username for this account cannot be changed');
+  // Allow if they are have administrative access.
+  if (!$admin) {
+    $form['account']['mail']['#disabled'] = TRUE;
+    $form['account']['mail']['#description'] = t('This e-mail address for this account cannot be changed.');
+  }
+  $form['#submit'][] = 'fnet_bedrock_auth_user_profile_form_submit';
+  $form['actions']['#prefix'] = '<div class="OneLinkNoTx">';
+  $form['actions']['#suffix'] = '</div>';
+
+  // Allow PW change w/o current pass
+  unset ($form['account']['current_pass']);
+  foreach ($form['#validate'] as $id => $val) {
+    if ($val == 'user_validate_current_pass') {
+      unset($form['#validate'][$id]);
+    }
+  }
+  unset($form['account']['current_pass_required_values']['#value']['pass']);
+}
+
+/**
+ * Password update form
+ * @param $form
+ * @param $form_state
+ */
+function fnet_bedrock_auth_user_profile_form_submit($form, &$form_state) {
+  if ($form_state['values']['pass'] == '') {
+    return;
+  }
+  $account = $form['#user'];
+  $bedrock_user = fnet_bedrock_get_user($account->mail);
+  if (!empty($bedrock_user->id)) {
+    $bedrock_user_update = new stdClass();
+    $bedrock_user_update->id = $bedrock_user->id;
+    $bedrock_user_update->password = $form_state['values']['pass'];
+    $bedrock_user_update->status = 'enabled';
+    $bedrock_user = fnet_bedrock_update_user($bedrock_user_update);
+  }
+  else {
+    $bedrock_user_insert = fnet_bedrock_make_bedrock_user($account->mail, $form_state['values']['pass']);
+    $bedrock_user = fnet_bedrock_insert_user($bedrock_user_insert);
+  }
+}
+
+/**
+ * Implementation of hook_validate for user login
+ *
+ * @param $form
+ * @param $form_state
+ */
+function fnet_bedrock_auth_user_login_validate($form, &$form_state) {
+  // Check if Flood control was triggered; if so, don't authenticate
+  if (isset($form_state['flood_control_triggered'])) {
+    return;
+  }
+  global $user;
+  $password = $form_state['values']['pass'];
+  $user_name = $form_state['values']['name'];
+  // if we have already failed validation, there is no need to check Bedrock.
+  if (form_get_errors()) {
+    return;
+  }
+  if (strpos($user_name, '@') !== FALSE) {
+    $email = $user_name;
+  }
+  else {
+    $email = db_query("SELECT mail FROM users  WHERE `name` = :name", array(':name' => $user_name))->fetchCol();
+    if (empty($email)) {
+      $email = $user_name;
+    }
+  }
+  if (fnet_bedrock_auth_user_authenticate($email, $password)) {
+    //check to see if the drupal user exists
+    $account = user_load_by_mail($email);
+    if (!$account) {
+      $bedrock_user = fnet_bedrock_get_user($email);
+      $account = fnet_bedrock_create_drupal_user($bedrock_user);
+      $account = fnet_bedrock_create_user_profile($account->uid, $bedrock_user);
+    }
+    //check to see if the user is in the authmap table
+    $uid = db_query("SELECT uid FROM {authmap} WHERE authname = :authname", array(':authname' => $email))->fetchField();
+    if (!$uid) {
+      $authmaps = array('authname_' . 'fnet_bedrock_auth' => $email);
+      user_set_authmaps($account, $authmaps);
+    }
+    user_external_login_register($email, 'fnet_bedrock_auth');
+    $form_state['uid'] = $user->uid;
+    if (empty($user->mail)) {
+      user_save($user, array('mail' => $user_name));
+    }
+  }
+  else {
+    // if Bedrock authentication fails either try LDAP or go straight to Drupal authentication.
+    if (function_exists('ldap_authentication_user_login_authenticate_validate')) {
+      ldap_authentication_user_login_authenticate_validate($form, $form_state);
+    }
+    else {
+      //successful validation sets the user object so uid==0 means we haven't been successful yet
+      if ($user->uid == 0) {
+        user_login_authenticate_validate($form, $form_state);
+      }
+    }
+  }
+}
+
+/**
+ * Authenticate a user and password against the Bedrock DB using REST interface.
+ * @param $email
+ * @param $password
+ * @return bool|mixed|\stdClass
+ */
+function fnet_bedrock_auth_user_authenticate($email, $password) {
+  global $user;
+  if (is_array($email)) {
+    $email = $email[0];
+  }
+  // (Design decision) uid=1 (admin user) must always authenticate to local database
+  // this user is critical for all drupal admin and upgrade operations so it is best
+  // left with drupal's native authentication.
+  $sql = "SELECT uid FROM {users} WHERE name = :name AND uid = :uid";
+  $account = db_query($sql, array(
+    ':name' => $email,
+    ':uid' => '1'
+  ))->fetchCol();
+  if ($account) {
+    return FALSE;
+  }
+  $credentials = new stdClass();
+  $credentials->type = 'basic';
+  $credentials->value = base64_encode("$email:$password");
+  $data = json_encode($credentials);
+  $rest_method = 'login';
+  $result = fnet_bedrock_rest('POST', $rest_method, $data);
+  if ($result->code == 200) {
+    return TRUE;
+  }
+  else {
+    // What was the response code? Log the error.
+    watchdog('Bedrock', 'Failed to connect. Received HTTP Response Code %code.', array('%code' => $result->code), WATCHDOG_ERROR, $link = NULL);
+
+    $response = json_decode($result->data);
+    if (stristr($email, '@fluke')) {
+      return FALSE;
+    }
+    if (isset($response->error->code) && $response->error->code == 3005) {
+      $message = 'Your account has been locked for excessive password failures. ';
+      $message .= 'Please reset your password and/or wait a few minutes before you try again.';
+      drupal_set_message($message, 'error');
+    }
+    return FALSE;
+  }
+}
+

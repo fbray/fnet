@@ -1,0 +1,160 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Regionality_seo alters metatag module meta tag output based on regionality overrides.
+ *
+ */
+
+/**
+ * The hook is used to alter the metatags content.
+ *
+ * @param &$output
+ *  The array of meta tags values.
+ * @param $parameters
+ *  An array of parameters. The currently defined are:
+ *   * type - the type of object for the page to which the meta
+ *     tags are associated.
+ *   * ids - the array of IDs for the object associated with the page.
+ *   * output - where the meta tags are being output; the parameter value can
+ *     'head' or 'update index'.
+ */
+function regionality_seo_metatags($tag_name, &$pattern, $node) {
+  $type = $node->type;
+  $cookie_reglang = isset( $_COOKIE['regLang'] ) ? $_COOKIE['regLang'] : '';
+
+  switch ($type) {
+    case 'homepage2013':
+      if (isset($node->field_home13_langreg[LANGUAGE_NONE])) {
+        foreach ($node->field_home13_langreg[LANGUAGE_NONE] as $language) {
+          $language_node = node_load($language['nid']);
+          if (!empty($language_node->field_home13lng_lng)) {
+            $regLang = strtoupper(substr($language_node->field_home13lng_lng[LANGUAGE_NONE][0]['value'], 0, 5));
+            if ($cookie_reglang == $regLang) {
+              _regionality_seo_replace_output($tag_name, $pattern, $language_node);
+              break;
+            }
+          }
+        }
+      }
+      break;
+    case 'industry':
+      if (isset($node->field_industry_language[LANGUAGE_NONE])) {
+        foreach ($node->field_industry_language[LANGUAGE_NONE] as $language) {
+          $language_node = node_load($language['nid']);
+          if (!empty($language_node->field_indlang_language)) {
+            $regLang = strtoupper(substr($language_node->field_indlang_language[LANGUAGE_NONE][0]['value'], 0, 5));
+            if ($cookie_reglang == $regLang) {
+              _regionality_seo_replace_output($tag_name, $pattern, $language_node);
+              break;
+            }
+          }
+        }
+      }
+      break;
+    case 'product':
+      if (isset($node->field_prod_language[LANGUAGE_NONE])) {
+        foreach ($node->field_prod_language[LANGUAGE_NONE] as $language) {
+          $language_node = node_load($language['nid']);
+          if (!empty($language_node->field_prodlang_language)) {
+            $regLang = strtoupper(substr($language_node->field_prodlang_language[LANGUAGE_NONE][0]['value'], 0, 5));
+            if ($cookie_reglang == $regLang) {
+              _regionality_seo_replace_output($tag_name, $pattern, $language_node);
+              break;
+            }
+          }
+        }
+      }
+      break;
+    case 'exp_ind':
+      if (isset($node->field_exp_ind_lng[LANGUAGE_NONE])) {
+        foreach ($node->field_exp_ind_lng[LANGUAGE_NONE] as $language) {
+          $language_node = node_load($language['nid']);
+          if (!empty($language_node->field_exp_ind_lng_lng)) {
+            $regLang = strtoupper(substr($language_node->field_exp_ind_lng_lng[LANGUAGE_NONE][0]['value'], 0, 5));
+            if ($cookie_reglang == $regLang) {
+              _regionality_seo_replace_output($tag_name, $pattern, $language_node);
+              break;
+            }
+          }
+        }
+      }
+      break;
+    case 'exp_rle':
+      if (isset($node->field_exp_rle_lng[LANGUAGE_NONE])) {
+        foreach ($node->field_exp_rle_lng[LANGUAGE_NONE] as $language) {
+          $language_node = node_load($language['nid']);
+          if (!empty($language_node->field_exp_rle_lng_lng)) {
+            $regLang = strtoupper(substr($language_node->field_exp_rle_lng_lng[LANGUAGE_NONE][0]['value'], 0, 5));
+            if ($cookie_reglang == $regLang) {
+              _regionality_seo_replace_output($tag_name, $pattern, $language_node);
+              break;
+            }
+          }
+        }
+      }
+      break;
+    case 'exp_tpc':
+      if (isset($node->field_exp_tpc_lng[LANGUAGE_NONE])) {
+        foreach ($node->field_exp_tpc_lng[LANGUAGE_NONE] as $language) {
+          $language_node = node_load($language['nid']);
+          if (!empty($language_node->field_exp_tpc_lng_lng)) {
+            $regLang = strtoupper(substr($language_node->field_exp_tpc_lng_lng[LANGUAGE_NONE][0]['value'], 0, 5));
+            if ($cookie_reglang == $regLang) {
+              _regionality_seo_replace_output($tag_name, $pattern, $language_node);
+              break;
+            }
+          }
+        }
+      }
+      break;
+    case 'page':
+      break;
+    default:
+      break;
+  }
+}
+
+function _regionality_seo_replace_output($tag_name, &$pattern, $language_node) {
+  if (isset($language_node->metatags[LANGUAGE_NONE][$tag_name]['value'])) {
+    $pattern = $language_node->metatags[LANGUAGE_NONE][$tag_name]['value'];
+    switch ($tag_name) {
+      case 'description':
+      case 'keywords':
+        if (!headers_sent()) {
+          header('X-OneLinkNoTx: U;/meta/;I;C;', FALSE);
+        }
+        break;
+      case 'title':
+        if (!headers_sent()) {
+          header('X-OneLinkNoTx: U;/title/;I;C;', FALSE);
+        }
+        break;
+    }
+  }
+}
+
+function regionality_seo_metatag_pattern_alter(&$pattern, &$types, $tag_name) {
+  if (!isset($types['node'])) {
+    return;
+  }
+  switch ($tag_name) {
+    case 'title':
+    case 'description':
+    case 'keywords':
+      regionality_seo_metatags($tag_name, $pattern, $types['node']);
+      break;
+    default:
+      break;
+  }
+}
+
+/**
+ *
+ */
+function regionality_seo_metatag_page_cache_cid_parts_alter(&$cid_parts) {
+  if (isset( $_COOKIE['regLang'] )) {
+    $cid_parts['reglang'] = $_COOKIE['regLang'];
+  }
+}

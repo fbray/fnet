@@ -1,0 +1,12 @@
+; $Id$
+name = EMS
+package = Fluke Networks
+description = the EMS module allows registration for an (event_occurrence) node, and interfaces with Marketo.
+dependencies[] = addressfield
+dependencies[] = marketo_api
+version = 7.x.0.0
+core = 7.x
+
+files[] = library/base62.php
+files[] = library/parsecsv.lib.php
+files[] = ems_registration.class.php

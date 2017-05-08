@@ -1,0 +1,103 @@
+<?php
+
+/**
+ * @file
+ * Tests for the gnode module in nodes in multiple group mode.
+ */
+
+/**
+ * Test Group node access behaviour when a node is in multiple groups.
+ */
+abstract class GNodeMultipleViewAccessTests extends GNodeViewAccessTests {
+
+  /**
+   * Test anonymous user's view access to nodes in multiple groups.
+   */
+  public function testAnonymousViewAccessMultipleGroups() {
+    // Create two group types.
+    $group_type1 = $this->createGroupType('example1');
+    $group_type2 = $this->createGroupType('example2');
+
+    // Create two groups, one of each type.
+    $group1 = $this->createGroup('example1', 'example1');
+    $group2 = $this->createGroup('example2', 'example2');
+
+    // Make a node and put it into both groups.
+    $node = $this->createNodeInGroup($group1->internalIdentifier());
+    $this->setNodeGroups($node, array($group1->internalIdentifier(), $group2->internalIdentifier()));
+
+    // Sanity check that with no special permissions the anonymous user cannot
+    // view the node.
+    $this->assertNodeOperationAccess($node->nid, 'view', 403, 'Group node is not accessible by anonymous without view permissions');
+    $this->assertNodesOnListingPage(array(), 'Group node is not visible on listing pages to anonymous without view permissions.');
+
+    // Set anonymous permissions on just one of the two group types.
+    $group_type2->anonymous_permissions = array('view page node');
+    $group_type2->save();
+
+    // Check that the node is now accessible.
+    $this->assertNodeOperationAccess($node->nid, 'view', 200, 'Group node is accessible by anonymous with view permissions');
+    $this->assertNodesOnListingPage(array($node->nid), 'Group node is visible on listing pages to anonymous with view permissions.');
+
+    // Now remove the node from the group for which anonymous has access.
+    $this->setNodeGroups($node, array($group1->internalIdentifier()));
+
+    // We no longer expect this node to be accessible.
+    $this->assertNodeOperationAccess($node->nid, 'view', 403, 'Group node is not accessible by anonymous without view permissions');
+    $this->assertNodesOnListingPage(array(), 'Group node is not visible on listing pages to anonymous without view permissions.');
+  }
+}
+
+/**
+ * This class runs all the tests in Compliance mode.
+ */
+class GNodeComplianceModeMultipleNodeTests extends GNodeMultipleViewAccessTests {
+
+  /**
+   * Drupal SimpleTest method: return metadata about the test.
+   */
+  public static function getInfo() {
+    return array(
+      'name' => t('Group gnode compliance mode view tests with multiple groups'),
+      'description' => t('Executes node access test suite for gnode module in compliance mode when a node is in multiple groups.'),
+      'group' => t('Group'),
+    );
+  }
+
+  /**
+   * Test setup instructions.
+   */
+  public function setUp() {
+    parent::setUp('node', 'entity', 'group', 'gnode');
+    variable_set('group_node_mode', GROUP_NODE_COMPLIANCE_MODE);
+    variable_set('group_node_multiple_groups', GROUP_NODE_MULTIPLE_GROUPS_MODE);
+    node_access_rebuild();
+  }
+}
+
+/**
+ * This class runs all the tests in Safe mode.
+ */
+class GNodeSafeModeMultipleNodeTests extends GNodeMultipleViewAccessTests {
+
+  /**
+   * Drupal SimpleTest method: return metadata about the test.
+   */
+  public static function getInfo() {
+    return array(
+      'name' => t('Group gnode safe mode view tests with multiple groups'),
+      'description' => t('Executes node access test suite for gnode module in safe mode when a node is in multiple groups.'),
+      'group' => t('Group'),
+    );
+  }
+
+  /**
+   * Test setup instructions.
+   */
+  public function setUp() {
+    parent::setUp('node', 'entity', 'group', 'gnode');
+    variable_set('group_node_mode', GROUP_NODE_SAFE_MODE);
+    variable_set('group_node_multiple_groups', GROUP_NODE_MULTIPLE_GROUPS_MODE);
+    node_access_rebuild();
+  }
+}

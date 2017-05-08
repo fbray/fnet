@@ -1,0 +1,6 @@
+name = FNET Header and Footer
+description = Blocks for FNET header and footer menus
+core = 7.x
+version = 7.x
+package = "Fluke Networks"
+

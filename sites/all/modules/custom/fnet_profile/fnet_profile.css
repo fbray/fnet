@@ -1,0 +1,39 @@
+/*$Id$*/
+
+#user-register-form div#profile-column-one, #fnet-profile-profile-edit-form div#profile-column-one {
+    float: left;
+    padding: 0 10px 0 10px;
+}
+
+#user-register-form div#profile-column-two, #fnet-profile-profile-edit-form div#profile-column-two {
+    float: left;
+    padding: 0 10px 0 10px;
+    width: 300px;
+}
+
+#user-register-form div#gold-number, #fnet-profile-profile-edit-form div#gold-number {
+    float: none;
+}
+
+.field-group:after {
+    display: table;
+    clear: both;
+    content: "";
+}
+
+#gold-number {
+    display: table;
+    width: 100%;
+    clear: both;
+    background-color: #ffe3a7;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-top: 1px solid #666666;
+    border-bottom: 1px solid #666666;
+}
+
+#edit-gold-number-wrapper, #edit-gold-pin-wrapper {
+    float: left;
+    padding: 0 10px 0 10px;
+}
+

@@ -1,0 +1,206 @@
+<?php
+/**
+ * @file
+ * Code for the Homepage module.
+ */
+
+/**
+ * Implements hook_preprocess_page().
+ *
+ * @param $variables
+ */
+function homepage_preprocess_page(&$variables) {
+  // Determine if this is a homepage node.
+  if (isset($variables['node']) && $variables['node']->type == 'homepage2013') {
+    // Add necessary JavaScript and CSS for the Homepage.
+    drupal_add_js(drupal_get_path('module', 'homepage') . '/javascript/script.js');
+    drupal_add_css(drupal_get_path('module', 'homepage') . '/css/styles.css');
+    drupal_set_title('Fluke Networks');
+
+    // Fetch the current user's region/language.
+    /*
+    if (module_exists('devel')) {
+      dpm('Calling fnet_helper_site_region from the homepage_preprocess_page function.');
+    }
+    */
+    $siteReg = module_invoke('fnet_helper', 'site_region'); // This is getting set in the fnet_helper module.
+    $regLang = $siteReg["regLang"];
+
+    // Get the Node ID assigned to the default homepage in the Admin Site Information page.
+    $default_node = $variables['node'];
+
+    // Get all the selected language override nodes associated with the default node thru the node reference field.
+    $language_override_field_values = $default_node->field_home13_langreg;
+
+    // Create a variable to hold the language override node id that is
+    // associated with the default node AND matches the user's reglang.
+    $qualified_language_override_node = null;
+
+    // Database query
+    // Old
+    /*
+    $query = new EntityFieldQuery();
+    $query->entityCondition('entity_type', 'node')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_home13lng_lng', 'value', $regLang , 'STARTS_WITH')
+      ->range(0,1) ;
+
+    $result = $query->execute();
+    */
+
+    // Faster, and returns just the available Language Override NIDs for a given language.
+    $query = "SELECT node.nid FROM node node
+      JOIN field_data_field_home13lng_lng fdfh ON fdfh.entity_id = node.nid
+      WHERE node.status = 1
+      AND fdfh.field_home13lng_lng_value LIKE :reglang LIMIT 1";
+    $result = db_query($query, array(':reglang' => db_like($regLang) . '%'))->fetchField();
+
+    if ($result) {
+      $qualified_language_override_node = node_load($result);
+    }
+
+    // This is bad
+    /* TODO: Test above and remove below if successful
+    if ($result['node']) {
+      foreach ( $result['node'] as $key => $value)  {
+        $qualified_language_override_node = node_load ( $key );
+        break;
+      }
+    }
+    */
+
+    // Debugging
+    /*
+    if (module_exists('devel')) {
+      dpm($default_node);
+      dpm('RegLang: ' . $regLang); // Not from JS.
+      dpm($siteReg);
+      dpm($language_override_field_values);
+      dpm($result);
+      dpm($qualified_language_override_node);
+    }
+    */
+
+    // Perform language override node field substitutions if necessary.
+    if (!is_null($qualified_language_override_node)) {
+
+      // Fetch override banner content.
+      $home13lng_banners = fnet_common_get_field_values('homepage2013language', $qualified_language_override_node, 'field_home13lng_banner_html') ;
+      if ( ($home13lng_banners) && ( count($home13lng_banners) > 0 ) ) {
+        $default_node->field_home13_banner_html = $qualified_language_override_node->field_home13lng_banner_html;
+        $regLang_cookie = (isset($_COOKIE["regLang"])) ? $_COOKIE['regLang']: 'No cookie';
+        $log_variables = array(
+          '%default' => $default_node->nid,
+          '%override' => $qualified_language_override_node->nid,
+          '%language' => $regLang,
+          '%cookie' => $regLang_cookie,
+        );
+
+        $log_message = '';
+        if (array_key_exists('%default', $log_variables)) {
+          $log_message .= 'Default Node: %default';
+        }
+        if (array_key_exists('%override', $log_variables)) {
+          $log_message .= ' - Override Node: %override ';
+        }
+        if (array_key_exists('%language', $log_variables)) {
+          $log_message .= ' - Language: %language';
+        }
+        if (array_key_exists('%cookie', $log_variables)) {
+          $log_message .= ' - Cookie: %cookie';
+        }
+        if (array_key_exists('serverName', $siteReg)) {
+          $log_variables['%servername'] = $siteReg['serverName'];
+          $log_message .= ' - Server Name: %servername';
+        }
+        // watchdog('Homepage', $log_message, $log_variables);
+      }
+
+      // Fetch override expertise topic content.
+      $home13lng_exptp = fnet_common_get_field_values('homepage2013language', $qualified_language_override_node, 'field_home13lng_exptpc') ;
+      if ( ($home13lng_exptp) && ( count($home13lng_exptp) > 0 ) ) {
+            $default_node->field_home13_exptpc = $qualified_language_override_node->field_home13lng_exptpc;
+      }
+
+      // Fetch override expertise role content.
+      $home13lng_exprle = fnet_common_get_field_values('homepage2013language', $qualified_language_override_node, 'field_home13lng_exprle');
+      if ( ($home13lng_exprle) && ( count($home13lng_exprle) > 0 ) ) {
+        $default_node->field_home13_exprle = $qualified_language_override_node->field_home13lng_exprle;
+      }
+
+      // Fetch override expertise industry content.
+      $home13lng_expind = fnet_common_get_field_values('homepage2013language', $qualified_language_override_node, 'field_home13lng_expind');
+      if (($home13lng_expind) && (count($home13lng_expind) > 0)) {
+        $default_node->field_home13_expind = $qualified_language_override_node->field_home13lng_expind;
+      }
+
+      // Fetch override industry desc #1 content.
+      $home13lng_ind_desc_1 = fnet_common_get_field_values('homepage2013language', $qualified_language_override_node, 'field_home13lng_ind_desc_1') ;
+      if ( ($home13lng_ind_desc_1) && ( count($home13lng_ind_desc_1) > 0 ) ) {
+            $default_node->field_home13_ind_desc_1 = $qualified_language_override_node->field_home13lng_ind_desc_1;
+      }
+
+      // Fetch override industry desc #2 content.
+      $home13lng_ind_desc_2 = fnet_common_get_field_values('homepage2013language', $qualified_language_override_node, 'field_home13lng_ind_desc_2') ;
+      if ( ($home13lng_ind_desc_2) && ( count($home13lng_ind_desc_2) > 0 ) ) {
+            $default_node->field_home13_ind_desc_2 = $qualified_language_override_node->field_home13lng_ind_desc_2;
+      }
+
+      // Fetch override industry desc #3 content.
+      $home13lng_ind_desc_3 = fnet_common_get_field_values('homepage2013language', $qualified_language_override_node, 'field_home13lng_ind_desc_3') ;
+      if ( ($home13lng_ind_desc_3) && ( count($home13lng_ind_desc_3) > 0 ) ) {
+            $default_node->field_home13_ind_desc_3 = $qualified_language_override_node->field_home13lng_ind_desc_3;
+      }
+
+      // Fetch override ad content.
+      $home13lng_ads = fnet_common_get_field_values('homepage2013language', $qualified_language_override_node, 'field_home13lng_ads') ;
+      if ( ($home13lng_ads) && ( count($home13lng_ads) > 0 ) ) {
+            $default_node->field_home13_ads = $qualified_language_override_node->field_home13lng_ads;
+      }
+
+      shuffle($default_node->field_home13_ads[LANGUAGE_NONE]);
+
+    }
+
+  }
+}
+
+/**
+ * Implements hook_preprocess_node().
+ *
+ * @param $variables
+ */
+function homepage_preprocess_node(&$variables) {
+
+  if ($variables['node']->type == 'homepage2013') {
+
+    // Provide additional data to the tpl file.
+
+    $familyList = views_get_view('industry_family');
+    $familyList->set_items_per_page(0);
+    $familyList->set_arguments(array(6)); // Datacom Cabling
+    $familyList->set_display('page_1');
+    $familyList->execute();
+    $datacom_cabling_families = $familyList->result;
+
+    $familyList = views_get_view('industry_family');
+    $familyList->set_items_per_page(0);
+    $familyList->set_arguments(array(7)); // IT Consulting
+    $familyList->set_display('page_1');
+    $familyList->execute();
+    $it_networking_families = $familyList->result;
+
+    $familyList = views_get_view('industry_family');
+    $familyList->set_items_per_page(0);
+    $familyList->set_arguments(array(8)); // Telecom
+    $familyList->set_display('page_1');
+    $familyList->execute();
+    $telecom_families = $familyList->result;
+
+    $variables['datacom_cabling_families'] = $datacom_cabling_families;
+    $variables['it_networking_families'] = $it_networking_families;
+    $variables['telecom_families'] = $telecom_families;
+
+  }
+
+}

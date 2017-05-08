@@ -1,0 +1,623 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Module to act as a REST server
+ *
+ */
+
+/**
+ * Implementation of hook_menu
+ *
+ * @return array
+ */
+function fnet_rest_service_menu() {
+  $items = array();
+  $items['rest'] = array(
+    'title' => 'Rest Server',
+    'description' => 'Rest Server FNET data',
+    'page callback' => 'fnet_rest_service_server',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/fnet/fnet_rest_service'] = array(
+    'title' => 'FNET REST Service',
+    'description' => 'Settings for fnet_rest_service.module',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fnet_rest_service_admin_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'fnet_rest_service.admin.inc',
+  );
+
+  if (strtolower($_SERVER['HTTP_HOST']) != 'www.flukenetworks.com') {
+    $items['admin/fnet/fnet_rest_service/settings'] = array(
+      'title' => 'Settings',
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => -1,
+    );
+    $items['admin/fnet/fnet_rest_service/test'] = array(
+      'title' => 'REST Service test',
+      'description' => 'Test harness for fnet_rest_service.module',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('fnet_rest_service_test_form'),
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_LOCAL_TASK,
+      'file' => 'fnet_rest_service.test.inc',
+    );
+  }
+  return $items;
+}
+
+/**
+ * Simple rest server
+ */
+function fnet_rest_service_server() {
+  $server = new FnetRestServer();
+  $data = new stdClass();
+  if ($server->authenticate()) {
+    $data = $server->execute();
+  }
+
+  if (($data->code > 0) && ($data->code != 200)) {
+    header("HTTP/1.0 $data->code $data->message");
+  }
+
+  if ($data->data) {
+    header('Content-Type: application/json; charset=utf-8');
+    print json_encode($data->data);
+  }
+
+  exit;
+}
+
+class FnetRestServer {
+  public $resource;
+  public $verb;
+  public $element;
+  public $parameters;
+  public $controller;
+
+  public function __construct() {
+    $this->verb = strtolower($_SERVER['REQUEST_METHOD']);
+    $uri_parts = arg();
+    //shift to get rid of 'rest'
+    array_shift($uri_parts);
+    $this->resource = array_shift($uri_parts);
+    $this->element = array_shift($uri_parts);
+    // first of all, pull the GET vars
+    if (isset($_SERVER['QUERY_STRING'])) {
+      parse_str($_SERVER['QUERY_STRING'], $this->parameters);
+      unset($this->parameters['q']);
+    }
+    if (($this->verb == 'post') || ($this->verb == 'put')) {
+      // now how about PUT/POST bodies? These override what we got from GET
+      $body = file_get_contents('php://input');
+      $content_type = FALSE;
+      $parameters = array();
+      if (isset($_SERVER['CONTENT_TYPE'])) {
+        $content_type = $_SERVER['CONTENT_TYPE'];
+      }
+      switch ($content_type) {
+        case 'application/json':
+          $body_params = json_decode($body);
+          if ($body_params) {
+            foreach ($body_params as $param_name => $param_value) {
+              $parameters[$param_name] = $param_value;
+            }
+          }
+          $this->format = 'json';
+          break;
+        case 'application/x-www-form-urlencoded':
+          parse_str($body, $post_vars);
+          foreach ($post_vars as $field => $value) {
+            $parameters[$field] = $value;
+
+          }
+          $this->format = 'html';
+          break;
+        default:
+          // we could parse other supported formats here
+          break;
+      }
+      $this->parameters = array_merge($this->parameters, $parameters);
+    }
+    $controller_name = ucfirst($this->resource) . 'Controller';
+    if (class_exists($controller_name)) {
+      $this->controller = new $controller_name;
+    }
+    else {
+      $this->controller = new ResourceController();
+    }
+
+  }
+
+  public function authenticate() {
+    if (!$this->controller->authenticate($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
+      header('WWW-Authenticate: Basic realm="FnetRestServer"');
+      header('HTTP/1.0 401 Unauthorized');
+      echo '<p>You must authenticate to use this service.</p>';
+      exit;
+    }
+    else {
+      return TRUE;
+    }
+  }
+
+  public function execute() {
+    $controller = $this->controller;
+    switch ($this->verb) {
+      case 'get':
+        $data = $controller->get($this->element, $this->parameters);
+        break;
+      case 'put':
+        $data = $controller->put($this->element, $this->parameters);
+        break;
+      case 'post':
+        $data = $controller->post($this->parameters);
+        break;
+      case 'delete':
+        $data = $controller->delete($this->element, $this->parameters);
+        break;
+      default:
+        $data = $controller->not_implemented();
+        break;
+    }
+    return $data;
+  }
+}
+
+class UsersController extends ResourceController {
+  const NAME = 'users';
+
+  public function get($element, $parameters) {
+    if ((isset($element)) && (is_numeric($element))) {
+      $account = user_load($element);
+    }
+    if ((isset($parameters['email'])) && (valid_email_address($parameters['email']))) {
+      $account = array_shift(user_load_multiple(array(), array('mail' => $parameters['email'])));
+      $bedrock_user = fnet_bedrock_get_user($parameters['email']);
+    }
+    $data = new stdClass();
+    $data->code = 200;
+    if ($account) {
+      $data->data = fnet_bedrock_make_bedrock_user($account->mail, '');
+      $data->data->uid = $account->uid;
+      $data->data->id = $bedrock_user->id;
+      return $data;
+    }
+    elseif ($bedrock_user->id) {
+      $data->data = $bedrock_user;
+      return $data;
+    }
+    else {
+      return $this->error_return(404, 'Not found', ResourceController::ERROR_FNET_USER_NOT_FOUND, 'User not found');
+    }
+  }
+
+  public function put($element, $parameters) {
+    $data = new stdClass();
+    $user = $parameters['user'];
+    if (!valid_email_address($user->email)) {
+      return $this->error_return(400, 'Bad Request', ResourceController::ERROR_DATA_INVALID, 'Invalid email.');
+    }
+    //get the fnet_user
+    $query = db_select('users', 'u')
+      ->fields('u', array('uid'))
+      ->condition('mail', $user->email);
+    $result = $query->execute();
+    if ($result) {
+      $fnet_user = $result->fetchField();
+      if ($fnet_user) {
+        $fnet_user_exists = TRUE;
+      }
+      else {
+        $fnet_user_exists = FALSE;
+      }
+    }
+    else {
+      $fnet_user = FALSE;
+      $fnet_user_exists = FALSE;
+    }
+    $bedrock_user = fnet_bedrock_get_user($user->email);
+    if ($bedrock_user->id) {
+      unset($user->id);
+      $bedrock_user_exists = TRUE;
+      $id = $bedrock_user->id;
+      $bedrock_user = new stdClass();
+      $bedrock_user->id = $id;
+    }
+    else {
+      $bedrock_user_exists = FALSE;
+    }
+    if ((!$fnet_user_exists) && (!$bedrock_user_exists)) {
+      $data->code = 404;
+      $data->message = 'Not Found';
+      return $data;
+    }
+    foreach ($user as $key => $value) {
+      $bedrock_user->$key = $value;
+    }
+    if ($bedrock_user_exists) {
+      $result = $this->update_bedrock_user($bedrock_user);
+      if ($result->code == 200) {
+        $bedrock_user = new fnet_bedrock_user(json_decode($result->data));
+        $bedrock_user_update_succeeded = TRUE;
+      }
+      else {
+        fnet_bedrock_log_failure($result, $data);
+        $bedrock_user_update_succeeded = FALSE;
+      }
+    }
+    else {
+      if (!empty($user->password) && !empty($user->email)) {
+        $bedrock_user = fnet_bedrock_make_bedrock_user($user->email, $user->password);
+        foreach ($user as $key => $value) {
+          $bedrock_user->$key = $value;
+        }
+      }
+      $result = $this->insert_bedrock_user($bedrock_user);
+      if ($result->code == 201) {
+        $bedrock_user_update_succeeded = TRUE;
+        $bedrock_user = new fnet_bedrock_user(json_decode($result->data));
+      }
+      else {
+        fnet_bedrock_log_failure($result, $data);
+        $bedrock_user_update_succeeded = FALSE;
+      }
+    }
+    unset($bedrock_user->__v);
+    unset($bedrock_user->deleted);
+    unset($bedrock_user->base_user);
+    unset($bedrock_user->groups);
+    unset($bedrock_user->group_memberships);
+    unset($bedrock_user->organization);
+    unset($bedrock_user->organizationsHref);
+    unset($bedrock_user->href);
+    unset($bedrock_user->remember_token);
+    if ($bedrock_user_update_succeeded) {
+      if (!$fnet_user_exists) {
+        $account = fnet_bedrock_create_drupal_user($bedrock_user);
+        fnet_bedrock_create_user_profile($account->uid, $bedrock_user);
+        $bedrock_user->uid = $account->uid;
+      }
+      else {
+        $bedrock_user->uid = $fnet_user;
+        //update fnet user profile with user data
+        fnet_bedrock_create_user_profile($fnet_user, $bedrock_user);
+      }
+      $data->code = 200;
+      $data->data = $bedrock_user;
+      return $data;
+    }
+    else {
+      $data->code = $result->code;
+      $data->message = $result->status_message;
+      $data->data = json_decode($result->data);
+      return $data;
+    }
+  }
+
+  public function post($parameters) {
+    $data = new stdClass();
+    $user = $parameters['user'];
+    if ($user->id || $user->uid) {
+      $data = $this->error_return(400, 'Bad Request', ResourceController::ERROR_DATA_INVALID, 'User json cannot contain id or uid elements');
+      return $data;
+    }
+    if ((isset($user->email)) && (valid_email_address($user->email))) {
+      $account = array_shift(user_load_multiple(array(), array('mail' => $user->email)));
+      $bedrock_user = fnet_bedrock_get_user($user->email);
+      if ($account && $bedrock_user->id) {
+        return $this->error_return(409, 'Duplicate entry', ResourceController::ERROR_DUPLICATE, 'Duplicate email in FNET and Bedrock');
+      }
+      if ($account) {
+        return $this->error_return(409, 'Duplicate entry', ResourceController::ERROR_DUPLICATE, 'Duplicate email in FNET');
+      }
+      if ($bedrock_user->id) {
+        return $this->error_return(409, 'Duplicate entry', ResourceController::ERROR_DUPLICATE, 'Duplicate email in Bedrock');
+      }
+    }
+    else {
+      return $this->error_return(400, 'Bad Request', ResourceController::ERROR_DATA_INVALID, 'Invalid email.');
+    }
+    $result = $this->insert_bedrock_user($user);
+    if ($result->code == 201) {
+      $bedrock_user = new fnet_bedrock_user(json_decode($result->data));
+      $uid = $this->insert_fnet_user($bedrock_user);
+      if ($uid) {
+        $bedrock_user->uid = $uid;
+        $data->data = $bedrock_user;
+        $data->code = 201;
+        return $data;
+      }
+      else {
+        return $this->error_return(500, 'Internal Server Error', ResourceController::ERROR_FNET_USER_SAVE_FAILED, 'FNET user_save failed.');
+      }
+    }
+    else {
+      fnet_bedrock_log_failure($result, $data);
+      $data->code = $result->code;
+      $data->message = $result->status_message;
+      $data->data = json_decode($result->data);
+      return $data;
+    }
+
+  }
+
+  public function authenticate($key, $secret) {
+    $stored_key = variable_get('fnet_rest_service_key', 'steve');
+    $stored_secret = variable_get('fnet_rest_service_secret', 'secret');
+    if ($key != $stored_key || $secret != $stored_secret) {
+      return FALSE;
+    }
+    else {
+      return TRUE;
+    }
+  }
+
+  private function update_bedrock_user($bedrock_user) {
+    $rest_method = 'users/' . $bedrock_user->id;
+    $update_user = new stdClass();
+    foreach ($bedrock_user as $key => $value) {
+      $update_user->$key = $value;
+    }
+    $user_data = new stdClass();
+    fnet_bedrock_check_field_lengths($update_user);
+    $user_data->user = $update_user;
+    $data = json_encode($user_data);
+    $result = fnet_bedrock_rest('PUT', $rest_method, $data);
+    return $result;
+  }
+
+  private function insert_bedrock_user($bedrock_user) {
+    $resource = 'users';
+    $user_data = new stdClass();
+    fnet_bedrock_check_field_lengths($bedrock_user);
+    $user_data->user = $bedrock_user;
+    $data = json_encode($user_data);
+    $result = fnet_bedrock_rest('POST', $resource, $data);
+    return $result;
+  }
+
+  private function insert_fnet_user($bedrock_user) {
+    $account = fnet_bedrock_create_drupal_user($bedrock_user);
+    if ($account) {
+      fnet_bedrock_create_user_profile($account->uid, $bedrock_user);
+      return $account->uid;
+    }
+    else {
+      return FALSE;
+    }
+  }
+}
+
+class LoginController extends ResourceController {
+  const NAME = 'login';
+
+  public function post($parameters) {
+    $data = new stdClass();
+    if (strtolower($parameters['type']) != 'basic') {
+      return $this->error_return(400, 'Bad Request', ResourceController::ERROR_DATA_INVALID, 'Invalid type.');
+    }
+    list($email, $password) = explode(':', base64_decode($parameters['value']));
+    if (!valid_email_address($email)) {
+      return $this->error_return(400, 'Bad Request', ResourceController::ERROR_DATA_INVALID, 'Invalid email.');
+    }
+    // see if the user exists
+    $uid = db_query("SELECT uid FROM {users} WHERE mail = :mail", array(':mail' => $email))->fetchField();
+    // if we have a user try to authenticate in bedrock
+    if ($uid) {
+      $result = fnet_bedrock_rest('POST', 'login', json_encode($parameters));
+      switch ($result->code) {
+        case 200:
+          $bedrock_user = new fnet_bedrock_user(json_decode($result->data));
+          $bedrock_user->uid = $uid;
+          // get rid of extra fields from bedrock api
+          unset($bedrock_user->__v);
+          unset($bedrock_user->deleted);
+          unset($bedrock_user->base_user);
+          unset($bedrock_user->groups);
+          unset($bedrock_user->group_memberships);
+          unset($bedrock_user->organization);
+          unset($bedrock_user->organizationsHref);
+          unset($bedrock_user->href);
+          unset($bedrock_user->remember_token);
+          $data->code = 200;
+          $data->data = $bedrock_user;
+          break;
+        //not found
+        case 400:
+          $data->code = 400;
+          $data->message = 'Bad Request';
+          if (isset($result->data)) {
+            $data->data = json_decode($result->data);
+          }
+          break;
+        //bad password
+        case 401:
+          $data->code = 401;
+          $data->message = 'Unauthorized';
+          if (isset($result->data)) {
+            $data->data = json_decode($result->data);
+          }
+          break;
+        //account is disabled or locked out
+        case 403:
+          $data->code = 403;
+          $data->message = 'Forbidden';
+          break;
+        case 404:
+          $data->code = 404;
+          $data->message = 'Not found';
+          break;
+        default:
+          $data->code = $result->code;
+          $data->message = 'Bad Request';
+          $data->data = json_decode($result->data);
+          break;
+      }
+    }
+    else {
+      $data = $this->error_return(404, 'Not Found', ResourceController::ERROR_FNET_USER_NOT_FOUND, 'fnet user not found');
+    }
+    return $data;
+  }
+
+  public function authenticate($key, $secret) {
+    $stored_key = variable_get('fnet_rest_service_key', '');
+    $stored_secret = variable_get('fnet_rest_service_secret', '');
+    if ($key != $stored_key || $secret != $stored_secret) {
+      return FALSE;
+    }
+    else {
+      return TRUE;
+    }
+  }
+}
+
+class AddressesController extends ResourceController {
+  const NAME = 'addresses';
+
+  public function get($element, $parameters) {
+    $data = new stdClass();
+    if (!empty($element) && is_numeric($element)) {
+      $result = db_select('user_address', 'a')
+        ->fields('a')
+        ->condition('aid', $element)
+        ->execute();
+    }
+    elseif (isset($parameters['uid']) && is_numeric($parameters['uid'])) {
+      $uid = $parameters['uid'];
+      $address_type = (isset($parameters['address_type'])) ? $parameters['address_type'] : 'billing';
+      $result = db_select('user_address', 'a')
+        ->fields('a')
+        ->condition('uid', $uid)
+        ->condition('address_type', $address_type)
+        ->execute();
+    }
+    else {
+      return $this->error_return(400, 'Bad Request', ResourceController::ERROR_MISSING_DATA, 'Either an address id or a user id are required.');
+    }
+    if ($result) {
+      foreach ($result as $address) {
+        $data->code = 200;
+        $data->data = $address;
+      };
+      return $data;
+    }
+    else {
+      return $this->error_return(404, 'Not Found', ResourceController::ERROR_USER_ADDRESS_NOT_FOUND, 'address not found');
+    }
+  }
+
+  public function post($parameters) {
+    $data = new stdClass();
+    $address = $parameters['address'];
+    $address->created = $address->modified = REQUEST_TIME;
+    if (!db_query('SELECT uid FROM {users} WHERE uid = :uid', array(':uid' => $address->uid))->fetchField()) {
+      return $this->error_return(409, 'Conflict', ResourceController::ERROR_FNET_USER_NOT_FOUND, "user not found for uid $address->uid");
+    }
+    $result = drupal_write_record('user_address', $address);
+    if ($result == SAVED_NEW) {
+      $data->code = 201;
+      $data->data = $address;
+      return $data;
+    }
+    else {
+      return $this->error_return(400, 'Bad Request', ResourceController::ERROR_USER_ADDRESS_SAVE_FAILED, 'user_address save failed');
+    }
+  }
+
+  public function put($element, $parameters) {
+    $data = new stdClass();
+    $address = $parameters['address'];
+    if ($element) {
+      $aid = $element;
+    }
+    elseif ($address->aid) {
+      $aid = $address->aid;
+    }
+    else {
+      return $this->error_return(400, 'Bad Request', ResourceController::ERROR_MISSING_DATA, 'address id (aid) is required.');
+    }
+    $address->aid = $aid;
+    $address->modified = REQUEST_TIME;
+    $result = drupal_write_record('user_address', $address, 'aid');
+    if ($result == SAVED_UPDATED) {
+      $result = db_query("SELECT * FROM {user_address} WHERE aid = :aid", array(':aid' => $aid));
+      foreach ($result as $address) {
+        $data->code = 200;
+        $data->data = $address;
+      }
+      return $data;
+    }
+    else {
+      return $this->error_return(400, 'Bad Request', ResourceController::ERROR_USER_ADDRESS_SAVE_FAILED, 'user_address save failed.');
+    }
+  }
+
+  public function authenticate($key, $secret) {
+    $stored_key = variable_get('fnet_rest_service_key', '');
+    $stored_secret = variable_get('fnet_rest_service_secret', '');
+    if ($key != $stored_key || $secret != $stored_secret) {
+      return FALSE;
+    }
+    else {
+      return TRUE;
+    }
+  }
+}
+
+class ResourceController {
+
+  const ERROR_INVALID_ID = 1000; //Invalid resource id
+  const ERROR_MISSING_DATA = 1001; //Missing required data
+  const ERROR_DATA_INVALID = 1002; //Invalid Data
+  const ERROR_NOT_AUTHORIZED = 1003; //Not authorized
+  const ERROR_DUPLICATE = 1004; //Duplicate entry
+  const ERROR_OUT_OF_DATE = 1005; //tried to update resource with out of date data. (stale cache)
+  const ERROR_NOT_IMPLEMENTED = 1006;
+  const ERROR_BEDROCK_UPDATE_FAILED = 1007;
+  const ERROR_FNET_USER_SAVE_FAILED = 1008;
+  const ERROR_FNET_USER_NOT_FOUND = 1009;
+  const ERROR_USER_ADDRESS_NOT_FOUND = 1010;
+  const ERROR_USER_ADDRESS_SAVE_FAILED = 1011;
+
+  public function get($element, $parameters) {
+    return $this->not_implemented();
+  }
+
+  public function put($element, $parameters) {
+    return $this->not_implemented();
+  }
+
+  public function post($parameters) {
+    return $this->not_implemented();
+  }
+
+  public function delete($element, $parameters) {
+    return $this->not_implemented();
+  }
+
+  public function authenticate($key, $secret) {
+    return TRUE;
+  }
+
+  public function not_implemented() {
+    return $this->error_return(501, 'Not implemented', ResourceController::ERROR_NOT_IMPLEMENTED, 'Method not implemented for this resource.');
+  }
+
+  protected function error_return($code, $message, $error_code, $error_message) {
+    $data = new stdClass();
+    $data->code = $code;
+    $data->message = $message;
+    $data->data = new stdClass();
+    $data->data->error = new stdClass();
+    $data->data->error->code = $error_code;
+    $data->data->error->message = $error_message;
+    return $data;
+  }
+}
+

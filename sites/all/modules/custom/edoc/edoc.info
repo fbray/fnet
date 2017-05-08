@@ -1,0 +1,10 @@
+; $Id$
+name = "eDoc"
+description = "supporting code for eDoc nodes such as whitepapers, brochures, etc..."
+project = "edoc"
+package = "Fluke Networks"
+core = 7.x
+version = "7.x-1.0"
+;
+dependencies[] = "doc_links"
+

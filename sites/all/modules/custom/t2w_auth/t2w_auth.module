@@ -1,0 +1,100 @@
+<?php
+/**
+ * $Id$
+ *
+ * @file
+ *  Provide a user authentication service for Tool To Web
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function t2w_auth_menu() {
+  $items['services/json'] = array(
+    'title' => 'T2W Auth',
+    'page callback' => 't2w_auth_service',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+
+function t2w_auth_service() {
+  $body = file_get_contents('php://input');
+  $content_type = FALSE;
+  $parameters = array();
+  if (isset($_SERVER['CONTENT_TYPE'])) {
+    $content_type = $_SERVER['CONTENT_TYPE'];
+  }
+  switch ($content_type) {
+    case 'application/json':
+      $body_params = json_decode($body);
+      if ($body_params) {
+        foreach ($body_params as $param_name => $param_value) {
+          $parameters[$param_name] = $param_value;
+        }
+      }
+      break;
+    case 'application/x-www-form-urlencoded':
+      parse_str($body, $post_vars);
+      foreach ($post_vars as $field => $value) {
+        $parameters[$field] = $value;
+
+      }
+      break;
+    default:
+      // we could parse other supported formats here
+      break;
+  }
+  if ($parameters['method'] == 'authentication_by_email_service.user_authentication') {
+    $data = t2w_auth_authenticate($parameters['user_email'], $parameters['user_password']);
+    $response = array();
+    $response['#error'] = FALSE;
+    $response['#data'] = $data;
+  }
+  else {
+    $response = array();
+    $response['#error'] = TRUE;
+    $response['#data'] = 'Invalid method. ';
+  }
+  print json_encode($response);
+  exit;
+}
+
+
+function t2w_auth_authenticate($user_email, $password) {
+  if (fnet_bedrock_auth_user_authenticate($user_email, $password)) {
+    $user = user_load_by_mail($user_email);
+  }
+  else {
+    // User Authentication
+    $username = db_query("SELECT name FROM {users} WHERE mail = :mail", array(':mail' => $user_email))->fetchField();
+    $uid = user_authenticate($username, $password);
+    $user = user_load($uid);
+  }
+
+  if ($user->uid) {
+    if (!empty($user->field_user_onyx_id[LANGUAGE_NONE][0]['value'])) {
+      $response = new stdClass();
+      $response->is_error = FALSE;
+      $response->code = $user->field_user_onyx_id[LANGUAGE_NONE][0]['value'];
+      $response->message = t('Successful');
+      return $response;
+    }
+    else {
+      $response = new stdClass();
+      $response->is_error = FALSE;
+      $response->code = 1;
+      $response->message = t('Onyx id is not available');
+      return $response;
+    }
+  }
+  $response = new stdClass();
+  $response->is_error = TRUE;
+  $response->code = -1;
+  $response->message = t('Login failed.');
+  return $response;
+}
+

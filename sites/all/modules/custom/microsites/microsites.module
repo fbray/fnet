@@ -1,0 +1,134 @@
+<?php
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function microsites_views_pre_view(&$view, &$display_id, &$args) {
+
+  if (isset($view->name) && $view->name == 'microsite_frontpages') {
+    // Fetch regLang value to pass as argument to 'microsite_frontpages' view
+    $siteReg = module_invoke('fnet_helper', 'site_region'); // Return the user's site region/language info.
+    $region = $siteReg["regLang"];
+    if ($region == "") {
+      $region = "en-us";
+    }
+    $args = array($region);
+  }
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function microsites_node_view($node, $view_mode = 'full') {
+//  function microsites_node_load($node, $types) {
+  if ($node->type == 'microsite_page') {
+    // Fetch the current user's region/language.
+    $siteReg = module_invoke('fnet_helper', 'site_region');
+    $regLang = $siteReg["regLang"];
+
+    // See if any language override nodes are selected for the current node.
+    $validLangNode = array();
+    if (isset($node->field_ms_page_language_override[LANGUAGE_NONE]) && is_array($node->field_ms_page_language_override[LANGUAGE_NONE])) {
+      foreach ($node->field_ms_page_language_override[LANGUAGE_NONE] as $key => $val) {
+        foreach ($val as $k => $v) {
+          if ($k == "nid") {
+            $validLangNode[$v] = 1;
+          }
+        }
+      }
+    }
+
+    if (count($validLangNode) > 0) {
+      $langNodeId = "";
+      $pageLang = views_get_view_result('admin_ms_page_language');
+
+      // Determine if any of the active language override nodes are
+      // appropriate for the user's current region/language.
+      if (count($pageLang) > 0) {
+        foreach ($pageLang as $lang) {
+          if ($validLangNode[$lang->nid] &&
+            substr($lang->_field_data['nid']['entity']->field_ms_page_language_language[LANGUAGE_NONE][0]['value'], 0, 5) == $regLang) {  //$lang->node_data_field_ms_page_language_ms_page_field_ms_page_language_language_value
+            $langNodeId = $lang->nid;
+            break;
+          }
+        }
+
+        // If a language override node is found then perform the necessary field substitutions.
+        if (!empty($langNodeId)) {
+          $langNode = node_load($langNodeId);
+          // Substitute "Intro Content" field.
+          if ($langNode->field_ms_page_language_intro[LANGUAGE_NONE][0]['value']) {
+            $node->field_ms_page_intro_content[LANGUAGE_NONE][0]['value'] = "<div class='OneLinkNoTx'>" . $langNode->field_ms_page_language_intro[LANGUAGE_NONE][0]['value'] . "</div>";
+          }
+          // Substitute "Background Image" and "Background Color" fields.
+          if ($langNode->field_ms_page_language_bg_image[LANGUAGE_NONE][0]['filepath']) {
+            $node->field_ms_page_bg_image[LANGUAGE_NONE][0]['filepath'] = $langNode->field_ms_page_language_bg_image[LANGUAGE_NONE][0]['filepath'];
+          }
+          if ($langNode->field_ms_page_language_bg_color[LANGUAGE_NONE][0]['value']) {
+            $node->field_ms_page_bg_color[LANGUAGE_NONE][0]['value'] = $langNode->field_ms_page_language_bg_color[LANGUAGE_NONE][0]['value'];
+          }
+          // Substitute "Body" field.
+          if ($langNode->body[LANGUAGE_NONE][0]['value']) {
+            $node->content['body'][0]['#markup'] = "<div class='OneLinkNoTx'>" . $langNode->body[LANGUAGE_NONE][0]['value'] . "</div>";
+          }
+        }
+      }
+    }
+  }
+  // If node type is microsite_story then see if there is a regional override.
+  else if ($node->type == 'microsite_story') {
+    // Fetch the current user's region/language.
+    $siteReg = module_invoke('fnet_helper', 'site_region');
+    $regLang = $siteReg["regLang"];
+
+    // See if any language override nodes are selected for the current node.
+    $validLangNode = array();
+    if (isset($node->field_ms_story_language_override[LANGUAGE_NONE]) && is_array($node->field_ms_story_language_override[LANGUAGE_NONE])) {
+      foreach ($node->field_ms_story_language_override[LANGUAGE_NONE] as $key => $val) {
+        foreach ($val as $k => $v) {
+          if ($k == "nid") {
+            $validLangNode[$v] = 1;
+          }
+        }
+      }
+    }
+
+    if (count($validLangNode) > 0) {
+      $langNodeId = "";
+      $storyLang = views_get_view_result('admin_ms_story_language', 'Defaults', $node->nid);
+
+      // Determine if any of the active language override nodes are
+      // appropriate for the user's current region/language.
+      if (count($storyLang) > 0) {
+        foreach ($storyLang as $lang) {
+          if ($validLangNode[$lang->nid] &&
+            substr($lang->_field_data['nid']['entity']->field_ms_story_lang_language[LANGUAGE_NONE][0]['value'], 0, 5) == $regLang) { // node_data_field_ms_story_lang_ms_story_field_ms_story_lang_language_value
+            $langNodeId = $lang->nid;
+            break;
+          }
+        }
+
+        // If a language override node is found then perform the necessary field substitutions.
+        if (!empty($langNodeId)) {
+          $langNode = node_load($langNodeId);
+          // Substitute "Display Title" field.
+          if ($langNode->field_ms_story_lang_disp_title[LANGUAGE_NONE][0]['value']) {
+            $node->field_display_title[LANGUAGE_NONE][0]['value'] = "<div class='OneLinkNoTx'>" . $langNode->field_ms_story_lang_disp_title[LANGUAGE_NONE][0]['value'] . "</div>";
+          }
+          // Substitute "Background Image" and "Background Color" fields.
+          if ($langNode->field_ms_story_lang_bg_image[LANGUAGE_NONE][0]['filepath']) {
+            $node->field_ms_story_bg_image[LANGUAGE_NONE][0]['filepath'] = $langNode->field_ms_story_lang_bg_image[LANGUAGE_NONE][0]['filepath'];
+          }
+          if ($langNode->field_ms_story_lang_bg_color[LANGUAGE_NONE][0]['value']) {
+            $node->field_ms_story_bg_color[LANGUAGE_NONE][0]['value'] = $langNode->field_ms_story_lang_bg_color[LANGUAGE_NONE][0]['value'];
+          }
+
+          // Substitute "Body" field.
+          if ($langNode->body[LANGUAGE_NONE][0]['value']) {
+            $node->content['body'][0]['#markup'] = "<div class='OneLinkNoTx'>" . $langNode->body[LANGUAGE_NONE][0]['value'] . "</div>";
+          }
+        }
+      }
+    }
+  }
+}

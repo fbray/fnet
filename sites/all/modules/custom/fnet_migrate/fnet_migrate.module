@@ -1,0 +1,484 @@
+<?php
+// $Id$
+
+
+/**
+ * @file
+ * Base module file for fnet_migrate.  The work is done in .inc files.
+ *
+ */
+
+/**
+ * Implementation of hook_migrate_api
+ * @return array
+ */
+function fnet_migrate_migrate_api() {
+  $api = array(
+    'api' => 2,
+    'groups' => array(
+      'user' => array(
+        'title' => t('User, Roles and Profiles'),
+      ),
+      'content' => array(
+        'title' => t('Nodes'),
+      ),
+      'taxonomy' => array(
+        'title' => t('Taxonomy')
+      ),
+    ),
+  );
+  return $api;
+}
+
+/**
+ * Implements hook_flush_caches().
+ */
+function fnet_migrate_flush_caches() {
+  fnet_migrate_register_migrations();
+}
+
+/**
+ * Register all D6->D7 migrations.
+ */
+function fnet_migrate_register_migrations() {
+
+  $common_arguments = array(
+    'source_connection' => 'drupal6',
+    'source_version' => 6,
+  );
+
+  $role_mappings = array(
+    'administrator' => 'administrator',
+    'ams user' => 'ams user',
+    'author' => 'author',
+    'business owner' => 'business owner',
+    'creative' => 'creative',
+    'developer' => 'developer',
+    'Gold customer' => 'Gold customer',
+    'idoco author' => 'idoco author',
+    'knowledge base author' => 'knowledge base author',
+    'manager' => 'manager',
+    'reviewer' => 'reviewer',
+    'software notifications author' => 'software notifications author',
+    'support agent' => 'support agent',
+    'wtb author' => 'wtb author',
+  );
+
+  $arguments = $common_arguments + array(
+      'description' => t('Migration of roles from Drupal 6'),
+      'machine_name' => 'roles',
+      'group_name' => 'user',
+      'role_mappings' => $role_mappings,
+    );
+
+  Migration::registerMigration('DrupalRole6Migration', $arguments['machine_name'], $arguments);
+
+  // The description and the migration machine name are also required arguments,
+  // which will be unique for each migration you register.
+  $arguments = $common_arguments + array(
+      'description' => t('Migration of users from Drupal 6'),
+      'machine_name' => 'user',
+      'group_name' => 'user',
+    );
+
+  // We just use the migrate_d2d D6 migration class as-is.
+  Migration::registerMigration('DrupalUser6Migration', $arguments['machine_name'], $arguments);
+
+  // For vocabulary migrations, source_vocabulary and destination_vocabulary are
+  // required arguments. Note that in Drupal 6 vocabularies did not have machine
+  // names, so we use the vocabulary ID to uniquely identify them.
+  $vocabulary_arguments = array(
+    array(
+      'description' => 'Product Status terms',
+      'machine_name' => 'product_status',
+      'source_vocabulary' => '1',
+      'destination_vocabulary' => 'product_status',
+    ),
+    array(
+      'description' => 'Product Sub Types terms',
+      'machine_name' => 'product_sub_types',
+      'source_vocabulary' => '2',
+      'destination_vocabulary' => 'product_sub_types',
+    ),
+    array(
+      'description' => 'Distributor Type terms',
+      'machine_name' => 'distributor_type',
+      'source_vocabulary' => '3',
+      'destination_vocabulary' => 'distributor_type',
+    ),
+    array(
+      'description' => 'Distributor Delivery Type terms',
+      'machine_name' => 'distributor_delivery_type',
+      'source_vocabulary' => '4',
+      'destination_vocabulary' => 'distributor_delivery_type',
+    ),
+    array(
+      'description' => 'Promotion Type terms',
+      'machine_name' => 'promotion_type',
+      'source_vocabulary' => '5',
+      'destination_vocabulary' => 'promotion_type',
+    ),
+    array(
+      'description' => 'Product Attributes terms',
+      'machine_name' => 'product_attributes',
+      'source_vocabulary' => '6',
+      'destination_vocabulary' => 'product_attributes',
+    ),
+    array(
+      'description' => 'Image Galleries terms',
+      'machine_name' => 'image_galleries',
+      'source_vocabulary' => '7',
+      'destination_vocabulary' => 'image_galleries',
+    ),
+    array(
+      'description' => 'Expertise Types terms',
+      'machine_name' => 'expertise_types',
+      'source_vocabulary' => '8',
+      'destination_vocabulary' => 'expertise_types',
+    ),
+    array(
+      'description' => 'Event Types terms',
+      'machine_name' => 'event_types',
+      'source_vocabulary' => '10',
+      'destination_vocabulary' => 'event_types',
+    ),
+    array(
+      'description' => 'Promotion product category terms',
+      'machine_name' => 'promotion_product_category',
+      'source_vocabulary' => '11',
+      'destination_vocabulary' => 'promotion_product_category',
+    ),
+    array(
+      'description' => 'Brand terms',
+      'machine_name' => 'brand',
+      'source_vocabulary' => '12',
+      'destination_vocabulary' => 'brand',
+    ),
+    array(
+      'description' => 'eDoc Type terms',
+      'machine_name' => 'edoc_type',
+      'source_vocabulary' => '13',
+      'destination_vocabulary' => 'edoc_type',
+    ),
+    array(
+      'description' => 'Knowledge Base terms',
+      'machine_name' => 'knowledge_base',
+      'source_vocabulary' => '14',
+      'destination_vocabulary' => 'knowledge_base',
+    ),
+    array(
+      'description' => 'Industries terms',
+      'machine_name' => 'industries',
+      'source_vocabulary' => '15',
+      'destination_vocabulary' => 'industries',
+    ),
+    array(
+      'description' => 'Blog Categories terms',
+      'machine_name' => 'blog_categories',
+      'source_vocabulary' => '16',
+      'destination_vocabulary' => 'blog_categories',
+    ),
+  );
+
+  // Again, we're using the migrate_d2d class directly.
+  // The soft dependency says that while we don't have to run the user migration
+  // first, we want to make sure it's listed first so the vocubularies are
+  // listed right ahead of the node migrations.
+  $common_vocabulary_arguments = $common_arguments + array(
+      'class_name' => 'DrupalTerm6Migration',
+      'soft_dependencies' => array('user'),
+      'group_name' => 'taxonomy',
+    );
+  foreach ($vocabulary_arguments as $arguments) {
+    $arguments += $common_vocabulary_arguments;
+    Migration::registerMigration($arguments['class_name'], $arguments['machine_name'], $arguments);
+  }
+
+  $node_arguments = array(
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of asset_gateway nodes from Drupal 6'),
+      'machine_name' => 'asset_gateway',
+      'source_type' => 'asset_gateway',
+      'destination_type' => 'asset_gateway',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of award nodes from Drupal 6'),
+      'machine_name' => 'award',
+      'source_type' => 'award',
+      'destination_type' => 'award',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of blog_article nodes from Drupal 6'),
+      'machine_name' => 'blog_article',
+      'source_type' => 'blog_article',
+      'destination_type' => 'blog_article',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of distributor nodes from Drupal 6'),
+      'machine_name' => 'distributor',
+      'source_type' => 'distributor',
+      'destination_type' => 'distributor',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of edoc nodes from Drupal 6'),
+      'machine_name' => 'edoc',
+      'source_type' => 'edoc',
+      'destination_type' => 'edoc',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of edoclanguage nodes from Drupal 6'),
+      'machine_name' => 'edoclanguage',
+      'source_type' => 'edoclanguage',
+      'destination_type' => 'edoclanguage',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of email_page nodes from Drupal 6'),
+      'machine_name' => 'email_page',
+      'source_type' => 'email_page',
+      'destination_type' => 'email_page',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of event nodes from Drupal 6'),
+      'machine_name' => 'event',
+      'source_type' => 'event',
+      'destination_type' => 'event',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of event_occurrence nodes from Drupal 6'),
+      'machine_name' => 'event_occurrence',
+      'source_type' => 'event_occurrence',
+      'destination_type' => 'event_occurrence',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of expertise nodes from Drupal 6'),
+      'machine_name' => 'expertise',
+      'source_type' => 'expertise',
+      'destination_type' => 'expertise',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of exp_ind nodes from Drupal 6'),
+      'machine_name' => 'exp_ind',
+      'source_type' => 'exp_ind',
+      'destination_type' => 'exp_ind',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of exp_ind_lng nodes from Drupal 6'),
+      'machine_name' => 'exp_ind_lng',
+      'source_type' => 'exp_ind_lng',
+      'destination_type' => 'exp_ind_lng',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of exp_rle nodes from Drupal 6'),
+      'machine_name' => 'exp_rle',
+      'source_type' => 'exp_rle',
+      'destination_type' => 'exp_rle',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of exp_rle_lng nodes from Drupal 6'),
+      'machine_name' => 'exp_rle_lng',
+      'source_type' => 'exp_rle_lng',
+      'destination_type' => 'exp_rle_lng',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of exp_tpc nodes from Drupal 6'),
+      'machine_name' => 'exp_tpc',
+      'source_type' => 'exp_tpc',
+      'destination_type' => 'exp_tpc',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of exp_tpc_lng nodes from Drupal 6'),
+      'machine_name' => 'exp_tpc_lng',
+      'source_type' => 'exp_tpc_lng',
+      'destination_type' => 'exp_tpc_lng',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of family nodes from Drupal 6'),
+      'machine_name' => 'family',
+      'source_type' => 'family',
+      'destination_type' => 'family',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of feature nodes from Drupal 6'),
+      'machine_name' => 'feature',
+      'source_type' => 'feature',
+      'destination_type' => 'feature',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of homepage2013 nodes from Drupal 6'),
+      'machine_name' => 'homepage2013',
+      'source_type' => 'homepage2013',
+      'destination_type' => 'homepage2013',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of homepage2013language nodes from Drupal 6'),
+      'machine_name' => 'homepage2013language',
+      'source_type' => 'homepage2013language',
+      'destination_type' => 'homepage2013language',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of image nodes from Drupal 6'),
+      'machine_name' => 'image',
+      'source_type' => 'image',
+      'destination_type' => 'image',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of industry nodes from Drupal 6'),
+      'machine_name' => 'industry',
+      'source_type' => 'industry',
+      'destination_type' => 'industry',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of industrylanguage nodes from Drupal 6'),
+      'machine_name' => 'industrylanguage',
+      'source_type' => 'industrylanguage',
+      'destination_type' => 'industrylanguage',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of knowledge_base_article nodes from Drupal 6'),
+      'machine_name' => 'knowledge_base_article',
+      'source_type' => 'knowledge_base_article',
+      'destination_type' => 'knowledge_base_article',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of localized_email nodes from Drupal 6'),
+      'machine_name' => 'localized_email',
+      'source_type' => 'localized_email',
+      'destination_type' => 'localized_email',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of marketo_form nodes from Drupal 6'),
+      'machine_name' => 'marketo_form',
+      'source_type' => 'marketo_form',
+      'destination_type' => 'marketo_form',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of page_reg nodes from Drupal 6'),
+      'machine_name' => 'page_reg',
+      'source_type' => 'page_reg',
+      'destination_type' => 'page_reg',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of page_reg_lang nodes from Drupal 6'),
+      'machine_name' => 'page_reg_lang',
+      'source_type' => 'page_reg_lang',
+      'destination_type' => 'page_reg_lang',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of pressrelease nodes from Drupal 6'),
+      'machine_name' => 'pressrelease',
+      'source_type' => 'pressrelease',
+      'destination_type' => 'pressrelease',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of product nodes from Drupal 6'),
+      'machine_name' => 'product',
+      'source_type' => 'product',
+      'destination_type' => 'product',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of productlanguage nodes from Drupal 6'),
+      'machine_name' => 'productlanguage',
+      'source_type' => 'productlanguage',
+      'destination_type' => 'productlanguage',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of productsubtype nodes from Drupal 6'),
+      'machine_name' => 'productsubtype',
+      'source_type' => 'productsubtype',
+      'destination_type' => 'productsubtype',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of product_distributor_group nodes from Drupal 6'),
+      'machine_name' => 'product_distributor_group',
+      'source_type' => 'product_distributor_group',
+      'destination_type' => 'product_distributor_group',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of promotion nodes from Drupal 6'),
+      'machine_name' => 'promotion',
+      'source_type' => 'promotion',
+      'destination_type' => 'promotion',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of promotion_form nodes from Drupal 6'),
+      'machine_name' => 'promotion_form',
+      'source_type' => 'promotion_form',
+      'destination_type' => 'promotion_form',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of promotion_fulfillment nodes from Drupal 6'),
+      'machine_name' => 'promotion_fulfillment',
+      'source_type' => 'promotion_fulfillment',
+      'destination_type' => 'promotion_fulfillment',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of promotion_product nodes from Drupal 6'),
+      'machine_name' => 'promotion_product',
+      'source_type' => 'promotion_product',
+      'destination_type' => 'promotion_product',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of software_notifications nodes from Drupal 6'),
+      'machine_name' => 'software_notifications',
+      'source_type' => 'software_notifications',
+      'destination_type' => 'software_notifications',
+    ),
+    array(
+      'class_name' => 'DrupalNode6Migration',
+      'description' => t('Migration of suite nodes from Drupal 6'),
+      'machine_name' => 'suite',
+      'source_type' => 'suite',
+      'destination_type' => 'suite',
+    ),
+  );
+  // Tell the node migrations where the users are coming from, so they can
+  // set up the dependency and resolve D6->D7 uids.
+  $common_node_arguments = $common_arguments + array(
+      'user_migration' => 'user',
+      'group_name' => 'content',
+    );
+  foreach ($node_arguments as $arguments) {
+    $arguments = array_merge_recursive($arguments, $common_node_arguments);
+    Migration::registerMigration($arguments['class_name'], $arguments['machine_name'], $arguments);
+  }
+
+
+}

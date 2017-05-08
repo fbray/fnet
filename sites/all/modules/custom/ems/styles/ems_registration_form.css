@@ -1,0 +1,35 @@
+/* $Id$*/
+#ems-registration-form {
+    font-size: 12px;
+    color: black
+}
+
+#ems-registration-form #edit-email-wrapper,
+#ems-registration-form #edit-last-name-wrapper,
+#ems-registration-form #edit-job-role-wrapper,
+#ems-registration-form #edit-company-wrapper,
+#ems-registration-form #edit-state-wrapper,
+#ems-registration-form #edit-postal-code-wrapper,
+#ems-registration-form #edit-payment-status-wrapper {
+    float: left;
+    padding-right: 5px;
+    margin-top: 4px;
+    margin-bottom: 4px
+}
+
+#ems-registration-form #edit-first-name-wrapper,
+#ems-registration-form #edit-job-title-wrapper,
+#ems-registration-form #edit-phone-wrapper,
+#ems-registration-form #edit-address-wrapper,
+#ems-registration-form #edit-city-wrapper,
+#ems-registration-form #edit-country-wrapper,
+#ems-registration-form #edit-product-wrapper,
+#ems-registration-form #edit-gold-number-wrapper,
+#ems-registration-form #edit-submit {
+    clear: both;
+    float: left;
+    padding-right: 5px;
+    margin-top: 4px;
+    margin-bottom: 4px
+}
+

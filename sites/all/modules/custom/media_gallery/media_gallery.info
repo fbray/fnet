@@ -1,0 +1,5 @@
+name = FNET Media Gallery
+core = 7.x
+package = FExtranet
+
+

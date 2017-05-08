@@ -1,0 +1,5 @@
+name = Translations - translation.com
+description = Provides content types with available translated languages selection and build translation sitemap
+package = Fluke Networks
+version = "7.x-1.0-20150129"
+core = 7.x

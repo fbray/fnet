@@ -1,0 +1,21 @@
+<?php
+/**
+ * @file
+ * Code for D6 Nodewords to D7 Meta tags data update.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function nodewords_migrate_menu() {
+  $items['admin/structure/nodewords_migrate'] = array(
+    'title' => 'Migrate Nodewords',
+    'description' => 'Migrate Nodewords settings and data from the Drupal 6 Nodewords module to the Drupal 7 Meta tags module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('nodewords_migrate_form'),
+    'access arguments' => array('administer meta tags'),
+    'file' => 'nodewords_migrate.admin.inc',
+  );
+
+  return $items;
+}

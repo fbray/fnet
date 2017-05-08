@@ -1,0 +1,170 @@
+<?php
+
+
+/**
+  * Implement hook_enable()
+  */
+function box_entities_enable() {
+  //Check if table exists, if not install the schema.
+  if(db_table_exists('box_ent_gallery') == FALSE) {
+    drupal_install_schema('box_entities');
+  }
+}
+
+
+// todo:  rename schema fields to match entities
+
+
+/**
+  * Implement hook_schema()
+  */
+function box_entities_schema() {
+
+  $schema = array();
+
+  $schema['box_ent_gallery'] = array(
+   'description' => 'Box Gallery',
+    'fields' => array(
+      'gid' => array(
+        'type' => 'serial',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'display_title' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'box_title' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'box_description' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => ''
+      ),
+      'box_folder_id' => array(
+        'type' => 'int',
+        'size' => 'big'
+      ),
+      'thumbnail' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => ''
+      ),
+      'content_nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'status' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1
+      ),
+      'checked' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => 20,
+        'default' => 'box_gallery'
+      ),
+    ),
+   'primary key' => array('gid'),
+   );
+
+  $schema['box_ent_thumb'] = array(
+    'description' => 'Box Image Thumbnail',
+    'fields' => array(
+      'tid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'gallery_id' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'original_file_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => ''
+      ),
+      'thumbnail' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => ''
+      ),
+      'root_folder_id' => array(
+        'type' => 'int',
+        'size'=>'big'
+      ),
+      'root_folder_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => ''
+      ),
+      'content_nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'status' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1
+      ),
+      'checked' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0),
+      'type'   => array(
+        'type' => 'varchar',
+        'length' => 20,
+        'default' => 'box_thumbnail'
+      ),
+    ),
+    'primary key' => array('tid'),
+  );
+
+  $schema['box_ent_image_size'] = array(
+   'description' => 'Box Image Size',
+    'fields' => array(
+      'box_file_id'  => array('type' => 'int', 'size' => 'big'),
+      'box_parent_id'  => array('type' => 'int', 'size' => 'big'),
+      'box_name' => array('type' => 'varchar','length' => 255, 'default' => ''),
+      'box_description' => array('type' => 'varchar','length' => 255, 'default' => ''),      
+      'thumb_id'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'size_name' => array('type' => 'varchar','length' => 20, 'default' => ''),
+      'box_file_size'  => array('type' => 'int', 'size' => 'big', 'default' => 0),
+      'download_url' => array('type' => 'varchar','length' => 255, 'default' => ''),
+      'root_folder_id'  => array('type' => 'int', 'size'=>'big'),
+      'root_folder_name'  => array('type' => 'varchar','length' => 255,'not null' => TRUE, 'default' => ''),
+      'status'    => array('type' => 'int', 'not null' => TRUE, 'default' => 1),
+      'checked'    => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'type'   => array('type' => 'varchar','length' => 20, 'default' => 'box_image_size'),
+    ),
+   'unique keys' => array(     'box_file_id' => array('box_file_id'),   ),
+  );
+
+  return $schema;
+
+}
+
+function box_entities_install() {
+
+
+}
+

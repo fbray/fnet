@@ -1,0 +1,328 @@
+@import url(http://fonts.googleapis.com/css?family=Roboto:400,500,700,300);
+/*
+ *   Important Information about this CSS File
+ *
+ * - Do not delete or rename this file, if you do not use it leave it blank (delete
+ *   everything) and the file will be skipped when you enable Production Mode in
+ *   the Global theme settings.
+ *
+ * - Read the _README file in this directory, it contains useful help and other information.
+ */
+/* Increase the default font size on small touch devices */
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000316}}
+body {
+  font-size: 100%;
+}
+
+/* =============================================================================
+ *   Mobile Menu Toggle
+ *   See your theme settings extensions for how to enable the menu toggle.
+ *   These are example styles for the menu toggle menu, you can use these in the
+ *   relevant responsive stylesheets as required. Modify to suit your design.
+ * ========================================================================== */
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000326}}
+.at-mt .at-menu-toggle {
+  /* The toggle link */
+  /* Menu items */
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000328}}
+.at-mt .at-menu-toggle h2 {
+  margin-bottom: 5px;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000331}}
+.at-mt .at-menu-toggle h2 a {
+  background: #eee;
+  border: 2px solid #ccc;
+  padding: 2px 10px;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000339}}
+.at-mt .at-menu-toggle ul.menu li a {
+  background: #eee;
+  border-bottom: 1px solid #fff;
+}
+
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000345}}
+#sign-in-wrapper {
+  display: none;
+}
+
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000349}}
+#resources {
+  padding: 1em;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000352}}
+#resources #resources-inner {
+  /* -webkit-flex-flow: column;
+  flex-flow: column; */
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000356}}
+#resources #resources-inner .linkware-resource {
+  -webkit-flex: 0 1 100%;
+  flex: 0 1 100%;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000360}}
+#resources #resources-inner .linkware-resource .linkware-grey {
+  font-size: 1.25em;
+}
+
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000367}}
+#maximize-the-benefit #maximize-the-benefit-inner {
+  /*-webkit-flex-flow:column;
+  flex-flow: column; */
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000371}}
+#maximize-the-benefit #maximize-the-benefit-inner div {
+  margin: 0 10%;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000374}}
+#maximize-the-benefit #maximize-the-benefit-inner div h2 {
+  font-size: 2.25em;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000377}}
+#maximize-the-benefit #maximize-the-benefit-inner div p {
+  font-size: 1.25em;
+}
+
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000385}}
+#visibility #visibility-inner #visibility-left {
+  -webkit-flex: 1 1 50%;
+  flex: 1 1 50%;
+  margin: 2% 10%;
+  text-align: center;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000392}}
+#visibility #visibility-inner #visibility-right {
+  -webkit-flex: 1 1 50%;
+  flex: 1 1 50%;
+  margin: 2% 10%;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\0000397}}
+#visibility #visibility-inner #visibility-right p {
+  font-size: 1.25em;
+}
+
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003103}}
+#customers-think {
+  padding: 1em;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003106}}
+#customers-think #customers-think-inner {
+  max-width: 980px;
+  padding: 1em 0;
+  margin: 0 auto;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003111}}
+#customers-think #customers-think-inner blockquote {
+  line-height: 1em;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003114}}
+#customers-think #customers-think-inner blockquote p {
+  font-size: 1.25rem;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003118}}
+#customers-think #customers-think-inner .button-wrapper {
+  padding: 1.25em 1.5em;
+  margin: 0 auto;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003122}}
+#customers-think #customers-think-inner .button-wrapper .action-button {
+  display: block;
+  text-align: center;
+}
+
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003129}}
+#customers-think-button {
+  margin: 0 auto;
+}
+
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003135}}
+#test-result-management #test-result-management-inner div#test-result-management-left {
+  -webkit-flex: 1 1 100%;
+  flex: 1 1 100%;
+  -webkit-order: 2;
+  order: 2;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003141}}
+#test-result-management #test-result-management-inner div#test-result-management-left p {
+  font-size: 1.25em;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003145}}
+#test-result-management #test-result-management-inner div#test-result-management-right {
+  -webkit-flex: 1 1 100%;
+  flex: 1 1 100%;
+  -webkit-order: 1;
+  order: 1;
+  padding: 1em;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003152}}
+#test-result-management #test-result-management-inner div#test-result-management-right img {
+  max-width: 100%;
+}
+
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003160}}
+#turbocharge #turbocharge-inner div#turbocharge-left {
+  -webkit-flex: 1 1 100%;
+  flex: 1 1 100%;
+  -webkit-order: 2;
+  order: 2;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003166}}
+#turbocharge #turbocharge-inner div#turbocharge-left p {
+  font-size: 1.25em;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003169}}
+#turbocharge #turbocharge-inner div#turbocharge-left .button-wrapper {
+  text-align: right;
+  padding: 1.25em 1.5em;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003173}}
+#turbocharge #turbocharge-inner div#turbocharge-left .button-wrapper a {
+  display: block;
+  text-align: center;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003180}}
+#turbocharge #turbocharge-inner div#turbocharge-right {
+  -webkit-flex: 1 1 100%;
+  flex: 1 1 100%;
+  -webkit-order: 1;
+  order: 1;
+  text-align: center;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003187}}
+#turbocharge #turbocharge-inner div#turbocharge-right img {
+  max-width: 100%;
+}
+
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003193}}
+#manage-your-testers #manage-your-testers-inner div {
+  margin: 0 2%;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003196}}
+#manage-your-testers #manage-your-testers-inner div#manage-your-testers-left {
+  -webkit-flex: 1 1 100%;
+  flex: 1 1 100%;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003200}}
+#manage-your-testers #manage-your-testers-inner div#manage-your-testers-left img {
+  max-width: 100%;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003205}}
+#manage-your-testers #manage-your-testers-inner div#manage-your-testers-right {
+  -webkit-flex: 1 1 100%;
+  flex: 1 1 100%;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003209}}
+#manage-your-testers #manage-your-testers-inner div#manage-your-testers-right p {
+  font-size: 1.25em;
+}
+
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003217}}
+#setup-testers #setup-testers-inner div#setup-testers-left {
+  -webkit-flex: 1 1 100%;
+  flex: 1 1 100%;
+  -webkit-order: 2;
+  order: 2;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003223}}
+#setup-testers #setup-testers-inner div#setup-testers-left p {
+  font-size: 1.25em;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003228}}
+#setup-testers #setup-testers-inner div#setup-testers-right {
+  -webkit-flex: 1 1 100%;
+  flex: 1 1 100%;
+  -webkit-order: 1;
+  order: 1;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003234}}
+#setup-testers #setup-testers-inner div#setup-testers-right img {
+  max-width: 100%;
+}
+
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003242}}
+#block-responsive-dropdown-menus-menu-microsite-linkware-live-top {
+  background-color: transparent;
+  box-shadow: none;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003246}}
+#block-responsive-dropdown-menus-menu-microsite-linkware-live-top .content {
+  background-color: #293f6a;
+  opacity: 0.9;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.4);
+  border-radius: 5px;
+  border: 1px solid white;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003254}}
+#block-responsive-dropdown-menus-menu-microsite-linkware-live-top .menu-toggle {
+  margin: 1em 0 0;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003257}}
+#block-responsive-dropdown-menus-menu-microsite-linkware-live-top .menu-toggle .toggle-help {
+  color: white;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003262}}
+#block-responsive-dropdown-menus-menu-microsite-linkware-live-top.main-nav-scrolled {
+  position: absolute;
+  top: auto;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003267}}
+#block-responsive-dropdown-menus-menu-microsite-linkware-live-top ul {
+  text-align: left;
+  padding: 0.5em 0 0;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003271}}
+#block-responsive-dropdown-menus-menu-microsite-linkware-live-top ul li {
+  display: block;
+  font-size: 1em;
+  float: none;
+  padding: 1em 0;
+  border-top: 1px solid #ffffff;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003278}}
+#block-responsive-dropdown-menus-menu-microsite-linkware-live-top ul li.mobile-no {
+  display: none;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003282}}
+#block-responsive-dropdown-menus-menu-microsite-linkware-live-top ul li:first-of-type {
+  display: none;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003286}}
+#block-responsive-dropdown-menus-menu-microsite-linkware-live-top ul li:nth-of-type(2) a {
+  background: none;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003290}}
+#block-responsive-dropdown-menus-menu-microsite-linkware-live-top ul li.last {
+  border-top: none;
+  padding: 0;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003295}}
+#block-responsive-dropdown-menus-menu-microsite-linkware-live-top ul li a {
+  display: inline;
+  font-size: 1em;
+  padding: 1em 0 1em 1em;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/xampp\/htdocs\/fnetdrupal7\/sites\/flukenetworks\.com\/themes\/linkwarelive\/sass\/responsive\.smalltouch\.portrait\.scss}line{font-family:\00003300}}
+#block-responsive-dropdown-menus-menu-microsite-linkware-live-top ul li a.menu-sign-in {
+  text-shadow: 1px 1px 4px #333333;
+  display: block;
+  font-weight: 700;
+  font-size: 1.15em;
+  border-radius: 4px;
+  color: white;
+  background: #fec10e;
+  /* Old browsers */
+  background: -moz-linear-gradient(top, #fec10e 0%, #d29d00 100%);
+  /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #fec10e), color-stop(100%, #d29d00));
+  /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, #fec10e 0%, #d29d00 100%);
+  /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, #fec10e 0%, #d29d00 100%);
+  /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, #fec10e 0%, #d29d00 100%);
+  /* IE10+ */
+  background: linear-gradient(to bottom, #fec10e 0%, #d29d00 100%);
+  /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fec10e', endColorstr='#d29d00', GradientType=0);
+  /* IE6-9 */
+}

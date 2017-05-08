@@ -1,0 +1,9 @@
+; $Id$
+name = FNET Masquerade
+description = "This module allows permitted users to masquerade as other users. Modified from original to proceed from email address rather than username."
+core = 7.x
+package = Fluke Networks
+
+configure = admin/config/people/masquerade
+
+

@@ -1,0 +1,1301 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Creates printer-friendly and PDF links that integrate with onelink
+ *  translation service.
+ */
+
+// Shown to users when a pdf request fails for whatever reason
+define('DOC_LINKS_GENERIC_FAILURE_MESSAGE', 'Sorry, we could not process your request at this time');
+define('DOC_LINKS_HTTP_SUCCESS', '200, 203');
+// If number of pdfcrowd API tokens gets below this number, warnings will be logged
+define('DOC_LINKS_TOKEN_WARNING', 200);
+// If a one time use token isn't used in this number of seconds, it expires
+define('DOC_LINKS_OTUT_EXPIRE', 60);
+
+/**
+ * Implements hook_menu().
+ */
+function doc_links_menu() {
+  $items['admin/fnet/doc_links'] = array(
+    'title' => 'Doc Links',
+    'description' => "Settings for Doc Links module.",
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('doc_links_admin_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['doc_links/flush_pdf_cache'] = array(
+    'title' => 'PDF version',
+    'page callback' => '_doc_links_flush_pdf_cache',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['doc_links_pdf/%/%doc_links_url'] = array(
+    'title' => 'PDF version',
+    'page callback' => 'doc_links_pdf_controller',
+    'page arguments' => array(1, 2), // node ID, Language
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['doc_links_print/%/%/revision/%'] = array(
+    'title' => 'PDF version',
+    //    'load arguments' => array(2, 4),
+    'page callback' => 'doc_links_print_revision',
+    'page arguments' => array(1, 2, 4),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  $items['doc_links_pdf/%/%/revision'] = array(
+    'title' => 'PDF version',
+    'load arguments' => array(4),
+    'page callback' => 'doc_links_generate_revision_pdf',
+    'page arguments' => array(1, 2),
+    'access arguments' => array('generate pdf from unpublished revision'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_permission
+ * @return array
+ */
+function doc_links_permission() {
+  return array(
+    'generate pdf from unpublished revision' => array(
+      'title' => t('generate pdf from unpublished revision'),
+      'description' => t('Generate pdf from unpublished revision'),
+    ),
+  );
+}
+
+/**
+ * Module configuration admin form.
+ */
+function doc_links_admin_form($form, &$form_state) {
+  // We must check permissions for anonymous users because our curl client
+  // will be anonymous and needs access to certain links
+  $anon_perms = user_role_permissions(array(1));
+
+  if (!in_array('access print', $anon_perms) || !in_array('access PDF version', $anon_perms)) {
+    $form['doc_links_warning'] = array(
+      '#type' => 'markup',
+      '#value' => t('<b>WARNING:</b> You must enable anonymous access to the
+        print-friendly and PDF links provided by the print module. Without this
+        permission enabled, this module cannot fetch the necessary content to
+        generate PDFs.'),
+    );
+  }
+  $form['doc_links_spider_only'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Onelink spider only'),
+    '#description' => t('If enabled, node pdf links will only be altered when
+      the Onelink spider visits. This results in our custom generation of PDFs
+      only when a user is coming from a Onelink translation server. Users of the
+      source Drupal site will get default handling of PDFs.'),
+    '#default_value' => variable_get('doc_links_spider_only', 1),
+  );
+  $form['doc_links_use_printer_friendly'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use printer-friendly page for PDF source'),
+    '#description' => t('If enabled, content of PDFs will be based on the
+      printer-friendly version of the node rather than the full HTML page.'),
+    '#default_value' => variable_get('doc_links_use_printer_friendly', 1),
+  );
+  $form['doc_links_forced_link'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display PDF Link'),
+    '#description' => t('This will generate a PDF link in the $print_links
+      area of the page. You can disable this if you are using the print module
+      (print_pdf) to generate PDF links.'),
+    '#default_value' => variable_get('doc_links_forced_link', 1),
+  );
+  $form['doc_links_pdf_cache'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use caching for PDF files'),
+    '#description' => t('If enabled, content of generated PDFs will be cached until
+      the corresponding node is updated.'),
+    '#default_value' => variable_get('doc_links_pdf_cache', 1),
+  );
+  $form['doc_links_flush_pdf_cache'] = array(
+    '#type' => 'markup',
+    '#markup' => '<p>' . t('Flushing cache will cause all PDFs to be freshly generated: ') . l(t('Flush All PDF Cache'), 'doc_links/flush_pdf_cache') . '</p>',
+  );
+
+  $form['doc_links_regions_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Include regions'),
+    '#description' => t('Blocks within the selected regions will be rendered and
+      included in the printer-friendly version of the page. This is necessary
+      where blocks are used for node related content generated by modules such
+      as blocks, views, context, spaces, and so on.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $theme = variable_get('theme_default', NULL);
+  $regions = system_region_list($theme);
+  $form['doc_links_regions_fieldset']['doc_links_regions'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Include blocks from these regions only'),
+    '#options' => $regions,
+    '#default_value' => variable_get('doc_links_regions', array()),
+  );
+
+  $form['doc_links_nodetypes_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Enabled node types'),
+    '#description' => t('<p>Node types selected here will automatically have the
+      printer-friendly and PDF links attached to them. Other node types will
+      not. </p>'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $types = array_map('check_plain', node_type_get_names());
+
+  $form['doc_links_nodetypes_fieldset']['doc_links_nodetypes'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Provide links for the following node types only'),
+    '#options' => $types,
+    '#default_value' => variable_get('doc_links_nodetypes', array()),
+  );
+
+  $tokens = variable_get('doc_links_pdfcrowd_tokens', NULL);
+  $tokens = is_int($tokens) ? $tokens : t('This number will be updated once the first PDF is generated');
+  $form['doc_links_pdfcrowd'] = array(
+    '#title' => t('PDFCrowd Settings'),
+    '#description' => t('API Tokens left: %tokens', array('%tokens' => $tokens)),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['doc_links_pdfcrowd']['doc_links_pdfcrowd_user'] = array(
+    '#type' => 'textfield',
+    '#title' => t('PDFCrowd username'),
+    '#description' => t('Username from !pdf_crowd', array('!pdf_crowd' => l(t('PDF Crowd'), 'https://pdfcrowd.com/user/account/'))),
+    '#default_value' => variable_get('doc_links_pdfcrowd_user', ''),
+  );
+  $form['doc_links_pdfcrowd']['doc_links_pdfcrowd_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('PDFCrowd key'),
+    '#description' => t('API key from !pdf_crowd', array('!pdf_crowd' => l(t('PDF Crowd'), 'https://pdfcrowd.com/user/account/'))),
+    '#default_value' => variable_get('doc_links_pdfcrowd_key', ''),
+  );
+  // PDF Conversion settings. See: https://pdfcrowd.com/web-html-to-pdf-php
+  $form['doc_links_pdfcrowd']['settings'] = array(
+    '#title' => t('PDFCrowd conversion settings'),
+    '#description' => t('These options will be used in the PDF conversion process'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['doc_links_pdfcrowd']['settings']['doc_links_pdfcrowd_method'] = array(
+    '#type' => 'select',
+    '#title' => t('PDFCrowd processing method'),
+    '#options' => array(
+      'html' => "HTML",
+      'uri' => "URI",
+    ),
+    '#description' => t('If you are on a server that is behind a firewall, you will want to
+      select "HTML" because the PDFCrowd server cannot access your host, and you will
+      need to send it your own HTML. PDFs will not properly render using this method,
+      but it is suitable for testing'),
+    '#default_value' => variable_get('doc_links_pdfcrowd_method', 'uri'),
+  );
+  $form['doc_links_pdfcrowd']['settings']['doc_links_set_html_base'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Set base path'),
+    '#description' => t('This works in conjunction with the processing method. When
+      HTML mode is selected, this value is used to convert all relative paths
+      within the document to absolute so that PDFCrowd can access the images.
+      <em>Include a trailing slash</em>.'),
+    '#default_value' => variable_get('doc_links_set_html_base', ''),
+  );
+
+  $form['doc_links_pdfcrowd']['settings']['doc_links_pdf_setFooterHtml'] = array(
+    '#title' => t('Set pagination syntax'),
+    '#description' => t('Set pagination and arbitrary HTML in the footer. You
+      may use the following placeholders which will be automatically expanded:
+      <ul>
+        <li>%u - URL to convert.</li>
+        <li>%p - The current page number.</li>
+        <li>%n - Total number of pages.</li>
+      </ul>
+      The site\'s CSS will not be applied to this text, however, you may use
+      inline CSS here that will be applied. Leave this empty to turn off this
+      feature.
+    '),
+    '#type' => 'textarea',
+    '#wysiwyg' => FALSE,
+    '#rows' => 2,
+    '#default_value' => variable_get('doc_links_pdf_setFooterHtml', 'Page %p of %n'),
+  );
+  $form['doc_links_pdfcrowd']['settings']['doc_links_pdf_setPageWidth'] = array(
+    '#title' => t('Page width'),
+    '#description' => t('Sets PDF page width in units. Examples: "210mm", "8.5in"'),
+    '#type' => 'textfield',
+    '#default_value' => variable_get('doc_links_pdf_setPageWidth', '8.5in'),
+  );
+  $form['doc_links_pdfcrowd']['settings']['doc_links_pdf_setPageHeight'] = array(
+    '#title' => t('Page height'),
+    '#description' => t('Sets PDF page height in units. Use -1 for a single page PDF.'),
+    '#type' => 'textfield',
+    '#default_value' => variable_get('doc_links_pdf_setPageHeight', '11in'),
+  );
+  $form['doc_links_pdfcrowd']['settings']['doc_links_pdf_setTopMargin'] = array(
+    '#title' => t('Page top margin'),
+    '#description' => t('Sets PDF page top margin in units. Examples: "210mm", "8.5in"'),
+    '#type' => 'textfield',
+    '#default_value' => variable_get('doc_links_pdf_setTopMargin', '.25in'),
+  );
+  $form['doc_links_pdfcrowd']['settings']['doc_links_pdf_setRightMargin'] = array(
+    '#title' => t('Page right margin'),
+    '#description' => t('Sets PDF page right margin in units. Examples: "210mm", "8.5in"'),
+    '#type' => 'textfield',
+    '#default_value' => variable_get('doc_links_pdf_setRightMargin', '.25in'),
+  );
+  $form['doc_links_pdfcrowd']['settings']['doc_links_pdf_setBottomMargin'] = array(
+    '#title' => t('Page bottom margin'),
+    '#description' => t('Sets PDF page bottom margin in units. Examples: "210mm", "8.5in"'),
+    '#type' => 'textfield',
+    '#default_value' => variable_get('doc_links_pdf_setBottomMargin', '.25in'),
+  );
+  $form['doc_links_pdfcrowd']['settings']['doc_links_pdf_setLeftMargin'] = array(
+    '#title' => t('Page left margin'),
+    '#description' => t('Sets PDF page left page margin in units. Examples: "210mm", "8.5in"'),
+    '#type' => 'textfield',
+    '#default_value' => variable_get('doc_links_pdf_setLeftMargin', '.25in'),
+  );
+  $form['doc_links_pdfcrowd']['settings']['doc_links_pdf_setInitialPdfExactZoom'] = array(
+    '#title' => t('Initial PDF zoom level'),
+    '#description' => t('Sets the initial zoom level (percentage) of the PDF
+      when displayed to the user. Examples: "100", "150"'),
+    '#type' => 'textfield',
+    '#default_value' => variable_get('doc_links_pdf_setInitialPdfExactZoom', '100'),
+  );
+  $form['doc_links_pdfcrowd']['settings']['doc_links_pdf_setHtmlZoom'] = array(
+    '#title' => t('HTML zoom level'),
+    '#description' => t('Sets the HTML zoom level (affects apparent resolution) Default: "500"'),
+    '#type' => 'textfield',
+    '#default_value' => variable_get('doc_links_pdf_setHtmlZoom', '500'),
+  );
+
+  $form['doc_links_advanced'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Advanced options'),
+    '#description' => t('Do not touch these unless you know what you\'re doing.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['doc_links_advanced']['doc_links_debug_output'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Debug Output'),
+    '#description' => t('If enabled, debug output will be generated using
+      the devel module\'s dpm() function. You should not enable this in a
+      production environment.'),
+    '#default_value' => variable_get('doc_links_debug_output', 0),
+  );
+  $form['doc_links_advanced']['doc_links_debug_remove_basedir'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Strip base_dir'),
+    '#description' => t('If enabled, $base_dir will be stripped from any outgoing
+        requests. Really only useful when debugging from a local instance that
+        exists in a sub-directory.'),
+    '#default_value' => variable_get('doc_links_debug_remove_basedir', 0),
+  );
+  $form['doc_links_advanced']['doc_links_spoof_user'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Spoof user name'),
+    '#required' => TRUE,
+    '#description' => t('The user that will be spoofed to give pdfcrowd access
+      to otherwise private content. This should be a user with just enough
+      permission to view unpublished and access controlled content'),
+    '#default_value' => variable_get('doc_links_spoof_user', NULL),
+    '#autocomplete_path' => 'user/autocomplete',
+    '#size' => '32',
+    '#maxlength' => '60',
+  );
+  $form['doc_links_advanced']['doc_links_force_domain'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Force Domain'),
+    '#description' => t('If set, the source markup will be retrieved from this
+      domain rather than the active domain. This domain must have matching node
+      paths and content or requests will fail (404). Print module must be
+      enabled and properly configured on this host if the "use printer friendly
+      pages for pdf source" is selected.'),
+    '#default_value' => variable_get('doc_links_force_domain', ''),
+  );
+  $roles = user_roles();
+  $roles[0] = t('All Roles');
+  ksort($roles);
+  $form['doc_links_advanced']['doc_links_role_only'] = array(
+    '#type' => 'select',
+    '#title' => t('Enable Only for Role'),
+    '#description' => t('If set, only users of the selected role will have
+      Doc Links\' functionality enabled. This is useful for testing in a
+      production environment.'),
+    '#options' => $roles,
+    '#default_value' => variable_get('doc_links_role_only', 0),
+  );
+
+  $form['doc_links_advanced']['doc_links_revision'] = array(
+    '#type' => 'markup',
+    '#value' => '<div>' . '$Revision: 1194 $' . '</div><br />',
+  );
+
+  $form = system_settings_form($form);
+
+  return $form;
+}
+
+/**
+ * Implements hook_cron().
+ *
+ * Remove old items from our storage array.
+ */
+function doc_links_cron() {
+  // This is probably not necessary, but just in case
+  $otut_db = variable_get('doc_links_otut_db', NULL);
+  $current_time = REQUEST_TIME;
+
+  if (count($otut_db) > 0) {
+    foreach ($otut_db as $key => $expires) {
+      if ($expires < $current_time) {
+        unset($otut_db[$key]);
+      }
+    }
+    variable_set('doc_links_otut_db', $otut_db);
+  }
+}
+
+/**
+ * Implements hook_init().
+ */
+function doc_links_init() {
+  $path = drupal_get_path('module', 'doc_links');
+  $print = (drupal_strtolower(arg(0)) == 'print') || (drupal_strtolower(arg(0)) == 'doc_links_print');
+
+  if ($print) {
+    drupal_add_css($path . '/doc_links_print.css');
+
+    // Check for 'one time use token'. If a valid one is presented, spoof an
+    // authenticated user so we can get read access to content that might not be
+    // otherwise accessible.
+    $otut = $_GET['otut'];
+
+    if (isset($otut)) {
+      if (_doc_links_validate_otut($otut)) {
+        // This does not seem to work anymore. May not need it.
+        global $user;
+        $spoof_user_name = variable_get('doc_links_spoof_user', NULL);
+        $spoof_user_load = user_load_multiple(array(), array('name' => $spoof_user_name));
+        $spoof_user = array_shift($spoof_user_load);
+        // This does work, but opens up a session as that user
+        $user = $spoof_user;
+      }
+      else {
+        watchdog('doc_links', 'Invalid one time user token submitted: !token', array('!token' => $otut), WATCHDOG_WARNING);
+        drupal_access_denied();
+      }
+    }
+  }
+  drupal_add_css($path . '/doc_links.css');
+
+  // Only manage this global if onelink module isn't already
+  if (!module_exists('onelink')) {
+    global $onelink_spider;
+    $onelink_spider = _doc_links_onelink_spider_detect();
+  }
+}
+
+/**
+ * Implements hook_link_alter().
+ */
+function doc_links_link_alter(&$links, $node, $comment = NULL) {
+  global $onelink_spider;
+
+  if (_doc_links_node_enabled($node->type) == FALSE || _doc_links_allow_role() == FALSE) {
+    unset($links['print_pdf']);
+    unset($links['print_html']);
+    return;
+  }
+
+  $print_pdf_options = variable_get('print_pdf_link_pos', array());
+
+  // print module configured not to display node links area links
+  if ($print_pdf_options['link'] == FALSE) {
+    return;
+  }
+
+  $language = ($onelink_spider == TRUE) ? $onelink_spider : 'en';
+
+  // If the client is the onelink spider, we want to replace all printpdf URLs
+  // If we don't, onelink will cache the link to the print module's pdf callback
+
+  // Also enable if so indicated in configuration
+  $doc_links_spider_only = variable_get('doc_links_spider_only', TRUE);
+
+  // lastly remember there are two different versions of these links. This one
+  // appears in the $links section beneath the node $content. the other is in
+  // onelink_pdf_nodeapi() and appears above the node
+  if ($onelink_spider == TRUE || $doc_links_spider_only == FALSE) {
+    if (isset($links['print_pdf'])) {
+      $links['print_pdf']['href'] = preg_replace('/^printpdf\//', 'doc_links_pdf/' . $language . '/', $links['print_pdf']['href']);
+    }
+    if (isset($links['print_html'])) {
+      $links['print_html']['attributes']['onclick'] = "window.open(this.href,'newwindow','width=645,height=675,scrollbars=yes');return false;";
+      $links['print_html']['attributes']['target'] = "_blank";
+    }
+  }
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function doc_links_node_view($node, $view_mode = 'full') {
+  if (!in_array($node->type, variable_get('doc_links_nodetypes', array()))) {
+    return;
+  }
+
+  global $onelink_spider;
+  $language = ($onelink_spider == TRUE) ? $onelink_spider : 'en';
+
+  $print_pdf_link_text = variable_get('print_pdf_link_text', array('PDF'));
+
+  if (variable_get('doc_links_forced_link', 0)) {
+    $alias = drupal_get_path_alias('node/' . $node->nid);
+    $node->content['print_links']['#markup'] = '<span class="print_pdf">' . l($print_pdf_link_text, 'doc_links_pdf/' . $language . '/' . $alias, array('attributes' => array('title' => t('Display a PDF version of this page.')))) . '</span>';
+    if (user_access('generate pdf from unpublished revision')) {
+      $node->content['print_links']['#markup'] .= '<br/><span class="print_pdf">' . l('Latest revision', 'doc_links_pdf/' . $language . '/' . $node->nid . '/revision', array('attributes' => array('title' => t('Display a PDF version of latest revision.')))) . '</span>';
+    }
+  }
+
+  $doc_links_spider_only = variable_get('doc_links_spider_only', TRUE);
+
+  // Alter print module's printer and pdf node links
+  // WARNING: this is some fragile code, look here if bugs pop up with
+  // links
+  if (isset($node->content['print_links'])) {
+    if ($onelink_spider == TRUE || $doc_links_spider_only == FALSE) {
+      // insert some link attributes into the printer-friendly link
+      $regex = '/(<span class="print_pdf"><a href=".*?")(.*$)/im';
+      $attributes = "onclick=\"ga('send', 'event', 'edoc', 'download', '$alias');\"";
+      $node->content['print_links']['#markup'] = preg_replace($regex, "$1 $attributes $2", $node->content['print_links']['#markup']);
+    }
+
+    // Wrap some of our own custom markup around the print links
+    $node->content['print_links']['#markup'] = '<div class="print-links-container"><div id="print-links-container-header">' . t('Printable Version') . '</div>' . '<div id="print-links-wrapper">' . $node->content['print_links']['#markup'] . '</div></div>';
+
+    // We don't want our links necessarily contained in the node's div,
+    // so save it as a node variable that we will pull out in our
+    // preprocess function
+    $node->print_links = $node->content['print_links']['#markup'];
+    unset($node->content['print_links']['#markup']);
+  }
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function doc_links_preprocess_page(&$variables) {
+  if (isset($variables['node']) && isset($variables['node']->print_links)) {
+    $variables['print_links'] = $variables['node']->print_links;
+  }
+}
+
+function doc_links_preprocess_node(&$variables) {
+  if ($variables['type'] == 'edoc' || $variables['node']->type == 'edoc') {
+    $print = (strtolower(arg(0)) == 'print' || strtolower(arg(0)) == 'doc_links_print');
+    if ($print) {
+      unset($variables['print_links']);
+    }
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+//function doc_links_theme($existing, $type, $theme, $path) {
+//  return array(
+//    'doc_links' => array(
+//      'variables' => array(
+//        'language' => 'en',
+//      ),
+//    ),
+//    'doc_links_page' => array(
+//      'variables' => array(
+//        'nid' => NULL,
+//        'language' => 'en',
+//        'template' => 'doc-links-page',
+//      ),
+//    ),
+//  );
+//}
+
+/**
+ * TODO: This can probably go since we're relying on print module to generate these links
+ */
+//function theme_doc_links($variables) {
+//  $lang = $variables['language'];
+//  global $base_path;
+//
+//  // against my suggestion, we can't use the nid and must rely on URI
+//  $uri = request_uri();
+//
+//  if ($base_path != '/') { // then it includes a subdir that we must deal with
+//    $uri = preg_replace("#($base_path)#", "/", $uri);
+//  }
+//
+//  // TODO: theme this
+//  $content = '<div id="doc_links">';
+//  $content .= '<span id="doc_links_pf" class="doc_link">' . l(t('Printer-friendly'), 'doc_links_pf' . $uri) . '</span>';
+//  $content .= ' | ';
+//  $content .= '<span id="doc_links_pdf" class="doc_link">' . l(t('PDF'), 'doc_links_pdf' . $uri) . '</span>';
+//  $content .= '</div>';
+//
+//  return $content;
+//}
+
+/**
+ * A hook_menu %load function
+ *
+ * Take whatever comes in the URL and convert it to a node object
+ */
+function doc_links_url_load() {
+  $args = arg();
+
+  unset($args[0]); // our module namespace
+  unset($args[1]); // selected language
+  $path = filter_xss(implode('/', $args));
+
+  // in case aliases are turned off, check for NID here
+  if (is_int($path)) {
+    $node = node_load($path);
+  }
+  else {
+    $real_path = drupal_get_normal_path($path);
+    $path_pieces = explode('/', $real_path);
+    $node = node_load($path_pieces[1]);
+  }
+
+  if ($node == FALSE) {
+    watchdog('doc_links', 'Could not load a node based on given path: %path', array('%path' => $path), WATCHDOG_ERROR);
+    return FALSE;
+  }
+
+  // We need to make sure to use the path alias if it exists because
+  // the onelink servers don't recognize any other paths, such as node/123
+  // also, print.module reverts aliases if foreign language is set
+  $path = drupal_get_path_alias($path, 'en');
+
+  $node_info = array(
+    'node' => $node,
+    'path' => $path,
+  );
+
+  return $node_info;
+}
+
+/**
+ * Generate a PDF document and send it to the client
+ *
+ * @param $language
+ *   Requested language (en, it, es, etc..)
+ *
+ * @param $node_info
+ *   An array containing 'node' => $node object and 'path' => the node path
+ *   alias (or node/123) requested
+ *
+ * @return
+ *   NULL
+ *
+ */
+function doc_links_pdf_controller($language, $node_info) {
+  // Check for role restriction in admin settings
+  if (_doc_links_allow_role() == FALSE) {
+    return;
+  }
+
+  $node = $node_info['node'];
+  $nid = $node->nid;
+
+  if (_doc_links_node_enabled($node->type) == FALSE) {
+    watchdog('doc_links', 'Got a request to convert a node type that is not enabled: %node_type', array('%node_type' => $node->type), WATCHDOG_WARNING);
+    return;
+  }
+
+  $path = drupal_get_path_alias('node/' . $nid, 'en');
+  $headers = array();
+
+  if (function_exists('getallheaders')) {
+    $headers = getallheaders();
+  }
+
+  if (isset($headers['Referer'])) {
+    $referrer_url = $headers['Referer'];
+  }
+  elseif (isset($_SERVER["HTTP_REFERER"])) {
+    $referrer_url = $_SERVER["HTTP_REFERER"];
+  }
+  else {
+    // Can't find it, so make it up
+    global $base_url;
+    $referrer_url = $base_url . drupal_get_path_alias("/node/$nid", 'en');
+    watchdog('doc_links', 'Could not determine referer value (may be a bot), guessing', array(), WATCHDOG_WARNING);
+  }
+
+  global $base_path;
+
+  if (variable_get('doc_links_use_printer_friendly', 1)) {
+    $path = '/print/' . $path . '/' . '?pdf=1' . '&otut=' . _doc_links_generate_otut();
+  }
+
+  $force_domain = variable_get('doc_links_force_domain', NULL);
+  $host = !empty($force_domain) ? $force_domain : $_SERVER['HTTP_HOST'];
+
+  // We assume that onelink will always be the subdomain for languages it
+  // handles, so get rid of any existing subdomain for non 'en' pages
+  if ($language != 'en') {
+    // this will delete anything before 'domain.com'
+    $host = preg_replace("/.*\.([^\.]*\.[^\.]*)$/", "$1", $host);
+    $host = $language . '.' . $host;
+  }
+
+  if (variable_get('doc_links_debug_remove_basedir', 0) == TRUE) {
+    $ch_url = $host . $path;
+  }
+  else {
+    $ch_url = $host . $base_path . $path;
+  }
+
+  $siteReg = module_invoke('fnet_helper', 'site_region');
+  $regLang = $siteReg["regLang"];
+
+  // strip out any unwanted double slashes
+  $ch_url = preg_replace('#/{2,}#', '/', $ch_url);
+  $ch_url = 'http://' . $ch_url;
+
+  // Fetch the OneLink (translated) version of the page
+  $ch = curl_init();
+  // set URL and other appropriate options
+  curl_setopt($ch, CURLOPT_URL, $ch_url);
+  curl_setopt($ch, CURLOPT_HEADER, 0);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+  curl_setopt($ch, CURLOPT_COOKIE, 'regLang=' . strtoupper($regLang));
+
+  $max_redirects = 2;
+  $html = _doc_links_curl_redirect_exec($ch, $max_redirects);
+  $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+  curl_close($ch);
+
+  if (!in_array($http_status, array(DOC_LINKS_HTTP_SUCCESS))) {
+    print $http_status;
+    watchdog('doc_links', 'Got bad http response. Server said: %response when requesting %ch_url', array(
+      '%response' => $http_status,
+      '%ch_url' => $ch_url
+    ), WATCHDOG_WARNING, l(t('URL'), $referrer_url));
+    drupal_set_message(DOC_LINKS_GENERIC_FAILURE_MESSAGE, 'warning');
+    drupal_goto($referrer_url);
+
+    return;
+  }
+
+  if (!$html) {
+    watchdog('doc_links', 'Could not fetch url: %url', array('%url' => $ch_url), WATCHDOG_WARNING, l(t('URL'), $ch_url));
+    drupal_set_message(DOC_LINKS_GENERIC_FAILURE_MESSAGE, 'warning');
+    drupal_goto($referrer_url);
+
+    return;
+  }
+
+  preg_match('/<title>(.*?)<\/title>/', $html, $matches);
+
+  if (count($matches) > 0) {
+    $filename = $matches[1];
+  }
+  else {
+    $filename = 'Information';
+  }
+
+  // NOTE: unicode chars are left as-is. Could cause problems?
+  $filename = preg_replace('/([[:punct:]\s]{1,})/', '_', $filename);
+
+  // Fetch flag indicating language override.
+//  $nodeLanguageOverride = $node->node_language_override; --> no node_language_override field found hence replacing it with the one present in the content type
+  $nodeLanguageOverride = $node->field_edoc_langreg;
+
+  $langSpecificSuffix = ''; // Instantiate the string variable to later be used in the filename.
+
+  if ($nodeLanguageOverride) {
+    $langSpecificSuffix = '-' . $regLang;
+
+  }
+  else {
+    $langSpecificSuffix = ($language == 'en') ? '' : '-' . $language;
+  }
+
+  // We include the NID here in case of two nodes with same title
+  $filename .= '-' . $nid;
+  $filename .= $langSpecificSuffix;
+  $literatureField = 'field_edoc_lid_' . $language;
+  $filename .= isset($node->{$literatureField}[LANGUAGE_NONE][0]['value']) ? '-' . $node->{$literatureField}[LANGUAGE_NONE][0]['value'] : '';
+  // The following code should only be enabled if it is a requirement to have
+  // a unique literature id for eDoc Language Override content. (Replacing the above line of code)
+  // $filename .= isset($node->node_lid_reference) ? '-' . trim($node->node_lid_reference) : '-' . trim($node->{$literatureField}[0]['value']);
+  // $filename = trim($filename, '-');
+  $filename .= '.pdf';
+
+  if (variable_get('doc_links_pdf_cache', 1) == TRUE) {
+    $file_directory_temp = variable_get('file_directory_path', '/tmp');
+    $doc_links_cache_dir = $file_directory_temp . '/doc_links';
+
+    if (!is_dir($doc_links_cache_dir)) {
+      mkdir($doc_links_cache_dir, 0775);
+    }
+
+    $cached_pdf = $doc_links_cache_dir . '/' . $filename;
+
+    // Check node modification time against existing PDF conversion, if exists
+    if (file_exists($cached_pdf)) {
+      $mtime = filemtime($cached_pdf);
+      $node_updated = $node->changed;
+
+      if ($node_updated > $mtime) {
+        // delete old file
+        unlink($cached_pdf);
+      }
+      else {
+        $pdf = file_get_contents($cached_pdf);
+      }
+    }
+  }
+
+  // If cache off or no cached version, create a new one
+  if (!isset($pdf) || $pdf == FALSE) {
+    $method = variable_get('doc_links_pdfcrowd_method', '');
+
+    if ($method == 'html') {
+      $source = $html;
+    }
+    elseif ($method == 'uri') {
+      $source = $ch_url;
+    }
+
+    $pdf = doc_links_converter($source, $method);
+
+    if ($pdf == FALSE) {
+      watchdog('doc_links', 'PDF conversion failed, exiting.', array(), WATCHDOG_WARNING, l(t('URL'), $ch_url));
+      drupal_set_message(t(DOC_LINKS_GENERIC_FAILURE_MESSAGE), 'status');
+      drupal_goto($referrer_url);
+    }
+
+    // Save to cache if cache enabled
+    if (variable_get('doc_links_pdf_cache', 1) == TRUE) {
+      // Save to our cache
+      $fp = fopen($cached_pdf, 'w');
+      fwrite($fp, $pdf);
+      fclose($fp);
+    }
+  }
+
+  // set HTTP response headers
+  header("Content-Type: application/pdf");
+  header("Cache-Control: private, must-revalidate");
+  header("Accept-Ranges: none");
+  header("Content-Disposition: attachment; filename=\"$filename\"");
+
+  // send the generated PDF
+  print $pdf;
+}
+
+/**
+ * Convert an HTML document or URL to PDF format
+ *
+ * We're not sure how we're going to be converting to PDF. It may change,
+ * so wrap all the ugliness up into this function.
+ *
+ * @param $source
+ *   string containing either an HTML document or a URL depending on site
+ *   configuration
+ *
+ * @param $method
+ *   What to send to Pdfcrowd, either 'html' or 'uri'. This value will almost
+ *   always be 'uri' except in a development setting where the server is not
+ *   accessible publicly.
+ *
+ * @return a PDF document
+ */
+function doc_links_converter($source, $method) {
+  global $_doc_links_debug;
+  $pdf = NULL;
+
+  // PDF CROWD API
+  require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'doc_links') . '/pdfcrowd/pdfcrowd.php';
+
+  $username = variable_get('doc_links_pdfcrowd_user', '');
+  $api_key = variable_get('doc_links_pdfcrowd_key', '');
+
+  if (empty($username) || empty($api_key)) {
+    watchdog('doc_links', 'Pdfcrowd username and/or api key missing', array(), WATCHDOG_ERROR);
+    return FALSE;
+  }
+
+  // create an API client instance
+  $client = new Pdfcrowd($username, $api_key);
+
+  // Apply custom settings for PDF conversion
+  $doc_links_pdf_setFooterHtml = variable_get('doc_links_pdf_setFooterHtml', 'Page %p of %n');
+  if (!empty($doc_links_pdf_setFooterHtml)) {
+    $client->setFooterHtml($doc_links_pdf_setFooterHtml);
+  }
+  $client->setPageWidth(variable_get('doc_links_pdf_setPageWidth', '8.5in'));
+  $client->setPageHeight(variable_get('doc_links_pdf_setPageHeight', '11in'));
+  $client->setInitialPdfExactZoom(variable_get('doc_links_pdf_setInitialPdfExactZoom', '100'));
+  $top = variable_get('doc_links_pdf_setTopMargin', '.25in');
+  $right = variable_get('doc_links_pdf_setRightMargin', '.20in');
+  $bottom = variable_get('doc_links_pdf_setBottomMargin', '.25in');
+  $left = variable_get('doc_links_pdf_setHorizontalMargin', '.25in');
+  $client->setPageMargins($top, $right, $bottom, $left);
+  $client->setHtmlZoom(variable_get('doc_links_pdf_setHtmlZoom', '500'));
+
+  try {
+    // API doc: https://pdfcrowd.com/web-html-to-pdf-php/
+    if ($method == 'html') {
+      $head_base = variable_get('doc_links_set_html_base', NULL);
+      if (!empty($head_base)) {
+        file_put_contents('/tmp/outBefore.html', $source);
+        $source = _doc_links_relative2absolute($head_base, $source);
+        file_put_contents('/tmp/outAfter.html', $source);
+      }
+      $pdf = $client->convertHtml($source);
+    }
+    elseif ($method == 'uri') {
+      $pdf = $client->convertURI($source);
+    }
+    else {
+      watchdog('doc_links', 'Could not determine Pdfcrowd method. Probably a module configuration issue', array(), WATCHDOG_ERROR);
+    }
+    $tokens = $client->numTokens();
+    variable_set('doc_links_pdfcrowd_tokens', $tokens);
+    // Warn, but don't spam :)
+    if ($tokens < DOC_LINKS_TOKEN_WARNING && $tokens % 10 == 0) {
+      watchdog('doc_links', 'Pdfcrowd tokens are running low: %tokens tokens remaining.', array('%tokens' => $tokens), WATCHDOG_WARNING);
+    }
+  } catch (PdfcrowdException $e) {
+    $_doc_links_debug && dpm($e->getMessage());
+    watchdog('doc_links', 'Pdfcrowd error: %error', array('%error' => $e->getMessage()), WATCHDOG_ERROR);
+    //error_reporting(E_NONE);
+    return FALSE;
+  }
+
+  return $pdf;
+}
+
+/**
+ * Determine if this node type is enabled in our config
+ */
+function _doc_links_node_enabled($node_type) {
+  $doc_links_nodetypes = variable_get('doc_links_nodetypes', array());
+  return $doc_links_nodetypes[$node_type];
+}
+
+/**
+ * Decide if we hide from all but one role
+ */
+function _doc_links_allow_role() {
+  $role = variable_get('doc_links_role_only', 0);
+
+  if ($role == 0) {
+    return TRUE;
+  }
+
+  global $user;
+
+  if (isset($user->roles[$role])) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Delete all PDF cache
+ */
+function _doc_links_flush_pdf_cache() {
+  $file_directory_path = variable_get('file_directory_path', '/tmp');
+  $doc_links_cache_dir = $file_directory_path . '/doc_links';
+
+  if (!file_exists($doc_links_cache_dir)) {
+    drupal_set_message(t('Cache is already empty'), 'status');
+    drupal_goto('admin/fnet/doc_links');
+  }
+
+  $handle = opendir($doc_links_cache_dir);
+  $files = 0;
+  if ($handle) {
+    while ($file = readdir($handle)) {
+      if ($file == "." || $file == "..") {
+        continue;
+      }
+      unlink($doc_links_cache_dir . "/" . $file);
+      $files++;
+    }
+  }
+
+  drupal_set_message(t("PDF files removed: %files", array('%files' => $files)), 'status');
+  drupal_goto('admin/fnet/doc_links');
+}
+
+/**
+ * This code is copied directly out of the onelink module. We're duplicating
+ * it here in order to eliminate dependency on the onelink module.
+ *
+ * Detect whether the request is coming from the Onelink Spider
+ *
+ * @return The language code of the spider (eg 'fr', 'de', etc...) or FALSE
+ *   if it is not a spider request.
+ *
+ */
+function _doc_links_onelink_spider_detect() {
+  static $requested_language;
+
+  if (isset($requested_language)) {
+    return $requested_language;
+  }
+  else {
+    // The following only takes place when the client is the onelink translation
+    // spider
+    // See onelink documentation for explanation of headers their client sends
+    $headers = array();
+
+    if (function_exists('getallheaders')) {
+      $headers = getallheaders();
+    }
+    else {
+      //watchdog('doc_links', 'Cannot fetch client headers, getallheaders() not available', array(), WATCHDOG_ERROR);
+    }
+
+    if (isset($headers['X-OriginalLang'])) {
+      $requested_language = drupal_strtolower($headers['X-OriginalLang']);
+      // onelink uses different values sometimes
+      switch ($requested_language) {
+        case 'zh':
+          $requested_language = 'cn';
+          break;
+        case 'ja':
+          $requested_language = 'jp';
+          break;
+      }
+    }
+    else {
+      $requested_language = FALSE;
+    }
+  }
+
+  return $requested_language;
+}
+
+/**
+ * Workaround function because curl can't handle redirects if $open_basedir
+ * is enabled.
+ *
+ * @see http://www.php.net/manual/en/function.curl-setopt.php#95027
+ *
+ */
+function _doc_links_curl_redirect_exec($ch, &$redirects, $curlopt_header = FALSE) {
+  curl_setopt($ch, CURLOPT_HEADER, TRUE);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+  $data = curl_exec($ch);
+  $been_to = array();
+
+  $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+  if ($http_code == 301 || $http_code == 302) {
+    list($header) = explode("\r\n\r\n", $data, 2);
+    $matches = array();
+    preg_match('/(Location:|URI:)(.*?)\n/', $header, $matches);
+    $url = trim(array_pop($matches));
+    $url_parsed = parse_url($url);
+
+    if (isset($url_parsed)) {
+      if (isset($been_to[$url])) {
+        watchdog('doc_links', 'Request is a redirect loop, exiting: !url', array('!url' => $url), WATCHDOG_ERROR);
+        return FALSE;
+      }
+      curl_setopt($ch, CURLOPT_URL, $url);
+      $redirects++;
+      $been_to[$url] = TRUE;
+      return _doc_links_curl_redirect_exec($ch, $redirects);
+    }
+  }
+
+  if ($curlopt_header) {
+    return $data;
+  }
+  else {
+    list($null, $body) = explode("\r\n\r\n", $data, 2);
+    return $body;
+  }
+}
+
+/**
+ * One time user token setter and validator
+ */
+function _doc_links_generate_otut() {
+  global $_doc_links_debug;
+
+  $otut_db = variable_get('doc_links_otut_db', array());
+  $otut = md5(microtime() * rand(1, 1000));
+  // Set a one minute timeout on these things
+  $otut_db[$otut] = REQUEST_TIME + DOC_LINKS_OTUT_EXPIRE;
+  variable_set('doc_links_otut_db', $otut_db);
+
+  if ($_doc_links_debug) {
+    dpm('generating otut: ' . $otut);
+  }
+
+  return $otut;
+}
+
+function _doc_links_validate_otut($otut) {
+  global $_doc_links_debug;
+
+  if ($_doc_links_debug) {
+    dpm('validating otut: ' . $otut);
+  }
+
+  $otut_db = variable_get('doc_links_otut_db', NULL);
+  if (isset($otut_db[$otut])) {
+    // Make sure it's not expired already
+    if ($otut_db[$otut] < REQUEST_TIME) {
+      $return = FALSE;
+    }
+    else {
+      $return = TRUE;
+    }
+    // delete one time use variable
+    unset($otut_db[$otut]);
+    variable_set('doc_links_otut_db', $otut_db);
+
+    return $return;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Convert relative links to absolute in an HTML document
+ */
+function _doc_links_relative2absolute($base_url, $html) {
+  include_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'doc_links') . '/simplehtmldom_1_5/simple_html_dom.php';
+
+  $dom = new simple_html_dom();
+  $dom->load($html);
+
+  // fix images and scripts
+  $nodes = $dom->find('img[src], script[src]');
+  foreach ($nodes as $node) {
+    $node->attr['src'] = _doc_links_pathfixer($base_url, $node->attr['src']);
+  }
+
+  // fix hrefs
+  $nodes = $dom->find('link[href], a[href]');
+  foreach ($nodes as $node) {
+    $node->attr['href'] = _doc_links_pathfixer($base_url, $node->attr['href']);
+  }
+
+  // Careful, $dom is an object, need to convert it to html
+  $html = (string) $dom;
+
+  return $html;
+}
+
+/**
+ * Simple helper function.
+ *
+ * POTENTIAL BUG: May be some edge cases that aren't handled properly here
+ * such as ../../file, etc...
+ */
+function _doc_links_pathfixer($base_url, $uri) {
+  // match on any protocol, including gopher and archie
+  if (!preg_match('/^[^:]{2,6}:\/\//', $uri)) {
+    // just in case, remove extra slashes
+    $uri = preg_replace('#/{2,}#', '/', $uri);
+    $uri = $base_url . $uri;
+  }
+
+  return $uri;
+}
+
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function doc_links_print_revision($language, $nid, $vid) {
+  include_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'print') . '/print.pages.inc';
+  drupal_add_css(drupal_get_path('module', 'doc_links') . '/doc_links_print.css', array('preprocess' => FALSE));
+  $node = _print_generate_node($nid, 'html', $vid, $cid = NULL, $view_mode = PRINT_VIEW_MODE);
+  $node->content = str_replace('<p class="unpublished">Unpublished</p>', '', $node->content);
+  $html = theme('print', array(
+    'node' => $node,
+    'query' => '',
+    'format' => 'html'
+  ));
+  drupal_add_http_header('Content-Type', 'text/html; charset=utf-8');
+  drupal_send_headers();
+  print $html;
+}
+
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function doc_links_generate_revision_pdf($language, $nid) {
+  // Check for role restriction in admin settings
+  if (_doc_links_allow_role() == FALSE) {
+    return;
+  }
+
+  // $vid = doc_links_get_latest_revision($nid);
+ // $node = node_load($nid, $vid);
+	$node = node_load($nid);
+	$vid = $node->workbench_moderation['current']->vid;
+  // TODO: relying on referrer is not reliable. Will maybe need to assume
+  // a host/subdomain from OneLink and append our path to that. But for now...
+  $headers = array();
+
+  if (function_exists('getallheaders')) {
+    $headers = getallheaders();
+  }
+
+  if (isset($headers['Referer'])) {
+    $referrer_url = $headers['Referer'];
+  }
+  elseif (isset($_SERVER["HTTP_REFERER"])) {
+    $referrer_url = $_SERVER["HTTP_REFERER"];
+  }
+  else {
+    // Can't find it, so make it up
+    global $base_url;
+    $referrer_url = $base_url . drupal_get_path_alias("/node/$nid", 'en');
+    watchdog('doc_links', 'Could not determine referer value (may be a bot), guessing', array(), WATCHDOG_WARNING);
+  }
+
+  global $base_path;
+
+  $path = "/doc_links_print/$language/$nid/revision/$vid" . '?otut=' . _doc_links_generate_otut();
+
+  $force_domain = variable_get('doc_links_force_domain', NULL);
+  $host = !empty($force_domain) ? $force_domain : $_SERVER['HTTP_HOST'];
+
+  // We assume that onelink will always be the subdomain for languages it
+  // handles, so get rid of any existing subdomain for non 'en' pages
+  if ($language != 'en') {
+    // this will delete anything before 'domain.com'
+    $host = preg_replace("/.*\.([^\.]*\.[^\.]*)$/", "$1", $host);
+    $host = $language . '.' . $host;
+  }
+
+  if (variable_get('doc_links_debug_remove_basedir', 0) == TRUE) {
+    $ch_url = $host . $path;
+  }
+  else {
+    $ch_url = $host . $base_path . $path;
+  }
+
+  // strip out any unwanted double slashes
+  $ch_url = preg_replace('#/{2,}#', '/', $ch_url);
+  $ch_url = 'http://' . $ch_url;
+
+  // Fetch the OneLink (translated) version of the page
+  $ch = curl_init();
+  // set URL and other appropriate options
+  curl_setopt($ch, CURLOPT_URL, $ch_url);
+  curl_setopt($ch, CURLOPT_HEADER, 0);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+
+  $max_redirects = 2;
+  $html = _doc_links_curl_redirect_exec($ch, $max_redirects);
+  $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+  curl_close($ch);
+
+  if (!in_array($http_status, array(DOC_LINKS_HTTP_SUCCESS))) {
+    print $http_status;
+    watchdog('doc_links', 'Got bad http response. Server said: %response when requesting %ch_url', array(
+      '%response' => $http_status,
+      '%ch_url' => $ch_url,
+    ), WATCHDOG_WARNING, l(t('URL'), $referrer_url));
+    drupal_set_message(DOC_LINKS_GENERIC_FAILURE_MESSAGE, 'warning');
+    drupal_goto($referrer_url);
+
+    return;
+  }
+
+  if (!$html) {
+    watchdog('doc_links', 'Could not fetch url: %url', array('%url' => $ch_url), WATCHDOG_WARNING, l(t('URL'), $ch_url));
+    drupal_set_message(DOC_LINKS_GENERIC_FAILURE_MESSAGE, 'warning');
+    drupal_goto($referrer_url);
+
+    return;
+  }
+
+  preg_match('/<title>(.*?)<\/title>/', $html, $matches);
+
+  if (count($matches) > 0) {
+    $filename = $matches[1];
+  }
+  else {
+    $filename = 'Information';
+  }
+
+  // NOTE: unicode chars are left as-is. Could cause problems?
+  $filename = preg_replace('/([[:punct:]\s]{1,})/', '_', $filename);
+
+  // We include the NID here in case of two nodes with same title
+  $filename .= '-' . $nid . '-' . $vid;
+  $filename .= isset($language) ? '-' . $language : '';
+  $literatureField = 'field_edoc_lid_' . $language;
+  $filename .= isset($node->{$literatureField}[0]['value']) ? '-' . $node->{$literatureField}[0]['value'] : '';
+  $filename .= '.pdf';
+
+
+  $method = variable_get('doc_links_pdfcrowd_method', 'html');
+
+  if ($method == 'html') {
+    $source = $html;
+  }
+  elseif ($method == 'uri') {
+    $source = $ch_url;
+  }
+
+  $pdf = doc_links_converter($source, $method);
+
+  if ($pdf == FALSE) {
+    watchdog('doc_links', 'PDF conversion failed, exiting.', array(), WATCHDOG_WARNING, l(t('URL'), $ch_url));
+    drupal_set_message(t(DOC_LINKS_GENERIC_FAILURE_MESSAGE), 'status');
+    drupal_goto($referrer_url);
+  }
+
+  // set HTTP response headers
+  header("Content-Type: application/pdf");
+  header("Cache-Control: private, must-revalidate");
+  header("Accept-Ranges: none");
+  header("Content-Disposition: attachment; filename=\"$filename\"");
+
+  // send the generated PDF
+  print $pdf;
+}
+
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function doc_links_get_latest_revision($nid) {
+  $vid = db_query('SELECT vid FROM {node_revision} WHERE nid = :nid ORDER BY `timestamp` DESC LIMIT 0, 1', array(':nid' => $nid))->fetchField();
+  return $vid;
+}

@@ -1,0 +1,5 @@
+name = FNET Content Alter
+package = FNET
+description = FNET Content Type global display modifiers
+version = 7.x.1.0-20150617
+core = 7.x

@@ -1,0 +1,6 @@
+; $Id$
+name = T2W Auth
+package = Fluke Networks
+description = "Provide user authentication service for Tool to Web"
+version = 7.x.0.0
+core = 7.x

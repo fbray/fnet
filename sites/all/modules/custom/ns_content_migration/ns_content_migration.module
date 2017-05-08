@@ -1,0 +1,864 @@
+<?php
+
+/**
+ * @file
+ * Content correction for NetScout migration
+ *
+ */
+
+function ns_content_migration_menu() {
+  $items = array();
+  $items['nscm/process'] = array(
+    'title' => 'NETSCOUT Content Migration',
+    'description' => "Test",
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ns_content_migration_menu_form'),
+    'access callback' => TRUE,
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function ns_content_migration_menu_form($form, &$form_state) {
+  $form = array();
+  $form['greeting'] = array(
+    '#markup' => 'Perform miscellaneous tasks related to FNET / NETSCOUT website split.',
+  );
+  $options = array(
+    'Fix image paths',
+    'Fix links',
+    'Check for dead links',
+    'Propagate business entity',
+    'Create URL redirect file',
+    'List YouTube links',
+    'Download Digital Assets',
+    'Set KB business entities',
+  );
+  $form['task'] = array(
+    '#type' => 'select',
+    '#title' => 'Task',
+    '#description' => 'Select task to perform.',
+    '#options' => drupal_map_assoc($options),
+    '#required' => TRUE,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit',
+  );
+  return $form;
+}
+
+function ns_content_migration_menu_form_submit($form, &$form_state) {
+  $task = $form_state['values']['task'];
+  switch ($task) {
+    case 'Fix image paths':
+    case 'Fix links':
+    case 'Check for dead links':
+    case 'List YouTube links':
+      ns_content_migration_build_batch_queue($task);
+      break;
+    case 'Propagate business entity':
+      ns_content_migration_propagate_business_entity();
+      break;
+    case 'Create URL redirect file':
+      ns_content_migration_create_url_redirect_file();
+      break;
+    case 'Download Digital Assets':
+      ns_content_migration_dl_digital_asset_files_batch();
+      break;
+    case 'Set KB business entities':
+      ns_content_migration_set_kb_business_entity();
+      break;
+  }
+}
+
+/**
+ * Build batch queue for migration
+ */
+function ns_content_migration_build_batch_queue($task) {
+  $batch = array(
+    'title' => t('Perform miscellaneous tasks: %task', array('%task' => $task)),
+    'operations' => array(),
+    'init_message' => t('Starting...'),
+    'error_message' => t('An error occurred'),
+    'finished' => 'ns_content_migration_batch_finished',
+  );
+  $bundles = field_info_bundles();
+//  $bundles = array('node' => array('knowledge_base_article' => 'type_info'));
+  foreach ($bundles['node'] as $content_type => $type_info) {
+    switch ($content_type) {
+      case 'digital_asset':
+      case 'profile':
+      case 'product_distributor_group':
+      case 'distributor':
+      case 'software_notifications':
+      case 'translation_text':
+        break;
+      default:
+        $batch['operations'][] = array(
+          'ns_content_migration_batch_process',
+          array($content_type, $task)
+        );
+        break;
+    }
+  }
+  $filename = strtolower(strtr($task, ' ', '_'));
+  $output = fopen("public://{$filename}.txt", 'w');
+  fclose($output);
+  batch_set($batch);
+  batch_process();
+}
+
+function ns_content_migration_create_url_redirect_file() {
+  $filename = 'netscout_redirect.txt';
+  $output = fopen("public://{$filename}", 'w');
+  $header = array(
+    "From URL",
+    "To URL",
+    "Redirect Status",
+    "Redirect Language"
+  );
+  fputcsv($output, $header);
+  $entity_query = new EntityFieldQuery();
+  $entity_query->entityCondition('entity_type', 'node')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_business_entity', 'tid', 533);
+  $nodes = $entity_query->execute();
+  foreach ($nodes['node'] as $nid => $info) {
+    $from_url = "node/{$nid}";
+    $to_path = drupal_get_path_alias($from_url);
+    $to_url = 'http://d7.netscout-f.com/' . $to_path;
+    $row = array(
+      $from_url,
+      $to_url,
+      301,
+      'en',
+    );
+    fputcsv($output, $row);
+  }
+  fclose($output);
+  drupal_set_message('Create url redirect file complete.');
+}
+
+function ns_content_migration_propagate_business_entity() {
+  $entity_query = new EntityFieldQuery();
+  $entity_query->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', array(
+      'feature',
+      'productsubtype',
+      'productlanguage'
+    ), 'IN')
+    ->propertyCondition('status', NODE_PUBLISHED);
+  $nodes = $entity_query->execute();
+  foreach ($nodes['node'] as $nid => $info) {
+    $wrapper = entity_metadata_wrapper('node', $nid);
+    $has_product = FALSE;
+    $product_wrapper = NULL;
+    switch ($info->type) {
+      case 'feature':
+        $product_node = $wrapper->field_feature_product->value();
+        if (!empty($product_node[0])) {
+          $product_wrapper = entity_metadata_wrapper('node', $product_node[0]->nid);
+          $has_product = TRUE;
+        }
+        break;
+      case 'productsubtype':
+        $product_node = $wrapper->field_productsub_product->value();
+        if (!empty($product_node[0])) {
+          $product_wrapper = entity_metadata_wrapper('node', $product_node[0]->nid);
+          $has_product = TRUE;
+        }
+        break;
+      case 'productlanguage':
+        $product_node = $wrapper->field_prodlang_product->value();
+        if (!empty($product_node)) {
+          $product_wrapper = entity_metadata_wrapper('node', $product_node->nid);
+          $has_product = TRUE;
+        }
+        break;
+    }
+    if ($has_product && !empty($product_wrapper)) {
+      $business_entity = $product_wrapper->field_business_entity->tid->value();
+      try {
+        if (isset($business_entity)) {
+          $wrapper->field_business_entity = $business_entity;
+          $wrapper->save();
+        }
+      } catch (EntityMetadataWrapperException $e) {
+        drupal_set_message($e->getMessage(), 'error');
+      }
+    }
+  }
+  drupal_set_message('Task complete.');
+}
+
+function ns_content_migration_batch_process($content_type, $task, &$context) {
+  if (empty($context['sandbox'])) {
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['next_id'] = 0;
+    $entity_query = new EntityFieldQuery();
+    $entity_query->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', $content_type)
+      ->propertyCondition('status', 1)
+      ->count();
+    $context['sandbox']['max'] = $entity_query->execute();
+    if ($context['sandbox']['max'] == 0) {
+      $context['finished'] = 1;
+      return;
+    }
+  }
+  $filename = strtolower(strtr($task, ' ', '_'));
+  $output = fopen("public://{$filename}.txt", 'a');
+  $fields = field_info_instances('node', $content_type);
+  $type = array();
+  foreach ($fields as $instance) {
+    $field_info = field_read_field($instance['field_name']);
+    $type[$instance['field_name']] = $field_info['type'];
+  }
+  $entity_query = new EntityFieldQuery();
+  $entity_query->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', $content_type)
+    ->propertyCondition('nid', $context['sandbox']['next_id'], '>')
+    ->propertyCondition('status', 1)
+    ->propertyOrderBy('nid')
+    ->range(0, 10);
+  $nodes = $entity_query->execute();
+  if (!empty($nodes)) {
+    $nids = array_keys($nodes['node']);
+  }
+  else {
+    $context['finished'] = 1;
+    return;
+  }
+  foreach ($nids as $nid) {
+    $context['sandbox']['next_id'] = $nid;
+    $context['sandbox']['progress']++;
+    $context['message'] = 'Processed ' . $context['sandbox']['progress'] . ' of ' . $context['sandbox']['max'] . ' ' . $content_type . ' nodes';
+    $dirty = FALSE;
+    $business = '';
+    $wrapper = entity_metadata_wrapper('node', $nid);
+    $info = $wrapper->getPropertyInfo();
+    if (isset($info['field_business_entity'])) {
+      $info2 = $wrapper->field_business_entity->value();
+      if (isset($info2)) {
+        $business = $info2->name;
+        if (!isset($context['results'][$business])) {
+          $context['results'][$business] = 0;
+        }
+      }
+    }
+    if (!empty($business)) {
+      $context['results'][$business]++;
+    }
+    else {
+      $context['results']['unclassified']++;
+    }
+    $alias = drupal_get_path_alias("node/$nid");
+    $title = $wrapper->title->value();
+    foreach ($fields as $field_name => $instance) {
+      $field_type = $type[$field_name];
+      switch ($field_type) {
+        case 'text_with_summary':
+          try {
+            $value = $wrapper->$field_name->value();
+            if (!empty($value)) {
+              $value = $wrapper->$field_name->value->raw();
+              switch ($task) {
+                case 'Fix image paths':
+                  preg_match_all('/<img.*?src=[\'|"](.*?[png|jpg|gif].*?)[\'|"]/sim', $value, $result, PREG_PATTERN_ORDER);
+                  $matches = $result[1];
+                  preg_match_all('/url\((.*?[png|jpg|gif].*?)\)/sim', $value, $result, PREG_PATTERN_ORDER);
+                  $matches += $result[1];
+                  preg_match_all('/<a.*?fnet_fancybox.*?href=[\'|"](.*?[png|jpg|gif].*?)[\'|"]/sim', $value, $result, PREG_PATTERN_ORDER);
+                  $matches += $result[1];
+                  foreach ($matches as $url) {
+                    if ((strpos($url, 'data') !== 0) && (!empty($url))) {
+                      $response = ns_content_migration_correct_image_url($url, $value);
+                      if ($response) {
+                        fwrite($output, "/node/$nid/edit | $content_type | $field_name | $field_type | $response \n");
+                        $wrapper->$field_name->value = $value;
+                        $dirty = TRUE;
+                      }
+                    }
+                  }
+                  break;
+                case 'Fix links':
+                  preg_match_all('/href=[\'|"](.*?)[\'|"]/sim', $value, $result, PREG_PATTERN_ORDER);
+                  $matches = $result[1];
+                  foreach ($matches as $url) {
+                    $new_url = ns_content_migration_fix_link($url);
+                    if ($new_url != $url) {
+                      $value = str_replace($url, $new_url, $value);
+                      fwrite($output, "/node/$nid/edit | $content_type | $field_name | $field_type | $new_url \n");
+                      $wrapper->$field_name->value = $value;
+                      $dirty = TRUE;
+                    }
+                  }
+                  break;
+                case 'Check for dead links':
+                  preg_match_all('/<img.*?src=[\'|"](.*?[png|jpg|gif].*?)[\'|"]/sim', $value, $result, PREG_PATTERN_ORDER);
+                  $matches = $result[1];
+                  preg_match_all('/url\((.*?[png|jpg|gif].*?)\)/sim', $value, $result, PREG_PATTERN_ORDER);
+                  $matches += $result[1];
+                  preg_match_all('/<a.*?fnet_fancybox.*?href=[\'|"](.*?[png|jpg|gif].*?)[\'|"]/sim', $value, $result, PREG_PATTERN_ORDER);
+                  $matches += $result[1];
+                  preg_match_all('/href=[\'|"](.*?)[\'|"]/sim', $value, $result, PREG_PATTERN_ORDER);
+                  $matches += $result[1];
+                  foreach ($matches as $url) {
+                    if ((strpos($url, 'data') !== 0) && (!empty($url))) {
+                      $response = ns_content_migration_check_link($url);
+                      if ($response != 200) {
+                        fwrite($output, "BAD $response /node/$nid/edit | $content_type | $field_name | $url \n");
+                      }
+                    }
+                  }
+                  break;
+                case 'List YouTube links':
+                  preg_match_all('%(?:\'|")((?:http|https)://(?:www\.)?youtube\.com/.*?)(?:\'|")%sim', $value, $matches, PREG_PATTERN_ORDER);
+                  $result = $matches[1];
+                  preg_match_all('%(?:\'|")((?:http|https)://(?:www\.)?youtu\.be/.*?)(?:\'|")%sim', $value, $matches, PREG_PATTERN_ORDER);
+                  $result += $matches[1];
+                  preg_match_all('/loadVideoById\(\'(.*?)\'\)/sim', $value, $matches, PREG_PATTERN_ORDER);
+                  $result += $matches[1];
+                  foreach ($result as $url) {
+                    if ((strpos($url, 'data') !== 0) && (!empty($url))) {
+                      fwrite($output, "/node/$nid/edit\t$content_type\t$field_name\t$url\t$title\t$alias\t$business\n");
+                    }
+                  }
+                  break;
+
+              }
+            }
+          } catch (exception $e) {
+            drupal_set_message($e->getMessage(), 'error');
+          }
+          break;
+        case 'text':
+        case 'text_long':
+          try {
+            $value = $wrapper->$field_name->value();
+            if (is_array($value) && isset($value['value'])) {
+              $string_value = $value['value'];
+              $value_type = 'array';
+            }
+            elseif (is_string($value)) {
+              $string_value = $value;
+              $value_type = 'string';
+            }
+            else {
+              $string_value = NULL;
+            }
+            if (!empty($string_value)) {
+              switch ($task) {
+                case 'Fix image paths':
+                  preg_match_all('/<img.*?src=[\'|"](.*?)[\'|"]/sim', $string_value, $result, PREG_PATTERN_ORDER);
+                  $result = $result[1];
+                  foreach ($result as $url) {
+                    if ((strpos($url, 'data') !== 0) && (!empty($url))) {
+                      $response = ns_content_migration_correct_image_url($url, $string_value);
+                      if ($response) {
+                        fwrite($output, "/node/$nid/edit | $content_type | $field_name | $field_type | $response \n");
+                        if ($value_type == 'array') {
+                          $wrapper->$field_name->value = $string_value;
+                        }
+                        else {
+                          $wrapper->$field_name = $string_value;
+                        }
+                        $dirty = TRUE;
+                      }
+                    }
+                  }
+                  break;
+                case 'Fix links':
+                  preg_match_all('/href=[\'|"](.*?)[\'|"]/sim', $string_value, $result, PREG_PATTERN_ORDER);
+                  $matches = $result[1];
+                  foreach ($matches as $url) {
+                    $new_url = ns_content_migration_fix_link($url);
+                    if ($new_url != $url) {
+                      $string_value = str_replace($url, $new_url, $string_value);
+                      fwrite($output, "/node/$nid/edit | $content_type | $field_name | $field_type | $new_url \n");
+                      if ($value_type == 'array') {
+                        $wrapper->$field_name->value = $string_value;
+                      }
+                      else {
+                        $wrapper->$field_name = $string_value;
+                      }
+                      $dirty = TRUE;
+                    }
+                  }
+                  break;
+                case 'Check for dead links':
+                  preg_match_all('/<img.*?src=[\'|"](.*?[png|jpg|gif].*?)[\'|"]/sim', $value, $result, PREG_PATTERN_ORDER);
+                  $matches = $result[1];
+                  preg_match_all('/url\((.*?[png|jpg|gif].*?)\)/sim', $value, $result, PREG_PATTERN_ORDER);
+                  $matches += $result[1];
+                  preg_match_all('/<a.*?fnet_fancybox.*?href=[\'|"](.*?[png|jpg|gif].*?)[\'|"]/sim', $value, $result, PREG_PATTERN_ORDER);
+                  $matches += $result[1];
+                  preg_match_all('/href=[\'|"](.*?)[\'|"]/sim', $value, $result, PREG_PATTERN_ORDER);
+                  $matches += $result[1];
+                  foreach ($matches as $url) {
+                    if ((strpos($url, 'data') !== 0) && (!empty($url))) {
+                      $response = ns_content_migration_check_link($url);
+                      if ($response != 200) {
+                        fwrite($output, "BAD $response /node/$nid/edit | $content_type | $field_name | $url \n");
+                      }
+                    }
+                  }
+                  break;
+                case 'List YouTube links':
+                  preg_match_all('%(?:\'|")((?:http|https)://(?:www\.)?youtube\.com/.*?)(?:\'|")%sim', $string_value, $matches, PREG_PATTERN_ORDER);
+                  $result = $matches[1];
+                  preg_match_all('%(?:\'|")((?:http|https)://(?:www\.)?youtu\.be/.*?)(?:\'|")%sim', $string_value, $matches, PREG_PATTERN_ORDER);
+                  $result += $matches[1];
+                  preg_match_all('/loadVideoById\(\'(.*?)\'\)/sim', $value, $matches, PREG_PATTERN_ORDER);
+                  $result = $matches[1];
+
+                  foreach ($matches as $url) {
+                    if ((strpos($url, 'data') !== 0) && (!empty($url))) {
+                      fwrite($output, "/node/$nid/edit\t$content_type\t$field_name\t$url\t$title\t$alias\t$business\n");
+                    }
+                  }
+                  break;
+              }
+            }
+          } catch (exception $e) {
+            drupal_set_message($e->getMessage(), 'error');
+          }
+          break;
+        case 'link_field':
+          try {
+            $value = $wrapper->$field_name->value();
+            $links = array();
+            if (isset($value['url'])) {
+              $value_type = 'simple';
+              $links[] = $value;
+            }
+            elseif (is_array($value)) {
+              $value_type = 'array';
+              $links = $value;
+            }
+            elseif (is_null($value)) {
+              $value_type = 'null';
+            }
+            else {
+              $value_type = '';
+            }
+            foreach ($links as $index => $link) {
+              switch ($task) {
+                case 'Fix image paths':
+                  break;
+                case 'Fix links':
+                  $url = $link['url'];
+                  $new_url = ns_content_migration_fix_link($url);
+                  if ($new_url != $url) {
+                    $links[$index]['url'] = $new_url;
+                    $dirty = TRUE;
+                    fwrite($output, "/node/$nid/edit | $content_type | $field_name | $field_type | $new_url \n");
+                  }
+                  break;
+                case 'Check for dead links':
+                  $url = $link['url'];
+                  if ((strpos($url, 'data') !== 0) && (!empty($url))) {
+                    $response = ns_content_migration_check_link($url);
+                    if ($response != 200) {
+                      fwrite($output, "BAD $response /node/$nid/edit | $content_type | $field_name | $url \n");
+                    }
+                  }
+                  break;
+                case 'List YouTube links':
+                  $value = $link['url'];
+                  if (preg_match('%((?:www\.)?youtube\.com/.*?)%sim', $value, $matches)) {
+                    fwrite($output, "/node/$nid/edit\t$content_type\t$field_name\t$value\t$title\t$alias\t$business\n");
+                  }
+                  if (preg_match('%((?:www\.)?youtu\.be/.*?)%sim', $value, $matches)) {
+                    fwrite($output, "/node/$nid/edit\t$content_type\t$field_name\t$value\t$title\t$alias\t$business\n");
+                  }
+
+                  break;
+              }
+            }
+            if ($value_type == 'simple') {
+              $value = array_shift($links);
+            }
+            else {
+              $value = $links;
+            }
+            $wrapper->$field_name = $value;
+          } catch (EntityMetadataWrapperException $e) {
+            drupal_set_message($e->getMessage(), 'error');
+          }
+          break;
+      }
+    }
+    if ($dirty) {
+      try {
+        $wrapper->save();
+      } catch (EntityMetadataWrapperException $e) {
+        drupal_set_message($e->getMessage(), 'error');
+      }
+    }
+  }
+  fclose($output);
+  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
+    $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
+  }
+  else {
+    $context['finished'] = 1;
+  }
+}
+
+function ns_content_migration_fix_link($url) {
+  $url_parts = parse_url($url);
+  $new_url = $url;
+  if (isset($url_parts['host'])) {
+    $host = strtolower($url_parts['host']);
+  }
+  else {
+    $host = '';
+  }
+  if (isset($url_parts['path'])) {
+    $path = $url_parts['path'];
+  }
+  else {
+    $path = NULL;
+  }
+  switch ($host) {
+    case 'www.flukenetworks.com':
+      if (empty($path)) {
+        $new_url = '/';
+      }
+      else {
+        $new_url = $path;
+      }
+      if (!empty($url_parts['query'])) {
+        $new_url .= '?' . $url_parts['query'];
+      }
+      if (!empty($url_parts['fragment'])) {
+        $new_url .= '#' . $url_parts['fragment'];
+      }
+      break;
+    case 'myaccount.flukenetworks.com':
+      if (preg_match('%/fnet/(.*?)/findit%sim', $path) || preg_match('%/fnet/(.*?)/streamit%sim', $path)) {
+        if (preg_match('/Document=(\d{7})/sim', $url_parts['query'], $matches)) {
+          $document_id = $matches[1];
+        }
+        else {
+          $document_id = '';
+        }
+        if (!empty($document_id)) {
+          $new_url = '/findit/' . $document_id;
+        }
+        else {
+          $new_url = $url;
+        }
+      }
+      break;
+    case 'support.flukenetworks.com':
+      if (preg_match('/find_it/sim', $path)) {
+        if (preg_match('/Document=(\d{7})/sim', $url_parts['query'], $matches)) {
+          $document_id = $matches[1];
+        }
+        else {
+          $document_id = '';
+        }
+        if (!empty($document_id)) {
+          $new_url = '/findit/' . $document_id;
+        }
+        else {
+          $new_url = $url;
+        }
+      }
+      break;
+    default:
+      if (preg_match('%(.*?)(/.*)%sim', $path, $matches)) {
+        if ($matches[1] == 'www.flukenetworks.com') {
+          $new_url = $matches[2];
+          continue;
+        }
+      }
+      $new_url = $url;
+      break;
+  }
+  return $new_url;
+}
+
+function ns_content_migration_correct_image_url($url, &$value) {
+  $url_parts = parse_url($url);
+  $results = FALSE;
+  if (isset($url_parts['host'])) {
+    $host = strtolower($url_parts['host']);
+    $host_parts = explode('.', $host);
+    if (!isset($url_parts['path'])) {
+      $url_parts['path'] = NULL;
+    }
+    $path_parts = explode('/', $url_parts['path']);
+    switch ($host) {
+      case 'myaccount.flukenetworks.com':
+        $new_location = 'netscout://external/' . $host_parts[0] . '/' . $path_parts[count($path_parts) - 1];
+        $new_url = '/sites/netscout-f.com/files/external/' . $host_parts[0] . '/' . $path_parts[count($path_parts) - 1];
+        $new_directory = 'netscout://external/' . $host_parts[0];
+        if (!is_dir($new_directory)) {
+          mkdir($new_directory, 0777, TRUE);
+        }
+        if (!file_exists($new_location)) {
+          $results = ns_content_migration_copy_file($url, $new_location);
+        }
+        else {
+          $results = TRUE;
+        }
+        break;
+      case 'images.flukenetworks.com':
+      case 'info.flukenetworks.com':
+      case 'myairmagnet.flukenetworks.com':
+        $filename = array_pop($path_parts);
+        $new_directory = 'netscout://external/' . $host_parts[0] . implode('/', $path_parts);
+        if (!is_dir($new_directory)) {
+          mkdir($new_directory, 0777, TRUE);
+        }
+        $new_location = $new_directory . '/' . $filename;
+        $new_url = '/sites/netscout-f.com/files/external/' . $host_parts[0] . $url_parts['path'];
+        if (!file_exists($new_location)) {
+          $results = ns_content_migration_copy_file($url, $new_location);
+        }
+        else {
+          $results = TRUE;
+        }
+        break;
+      case 'www.flukenetworks.com':
+        $new_url = $url_parts['path'];
+        $results = TRUE;
+        break;
+    }
+    if ($results) {
+      $value = str_replace($url, $new_url, $value);
+      return $new_url;
+    }
+    else {
+      return FALSE;
+    }
+  }
+  return FALSE;
+}
+
+function ns_content_migration_copy_file($url, $new_location) {
+  $response = drupal_http_request($url);
+  if ($response->code == 200) {
+    return file_put_contents($new_location, $response->data);
+  }
+  else {
+    return FALSE;
+  }
+}
+
+function ns_content_migration_check_link($url) {
+  if (strpos($url, '//') === 0) {
+    $url = 'http:' . $url;
+  }
+  $url = trim($url, "' \t\n\r\0\x0B\"");
+  $host = strtolower(parse_url($url, PHP_URL_HOST));
+  $path = parse_url($url, PHP_URL_PATH);
+  $scheme = parse_url($url, PHP_URL_SCHEME);
+  $query = parse_url($url, PHP_URL_QUERY);
+  if (!empty($scheme) && $scheme == 'mailto' || $scheme == 'data' || $scheme == 'javascript') {
+    return 200;
+  }
+  // if this is one of our new image urls, skip
+  if (preg_match('%sites/netscout-f\.com%sim', $path)) {
+    return 200;
+  }
+  if (empty($host) && !empty($path)) {
+    $check_url = 'http://' . 'www.flukenetworks.com' . '/' . trim($path, '/');
+    $check_url .= !empty($query) ? '?' . $query : '';
+  }
+  else {
+    if ($host == 'myaccount.flukenetworks.com' || $host == 'support.flukenetworks.com') {
+      return 600;
+    }
+    $check_url = $url;
+  }
+  $response = drupal_http_request($check_url, array('method' => 'HEAD'));
+  return $response->code;
+}
+
+function ns_content_migration_batch_finished($success, $results, $operations) {
+  if ($success) {
+    $message = '';
+    foreach ($results as $business => $count) {
+      $message .= "$business: $count \n";
+    }
+    drupal_set_message($message);
+  }
+  else {
+    // An error occurred.
+    // $operations contains the operations that remained unprocessed.
+    $error_operation = reset($operations);
+    drupal_set_message(t('An error occurred while processing @operation with arguments : @args', array(
+      '@operation' => $error_operation[0],
+      '@args' => print_r($error_operation[0], TRUE),
+    )));
+  }
+}
+
+function ns_content_migration_dl_digital_asset_files_batch() {
+  $batch = array(
+    'title' => t('Download Digital Asset files '),
+    'operations' => array(),
+    'init_message' => t('Starting...'),
+    'error_message' => t('An error occurred'),
+    'finished' => 'ns_content_migration_batch_finished',
+  );
+  $batch['operations'][] = array(
+    'ns_content_migration_dl_digital_asset_files',
+    array()
+  );
+  batch_set($batch);
+  batch_process();
+}
+
+function ns_content_migration_dl_digital_asset_files(&$context) {
+  if (empty($context['sandbox'])) {
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['next_id'] = 0;
+    $entity_query = new EntityFieldQuery();
+    $entity_query->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'digital_asset')
+      ->count();
+    $context['sandbox']['max'] = $entity_query->execute();
+    if ($context['sandbox']['max'] == 0) {
+      $context['finished'] = 1;
+      return;
+    }
+    else {
+      $context['finished'] = 0;
+    }
+  }
+  $server = variable_get('digital_asset_cdn_download_server', 'http://download.flukenetworks.com/');
+  $new_directory = 'netscout://ftp/';
+  if (!is_dir($new_directory)) {
+    mkdir($new_directory, 0777, TRUE);
+  }
+  $entity_query = new EntityFieldQuery();
+  $entity_query->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', 'digital_asset')
+    ->propertyCondition('nid', $context['sandbox']['next_id'], '>')
+    ->propertyOrderBy('nid')->range(0, 10);
+  $nodes = $entity_query->execute();
+  if (!empty($nodes)) {
+    $nids = array_keys($nodes['node']);
+    $context['finished'] = 0;
+  }
+  else {
+    $context['finished'] = 1;
+    return;
+  }
+  foreach ($nids as $nid) {
+    $context['sandbox']['next_id'] = $nid;
+    $context['sandbox']['progress']++;
+    $context['message'] = 'Processed ' . $context['sandbox']['progress'] . ' of ' . $context['sandbox']['max'] . '  nodes';
+    $wrapper = entity_metadata_wrapper('node', $nid);
+    $path = $wrapper->field_dam_storage_file_folder->value();
+    $filename = $wrapper->field_dam_storage_filename->value();
+    if (empty($filename)) {
+      continue;
+    }
+    $filepath = $path . '/' . $filename;
+    $url = $server . $filepath . findit_level3_query_string($filepath);
+    $response = drupal_http_request($url);
+    if ($response->code == 200) {
+      $new_location = $new_directory . $filename;
+      file_put_contents($new_location, $response->data);
+    }
+  }
+}
+
+function ns_content_migration_set_kb_business_entity() {
+  $input = fopen('public://kb-categories.csv', 'r');
+  $tids = array();
+  while ($row = fgetcsv($input)) {
+    $tids[$row[0]] = $row[2];
+  }
+  fclose($input);
+
+//  $entity_query = new EntityFieldQuery();
+//  $entity_query->entityCondition('entity_type', 'node')
+//    ->propertyCondition('type', 'knowledge_base_article')
+//    ->propertyCondition('status', 1);
+//  $nodes = $entity_query->execute();
+//  if (!empty($nodes)) {
+//    $nids = array_keys($nodes['node']);
+//    foreach ($nids as $nid) {
+//      $wrapper = entity_metadata_wrapper('node', $nid);
+//      if ($wrapper) {
+//        try {
+//          $category_tid = $wrapper->taxonomy_vocabulary_14->tid->value();
+//          $business_entity = $tids[$category_tid];
+//          if ($business_entity == 'DCI') {
+//            $wrapper->field_business_entity = '534';
+//          }
+//          else {
+//            $wrapper->field_business_entity = '533';
+//          }
+//          $wrapper->save();
+//        } catch (exception $e) {
+//          drupal_set_message($e->getMessage(), 'error');
+//        }
+//      }
+//    }
+//  }
+  foreach ($tids as $tid => $business_entity) {
+    $wrapper = entity_metadata_wrapper('taxonomy_term', $tid);
+    if ($wrapper) {
+      try {
+        switch (strtolower(trim($business_entity))) {
+          case 'dci':
+            $wrapper->field_business_entity = '534';
+            break;
+          case 'enterprise':
+            $wrapper->field_business_entity = '533';
+            break;
+          case 'both':
+            $wrapper->field_business_entity = '537';
+            break;
+        }
+        $wrapper->save();
+      } catch (exception $e) {
+        drupal_set_message($e->getMessage(), 'error');
+      }
+    }
+  }
+  drupal_set_message('Done.');
+}
+
+/**
+ * Implements hook_stream_wrappers().
+ */
+function ns_content_migration_stream_wrappers() {
+  return array(
+    'netscout' => array(
+      'name' => t('Sites netscout-f.com files'),
+      'class' => 'NetScoutStreamWrapper',
+      'description' => t('Provides read-write paths to sites/netscout-f.com/files.'),
+      'type' => STREAM_WRAPPERS_LOCAL_NORMAL,
+    ),
+  );
+}
+
+/**
+ * netscout files (netscout://) stream wrapper class.
+ */
+class NetScoutStreamWrapper extends DrupalPublicStreamWrapper {
+  public function getDirectoryPath() {
+    return 'sites/netscout-f.com/files';
+  }
+
+  /**
+   * Overrides getExternalUrl().
+   *
+   * Return the HTML URI of a public file.
+   */
+  function getExternalUrl() {
+    $path = str_replace('\\', '/', $this->getTarget());
+    return $GLOBALS['base_url'] . '/' . self::getDirectoryPath() . '/' . drupal_encode_path($path);
+  }
+}

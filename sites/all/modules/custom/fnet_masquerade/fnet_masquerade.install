@@ -1,0 +1,89 @@
+<?php
+// $Id$
+/**
+ * @file
+ * masquerade.install
+ *
+ * Install, uninstall and update hooks for the Masquarade module.
+ */
+
+/**
+ * Implements hook_schema().
+ *
+ * @return array
+ */
+function fnet_masquerade_schema() {
+  return array(
+    'fnet_masq_sessions' => array(
+      'description' => 'Each masquerading user has their session recorded into the fnet_masq_sessions table. Each record represents a masquerading user.',
+      'fields' => array(
+        'sid' => array(
+          'description' => 'The current session for this masquerading user corresponding to their {sessions}.sid.',
+          'type' => 'varchar',
+          'length' => '64',
+          'not null' => TRUE,
+          'default' => ''),
+        'uid_from' => array(
+          'description' => 'The {users}.uid corresponding to a session.',
+          'type' => 'int',
+          'not null' => TRUE,
+          'default' => 0,
+          'disp-width' => '10'),
+        'uid_as' => array(
+          'description' => 'The {users}.uid this session is masquerading as.',
+          'type' => 'int',
+          'not null' => TRUE,
+          'default' => 0,
+          'disp-width' => '10'),
+      ),
+      'indexes' => array(
+        'sid' => array('sid', 'uid_from'),
+        'sid_2' => array('sid', 'uid_as'),
+      ),
+    ),
+    'fnet_masq_users' => array(
+      'description' => 'Per-user permission table granting permissions to switch as a specific user.',
+      'fields' => array(
+        'uid_from' => array(
+          'description' => 'The {users}.uid that can masquerade as {fnet_masq_users}.uid_to.',
+          'type' => 'int',
+          'not null' => TRUE,
+          'default' => 0,
+          'disp-width' => 10,
+        ),
+        'uid_to' => array(
+          'description' => 'The {users}.uid that {fnet_masq_users}.uid_from can masquerade as.',
+          'type' => 'int',
+          'not null' => TRUE,
+          'default' => 0,
+          'disp-width' => 10,
+        ),
+      ),
+      'primary key' => array('uid_from', 'uid_to'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_install().
+ */
+function fnet_masquerade_install() {
+  db_update('system')
+    ->fields(array('weight' => -10))
+    ->condition('name', 'masquerade')
+    ->execute();
+
+  // add settings (pulled from Drupal 6 site)
+  $temp = unserialize('a:21:{i:5;s:1:"5";i:4;s:1:"4";i:7;s:1:"7";i:3;s:1:"3";i:17;s:2:"17";i:11;s:2:"11";i:14;s:2:"14";i:8;s:1:"8";i:10;s:2:"10";i:13;s:2:"13";i:15;s:2:"15";i:9;s:1:"9";i:19;i:0;i:21;i:0;i:1;i:0;i:2;i:0;i:6;i:0;i:20;i:0;i:18;i:0;i:12;i:0;i:16;i:0;}');
+  variable_set('fnet_masquerade_admin_roles', $temp);
+
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function fnet_masquerade_uninstall() {
+  variable_del('fnet_masquerade_test_user');
+  variable_del('fnet_masquerade_admin_roles');
+  variable_del('fnet_masquerade_quick_switches');
+}

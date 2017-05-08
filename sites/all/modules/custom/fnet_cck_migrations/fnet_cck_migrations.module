@@ -1,0 +1,133 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Migrate data that is not migrated by the migrate_cck module
+ *
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function fnet_cck_migrations_menu() {
+  $items = array();
+  $items['admin/structure/fnet_cck'] = array(
+    'title' => 'Migrate problem data',
+    'description' => 'Migrate data from d6 to d7',
+    'page callback' => 'fnet_cck_migrations_select_page',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+function fnet_cck_migrations_select_page() {
+  return drupal_get_form('fnet_cck_migrations_select_form');
+}
+
+function fnet_cck_migrations_select_form($form, &$form_state) {
+  $form = array();
+  $form['type_select'] = array(
+    '#type' => 'radios',
+    '#title' => t('Select data type to migrate'),
+    '#options' => drupal_map_assoc(array(
+      'bedrock',
+      'digital_asset',
+      'draggable views',
+      'fnet_ma',
+      'marketo_form',
+      'new users',
+      'product',
+      'promotion_fulfillment',
+      'remove_nav_marketo_form',
+      'remove_nav_page',
+      'remove_nav_page_reg',
+      'suite',
+      'user profile',
+    )),
+    '#description' => t('Select data type to migrate'),
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Migrate'),
+  );
+  return $form;
+}
+
+function fnet_cck_migrations_select_form_submit($form, &$form_state) {
+  switch ($form_state['values']['type_select']) {
+    case 'profile':
+      module_load_include('inc', 'fnet_cck_migrations', 'fnet_cck_migrations.profile');
+      fnet_cck_migrations_profile();
+      break;
+    case 'user profile':
+      module_load_include('inc', 'fnet_cck_migrations', 'fnet_cck_migrations.user_profile');
+      fnet_cck_migrations_user_profile();
+      break;
+    case 'bedrock':
+      module_load_include('inc', 'fnet_cck_migrations', 'fnet_cck_migrations.bedrock');
+      fnet_cck_migrations_bedrock();
+      break;
+    case 'marketo_form':
+      module_load_include('inc', 'fnet_cck_migrations', 'fnet_cck_migrations.marketo_form');
+      fnet_cck_migrations_marketo_form();
+      break;
+    case 'digital_asset':
+      module_load_include('inc', 'fnet_cck_migrations', 'fnet_cck_migrations.digital_asset');
+      fnet_cck_migrations_digital_asset();
+      break;
+    case 'product':
+      module_load_include('inc', 'fnet_cck_migrations', 'fnet_cck_migrations.product');
+      fnet_cck_migrations_product();
+      break;
+    case 'suite':
+      module_load_include('inc', 'fnet_cck_migrations', 'fnet_cck_migrations.suite');
+      fnet_cck_migrations_suite();
+      break;
+    case 'promotion_fulfillment':
+      module_load_include('inc', 'fnet_cck_migrations', 'fnet_cck_migrations.promotion_fulfillment');
+      fnet_cck_migrations_promotion_fulfillment();
+      break;
+    case 'draggable views':
+      module_load_include('inc', 'fnet_cck_migrations', 'fnet_cck_migrations.draggableviews');
+      fnet_cck_migrations_draggable_views();
+      break;
+    case 'new users':
+      module_load_include('inc', 'fnet_cck_migrations', 'fnet_cck_migrations.new_users');
+      fnet_cck_migrations_new_users();
+      break;
+    case 'fnet_ma':
+      module_load_include('inc', 'fnet_cck_migrations', 'fnet_cck_migrations.fnet_ma');
+      fnet_cck_migrations_fnet_ma();
+      break;
+    case 'remove_nav_page':
+      module_load_include('inc', 'fnet_cck_migrations', 'fnet_cck_migrations.remove_nav_page');
+      fnet_cck_migrations_remove_nav_page();
+      break;
+    case 'remove_nav_page_reg':
+      module_load_include('inc', 'fnet_cck_migrations', 'fnet_cck_migrations.remove_nav_page_reg');
+      fnet_cck_migrations_remove_nav_page_reg();
+      break;
+    case 'remove_nav_marketo_form':
+      module_load_include('inc', 'fnet_cck_migrations', 'fnet_cck_migrations.remove_nav_marketo_form');
+      fnet_cck_migrations_remove_nav_marketo_form();
+      break;
+  };
+}
+
+function fnet_cck_migrations_batch_finished($success, $results, $operations) {
+  if ($success) {
+    drupal_set_message(t('The final result was "%final"', array('%final' => end($results))));
+  }
+  else {
+    // An error occurred.
+    // $operations contains the operations that remained unprocessed.
+    $error_operation = reset($operations);
+    drupal_set_message(t('An error occurred while processing @operation with arguments : @args', array(
+      '@operation' => $error_operation[0],
+      '@args' => print_r($error_operation[0], TRUE),
+    )));
+  }
+  drupal_goto('admin/structure/fnet_cck');
+}

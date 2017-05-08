@@ -1,0 +1,179 @@
+<?php
+
+
+/**
+ * @file
+ * Email Page module file
+ *
+ * Used for sending node page content via email.
+ */
+
+/**
+ * Implementation of hook_menu().
+ *
+ * Set up a page with an e-mail contact form on it.
+ */
+function email_page_menu() {
+  $items['email_page/submit'] = array(
+    'title' => 'E-mail send page',
+    'page callback' => 'email_page_submit',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/fnet/email_page'] = array(
+    'title' => 'Email page settings',
+    'description' => "Settings for email page.",
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('email_page_admin_form'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer email page'),
+    'type' => MENU_NORMAL_ITEM,
+    'tab_parent' => 'admin/fnet',
+//    'type' => MENU_LOCAL_TASK,
+    'file' => 'email_page.admin.inc',
+  );
+  return $items;
+}
+
+function email_page_perm() {
+    return array(
+        'administer email page',
+    );
+}
+
+
+/**
+ * Implementation of hook_node_info().
+ */
+function email_page_node_info() {
+  $items = array(
+    'email_page' => array(
+      'name' => t('Email Page'),
+      'module' => 'features',
+      'description' => t('A page of content that will be mailed to a user supplied email address.  The body of this node should contain an html form with a post action of /email_page/send.  The form MUST contain input elements named emailto, emailfrom and emailbody.  The form MAY also contain input elements name emailcc  and emailbcc. The mail message will be sent to the emailto address with the emailbody sent as the body of the email after being formatted with a standard email template.  The content of the template is configurable at /admin/settings/email_page.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'has_body' => '1',
+      'body_label' => t('Body'),
+      'min_word_count' => '0',
+      'help' => '',
+    ),
+  );
+  return $items;
+}
+
+function email_page_submit(){
+  $referrer = $_SERVER['HTTP_REFERER'];
+  $matches = array();
+  $referring_domain = preg_match('@^(?:http://|https://)?([^/]+)@i', $referrer, $matches);
+  $referring_domain = explode('.', $matches[1], 2);
+  $referring_domain = strtolower($referring_domain[1]);
+  if (($referring_domain !== 'flukenetworks.com') && ($referring_domain !== 'danahertm.com')){
+    drupal_set_message('Submissions not allowed from this domain.');
+    drupal_goto($referrer);
+  }
+  if ($_SERVER['REQUEST_METHOD'] !== 'POST'){
+    drupal_set_message('You must post to this url.', 'error');
+    drupal_goto($referrer);
+  }
+  $regLang = $_COOKIE['regLang'];
+  $language = strtolower(substr($regLang, 0, 2));
+  $footer = variable_get("email_page_footer_$language", '');
+  if ($footer == ''){
+    $footer = variable_get("email_page_footer_en", '');
+  }
+// This check seems like a good idea, but the hidden emailtoken field may only work with HTML5
+// 'form' attribute
+//  if (!isset($_POST['emailtoken']) || !drupal_valid_token($_POST['emailtoken'])){
+//    drupal_set_message('Invalid email token!', 'error');
+//    drupal_goto($referrer);
+//  }
+  if (isset($_POST['emailto'])){
+    $to = $_POST['emailto'];
+    if (!valid_email_address($to)){
+      drupal_set_message('Email address appears invalid.', 'error');
+      drupal_goto($referrer);
+    }
+  }
+  if (isset($_POST['emailcc'])){
+    $cc = $_POST['emailcc'];
+  } else {
+    $cc = '';
+  }
+  if (isset($_POST['emailbcc'])){
+    $bcc = $_POST['emailbcc'];
+  } else {
+    $bcc = '';
+  }
+  if (isset($_POST['emailfrom'])){
+    $from = $_POST['emailfrom'];
+  } else {
+    $from = '';
+  }
+  if (isset($_POST['emailsubject'])){
+    $subject = $_POST['emailsubject'];
+  } else {
+    $subject = '';
+  }
+    if (isset($_POST['emailbody'])){
+    $body = $_POST['emailbody'];
+  }
+  $message = array();
+  $template = variable_get('email_page_template', '');
+
+  if (strpos($template, '%body') !== false){
+    $body = strtr($template, array('%body'=> $body, '%footer' => $footer));
+  }
+  $message['subject'] = $subject;
+  $message['from'] = $from;
+  $message['to'] = $to;
+  $message['body'] = $body;
+
+  $headers = array(
+    'MIME-Version' => '1.0',
+    'Content-Type' => 'text/html;charset=utf-8',);
+  $headers['From'] = $headers['Sender'] = $headers['Return-Path'] = $headers['Errors-To'] = $message['from'] = $from;
+  if ($cc){
+    $headers['Cc'] = $cc;
+  }
+  if ($bcc){
+    $headers['Bcc'] = $bcc;
+  }
+  $message['headers'] = $headers;
+  // If 'Return-Path' isn't already set in php.ini, we pass it separately as an
+  // additional parameter instead of in the header.
+  if (isset($message['headers']['Return-Path']) && !ini_get('safe_mode')) {
+    $return_path_set = strpos(ini_get('sendmail_path'), ' -f');
+    if (!$return_path_set) {
+      $message['Return-Path'] = $message['headers']['Return-Path'];
+      unset($message['headers']['Return-Path']);
+    }
+  }
+
+  // Send the mail, and check for success. Note that this does not guarantee
+  // message delivery; only that there were no PHP-related issues encountered
+  // while sending.
+
+
+//  $result = drupal_mail_send($message);
+  $result = fnet_helper_mail_send($message, true);
+
+  if ($result == true) {
+    watchdog('email_page', 'Email sent - subject: %subject from: %from to: %to', array('%from' => $message['from'], '%to' =>$message['to'], '%subject' => $message['subject']),WATCHDOG_INFO);
+  } else {
+    watchdog('email_page', 'Error sending mail - subject: %subject from: %from to: %to', array('%from' => $message['from'], '%to' =>$message['to'], '%subject' => $message['subject']),WATCHDOG_ERROR);
+  }
+  drupal_goto($referrer);
+}
+
+
+
+function email_page_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL){
+  if ($node->type == 'email_page'){
+    if ($op == 'view'){
+      drupal_add_js(drupal_get_path('module', 'email_page') .'/email_page.js', 'module');
+    }
+  }
+}

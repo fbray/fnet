@@ -1,0 +1,46 @@
+/* $Id$ */
+
+#ascii-profile-left-column {
+    float: left;
+    width: 45%;
+}
+
+#ascii-profile-right-column {
+    float: right;
+    width: 45%;
+}
+
+#profile-submit {
+    float: none;
+    clear: both;
+    padding-top: 10px;
+}
+
+#profile-submit .form-submit {
+    width: 180px;
+}
+
+#profile-submit .form-submit {
+    background-color: #fec727;
+    background-image: linear-gradient(180deg, #fec727, #dbac21 75%);
+    padding: 5px 3px;
+    border: 1px solid #674d00;
+    border-radius: 2px;
+    display: block;
+    line-height: normal;
+    text-align: center;
+    text-decoration: none;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    color: #000000;
+
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+#profile-submit .form-submit:hover {
+    background-color: #a2a2a2;
+    background-image: linear-gradient(180deg, #c3c3c3, #a2a2a2 75%);
+}

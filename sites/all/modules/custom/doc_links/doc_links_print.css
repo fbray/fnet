@@ -1,0 +1,242 @@
+/* $Id$ */
+
+/* context module requires this */
+a.context-block-region {
+    display: none;
+}
+
+/* Datasheet Styles */
+
+#ds_type_title {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+
+.ds_type_name {
+    float: right;
+    font-weight: bold;
+    font-size: 13px;
+    padding-top: 7px;
+    padding-right: 20px;
+}
+
+.ds_title {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+    line-height: normal;
+    color: #293F6A;
+}
+
+.ds_subtitle {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 18px;
+    font-style: italic;
+    font-weight: bold;
+    color: #293F6A;
+}
+
+.ds_content {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    background-color: #FFFFFF;
+}
+
+.ds_specification {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+
+.ds_moa {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+
+.ds_footer {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    background-color: #FFFFFF;
+    padding: 10px;
+}
+
+.DS_SM_TXT-Header_Footer {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: #293F6A;
+    text-align: right;
+    vertical-align: top;
+}
+
+.DS_Screens {
+    text-align: center;
+    padding: 3px;
+    border-top-style: none;
+    border-top-style: none;
+    border-bottom-style: none;
+    border-left-style: none;
+}
+
+.DS_Captions {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    font-style: italic;
+    font-weight: normal;
+    font-variant: normal;
+    color: #000;
+    text-align: left;
+}
+
+.DS_Table_Header_Row {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: #FFF;
+    background-color: #293F6a;
+    padding: 2px;
+    text-align: left;
+}
+
+.DS_Table_Row_Grey {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    color: #000;
+    background-color: #EDEDED;
+    text-align: left;
+    padding: 2px;
+}
+
+.DS_FootNotes {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 9px;
+}
+
+.DS_Table_Row_White {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    color: #000;
+    background-color: #ffffff;
+    text-align: left;
+    padding: 2px;
+}
+
+.DS_Body_Copy {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: #000;
+}
+
+.DS_Headline {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 18px;
+    font-weight: normal;
+    color: #293F6a;
+    text-align: left;
+    vertical-align: top;
+    font-style: normal;
+    line-height: normal;
+    font-variant: normal;
+    letter-spacing: normal;
+    word-spacing: normal;
+}
+
+.DS_Web_CTA {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    color: #FFF;
+}
+
+.DS_Product_Image {
+    text-align: right;
+    vertical-align: top;
+    white-space: normal;
+    padding: 4px;
+}
+
+.DS_Overview_TXT {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-style: italic;
+    font-weight: normal;
+    text-align: left;
+    vertical-align: top;
+    color: #000;
+}
+
+/**
+ * For the print.module version of our page.
+ *
+ * These rules have been tweaked down to the exact pixel in order to allow
+ * for the best conversion to PDF. Be very careful about changing these
+ * values. If these values are changed, the page designers MUST be provided
+ * with the changes so that they can prevent their content from exceeding
+ * our PDF boundaries.
+ */
+#print_view {
+    width: 900px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+#print_view .edocs_page_header, #print_view .edocs_page_wrapper,
+#print_view .edocs_page_wrapper_last {
+    padding: 60px 0px 0px 0px;
+    margin: 0px 0px 0px 0px;
+    border-top: 0px;
+}
+
+/* Debugging CSS
+#print_view .edocs_page_wrapper,
+#print_view .edocs_page_wrapper_first,
+#print_view .edocs_page_wrapper_last {
+	border: 1px solid red;
+}
+*/
+
+#print_view .ds_content,
+#print_view .DS_Overview_TXT,
+#print_view .DS_Body_Copy {
+    font-size: 11pt; /* PDF converter doesn't like px */
+}
+
+#print_view .edocs_page_wrapper_first {
+    page-break-after: always;
+    padding: 5px;
+    height: 970px;
+}
+
+#print_view .edocs_page_wrapper_first p {
+    padding-top: 0px;
+    margin-top: 0px;
+}
+
+#print_view .edocs_page_wrapper {
+    page-break-after: always;
+    height: 1145px;
+}
+
+#print_view .edocs_page_wrapper p {
+    padding-top: 0px;
+    margin-top: 0px;
+}
+
+#print_view .edocs_page_wrapper_last {
+    height: 1050px;
+}
+
+/* undo unwanted styles bleeding in */
+#print_view ul {
+    margin: 10px 0 10px 3.0em;
+    padding: 0 0 0.25em 3px;
+}
+
+#print_view .node-unpublished {
+    background-color: #ffffff;
+}
+
+h1.node-title {
+    line-height: normal;
+}
+
+.node-title a {
+    text-decoration: none;
+}

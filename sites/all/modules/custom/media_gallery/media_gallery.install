@@ -1,0 +1,206 @@
+<?php
+
+function media_gallery_install() {
+
+}
+
+function media_gallery_enable() {
+
+	$field_bases = _mg_field_default_field_bases();
+	foreach ($field_bases as $field => $settings) {
+		if (!field_info_field($field) ) {
+			drupal_set_message('Creating field ' . $field );
+			field_create_field($settings);
+		}
+	}
+
+	$field_instances = _mg_field_default_field_instances();
+
+	foreach ($field_instances as $key => $settings) {
+		$field_name = $settings['field_name'];
+		$bundle_name = $settings['bundle'];
+	    $entity_type = $settings['entity_type'];
+
+		if (! field_info_instance($entity_type, $field_name, $bundle_name) ) {
+			drupal_set_message('Creating field instance ' . $field_name . ' for ' . $bundle_name );
+			field_create_instance($settings);
+		}
+	}	
+
+
+}
+
+
+
+function _mg_field_default_field_bases() {
+  $field_bases = array();
+
+  // Exported field_base: 'field_box_gallery_id'
+  $field_bases['field_box_gallery_id'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_box_gallery_id',
+    'indexes' => array(
+      'target_id' => array(
+        0 => 'target_id',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'entityreference',
+    'settings' => array(
+      'handler' => 'base',
+      'handler_settings' => array(
+        'behaviors' => array(
+          'views-select-list' => array(
+            'status' => 0,
+          ),
+        ),
+        'sort' => array(
+          'type' => 'none',
+        ),
+        'target_bundles' => array(),
+      ),
+      'target_type' => 'box_gallery',
+    ),
+    'translatable' => 0,
+    'type' => 'entityreference',
+  );
+
+  // Exported field_base: 'field_gallery_video_url'
+  $field_bases['field_gallery_video_url'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_gallery_video_url',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'link',
+    'settings' => array(
+      'attributes' => array(
+        'class' => '',
+        'rel' => '',
+        'target' => 'default',
+      ),
+      'display' => array(
+        'url_cutoff' => 80,
+      ),
+      'enable_tokens' => 1,
+      'title' => 'optional',
+      'title_maxlength' => 128,
+      'title_value' => '',
+      'url' => 0,
+    ),
+    'translatable' => 0,
+    'type' => 'link_field',
+  );
+
+  return $field_bases;
+}
+
+
+function _mg_field_default_field_instances() {
+  $field_instances = array();
+
+  // Exported field_instance: 'node-media_gallery-field_box_gallery_id'
+  $field_instances['node-media_gallery-field_box_gallery_id'] = array(
+    'bundle' => 'media_gallery',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'hidden',
+        'module' => 'entityreference',
+        'settings' => array(
+          'links' => 1,
+          'view_mode' => 'node_settings',
+        ),
+        'type' => 'entityreference_entity_view',
+        'weight' => 4,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_box_gallery_id',
+    'label' => 'Box Gallery',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-media_gallery-field_gallery_video_url'
+  $field_instances['node-media_gallery-field_gallery_video_url'] = array(
+    'bundle' => 'media_gallery',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'hidden',
+        'module' => 'media_gallery',
+        'settings' => array(),
+        'type' => 'link_video_embed',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_gallery_video_url',
+    'label' => 'Gallery Video URL',
+    'required' => 0,
+    'settings' => array(
+      'absolute_url' => 1,
+      'attributes' => array(
+        'class' => '',
+        'configurable_class' => 0,
+        'configurable_title' => 0,
+        'rel' => '',
+        'target' => 'default',
+        'title' => '',
+      ),
+      'display' => array(
+        'url_cutoff' => 80,
+      ),
+      'enable_tokens' => 1,
+      'rel_remove' => 'default',
+      'title' => 'optional',
+      'title_label_use_field_label' => 0,
+      'title_maxlength' => 128,
+      'title_value' => '',
+      'url' => 0,
+      'user_register_form' => FALSE,
+      'validate_url' => 0,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'link',
+      'settings' => array(),
+      'type' => 'link_field',
+      'weight' => 44,
+    ),
+  );
+
+
+  return $field_instances;
+}

@@ -1,0 +1,240 @@
+<?php
+$view = new view();
+$view->name = 'sales_insider_products';
+$view->description = '';
+$view->tag = 'default';
+$view->base_table = 'node';
+$view->human_name = 'Sales Insider Products';
+$view->core = 7;
+$view->api_version = '3.0';
+$view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+/* Display: Master */
+$handler = $view->new_display('default', 'Master', 'default');
+$handler->display->display_options['title'] = 'Product Information';
+$handler->display->display_options['use_more_always'] = FALSE;
+$handler->display->display_options['group_by'] = TRUE;
+$handler->display->display_options['access']['type'] = 'role';
+$handler->display->display_options['access']['role'] = array(
+  22 => '22',
+  23 => '23',
+);
+$handler->display->display_options['cache']['type'] = 'none';
+$handler->display->display_options['query']['type'] = 'views_query';
+$handler->display->display_options['exposed_form']['type'] = 'input_required';
+$handler->display->display_options['exposed_form']['options']['submit_button'] = 'Search';
+$handler->display->display_options['exposed_form']['options']['expose_sort_order'] = FALSE;
+$handler->display->display_options['exposed_form']['options']['text_input_required'] = '';
+$handler->display->display_options['exposed_form']['options']['text_input_required_format'] = '6';
+$handler->display->display_options['pager']['type'] = 'full';
+$handler->display->display_options['pager']['options']['items_per_page'] = '50';
+$handler->display->display_options['style_plugin'] = 'default';
+$handler->display->display_options['style_options']['grouping'] = array(
+  0 => array(
+    'field' => 'field_dam_asset_type',
+    'rendered' => 1,
+    'rendered_strip' => 0,
+  ),
+);
+$handler->display->display_options['row_plugin'] = 'fields';
+$handler->display->display_options['row_options']['inline'] = array(
+  'title' => 'title',
+);
+/* Header: Global: Text area */
+$handler->display->display_options['header']['area']['id'] = 'area';
+$handler->display->display_options['header']['area']['table'] = 'views';
+$handler->display->display_options['header']['area']['field'] = 'area';
+$handler->display->display_options['header']['area']['empty'] = TRUE;
+$handler->display->display_options['header']['area']['content'] = 'Select the Product that you want information for.';
+$handler->display->display_options['header']['area']['format'] = '6';
+/* No results behavior: Global: Text area */
+$handler->display->display_options['empty']['area']['id'] = 'area';
+$handler->display->display_options['empty']['area']['table'] = 'views';
+$handler->display->display_options['empty']['area']['field'] = 'area';
+$handler->display->display_options['empty']['area']['label'] = 'No information found';
+$handler->display->display_options['empty']['area']['empty'] = TRUE;
+$handler->display->display_options['empty']['area']['content'] = 'No information for this Product was found.';
+$handler->display->display_options['empty']['area']['format'] = '6';
+/* Field: Content: Document ID */
+$handler->display->display_options['fields']['field_dam_document_id']['id'] = 'field_dam_document_id';
+$handler->display->display_options['fields']['field_dam_document_id']['table'] = 'field_data_field_dam_document_id';
+$handler->display->display_options['fields']['field_dam_document_id']['field'] = 'field_dam_document_id';
+$handler->display->display_options['fields']['field_dam_document_id']['label'] = '';
+$handler->display->display_options['fields']['field_dam_document_id']['exclude'] = TRUE;
+$handler->display->display_options['fields']['field_dam_document_id']['element_label_colon'] = FALSE;
+$handler->display->display_options['fields']['field_dam_document_id']['settings'] = array(
+  'field_formatter_filter' => '',
+);
+/* Field: Content: Title */
+$handler->display->display_options['fields']['title']['id'] = 'title';
+$handler->display->display_options['fields']['title']['table'] = 'node';
+$handler->display->display_options['fields']['title']['field'] = 'title';
+$handler->display->display_options['fields']['title']['label'] = '';
+$handler->display->display_options['fields']['title']['alter']['make_link'] = TRUE;
+$handler->display->display_options['fields']['title']['alter']['path'] = 'vftf/[field_dam_document_id]';
+$handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
+$handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
+$handler->display->display_options['fields']['title']['element_label_colon'] = FALSE;
+$handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
+/* Field: Content: Asset type */
+$handler->display->display_options['fields']['field_dam_asset_type']['id'] = 'field_dam_asset_type';
+$handler->display->display_options['fields']['field_dam_asset_type']['table'] = 'field_data_field_dam_asset_type';
+$handler->display->display_options['fields']['field_dam_asset_type']['field'] = 'field_dam_asset_type';
+$handler->display->display_options['fields']['field_dam_asset_type']['label'] = '';
+$handler->display->display_options['fields']['field_dam_asset_type']['exclude'] = TRUE;
+$handler->display->display_options['fields']['field_dam_asset_type']['element_label_colon'] = FALSE;
+/* Sort criterion: Content: Asset type (field_dam_asset_type) */
+$handler->display->display_options['sorts']['field_dam_asset_type_value']['id'] = 'field_dam_asset_type_value';
+$handler->display->display_options['sorts']['field_dam_asset_type_value']['table'] = 'field_data_field_dam_asset_type';
+$handler->display->display_options['sorts']['field_dam_asset_type_value']['field'] = 'field_dam_asset_type_value';
+/* Sort criterion: Content: Title */
+$handler->display->display_options['sorts']['title']['id'] = 'title';
+$handler->display->display_options['sorts']['title']['table'] = 'node';
+$handler->display->display_options['sorts']['title']['field'] = 'title';
+/* Filter criterion: Content: Published */
+$handler->display->display_options['filters']['status']['id'] = 'status';
+$handler->display->display_options['filters']['status']['table'] = 'node';
+$handler->display->display_options['filters']['status']['field'] = 'status';
+$handler->display->display_options['filters']['status']['value'] = 1;
+$handler->display->display_options['filters']['status']['group'] = 1;
+$handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+/* Filter criterion: Content: Type */
+$handler->display->display_options['filters']['type']['id'] = 'type';
+$handler->display->display_options['filters']['type']['table'] = 'node';
+$handler->display->display_options['filters']['type']['field'] = 'type';
+$handler->display->display_options['filters']['type']['value'] = array(
+  'digital_asset' => 'digital_asset',
+);
+$handler->display->display_options['filters']['type']['group'] = 1;
+/* Filter criterion: Content: Document Status (field_dam_document_status) */
+$handler->display->display_options['filters']['field_dam_document_status_value']['id'] = 'field_dam_document_status_value';
+$handler->display->display_options['filters']['field_dam_document_status_value']['table'] = 'field_data_field_dam_document_status';
+$handler->display->display_options['filters']['field_dam_document_status_value']['field'] = 'field_dam_document_status_value';
+$handler->display->display_options['filters']['field_dam_document_status_value']['value'] = array(
+  'live' => 'live',
+);
+$handler->display->display_options['filters']['field_dam_document_status_value']['group'] = 1;
+/* Filter criterion: Content: Filter by only DCI products. */
+$handler->display->display_options['filters']['dci_related_products']['id'] = 'dci_related_products';
+$handler->display->display_options['filters']['dci_related_products']['table'] = 'field_data_field_dam_related_product';
+$handler->display->display_options['filters']['dci_related_products']['field'] = 'dci_related_products';
+$handler->display->display_options['filters']['dci_related_products']['group'] = 1;
+$handler->display->display_options['filters']['dci_related_products']['exposed'] = TRUE;
+$handler->display->display_options['filters']['dci_related_products']['expose']['operator_id'] = 'dci_related_products_op';
+$handler->display->display_options['filters']['dci_related_products']['expose']['label'] = 'Products';
+$handler->display->display_options['filters']['dci_related_products']['expose']['operator'] = 'dci_related_products_op';
+$handler->display->display_options['filters']['dci_related_products']['expose']['identifier'] = 'dci_related_products';
+$handler->display->display_options['filters']['dci_related_products']['expose']['remember_roles'] = array(
+  2 => '2',
+  5 => 0,
+  13 => 0,
+  22 => 0,
+  19 => 0,
+  1 => 0,
+  6 => 0,
+  20 => 0,
+  4 => 0,
+  7 => 0,
+  3 => 0,
+  21 => 0,
+  18 => 0,
+  17 => 0,
+  12 => 0,
+  11 => 0,
+  14 => 0,
+  16 => 0,
+  8 => 0,
+  10 => 0,
+  15 => 0,
+  9 => 0,
+  23 => 0,
+);
+/* Filter criterion: Content: Asset type (field_dam_asset_type) */
+$handler->display->display_options['filters']['field_dam_asset_type_value']['id'] = 'field_dam_asset_type_value';
+$handler->display->display_options['filters']['field_dam_asset_type_value']['table'] = 'field_data_field_dam_asset_type';
+$handler->display->display_options['filters']['field_dam_asset_type_value']['field'] = 'field_dam_asset_type_value';
+$handler->display->display_options['filters']['field_dam_asset_type_value']['group'] = 1;
+$handler->display->display_options['filters']['field_dam_asset_type_value']['exposed'] = TRUE;
+$handler->display->display_options['filters']['field_dam_asset_type_value']['expose']['operator_id'] = 'field_dam_asset_type_value_op';
+$handler->display->display_options['filters']['field_dam_asset_type_value']['expose']['label'] = 'Asset type';
+$handler->display->display_options['filters']['field_dam_asset_type_value']['expose']['operator'] = 'field_dam_asset_type_value_op';
+$handler->display->display_options['filters']['field_dam_asset_type_value']['expose']['identifier'] = 'field_dam_asset_type_value';
+$handler->display->display_options['filters']['field_dam_asset_type_value']['expose']['multiple'] = TRUE;
+$handler->display->display_options['filters']['field_dam_asset_type_value']['expose']['remember_roles'] = array(
+  2 => '2',
+  5 => 0,
+  13 => 0,
+  22 => 0,
+  19 => 0,
+  1 => 0,
+  6 => 0,
+  20 => 0,
+  4 => 0,
+  7 => 0,
+  3 => 0,
+  21 => 0,
+  18 => 0,
+  17 => 0,
+  12 => 0,
+  11 => 0,
+  14 => 0,
+  16 => 0,
+  8 => 0,
+  10 => 0,
+  15 => 0,
+  9 => 0,
+  23 => 0,
+);
+/* Filter criterion: Content: Language (field_dam_language) */
+$handler->display->display_options['filters']['field_dam_language_value']['id'] = 'field_dam_language_value';
+$handler->display->display_options['filters']['field_dam_language_value']['table'] = 'field_data_field_dam_language';
+$handler->display->display_options['filters']['field_dam_language_value']['field'] = 'field_dam_language_value';
+$handler->display->display_options['filters']['field_dam_language_value']['value'] = array(
+  'en' => 'en',
+  'zh' => 'zh',
+  'fr' => 'fr',
+  'de' => 'de',
+  'ja' => 'ja',
+  'ko' => 'ko',
+  'pt' => 'pt',
+  'ru' => 'ru',
+  'es' => 'es',
+);
+$handler->display->display_options['filters']['field_dam_language_value']['group'] = 1;
+$handler->display->display_options['filters']['field_dam_language_value']['exposed'] = TRUE;
+$handler->display->display_options['filters']['field_dam_language_value']['expose']['operator_id'] = 'field_dam_language_value_op';
+$handler->display->display_options['filters']['field_dam_language_value']['expose']['label'] = 'Language';
+$handler->display->display_options['filters']['field_dam_language_value']['expose']['operator'] = 'field_dam_language_value_op';
+$handler->display->display_options['filters']['field_dam_language_value']['expose']['identifier'] = 'field_dam_language_value';
+$handler->display->display_options['filters']['field_dam_language_value']['expose']['required'] = TRUE;
+$handler->display->display_options['filters']['field_dam_language_value']['expose']['remember_roles'] = array(
+  2 => '2',
+  5 => 0,
+  13 => 0,
+  22 => 0,
+  19 => 0,
+  1 => 0,
+  6 => 0,
+  20 => 0,
+  4 => 0,
+  7 => 0,
+  3 => 0,
+  21 => 0,
+  18 => 0,
+  17 => 0,
+  12 => 0,
+  11 => 0,
+  14 => 0,
+  16 => 0,
+  8 => 0,
+  10 => 0,
+  15 => 0,
+  9 => 0,
+  23 => 0,
+);
+
+/* Display: Page */
+$handler = $view->new_display('page', 'Page', 'product_page');
+$handler->display->display_options['path'] = 'extranet/tools/products';
+
+?>

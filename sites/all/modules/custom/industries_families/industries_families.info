@@ -1,0 +1,6 @@
+; $Id: homepage.info 1016 2015-06-02 21:44:36Z jcaratoz $
+name = industries_families
+package = Fluke Networks
+description = Handles all of the data gathering, including language overrides, for the industry and family types
+version = 7.x.1.0-20150603
+core = 7.x

@@ -1,0 +1,48 @@
+/* $Id$ */
+
+.print-links-container {
+    float: right;
+    width: 120px;
+    border: solid 1px #BBBBBB;
+    margin: 0px 0px 0px 15px;
+    text-align: center !important;
+}
+
+.print-links-container a {
+    text-align: center !important;
+    padding-left: 0.4em;
+}
+
+#print-links-container-header {
+    padding: 4px;
+    background-color: #CCCCCC;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+}
+
+#print-links-wrapper {
+    padding: 7px 0 7px 0px;
+    margin: auto;
+}
+
+.print_html, .print_pdf {
+    margin: auto !important;
+    padding: 0 5px 0 16px;
+    text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+
+.print_pdf {
+    background-image: url(images/pdf_icon.gif);
+    background-repeat: no-repeat;
+    background-position: left;
+}
+
+.print_html {
+    background-image: url(images/print_icon.gif);
+    background-repeat: no-repeat;
+    background-position: left;
+}

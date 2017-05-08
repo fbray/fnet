@@ -1,0 +1,13 @@
+name = Box Entity Info
+core = 7.x
+package = box
+
+files[] = BoxControllerBase.class.php
+files[] = BoxGalleryController.class.php
+files[] = BoxImageSizeController.class.php
+files[] = BoxThumbnailController.class.php
+
+dependencies[] = box_connect
+dependencies[] = views
+
+

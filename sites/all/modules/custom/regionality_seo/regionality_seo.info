@@ -1,0 +1,7 @@
+; $Id$
+name = Regionality SEO
+package = Fluke Networks
+description = "Allow meta tag and page title overrides based on Fluke Networks regionality"
+dependencies[] = metatag
+version = 7.x.0.0
+core = 7.x

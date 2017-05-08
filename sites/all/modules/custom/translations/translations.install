@@ -1,0 +1,230 @@
+<?php
+ // $Id$
+
+/**
+ * @file
+ * Drupal install file for translations.module
+ *
+ */
+
+/**
+ * Implements hook_enable().
+().
+ */
+function translations_enable() {
+
+}
+
+/**
+ * Implements hook_disable().
+().
+ */
+function translations_disable() {
+
+}
+
+/**
+ * Implements hook_uninstall().
+().
+ */
+function translations_uninstall() {
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_uninstall_schema('translations')
+  variable_del('translations_display_region_node_types');
+  variable_del('translations_languages_node_types');
+  variable_del('translations_non_content_urls');
+}
+
+/**
+ * Implements hook_install().
+().
+ */
+function translations_install() {
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_install_schema('translations')
+}
+
+/**
+ * Implements hook_schema
+().
+ */
+function translations_schema() {
+  $schema['translations'] = array(
+    'description' => 'Node translation status',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'node id',
+        'type' => 'int',
+        'unsigned' => true,
+        'not null' => true,
+      ),
+      'language' => array(
+        'description' => 'language',
+        'type' => 'varchar',
+        'length' => '10',
+        'not null' => true,
+      ),
+      'status' => array(
+        'description' => 'translation status',
+        'type' => 'int',
+        'not null' => false,
+      ),
+    ),
+    'primary key' => array('nid', 'language'),
+  );
+  $schema['language_region'] = array(
+    'description' => 'Node regionality status',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'node id',
+        'type' => 'int',
+        'unsigned' => true,
+        'not null' => true,
+      ),
+      'langreg' => array(
+        'description' => 'language region',
+        'type' => 'varchar',
+        'length' => '10',
+        'not null' => true,
+      ),
+      'status' => array(
+        'description' => 'regionality status',
+        'type' => 'int',
+        'not null' => false,
+      ),
+    ),
+    'primary key' => array('nid', 'langreg'),
+  );
+  return $schema;
+}
+
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function translations_update_6002() {
+  $ret = array();
+  $languages = array('fr', 'de', 'es', 'pt', 'cn', 'jp', 'ko', 'ru');
+  foreach ($languages as $lang) {
+    $query = "INSERT INTO {translations} (nid, language, status)
+              SELECT n.nid, '" . $lang . "', 1
+              FROM node n
+              WHERE n.type IN ('homepage2013','product','industry','family');;";
+    // TODO Please convert this statement to the D7 database API syntax.
+    $result = db_query($query);
+    $ret[] = array(
+      'success' => (bool) $result,
+      'query' => $query,
+    );
+  }
+  // Expertise Topics
+  $query = "INSERT INTO {language_region} (nid, langreg, status)
+            SELECT cet.nid, cet.field_exp_tpc_region_value, 1
+            FROM content_field_exp_tpc_region cet, node n
+            WHERE cet.nid=n.nid AND cet.vid=n.vid;";
+  // TODO Please convert this statement to the D7 database API syntax.
+  /* db_query($query) */
+  $result = NULL;
+  $ret[] = array(
+    'success' => (bool) $result,
+    'query' => $query,
+  );
+  // Expertise Roles
+  $query = "INSERT INTO {language_region} (nid, langreg, status)
+            SELECT cer.nid, cer.field_exp_rle_region_value, 1
+            FROM content_field_exp_rle_region cer, node n
+            WHERE cer.nid=n.nid AND cer.vid=n.vid;";
+  // TODO Please convert this statement to the D7 database API syntax.
+  /* db_query($query) */
+  $result = NULL;
+  $ret[] = array(
+    'success' => (bool) $result,
+    'query' => $query,
+  );
+  // Expertise Industries
+  $query = "INSERT INTO {language_region} (nid, langreg, status)
+            SELECT cei.nid, cei.field_exp_ind_region_value, 1
+            FROM content_field_exp_ind_region cei, node n
+            WHERE cei.nid=n.nid AND cei.vid=n.vid;";
+  // TODO Please convert this statement to the D7 database API syntax.
+  /* db_query($query) */
+  $result = NULL;
+  $ret[] = array(
+    'success' => (bool) $result,
+    'query' => $query,
+  );
+  // press release
+  $query = "INSERT INTO {language_region} (nid, langreg, status)
+            SELECT cnl.nid, cnl.field_news_langreg_value, 1
+            FROM content_field_news_langreg cnl, node n
+            WHERE cnl.nid=n.nid AND cnl.vid=n.vid;";
+  // TODO Please convert this statement to the D7 database API syntax.
+  /* db_query($query) */
+  $result = NULL;
+  $ret[] = array(
+    'success' => (bool) $result,
+    'query' => $query,
+  );
+  // promotions
+  $query = "INSERT INTO {language_region} (nid, langreg, status)
+            SELECT cpl.nid, cpl.field_promo_langreg_value, 1
+            FROM content_field_promo_langreg cpl, node n
+            WHERE cpl.nid=n.nid AND cpl.vid=n.vid;";
+  // TODO Please convert this statement to the D7 database API syntax.
+  /* db_query($query) */
+  $result = NULL;
+  $ret[] = array(
+    'success' => (bool) $result,
+    'query' => $query,
+  );
+  // award
+  $query = "INSERT INTO {language_region} (nid, langreg, status)
+            SELECT cal.nid, cal.field_award_langreg_value, 1
+            FROM content_field_award_langreg cal, node n
+            WHERE cal.nid=n.nid AND cal.vid=n.vid;";
+  // TODO Please convert this statement to the D7 database API syntax.
+  /* db_query($query) */
+  $result = NULL;
+  $ret[] = array(
+    'success' => (bool) $result,
+    'query' => $query,
+  );
+  // event
+  $query = "INSERT INTO {language_region} (nid, langreg, status)
+            SELECT cel.nid, cel.field_event_langreg_value, 1
+            FROM content_field_event_langreg cel, node n
+            WHERE cel.nid=n.nid AND cel.vid=n.vid;";
+  // TODO Please convert this statement to the D7 database API syntax.
+  /* db_query($query) */
+  $result = NULL;
+  $ret[] = array(
+    'success' => (bool) $result,
+    'query' => $query,
+  );
+//  event occurrence
+  $query = "INSERT INTO {language_region} (nid, langreg, status)
+            SELECT ceo.nid, ceo.field_evnt_occ_langreg_value, 1
+            FROM content_field_evnt_occ_langreg ceo, node n
+            WHERE ceo.nid=n.nid AND ceo.vid=n.vid;";
+  // TODO Please convert this statement to the D7 database API syntax.
+  /* db_query($query) */
+  $result = NULL;
+  $ret[] = array(
+    'success' => (bool) $result,
+    'query' => $query,
+  );
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+}
+
+function translations_update_7100() {
+
+  watchdog('translations', 'Applying Update 7100');
+  translations_update_field_langreg();
+
+  return t('Translations: update 7100 applied');
+
+}
+

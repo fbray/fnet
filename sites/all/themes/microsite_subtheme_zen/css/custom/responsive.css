@@ -1,0 +1,325 @@
+
+/* ==========================================================================
+   Responsive Styles
+   ========================================================================== */
+@media (max-width: 700px) {
+
+    .responsive-only { display:block; }
+
+    /* Global Styles */
+    h1 {
+        font-size:2.75em;
+    }
+    h2 {
+        font-size:2.5em;
+    }
+    h3 {
+        font-size: 1.75em;
+    }
+    p {
+        font-size:1.5em;
+    }
+    p.larger {
+        font-size:1.875em;
+    }
+
+    body.page-with-sideblocks #content-column {
+        width:auto;
+        float:none;
+    }
+    body.page-with-sideblocks #region-sideblocks {
+        width:auto;
+        float:none;
+
+        border-top: 2px solid #ebebeb;
+        margin:2em 0 0;
+        padding:2em 0 0;
+    }
+
+    .section-blog #main-wrapper #content-area .view-content p,
+    .section-blog #main-wrapper #content-area .view-content ul,
+    .section-blog #main-wrapper #content-area .view-content ol,
+    .section-blog #main-wrapper #content-area .view-content dl,
+    .section-blog #main-wrapper #content-area .view-content pre,
+    .section-blog #main-wrapper #content-area .view-content table,
+    .section-blog #main-wrapper #content-area .view-content fieldset,
+    body.node-type-blog-article #main-wrapper #content #blog-article-content p,
+    body.node-type-blog-article #main-wrapper #content #blog-article-content ul,
+    body.node-type-blog-article #main-wrapper #content #blog-article-content ol,
+    body.node-type-blog-article #main-wrapper #content #blog-article-content dl,
+    body.node-type-blog-article #main-wrapper #content #blog-article-content pre,
+    body.node-type-blog-article #main-wrapper #content #blog-article-content table,
+    body.node-type-blog-article #main-wrapper #content #blog-article-content fieldset {
+        font-size:1.5em;
+    }
+
+    div.section-header {
+        font-size: 1.125em;
+        padding: 3em 0 0;
+        background: url(images/pixel-yellow.jpg) 0 3.5em repeat-x transparent;
+    }
+    div.section-header span:before, div.section-header span:after {
+        border-top: 2px solid #ffc20e;
+        top: 0.5em;
+    }
+
+    #header {
+        position:fixed;
+        z-index:999;
+        width:100%;
+        background-color:#fff;
+        height:40px;
+        border-bottom: 3px solid #293f6a;
+    }
+    #header #block-menu-menu-msite-fnet-logo ul.menu li a {
+        background: url(images/logo-fluke-networks-small.png) 10px 5px no-repeat transparent;
+        padding: 0;
+        height: 40px;
+        margin: 0;
+        width:140px;
+        border: 0;
+    }
+
+    #main-wrapper {
+        padding-top: 40px;
+    }
+
+    .panel-pane {
+        padding:0 1em;
+    }
+
+    /* Menus */
+    #block-menu-primary-links,
+    #block-menu-menu-landing-pages,
+    #block-menu-menu-product-name,
+    #block-menu-menu-sign-in-menu,
+    #section-menu .block-menu {
+        display: none;
+    }
+    #header .block-menu.region-count-4 {
+        display: block;
+    }
+
+    #header .block-menu.region-count-2,
+    #header .block-menu.region-count-3 {
+        display:none;
+    }
+
+    /* Page Content Width */
+    #page-wrapper,
+    .region-page-closure,
+    .section-blog #main-wrapper #content-area,
+    body.node-type-blog-article #main-wrapper #content,
+    .inner-wrapper,
+    div.node-type-page,
+    .panels-flexible-row-inside,
+    #homepage-products .internal {
+        width:auto;
+        min-width:300px;
+    }
+    .section-blog #main-wrapper #content-area,
+    body.node-type-blog-article #main-wrapper #content,
+    body.node-type-page #main-wrapper .content,
+    #homepage-products .internal .inside-padding {
+        padding:0 1em;
+    }
+
+    /* Classes for collapsing/expanding panel regions, or other responsive content areas */
+    .collapsible {
+        display: none;
+    }
+    .expandable {
+        float:none;
+        width:auto;
+    }
+
+    /* Homepage: Intro */
+    .view-id-frontpage_clone #homepage-intro {
+        background: url(images/homepage-hero-linksprinter-m.jpg) center top no-repeat #24201d;
+        height:340px;
+    }
+    .view-id-frontpage_clone #homepage-intro #intro-content {
+        padding:1em 0.25em 1em 40%;
+    }
+    .view-id-frontpage_clone #homepage-intro #intro-content #intro-buttons {
+        text-align:center;
+    }
+    .view-id-frontpage_clone #homepage-intro #intro-content h2 {
+        font-size:2em;
+    }
+    .view-id-frontpage_clone #homepage-intro #intro-content p.larger {
+        font-size:1.5em;
+    }
+    .view-id-frontpage_clone #homepage-intro #intro-content .btn {
+        font-size:0.75em;
+    }
+    .view-id-frontpage_clone #homepage-intro #pc-mag {
+        padding:1.5em 1em 0.5em;
+    }
+    .view-id-frontpage_clone #homepage-intro #pc-mag p.smaller {
+        font-size:80%;
+    }
+    .view-id-frontpage_clone #homepage-intro #pc-mag img {
+        width:35px;
+    }
+
+    /* Homepage: Overview */
+    .view-id-frontpage_clone #homepage-features img#features-product-image {
+        width:90%;
+    }
+
+    /* Homepage: Smartphone Sync */
+    .view-id-frontpage_clone #homepage-smartphone-sync img#smartphone-linksprinter {
+        width:90%;
+    }
+
+    /* Homepage: Watch */
+    .view-id-frontpage_clone #homepage-watch .homepage-setup-videos #block-setup-videos .views-row {
+        font-size: 1em;
+    }
+
+    /* Homepage: Watch */
+    .view-id-frontpage_clone #homepage-cloud-service img#img-cloud-service {
+        width:90%;
+        max-width:515px;
+        text-align:center;
+    }
+
+    /* Homepage: Cloud */
+    #cloud-pricing-options h2 {
+        font-size: 1.4em;
+    }
+    #cloud-pricing-options span.tests,
+    #cloud-pricing-options span.price {
+        font-size: 1.25em;
+    }
+
+    /* Homepage: Models */
+    .product-information .product-image {
+        width: 39%;
+    }
+    .product-information .product-details-button {
+        width: 60%;
+    }
+    .product-information .product-name-price {
+        float: none;
+        width: auto;
+    }
+    .product-information .product-details-button .details,
+    .product-information .product-details-button .buttons {
+        width: auto;
+        float: none;
+    }
+    .product-information .product-details-button .buttons {
+        margin-top:1.5em;
+    }
+
+    /* Homepage: Models */
+    .view-id-frontpage_clone #homepage-questions .btn {
+        margin-top:1em;
+    }
+
+    /* Landing Page Icon Menu */
+    #icon-menu-animated {
+        display:none;
+    }
+    #icon-menu-responsive {
+        display:block;
+    }
+
+    /* Meet Linksprinter */
+    #landing-page-meet-linksprinter {
+        background: url(images/landing-page-meet-linksprinter.jpg) center top no-repeat #262628;
+    }
+
+    /* Education */
+    #landing-page-education .panels-flexible-region-inside.panels-flexible-region-inside-first,
+    #landing-page-education .panels-flexible-region-inside.panels-flexible-region-inside-last { padding:0; }
+
+    /* Managed IT */
+    #landing-page-managedit .panels-flexible-region-inside.panels-flexible-region-inside-first,
+    #landing-page-managedit .panels-flexible-region-inside.panels-flexible-region-inside-last { padding:0; }
+}
+
+@media (max-width: 480px) {
+
+
+    h1 { font-size:2.25em; }
+    h2 { font-size:2em; }
+    h3 { font-size: 1.5em; }
+    p.larger { font-size:1.5em; }
+    p { font-size:1.25em; }
+    p.smaller { font-size:1em; }
+    span.smallest { font-size:0.85em; }
+    .btn { font-size:0.75em; }
+
+    .section-blog #main-wrapper #content-area .view-content p,
+    .section-blog #main-wrapper #content-area .view-content ul,
+    .section-blog #main-wrapper #content-area .view-content ol,
+    .section-blog #main-wrapper #content-area .view-content dl,
+    .section-blog #main-wrapper #content-area .view-content pre,
+    .section-blog #main-wrapper #content-area .view-content table,
+    .section-blog #main-wrapper #content-area .view-content fieldset,
+    body.node-type-blog-article #main-wrapper #content #blog-article-content p,
+    body.node-type-blog-article #main-wrapper #content #blog-article-content ul,
+    body.node-type-blog-article #main-wrapper #content #blog-article-content ol,
+    body.node-type-blog-article #main-wrapper #content #blog-article-content dl,
+    body.node-type-blog-article #main-wrapper #content #blog-article-content pre,
+    body.node-type-blog-article #main-wrapper #content #blog-article-content table,
+    body.node-type-blog-article #main-wrapper #content #blog-article-content fieldset {
+        font-size:1.25em;
+    }
+
+    div.section-header {
+        font-size:0.75em;
+        padding: 5em 0 0;
+        background: url(images/pixel-yellow-1.jpg) 0 5.75em repeat-x transparent;
+    }
+    div.section-header span {
+        padding: 0 1em;
+    }
+
+    .view-id-frontpage_clone #homepage-intro {
+        background: url(images/homepage-hero-linksprinter-m.jpg) 30% top no-repeat #24201d;
+    }
+    .view-id-frontpage_clone #homepage-intro #intro-content {
+        padding:1em 1em 1em 45%;
+    }
+    .view-id-frontpage_clone #homepage-intro #intro-content h2 {
+        font-size:1.5em;
+    }
+    .view-id-frontpage_clone #homepage-intro #intro-content p.larger {
+        font-size:1.25em;
+    }
+    .view-id-frontpage_clone #homepage-intro #intro-content .btn {
+        font-size:0.75em;
+    }
+    .view-id-frontpage_clone #homepage-intro #pc-mag {
+        padding:3.5em 1em 0.5em;
+    }
+
+    ul#cloud-service-details {
+        font-size:1em;
+    }
+
+    .view-id-frontpage_clone #homepage-watch .homepage-setup-videos #block-setup-videos .views-row {
+        font-size: 0.75em;
+    }
+
+    #buy-now-page form.add-to-cart label {
+        padding: 1.4em 0;
+        font-size: 0.75em;
+    }
+
+    #cloud-pricing-options #personal-option.expandable,
+    #cloud-pricing-options #fleet-option.expandable {
+        width:auto;
+        float:none;
+    }
+}
+
+@media (max-width: 380px) {
+    .view-id-frontpage_clone #homepage-intro #pc-mag {
+        padding:2.5em 1em 0.5em;
+    }
+}

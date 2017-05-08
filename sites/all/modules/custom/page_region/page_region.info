@@ -1,0 +1,6 @@
+; $Id $
+name = Page Region
+package = Fluke Networks
+description = "Implement regionality for page_region content type"
+version = 7.x.0.0
+core = 7.x

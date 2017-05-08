@@ -1,0 +1,20 @@
+name = MyAccount / SFDC integration
+package = Fluke Networks
+description = The MyAccount / SFDC integration module provide helper functions and wrappers for SFDC SOAP calls.
+version = 7.x.1.0
+core = 7.x
+dependencies[] = fnet_helper
+
+files[] = includes/FNETDataService.php
+files[] = includes/MACase.php
+files[] = includes/SFDCResponse.php
+files[] = includes/SFDCWebService.php
+files[] = sfdc_soapclient/ProxySettings.php
+files[] = sfdc_soapclient/SforceBaseClient.php
+files[] = sfdc_soapclient/SforceEmail.php
+files[] = sfdc_soapclient/SforceEnterpriseClient.php
+files[] = sfdc_soapclient/SforceHeaderOptions.php
+files[] = sfdc_soapclient/SforceMetaObject.php
+files[] = sfdc_soapclient/SforceMetadataClient.php
+files[] = sfdc_soapclient/SforcePartnerClient.php
+files[] = sfdc_soapclient/SforceProcessRequest.php

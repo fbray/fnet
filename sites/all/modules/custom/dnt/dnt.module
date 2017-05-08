@@ -1,0 +1,304 @@
+<?php
+// $Id: $
+
+/**
+ * @file
+ * Provides content types with feature to wrap body in no-translate div
+ */
+
+/**
+ * Implements hook_help().
+ */
+function dnt_help($path, $arg) {
+  //Help
+}
+
+/**
+ * Implements hook_menu().
+ */
+function dnt_menu() {
+
+  $items['admin/fnet/dnt'] = array(
+    'title' => 'Do not translate',
+    'description' => 'Configure DNT settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('dnt_settings_form'),
+    'access arguments' => array('administer do not translate'),
+  );
+  $items['admin/fnet/dnt/configure'] = array(
+    'title' => 'Configure',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+  return $items;
+
+}
+
+/**
+ * Implements hook_permission().
+ */
+function dnt_permission() {
+  return array(
+    'administer do not translate' => array(
+      'title' => t('administer do not translate'),
+      'description' => t('TODO Add a description for \'administer do not translate\''),
+    ),
+  );
+}
+
+/**
+ * Implementation of content specific form alteration form().
+ */
+function dnt_form_alter(&$form, &$form_state, $form_id) {
+  $enabled_node_types = variable_get('dnt_node_types', array());
+  if (isset($form['#node'])) {
+    if (in_array($form['#node']->type, $enabled_node_types)) {
+      if ($form_id == $form['#node']->type . '_node_form') {
+        if ($form['nid']['#value']) {
+          $do_not_translate = db_query('SELECT do_not_translate FROM {do_not_translate} WHERE nid = :nid', array(':nid' => $form['nid']['#value']))->fetchField();
+        }
+        else {
+          $do_not_translate = variable_get('dnt_default', 0);
+        }
+        $form['dnt_checkbox'] = array(
+          '#type' => 'checkbox',
+          '#title' => t('Do not translate'),
+          '#default_value' => $do_not_translate,
+        );
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function dnt_preprocess_page(&$variables) {
+  //removing code that seems to be randomly sending X-OneLinkNoTx headers to t.com
+  // do not put this code back into production until that phenom is understood.
+  //
+  if (isset($variables['node'])) {
+    $enabled_node_types = variable_get('dnt_node_types', array());
+    if (in_array($variables['node']->type, $enabled_node_types)) {
+      if ($variables['node']->do_not_translate) {
+        if (!headers_sent()) {
+          $nid = $variables['node']->nid;
+          header("X-ContentId: $nid");
+          //header('X-OneLinkNoTx: U;T;I;C;', FALSE);
+        }
+      }
+    }
+  }
+}
+
+/**
+ *	Implement preprocess page for print module
+ */
+function dnt_preprocess_print_page(&$variables) {
+  $enabled_node_types = variable_get('dnt_node_types', array());
+  if (in_array($variables['node']->type, $enabled_node_types)) {
+    if ($variables['node']->do_not_translate) {
+      if (isset($variables['title'])) {
+        $variables['print']['title'] = '<div class="OneLinkNoTx">' . $variables['print']['title'] . '</div>';
+      }
+      if (!headers_sent()) {
+        header('X-OneLinkNoTx: U;/meta/;I;C;', false);
+        header('X-OneLinkNoTx: U;/title/;I;C;', false);
+      }
+    }
+  }
+}
+
+
+/**
+ * Implements hook_node_load().
+ */
+function dnt_node_load($nodes, $type) {
+
+  $enabled_node_types = variable_get('dnt_node_types', array());
+
+  if (in_array($type[0], $enabled_node_types)) {
+      $result = db_query('SELECT nid, do_not_translate FROM {do_not_translate} WHERE nid IN (:nids)', array(':nids' => array_keys($nodes)));
+      // Add our extra data to the node objects.
+      foreach ($result as $record) {
+        $nodes[$record->nid]->do_not_translate = $record->do_not_translate;
+      }
+  }
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function dnt_node_view($node, $view_mode, $langcode) {
+  $enabled_node_types = variable_get('dnt_node_types', array());
+
+  if (in_array($node->type, $enabled_node_types)) {
+    if ((isset($node->do_not_translate) && ($node->do_not_translate == TRUE))) {
+      if (isset($node->content['body'][0]['#markup'])) {
+        $node->content['body'][0]['#markup'] = '<div class="OneLinkNoTx">'
+          . $node->content['body'][0]['#markup']
+          . '</div>';
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+function dnt_node_insert($node) {
+  $enabled_node_types = variable_get('dnt_node_types', array());
+  if (in_array($node->type, $enabled_node_types)) {
+    if (isset($node->dnt_checkbox)) {
+      _dnt_write_record($node->nid, $node->dnt_checkbox);
+    }
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function dnt_node_update($node) {
+  $enabled_node_types = variable_get('dnt_node_types', array());
+  if (in_array($node->type, $enabled_node_types)) {
+    if (isset($node->dnt_checkbox)) {
+      _dnt_write_record($node->nid, $node->dnt_checkbox);
+    }
+  }
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function dnt_node_delete($node) {
+  $enabled_node_types = variable_get('dnt_node_types', array());
+  if (in_array($node->type, $enabled_node_types)) {
+    db_delete('do_not_translate')
+      ->condition('nid', $node->nid)
+      ->execute();
+  }
+}
+
+/**
+ * Administrator configuration form
+ */
+function dnt_settings_form($form, &$form_state) {
+  $form = array();
+  $node_types     = node_type_get_types();
+  $node_types_arr = array();
+  foreach ($node_types as $type) {
+    $node_types_arr[$type->type] = $type->name;
+  }
+  natcasesort($node_types_arr);
+  $form['dnt_default'] = array(
+    '#type' => 'radios',
+    '#title' => t('Default translation status'),
+    '#options' => array(
+      t('Translate'),
+      t('Do not translate'),
+    ),
+    '#default_value' => variable_get('dnt_default', '0'),
+    '#description' => t('Default state of do not translate checkbox for new nodes'),
+  );
+  $form['node_type_options'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Available node types:'),
+    '#default_value' => variable_get('dnt_node_types', array()),
+    '#options' => $node_types_arr,
+    '#description' => '<b>' . t('Select node types for which you want to enable DNT') . '</b>',
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  );
+  return $form;
+}
+
+/**
+ * submit function for dnt_settings_form
+ */
+function dnt_settings_form_submit($form, &$form_state) {
+  $dnt_node_types = array();
+  foreach ($form_state['values']['node_type_options'] as $key => $value) {
+    if ($value) {
+      $dnt_node_types[] = $value;
+    }
+  }
+  variable_set('dnt_node_types', $dnt_node_types);
+  variable_set('dnt_default', $form_state['values']['dnt_default']);
+  drupal_set_message(t('<strong>Configuration options have been saved.</strong>'));
+}
+
+/**
+ * Helper function to write dnt record to do_not_translate
+ * @param $nid - node id
+ * @param $dnt_status - do not translate status
+ */
+function _dnt_write_record($nid, $dnt_status) {
+  $update = db_query('SELECT COUNT(nid) FROM {do_not_translate} WHERE nid = :nid', array(':nid' => $nid))->fetchField();
+  $record = new stdClass();
+  $record->nid = $nid;
+  $record->do_not_translate = $dnt_status;
+  $primary_key = ($update) ? array('nid') : array();
+  $result = drupal_write_record('do_not_translate', $record, $primary_key);
+  if (($result != SAVED_NEW) && ($result != SAVED_UPDATED)) {
+    watchdog('DNT', 'dnt record update failed for node %node', array('%node' => $nid), WATCHDOG_ERROR);
+  }
+}
+
+/**
+ * Implements hook_views_api
+ */
+function dnt_views_api() {
+  return array(
+    'api' => 2,
+  );
+}
+
+/**
+ * Implements hook_views_data
+ */
+function dnt_views_data() {
+  $data = array();
+  $data['do_not_translate']['table']['group'] = t('Do not translate');
+  $data['do_not_translate']['table']['base'] = array(
+    'field' => 'nid',
+    'title' => t('Do not translate'),
+    'help' => t("Do_not_translate table contains a node's do_not_translate status."),
+    'weight' => -10,
+  );
+  $data['do_not_translate']['table']['join'] = array(
+    'node' => array(
+      'left_field' => 'nid',
+      'field' => 'nid',
+    ),
+  );
+  $data['do_not_translate']['nid'] = array(
+    'title' => t('Do not translate'),
+    'help' => t('Do not translate status for a node.'),
+    'relationship' => array(
+      'base' => 'node',
+      'field' => 'nid',
+      'handler' => 'views_handler_relationship',
+      'label' => t('Do not translate'),
+    ),
+  );
+  $data['do_not_translate']['do_not_translate'] = array(
+    'title' => t('Do not translate'),
+    'help' => t('Do not translate status'),
+    'field' => array(
+      'handler' => 'views_handler_field_boolean',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_boolean_operator',
+      'label' => t('Do not translate'),
+      'type' => 'yes-no',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+  return $data;
+}
+

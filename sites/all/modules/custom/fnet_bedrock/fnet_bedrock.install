@@ -1,0 +1,27 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Install file for fnet_bedrock module.
+ *
+ */
+
+/**
+ * Implements hook_install().
+ */
+function fnet_bedrock_install() {
+}
+
+/**
+ * Implements hook_uninstall.
+ */
+function fnet_bedrock_uninstall() {
+  variable_del('fnet_bedrock_url_scheme');
+  variable_del('fnet_bedrock_base_url');
+  variable_del('fnet_bedrock_basic_auth_user');
+  variable_del('fnet_bedrock_basic_auth_password');
+  variable_del('fnet_bedrock_default_organization');
+}
+
+

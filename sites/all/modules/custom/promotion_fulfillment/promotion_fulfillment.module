@@ -1,0 +1,1743 @@
+<?php
+// $Id: promotion_fulfillment.module 4755 2013-07-02 22:56:34Z ychung $
+// include_once('promotion_fulfillment.features.inc');
+
+/**
+ * @file
+ * This module augments the 'Promotion fulfillment' node type. We add forms to
+ * the node and break it up into three pages so the user may walk through the
+ * promotional product fulfillment process.
+ *
+ */
+
+// Restrict size and type of uploaded invoices
+define('DEFAULT_PROMOTION_FULFILLMENT_INVOICE_TYPES', 'pdf jpg jpeg jpe gif png bmp');
+define('DEFAULT_PROMOTION_FULFILLMENT_INVOICE_SIZE_KB', 1024);
+// Number of product entry fields that will appear by default and also when
+// new fields are added
+define('DEFAULT_PROMOTION_FULFILLMENT_EMPTY_AHAH_FIELDS', 4);
+
+/**
+ * Implements hook_menu().
+ */
+function promotion_fulfillment_menu() {
+  $items['admin/config/promotion_fulfillment'] = array(
+    'title' => 'Promotion fulfillment',
+    'description' => 'Settings for product promotions.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('promotion_fulfillment_admin_settings_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['promotion_fulfillment/reports'] = array(
+    'title' => 'Promotion fulfillment reports',
+    'description' => 'Download user submissions for a promotion fulfillment.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('promotion_fulfillment_download_submissions_form'),
+    'access arguments' => array('download promotion reports'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['promotion_fulfillment/purchases_ahah'] = array(
+    'page callback' => 'promotion_fulfillment_purchases_ahah',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['promotion_fulfillment/product_autocomplete/%node'] = array(
+    'page callback' => 'promotion_fulfillment_product_autocomplete',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_init().
+ */
+function promotion_fulfillment_init() {
+  $path = drupal_get_path('module', 'promotion_fulfillment');
+  drupal_add_css($path . '/promotion_fulfillment.css');
+}
+
+/**
+ * Implements hook_permission().
+ */
+function promotion_fulfillment_permission() {
+  return array(
+    'download promotion reports' => array(
+      'title' => t('download promotion reports'),
+      'description' => t('Download Promotion Reports'),
+    ),
+  );
+}
+
+/**
+ * @see system_settings_form()
+ */
+function promotion_fulfillment_admin_settings_form($form, &$form_state) {
+  if (module_exists('marketo_api')) {
+    $form['promotion_fulfillment_enable_marketo'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Marketo integration'),
+      '#default_value' => variable_get('promotion_fulfillment_enable_marketo', 0),
+      '#description' => t('Send collected user information to Marketo.'),
+    );
+    $form['promotion_fulfillment_marketo_flags'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Marketo flags'),
+      '#default_value' => variable_get('promotion_fulfillment_marketo_flags', NULL),
+      '#description' => t('Send site specific additional parameters to Marketo.
+        Separate key/value pairs with "|" and include one pair per line.
+        Example: <p>LeadSource|Promo Campaign<br />Lead_Priority__c|High</p>
+        Some values may be overridden at the node level.'
+      ),
+    );
+  }
+
+  $country_options = module_invoke('fnet_helper', 'countries', 'marketo');
+  $form['block'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Configure valid countries'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#tree' => FALSE,
+  );
+  $form['block']['promotion_fulfillment_enabled_countries'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Enabled countries'),
+    '#description' => t('Select the countries in which promotions are valid.'),
+    '#default_value' => variable_get('promotion_fulfillment_enabled_countries', array()),
+    '#options' => $country_options,
+  );
+
+  $form['promotion_fulfillment_email_from'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Whom fulfillment emails should be sent from'),
+    '#default_value' => variable_get('promotion_fulfillment_email_from', 'Promotion Fulfillment <' . variable_get('site_mail', NULL) . '>'),
+    '#description' => t('Example: Promotion Fulfillment &lt;fulfillment@domain.com&gt;.'),
+  );
+  $form['promotion_fulfillment_email_subject'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Subject of the fulfillment request email'),
+    '#default_value' => variable_get('promotion_fulfillment_email_subject', 'Promotion fulfillment request'),
+  );
+  $form['promotion_fulfillment_invoice_types'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Acceptable formats for invoice uploads'),
+    '#default_value' => variable_get('promotion_fulfillment_invoice_types', DEFAULT_PROMOTION_FULFILLMENT_INVOICE_TYPES),
+    '#description' => t('Space delimited list of acceptable file formats.'),
+  );
+  $form['promotion_fulfillment_invoice_size'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Max file size'),
+    '#default_value' => variable_get('promotion_fulfillment_invoice_size', DEFAULT_PROMOTION_FULFILLMENT_INVOICE_SIZE_KB),
+    '#description' => t('Maximum allowed filesize (in kilobytes) for uploaded invoices.'),
+  );
+  $revision_string = '$Revision: 4755 $';
+  $revision = preg_replace('/\D/', '', $revision_string);
+  $form['promotion_fulfillment_revision'] = array(
+    '#markup' => '<div>SVN Version: ' . $revision . '</div><br />',
+  );
+
+  // system forms don't auto call validate/submit handlers
+  $form['#submit'][] = 'promotion_fulfillment_admin_settings_form_submit';
+  return system_settings_form($form);
+}
+
+/**
+ * Admin form submit handler
+ */
+function promotion_fulfillment_admin_settings_form_submit($form, &$form_state) {
+  // Create form/select option values based on submitted configuration
+  $enabled_countries = $form_state['values']['promotion_fulfillment_enabled_countries'];
+  $country_data = module_invoke('fnet_helper', 'countries', 'marketo');
+
+  foreach ($enabled_countries as $country_code) {
+    if ($country_code) {
+      $options[$country_code] = $country_data[$country_code];
+    }
+  }
+
+  variable_set('promotion_fulfillment_country_options', $options);
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function promotion_fulfillment_preprocess_node(&$variables) {
+  if ($variables['type'] != 'promotion_fulfillment') {
+    return;
+  }
+
+  $state = $_SESSION['promotion_fulfillment']['state'];
+
+  // Page one
+  if (empty($state)) {
+    $body = '<div id="promo_fulfillment_body">' . $variables['field_page_one_message']['und'][0]['value'] . '</div>';
+    $reward_conversion = '<div id="reward_conversion">' . _promotion_fulfillment_conversion_markup() . '</div>';
+    // Place our conversion chart on top of actual form
+    $user_form = '<div id="promo_fulfillment_user_form">' . drupal_render(drupal_get_form('promotion_fulfillment_user_info_form')) . '</div>';
+
+    $content =
+      '<div id="promo_fulfillment_welcome_left">' .
+          $reward_conversion .
+          $body .
+      '</div>' .
+      '<div id="promo_fulfillment_welcome_right">' .
+        $user_form .
+      '</div>'
+    ;
+    $path = drupal_get_path('module', 'promotion_fulfillment');
+    drupal_add_js($path . '/promotion_fulfillment.js');
+  }
+  // Page two
+  elseif ($state == 'choose_products') {
+    $body = $variables['field_page_two_message']['und'][0]['value'];
+    $product_calc = drupal_render(drupal_get_form('promotion_fulfillment_promo_calc_form'));
+    $product_chooser = drupal_render(drupal_get_form('promotion_fulfillment_promo_choose_form', $body));
+    $content =
+      '<div id="promo_fulfillment_choose">' .
+          $product_chooser .
+      '</div>' .
+      '<div id="promo_fulfillment_calc_wrapper">' .
+        '<div id="promo_fulfillment_calc">' .
+            $product_calc .
+        '</div>' .
+      '</div>'
+    ;
+
+    // Keep our calculator in the view pane while user scrolls
+    $script = "
+      $(document).ready(function() {
+  			$('#promo_fulfillment_calc').portamento({wrapper: $('#promo_fulfillment_node')});
+      });
+    ";
+
+    drupal_add_js($script, array('type' => 'inline', 'defer' => TRUE));
+
+    $path = drupal_get_path('module', 'promotion_fulfillment');
+
+    drupal_add_js($path . '/promotion_fulfillment.js');
+    drupal_add_js($path . '/portamento.js', array('type' => 'file', 'weight' => JS_THEME));
+  }
+  // Thank you page
+  elseif ($state == 'thank_you') {
+    if ($_SESSION['promotion_fulfillment']['proof_of_purchase_filepath'] == NULL) {
+      drupal_set_message(t('Please remember to fax your invoice so that we can process your request
+        Our fax number is: 425-446-5043'), status);
+    }
+
+    $content = $variables['field_thank_you_page']['und'][0]['value'];
+    unset($_SESSION['promotion_fulfillment']);
+  }
+  else {
+    watchdog('promo_fulfill', 'SESSION info is missing, cannot proceed.', array(), WATCHDOG_ERROR);
+    drupal_set_message('An error occurred. It has been recorded and we will work to fix it.', 'warning');
+  }
+
+//  $variables['content'] = '<div id="promo_fulfillment_node">' . $content . '</div>';
+  $variables['content']['body'][0]['#markup'] = '<div id="promo_fulfillment_node">' . $content . '</div>';
+}
+
+/**
+ * Basic user info form
+ */
+function promotion_fulfillment_user_info_form($form, $form_state) {
+
+  // we have to keep careful track of our Promo NID so that we can pass it to
+  // our js autocomplete function
+  if ($form_state['#post']['promo_nid'] > 0) {
+    $promo_nid = $form_state['#post']['promo_nid'];
+  }
+  elseif (arg(1) > 0) {
+    $promo_nid = arg(1);
+  }
+  else {
+    watchdog('promo_fulfill', 'Cannot determine promo node ID. Autocomplete probably won\'t work.', array(), WATCHDOG_ERROR);
+  }
+
+  $form['first_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('First name'),
+    '#size' => 15,
+    '#required' => TRUE,
+  );
+  $form['last_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Last name'),
+    '#size' => 20,
+    '#required' => TRUE,
+  );
+  $form['email'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Email'),
+    '#size' => 20,
+    '#attributes' => array('onchange' => 'simpleEmailAddressChecker(this.id)'),
+    '#required' => TRUE,
+  );
+  $form['phone'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Phone'),
+    '#size' => 20,
+    '#required' => TRUE,
+  );
+  $form['company'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Company'),
+    '#size' => 20,
+    '#required' => TRUE,
+  );
+  $form['job_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Job title'),
+    '#size' => 20,
+    '#required' => TRUE,
+  );
+  $form['address'] = array(
+    '#type' => 'textarea',
+    '#resizable' => FALSE,
+    '#rows' => 4,
+    '#cols' => 16,
+    '#wysiwyg' => FALSE,
+    '#resizable' => FALSE,
+    '#title' => t('Shipping address'),
+    '#required' => TRUE,
+  );
+  $form['city'] = array(
+    '#type' => 'textfield',
+    '#title' => t('City'),
+    '#size' => 20,
+    '#required' => TRUE,
+  );
+  $form['state'] = array(
+    '#type' => 'textfield',
+    '#title' => t('State'),
+    '#size' => 20,
+    '#required' => TRUE,
+  );
+  $form['zip'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Zip'),
+    '#size' => 20,
+    '#required' => TRUE,
+  );
+  // We're assumming US for now. May expand in future
+  //$form['country'] = array(
+//  '#type' => 'hidden',
+//  '#value' => 'US',
+//  '#required' => TRUE,
+  //);
+  $form['country'] = array(
+    '#type' => 'select',
+    '#multiple' => FALSE,
+    '#title' => t('Country'),
+    '#options' => variable_get('promotion_fulfillment_country_options', array()),
+    '#default_value' => 'us',
+    '#required' => TRUE,
+  );
+  $form['invoice_number'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Invoice number'),
+    '#size' => 20,
+    '#required' => TRUE,
+  );
+  $form['purchase_amount'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Purchase amount'),
+    '#description' => t('Enter the total dollar amount of the invoice being submitted.'),
+    '#attributes' => array('onchange' => 'formatCurrency(this.id)'),
+    '#size' => 20,
+    '#required' => TRUE,
+  );
+  $form['promo_code'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Promotional code'),
+    '#description' => t('Optionally, enter a promotional code.'),
+    '#size' => 20,
+    '#required' => FALSE,
+  );
+  $form['gold_contracts'] = array(
+    '#type' => 'select',
+    '#title' => t('Gold contracts'),
+    '#description' => t('If your purchase includes Gold support, please enter the number
+      of support contracts purchased.'),
+    '#default_value' => 0,
+    '#options' => drupal_map_assoc(range(0, 5)),
+    '#required' => FALSE,
+  );
+  $form['proof_of_purchase'] = array(
+    '#type' => 'file',
+    '#title' => t('Proof of purchase'),
+    '#size' => 35,
+    '#description' => t('Submit scanned proof of purchase here or you may also fax it to 425-446-5043.'),
+    '#attributes' => array('onchange' => "$('#file_selected').hide().fadeIn(2000);"),
+    '#prefix' => '<div id="file_selected" style="display: none; color: #475D80; font-weight: bold; font-size: 1.2em;">' . t('Your invoice has been attached.') . '</div>',
+  );
+  $form['purchases'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Invoice details <span class="form-required" title="This field is required.">*</span>&nbsp;',
+    '#description' => t('Please help us validate your purchase by entering each
+      of your qualifying Fluke Networks products. See !list.',
+      array('!list' => l(
+        t('a full list of products that do not qualify'),
+        'Terms-and-Conditions-20th-Anniversary-Promotion',
+        array(
+        'attributes' => array('target' => '_new'),
+        'html' => TRUE,
+      )
+      ))
+    ),
+    '#tree' => TRUE, // http://drupal.org/node/348475#comment-2744156
+    '#prefix' => '<div id="purchases-wrapper">',
+    '#suffix' => '</div>',
+  );
+
+  $form['purchases']['fields_header'] = array(
+    '#value' => '<div class="purchases_fields_header"><span>' . t('Product') . '</span>' . '<span style="float: right;">' . t('Qty') . '</span></div>',
+  );
+
+  // Count of existing number of displayed values, then generate 0 -> $num_rows
+  // form elements, which will regenerate existing rows and add a new row.
+  $num_rows = count($form_state['values']['purchases']) > 0 ? count($form_state['values']['purchases']) : 0;
+  $num_rows += DEFAULT_PROMOTION_FULFILLMENT_EMPTY_AHAH_FIELDS;
+  for ($i = 0; $i < $num_rows; $i++) {
+    $form['purchases'][$i]['product'] = array(
+      '#title' => 'Product',
+      '#type' => 'textfield',
+      '#autocomplete_path' => 'promotion_fulfillment/product_autocomplete/' . $promo_nid,
+      '#size' => 40,
+      '#weight' => $i,
+      '#attributes' => array('onkeypress' => 'return disableEnterKey();'),
+      '#prefix' => '<div class="purchases-labels"><div class="purchase-product">',
+      '#suffix' => '</div>',
+      '#default_value' => $form_state['#post']['purchases'][$i]['product'],
+    );
+    $form['purchases'][$i]['purchase_quantity'] = array(
+      '#title' => 'Quantity',
+      '#type' => 'textfield',
+      '#size' => 2,
+      '#weight' => $i + 1,
+      '#attributes' => array('onkeypress' => 'return disableEnterKey();'),
+      '#prefix' => '<div class="purchase-quantity">',
+      '#suffix' => '</div></div><div class="clear-block"></div>',
+      '#attributes' => array('onchange' => 'allowIntOnly(this.id)'),
+      '#default_value' => isset($form_state['#post']['purchases'][$i]['purchase_quantity'])
+        ? $form_state['#post']['purchases'][$i]['purchase_quantity']
+        : 0,
+    );
+  }
+/*  Temporary remove due to form processing changed in D7
+  $form['ahah']['more'] = array(
+    '#type' => 'submit',
+    '#name' => 'add_more_products',
+    '#value' => t('Add more products'),
+    '#prefix' => '<div class="clear-block">',
+    '#suffix' => '</div>',
+    '#ahah' => array(
+      'event' => 'click',
+      'path' => 'promotion_fulfillment/purchases_ahah',
+      'wrapper' => 'purchases-wrapper',
+      'method' => 'replace',
+      'effect' => 'none',
+    ),
+  );
+*/
+  $form['#attributes'] = array('enctype' => "multipart/form-data");
+  $form['promo_nid'] = array(
+    '#type' => 'hidden',
+    '#value' => $promo_nid,
+  );
+
+  // embed our little progress indicator
+  $ajax_loader_image = drupal_get_path('module', 'promotion_fulfillment') . '/ajax-loader.gif';
+  $form['progress_indicator'] = array(
+    '#markup' => '<img style="display: none;" id="ajax-image-loader" src="' . $ajax_loader_image . '">',
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Continue'),
+    '#attributes' => array('onclick' => "submitProgressIndicator()"),
+  );
+
+  return $form;
+}
+
+/**
+ * Form validate handler
+ */
+function promotion_fulfillment_user_info_form_validate($form, &$form_state) {
+  // Check for at least one product entered and that all entries have a quantity
+  $purchases = $form_state['values']['purchases'];
+  unset($purchases['more']);
+
+  $valid_entry = 0;
+  $invalid_entry = 0;
+
+  if (isset($form_state['values']['promo_code']) && _promotion_fulfillment_code_value($form_state['values']['promo_code']) == -1) {
+    form_set_error('promo_code', t('You have entered an invalid promotional code'));
+  }
+
+  foreach ($purchases as $purchase) {
+    if (strlen($purchase['product']) > 0 && (int) $purchase['purchase_quantity'] > 0) {
+      $valid_entry++;
+    }
+    elseif (strlen($purchase['product']) > 0 && (int) $purchase['purchase_quantity'] < 1) {
+      $invalid_entry++;
+    }
+    else {
+      // ignore
+    }
+
+    if ($valid_entry == 0) {
+      form_set_error('purchases-wrapper', t('(Invoice details) Please provide a list of the names and quantities of items you have purchased.'));
+    }
+    if ($invalid_entry > 0) {
+      form_set_error('purchases-wrapper', t('(Invoice details) Please indicate how many of each item you have purchased.'));
+    }
+  }
+
+  // Create a unique ID for this submission
+  $request_id = _promotion_fulfillment_get_id();
+  $_SESSION['promotion_fulfillment']['id'] = $request_id;
+
+  // strip out any non-numeric characters such as '$', allow for .12/cents to
+  // be included just in case
+  $form_state['values']['purchase_amount'] = preg_replace('/(\D*)([\d]*(\.\d\d)?)\D?.*/', "$2", $form_state['values']['purchase_amount']);
+
+  if ((int) $form_state['values']['purchase_amount'] < 200) {
+    form_set_error('purchase_amount', 'You must submit a valid purchase amount.');
+  }
+
+  // Save the invoice temporarily
+  $save_destination = variable_get('file_temporary_path', FALSE); //variable_get('file_directory_temp', FALSE);
+  if ($save_destination == FALSE) {
+    watchdog('promo_fulfill', t('Cannot save user file. file_directory_path is not set. Aborting.'), array(), WATCHDOG_ERROR);
+    drupal_set_message('An error occurred. It has been recorded and we will work to fix it.', 'warning');
+    return;
+  }
+
+  $allowed_filetypes = variable_get('promotion_fulfillment_invoice_types', DEFAULT_PROMOTION_FULFILLMENT_INVOICE_TYPES);
+  // Convert to kilobytes
+  $allowed_filesize = variable_get('promotion_fulfillment_invoice_size', DEFAULT_PROMOTION_FULFILLMENT_INVOICE_SIZE_KB) * 1024;
+
+  // Image dimensions are the responsibility of the CCK field
+  $validators = array(
+    'file_validate_extensions' => array($allowed_filetypes),
+    'file_validate_size' => array($allowed_filesize),
+  );
+
+  if (strlen($_FILES['files']['name']['proof_of_purchase']) > 0) {
+    // Rename file for easy reference
+    $filename = $_FILES['files']['name']['proof_of_purchase'];
+    $filename = preg_replace('/.*(\.\w{1,})$/', "PROMO-" . $request_id . "$1", $filename);
+    $_FILES['files']['name']['proof_of_purchase'] = $filename;
+    $file = file_save_upload('proof_of_purchase', $validators, FILE_EXISTS_RENAME);
+//    if ($file = file_save_upload('proof_of_purchase', $validators, $save_destination, FILE_EXISTS_RENAME)) {
+    if ($file) {
+      $file->status &= ~FILE_STATUS_PERMANENT;
+      $file = file_save($file);
+      $_SESSION['promotion_fulfillment']['proof_of_purchase_filepath'] = $file->uri; //$file->filepath;
+    }
+    else {
+      form_set_error('proof_of_purchase', 'File upload failed, please try again.');
+    }
+  }
+}
+
+/**
+ * Form submit handler
+ */
+function promotion_fulfillment_user_info_form_submit($form, &$form_state) {
+  $user_info = $form_state['values'];
+
+  $promo_node = node_load(arg(1));
+  if ($promo_node->type != 'promotion_fulfillment') {
+    return FALSE;
+  }
+
+  if (module_exists('marketo_api') && variable_get('promotion_fulfillment_enable_marketo', 0) == TRUE) {
+    $marketo_data['FirstName'] = $user_info['first_name'];
+    $marketo_data['LastName'] = $user_info['last_name'];
+    $marketo_data['Email'] = $user_info['email'];
+    $marketo_data['Phone'] = $user_info['phone'];
+    $marketo_data['Company'] = $user_info['company'];
+    $marketo_data['Title'] = $user_info['job_title'];
+    $marketo_data['Address'] = $user_info['address'];
+    $marketo_data['City'] = $user_info['city'];
+    $marketo_data['State'] = $user_info['state'];
+    $marketo_data['PostalCode'] = $user_info['zip'];
+    $marketo_data['Country'] = $user_info['country'];
+    //'Country' => ucwords($form_data['country']),
+    // Probably don't need these values
+    //$marketo_data[''] = $user_info['purchase_amount'];
+    //$marketo_data[''] = $user_info['invoice_number'];
+
+    // Grab configurable Marketo Fields from sitewide config and from node
+    // specific config.
+    $site_marketo_flags = variable_get('promotion_fulfillment_marketo_flags', NULL);
+
+    $site_marketo_flags = _promotion_fulfillment_conf2array($site_marketo_flags);
+    //(array) $node_marketo_flags = _promotion_fulfillment_conf2array($promo_node->field_marketo_flags[0]['value']);
+    if (!empty($promo_node->field_marketo_flags['und'][0]['value'])) {
+      $node_marketo_flags = array('Lead_Source_Most_Recent__c' => $promo_node->field_marketo_flags['und'][0]['value']);
+    }
+
+    $marketo_data = array_merge($marketo_data, $site_marketo_flags, $node_marketo_flags);
+    $success = module_invoke('marketo_api', 'user_sync', $user_info['email'], $marketo_data);
+
+    if (!$success) {
+      watchdog('promo_fulfill', 'Unable to submit data to Marketo:<br /><br /><pre>%data</pre>', array('%data' => print_r($marketo_data, TRUE)), WATCHDOG_ERROR);
+    }
+  }
+
+  // Save info in $_SESSION so we can pass it on to the next page
+  $_SESSION['promotion_fulfillment']['user_info'] = $user_info;
+
+  $user_credit = _promotion_fulfillment_initial_credit($user_info['purchase_amount'], $user_info['gold_contracts'], $promo_node->nid, $user_info['promo_code']);
+  $_SESSION['promotion_fulfillment']['user_info']['user_credit'] = $user_credit;
+
+  // Set a SESSION value so we can move user to next page
+  $_SESSION['promotion_fulfillment']['state'] = 'choose_products';
+}
+
+/**
+ *
+ */
+function promotion_fulfillment_promo_calc_form($form) {
+  $gold_contracts = $_SESSION['promotion_fulfillment']['user_info']['gold_contracts'];
+  $purchase_amount = $_SESSION['promotion_fulfillment']['user_info']['purchase_amount'];
+  $promo_code_bonus  = $_SESSION['promotion_fulfillment']['user_info']['promo_code_bonus'];
+  $gold_contract_bonus  = $_SESSION['promotion_fulfillment']['user_info']['gold_contract_bonus'];
+  $gold_contract_value  = $_SESSION['promotion_fulfillment']['user_info']['gold_contract_value'];
+  $adjusted_amount = $_SESSION['promotion_fulfillment']['user_info']['adjusted_amount'];
+  $user_credit = $_SESSION['promotion_fulfillment']['user_info']['user_credit'];
+
+  $calculated_values .= '<div id="promo-balance-explained">';
+
+  $calculated_values .= '
+      <div>
+        <span class="label">' . t('Your purchase amount: ') . '</span>
+        <span class="value">$' . $purchase_amount . '</span>
+      </div>
+  ';
+
+  if ($gold_contract_value > 0) {
+    $calculated_values .= '
+      <div>
+        <span class="label">' . t('Gold condivact bonus: ') . '</span>
+        <span class="value">$' . $gold_contract_value . '</span>
+      </div>
+    ';
+  }
+
+  if ($promo_code_bonus > 0) {
+    $calculated_values .= '
+      <div>
+        <span class="label">' . t('Promotional code bonus: ') . '</span>
+        <span class="value">$' . $promo_code_bonus . '</span>
+      </div>
+    ';
+  }
+
+  $calculated_values .= '
+    <div class="adjusted_amount">
+      <span class="label">' . t('Adjusted purchase amount: ') . '</span>
+      <span class="value">$' . $adjusted_amount . '</span>
+    </div>
+    <div class="user_credit">
+      <span class="label">' . t('Eligible free product amount: ') . '</span>
+      <span class="value">$' . $user_credit . '</span>
+    </div>
+  ';
+  $calculated_values .= '</div>';
+
+  $form['calculated_values'] = array(
+    '#markup' => $calculated_values,
+  );
+
+  // Value for javascript calculations. Do not remove.
+  $form['credit_total'] = array(
+    '#type' => 'hidden',
+    '#value' => $user_credit,
+    '#attributes' => array(
+      'id' => 'edit-credit-total',
+    )
+  );
+  $form['credit_available'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Amount remaining'),
+    '#description' => t('Unused amounts cannot be redeemed in future submissions or promotions or as cash.'),
+    '#size' => 6,
+    '#disabled' => TRUE,
+    '#default_value' => '$' . $user_credit,
+  );
+
+  return $form;
+}
+
+/**
+ * Credit calculator form. Keeps track of remaining credit as user selects
+ * free products.
+ *
+ * @param
+ *  $body - The body of this page will be included in the form for
+ *  theming purposes
+ */
+function promotion_fulfillment_promo_choose_form($form, $form_state, $body) {
+  $form['body'] = array(
+    '#markup' => $body,
+    '#prefix' => '<div id="promo_fulfillment_body">',
+    '#suffix' => '</div>',
+  );
+  $form['select_products_label'] = array(
+    '#markup' => '<div id="promo_fulfillment_label">' . t('Select one or more products from the following categories (click category name to expand, hover on image for product description):') . '</div>',
+  );
+  $form['select_products_toggle'] = array(
+    '#markup' => '<div id="select_products_toggle"><a href="javascript:promo_categories(1)">Expand all categories</a> | <a href="javascript:promo_categories(0)">Collapse all categories</a></div>',
+  );
+  $form['select_products_clear'] = array(
+    '#markup' => '<div class="clear"></div>',
+  );
+
+  // We want to group products by category
+  foreach (array_keys(_promotion_fulfillment_product_query()) as $category) {
+    // empty spaces in element names breaks it
+    $category_id = str_replace(' ', '-', strtolower($category));
+    $form['select_products'][$category_id] = array(
+      '#type' => 'fieldset',
+      '#name' => 'product category',
+      '#title' => ucfirst($category),
+      '#prefix' => '<div class="promo_fulfillment_choose_wrapper">',
+      '#suffix' => '</div>',
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#tree' => TRUE,
+    );
+
+    foreach (_promotion_fulfillment_product_selector($category) as $key => $data) {
+      $form['select_products'][$category_id][$key]['selections'] = array(
+        '#type' => 'select',
+        // OPEN SELECTION DIV
+        '#prefix' => '<div class="promo_fulfillment_choose_item">' . $data['content'],
+        '#attributes' => array('onchange' => 'changeRemainingBalance(this.id)'),
+        '#options' => drupal_map_assoc(array(0, 1, 2, 3, 4, 5)),
+      );
+      $form['select_products'][$category_id][$key]['nid'] = array(
+        '#type' => 'hidden',
+        '#value' => $data['hidden_values']['nid'],
+      );
+      $form['select_products'][$category_id][$key]['prod_model'] = array(
+        '#type' => 'hidden',
+        '#value' => $data['hidden_values']['prod_model'],
+      );
+      $form['select_products'][$category_id][$key]['prod_item'] = array(
+        '#type' => 'hidden',
+        '#value' => $data['hidden_values']['prod_item'],
+      );
+      $form['select_products'][$category_id][$key]['price'] = array(
+        '#type' => 'hidden',
+        '#value' => $data['hidden_values']['price'],
+      );
+      $form['select_products'][$category_id][$key]['title'] = array(
+        '#type' => 'hidden',
+        '#value' => $data['hidden_values']['title'],
+        // CLOSE SELECTION DIV
+        '#suffix' => '</div>',
+      );
+    }
+  }
+
+  $form['buttons'] = array(
+    '#type' => 'fieldset',
+    '#prefix' => '<div id="promo_submit">',
+    '#suffix' => '</div>',
+  );
+
+  // embed our little progress indicator
+  $ajax_loader_image = drupal_get_path('module', 'promotion_fulfillment') . '/ajax-loader.gif';
+  $form['progress_indicator'] = array(
+    '#markup' => '<img style="display: none;" id="ajax-image-loader" src="' . $ajax_loader_image . '">',
+  );
+
+  $form['buttons']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit your request'),
+    '#attributes' => array('onclick' => "submitProgressIndicator()"),
+  );
+  $form['buttons']['cancel'] = array(
+    '#type' => 'submit',
+    '#value' => t('Cancel'),
+    '#submit' => array('promotion_fulfillment_form_cancel'),
+  );
+
+  return $form;
+}
+
+/**
+ * Form validate handler
+ */
+function promotion_fulfillment_promo_choose_form_validate($form, &$form_state) {
+  // TODO: make sure they have selected some checkboxes
+  // Possibley check for balance on credits?
+}
+
+/**
+ * Form submit handler
+ */
+function promotion_fulfillment_promo_choose_form_submit($form, &$form_state) {
+
+  global $base_root;
+  $selections = '';
+
+  $user_initial_credit = $_SESSION['promotion_fulfillment']['user_info']['user_credit'];
+  $user_spent_credit = 0;
+
+  // Send User info and product choices to designated recipients
+  $promo_node = node_load(arg(1));
+  $promo_nid = decode_entities($promo_node->nid);
+  $promo_title = decode_entities($promo_node->title);
+  $promo_url = $base_root . '/' . $promo_node->path;
+
+  if (empty($promo_node->field_fullfillment_email)) {
+    watchdog('promo_fulfill', 'Campaign "%title" does not have a valid email configuration', array('%title' => $promo_node->title), WATCHDOG_WARNING);
+    drupal_set_message('An error occurred. It has been recorded and we will work to fix it.', 'warning');
+
+    return;
+  }
+
+  foreach ($promo_node->field_fullfillment_email['und'] as $key => $value) {
+    $email_contacts[] = $value['value'];
+  }
+
+  // Our data structure is unnecessarily complicated because I couldn't split
+  // the selection form into product categories and save the form data all in
+  // the same array element.
+  foreach (array_keys(_promotion_fulfillment_product_query()) as $category) {
+    $category_id = str_replace(' ', '-', strtolower($category));
+
+    foreach ($form_state['values'][$category_id] as $item) {
+      if ($item['selections'] > 0) {
+        $product_quantity = $item['selections'];
+        $product_nid = $item['nid'];
+        $product_model = isset($item['prod_model']) ? $item['prod_model'] : '<EMPTY>';
+        $product_item = isset($item['prod_item']) ? $item['prod_item'] : '<EMPTY>';
+        $product_price = trim($item['price']); // this value is more for js than us
+        $product_name = trim($item['title']);
+
+        $product_link = $base_root . '/' . drupal_get_path_alias('node/' . $product_nid);
+
+        $selections .= "Product Name: $product_name ($product_link)\n";
+        $selections .= "Product Model: $product_model\n";
+        $selections .= "Product Item: $product_item\n";
+        $selections .= "Product Price: $" . number_format($product_price, 2, NULL, '') . "\n\n";
+        $selections .= "Quantity: $product_quantity\n\n";
+        $selections .= "================================================================================\n\n";
+
+        $user_spent_credit += $product_quantity * $product_price;
+      }
+    }
+  }
+
+  $purchases = $_SESSION['promotion_fulfillment']['user_info']['purchases'];
+  // Pretty list of products purchased data
+  foreach ($purchases as $purchase) {
+    if (strlen($purchase['product']) > 0 && $purchase['purchase_quantity'] > 0) {
+      $purchase_summary .= '[' . $purchase['purchase_quantity'] . '] ' . $purchase['product'] . "\n";
+    }
+  }
+  if (strlen($purchase_summary) == 0) {
+    $purchase_summary = 'No purchase details were provided with this submission.';
+  }
+
+  $request_id = $_SESSION['promotion_fulfillment']['id'];
+  $user_info = $_SESSION['promotion_fulfillment']['user_info'];
+  $proof_of_purchase_filepath = $_SESSION['promotion_fulfillment']['proof_of_purchase_filepath'];
+  // convert to $trings
+  $user_remaining_credit = $user_initial_credit - $user_spent_credit;
+  $user_remaining_credit = '$' . number_format($user_remaining_credit, 2, NULL, '');
+  $user_initial_credit = '$' . number_format($user_initial_credit, 2, NULL, '');
+  $user_spent_credit = '$' . number_format($user_spent_credit, 2, NULL, '');
+  $purchase_amount = '$' . number_format($user_info['purchase_amount'], 2, NULL, '');
+
+  $submitted_at = REQUEST_TIME;
+  // Send results to designated recipients for promotion fulfillment
+  $datestamp = format_date($submitted_at, 'custom', 'l, F j, Y - g:i:s A');
+
+  if (isset($proof_of_purchase_filepath)) {
+    $attachment_message = t('The submitted invoice has been included as an attachment.');
+    $attachment = $proof_of_purchase_filepath;
+  }
+  else {
+    $attachment_message = t('A physical invoice was not submitted with this request.');
+    $attachment = FALSE;
+  }
+  $email_subject = variable_get('promotion_fulfillment_email_subject', 'Promotion fulfillment request') .
+    ' (ID: ' . $request_id . ')';
+  $email_from = variable_get('promotion_fulfillment_email_from', 'Promotion Fulfillment <' . variable_get('site_mail', NULL) . '>');
+  $email_to = implode(", \n", $email_contacts);
+  $email_body = <<<EOT
+A request has been submitted for free products.
+
+  Received: $datestamp
+  Promotion: $promo_title
+  Promotion URL: $promo_url
+  Request ID: $request_id
+
+  Customer: {$user_info['first_name']} {$user_info['last_name']}
+  Company: {$user_info['company']}
+  Job title: {$user_info['job_title']}
+  Email: {$user_info['email']}
+  Phone: {$user_info['phone']}
+  Invoice amount: {$purchase_amount}
+  Invoice number: {$user_info['invoice_number']}
+  Gold support contracts: {$user_info['gold_contracts']}
+  Promotional code: {$user_info['promo_code']}
+  Credit value: $user_initial_credit
+  Credit spent: $user_spent_credit
+  Credit remainder: $user_remaining_credit
+
+  Shipping address:
+
+    {$user_info['address']}
+    {$user_info['city']} {$user_info['state']}, {$user_info['zip']}
+
+    Country code: {$user_info['country']}
+
+$attachment_message
+
+Items purchased by the customer ([quantity] product name):
+
+$purchase_summary
+
+{$user_info['first_name']} {$user_info['last_name']} has requested the following free products:
+
+$selections
+
+EOT;
+
+  $headers =
+    'From: ' . $email_from . "\r\n" .
+    'Reply-To: ' . $email_from . "\r\n" .
+    'Return-Path: :' . $email_from . "\r\n" .
+    'X-Mailer: PHP/' . phpversion()
+  ;
+
+  // Add attachment
+  if ($attachment) {
+    // we need to preserve the original headers for our non-attachment
+    // email that follows
+    $headers_with_attachment = $headers;
+    _promotion_fulfillment_email_attach($attachment, $email_body, $headers_with_attachment, $email_from);
+  }
+
+  // FYI, couldn't get drupal_send_mail() to accept attachments
+  $result = mail($email_to, $email_subject, $email_body, $headers_with_attachment);
+
+  if (!$result) {
+    watchdog('promo_fulfill', 'Unable to send fulfillment email: <pre>%email_body</pre>',
+      array('%email_body' => $email_body), WATCHDOG_ERROR);
+  }
+
+  // Send confirmation email to customer
+  $email_to = $user_info['email'];
+  $email_subject = $promo_title . ' submission confirmation';
+
+  if ($attachment) {
+    $attachment_message = t('We have recieved a copy of your invoice');
+  }
+  else {
+    $attachment_message = t('Please remember to fax your proof of purchase to 425-446-5043.');
+  }
+  $email_body = <<<EOT
+
+{$user_info['first_name']} {$user_info['last_name']},
+
+We have received your request for free products related to our
+"$promo_title" Promotion.
+
+$attachment_message
+
+Please note, products will not be shipped until proof of purchase is validated.
+Allow for 8-10 weeks for products to be shipped.
+
+If you have additional questions please contact us at promotions@flukenetworks.com
+and include the request ID in your note.
+
+Details of your request:
+
+  Received: $datestamp
+  Promotion: $promo_title
+  Promotion URL: $promo_url
+  Request ID: $request_id
+  Customer: {$user_info['first_name']} {$user_info['last_name']}
+  Email: {$user_info['email']}
+  Phone: {$user_info['phone']}
+  Invoice amount: $purchase_amount
+  Invoice number: {$user_info['invoice_number']}
+
+EOT;
+
+  $result = mail($email_to, $email_subject, $email_body, $headers);
+
+  if (!$result) {
+    watchdog('promo_fulfill', 'Unable to send confirmation email to %email_to: <pre>%email_body</pre>',
+      array('%email_to' => $email_to, '%email_body' => $email_body), WATCHDOG_ERROR);
+  }
+
+  $_SESSION['promotion_fulfillment']['state'] = 'thank_you';
+
+  // Lastly, store user info into our private table for downloadable reports
+  $record = array(
+    'request_id' => $request_id,
+    'promotion_id' => "($promo_nid) $promo_title",
+    'timestamp' => $submitted_at,
+    'name' => $user_info['first_name'] . ' ' . $user_info['last_name'],
+    'email' => $user_info['email'],
+    'phone' => $user_info['phone'],
+    'company' => $user_info['company'],
+    'job_title' => $user_info['job_title'],
+    'address' => $user_info['address'],
+    'city' => $user_info['city'],
+    'state' => $user_info['state'],
+    'zip' => $user_info['zip'],
+    'country' => $user_info['country'],
+    'gold_contracts' => $user_info['gold_contracts'],
+    'promo_code' => $user_info['promo_code'],
+    'credit_value' => $user_initial_credit,
+    'credit_spent' => $user_spent_credit,
+    'invoice_amount' => $purchase_amount,
+    'invoice_number' => $user_info['invoice_number'],
+    'invoice_submitted' => $attachment == FALSE ? 0 : 1,
+    'purchased_items' => $purchase_summary,
+    'requested_items' => $selections,
+  );
+
+  drupal_write_record('promotion_fulfillment_submissions', $record);
+}
+
+/**
+ * Simple form canceller
+ */
+function promotion_fulfillment_form_cancel() {
+  unset($_SESSION['promotion_fulfillment']);
+  return;
+}
+
+/**
+ * Generate downloadable .csv files containing user submission information
+ */
+function promotion_fulfillment_download_submissions_form($form, &$form_state) {
+  $form['promotion'] = array(
+    '#type' => 'select',
+    '#title' => t('Promotion to download'),
+    '#description' => t('Select the name of the promotion you would like to
+      download or select "All" to download all available data.'),
+    '#default_value' => 0,
+    '#options' => _promotion_fulfillment_promo_selections(),
+    '#required' => TRUE,
+  );
+  $form['type'] = array(
+    '#type' => 'select',
+    '#title' => t('Type of report'),
+    '#description' => t('The "standard" report includes details on every single
+      fulfillment request while the "product count" report includes only a summary
+      of how many of each product have been selected in all requests.
+    '),
+    '#default_value' => 0,
+    '#options' => array(
+      'standard' => t('Standard report'),
+      'product_count' => t('Product count report'),
+    ),
+    '#required' => TRUE,
+  );
+
+  $form['notice'] = array(
+    '#markup' => '<p><em>Note:</em> additional parameters such as date range, invoice amount, or keywords
+      can be fairly easily added to this tool. If such options would be useful, submit a request to
+      the web development team.</p>',
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Download report'),
+  );
+
+  return $form;
+}
+/**
+ * Form validation handler
+ */
+function promotion_fulfillment_download_submissions_form_validate($form, &$form_state) {
+  $selected_promo = $form_state['values']['promotion'];
+  if ($selected_promo == FALSE) {
+    form_set_error('promotion', 'You must select a valid promotion');
+  }
+}
+
+/**
+ * Form submit handler
+ */
+function promotion_fulfillment_download_submissions_form_submit($form, &$form_state) {
+  $selected_promo = $form_state['values']['promotion'];
+  $report_type = $form_state['values']['type'];
+  $report_results = array();
+
+  $sql = "
+    SELECT *
+    FROM {promotion_fulfillment_submissions}
+  ";
+
+  if ($selected_promo != 1) { // Not the 'All' report
+    $sql .= "
+      WHERE promotion_id = '" . $selected_promo . "'
+    ";
+  }
+
+  // More parameters?
+  $sql .= "
+    ORDER BY request_id DESC
+  ";
+  $results = db_query($sql);
+
+  if ($report_type == 'standard') {
+//    while ($result = db_fetch_array($results)) {
+    foreach ($results as $result) {
+      $result->invoice_submitted = ($result->invoice_submitted == '1') ? 'Yes' : 'No';
+      $result->timestamp =  format_date($result->timestamp, 'custom', 'Y-m-d G:i:s');
+      $report_results[] = $result;
+    }
+  }
+  elseif ($report_type == 'product_count') {
+    // Create a formatted version of products requested for easier parsing
+    $prodCountRegex = 'Product Name: (.*)$[\s\n\r]*Product Model: (.*)$[\s\n\r]*Product Item: (.*)$[\s\n\r]*Product Price: (.*)$[\s\n\r]*Quantity: (.*)';
+
+//    while ($result = db_fetch_array($results)) {
+    foreach ($results as $result) {
+      preg_match_all("#$prodCountRegex#m", $result->requested_items, $matches, PREG_SET_ORDER);
+$test = $matches;
+      foreach ($matches as $match) {
+        $prod_name     = $match[1];
+        $prod_model    = $match[2];
+        $prod_item     = $match[3];
+        $prod_price    = $match[4];
+        $prod_quantity = $match[5];
+
+        if (isset($report_results[$prod_name])) {
+          $report_results[$prod_name]['Quantity'] += $prod_quantity;
+        }
+        else {
+          $report_results[$prod_name] = array(
+            'Name' => $prod_name,
+            'Model' => $prod_model,
+            'Item' => $prod_item,
+            'Price' => $prod_price,
+            'Quantity' => $prod_quantity,
+          );
+        }
+      }
+    }
+    // our csv function doesn't like our alpha keys, so make them numeric
+    $report_results = array_values($report_results);
+  }
+  else {
+    watchdog('promo_fulfill', 'Invalid submissions report requested: !report.', array('!report' => $report_type), WATCHDOG_ERROR);
+  }
+
+  $output = _array_to_csv($report_results);
+  $filename = 'promo_submissions_' . $report_type . '_' . format_date(REQUEST_TIME, 'custom', 'Y-m-d_G-i-s') . '.csv';
+  drupal_add_http_header('Content-Type', 'text/csv; charset=utf-8');
+  drupal_add_http_header("Content-Disposition", "attachment;filename=".$filename);
+  print $output;
+
+  exit();
+}
+
+/**
+ * Similar to _promotion_fulfillment_product_selector(), but this returns *all*
+ * available promotion products so they can added to individual promotion fulfillment
+ * nodes.
+ *
+ * @return
+ * Array containing node ids as keys and product titles as values
+ */
+function promotion_fulfillment_cck_selector() {
+  $sql = "
+    SELECT nid, title
+    FROM {node}
+    WHERE TYPE = 'promotion_product'
+    ORDER BY title ASC
+  ";
+
+  $db_result = db_query($sql);
+
+//  while ($result = db_fetch_array($db_result)) {
+  foreach ($db_result as $result) {
+    $options[$result->nid] = decode_entities($result->title);
+  }
+
+  return $options;
+}
+
+/**
+ * Generate a list of items items which may be included as ineligible for
+ * the given promotion (purchase value will not be used to calculate user
+ * credit).
+ */
+function promotion_fulfillment_dq_product_selector() {
+  $sql = "
+    SELECT nid, title
+    FROM {node}
+    WHERE TYPE = 'product'
+    AND status = 1
+    ORDER BY title ASC
+  ";
+
+  $db_result = db_query($sql);
+
+//  while ($result = db_fetch_array($db_result)) {
+  foreach ($db_result as $result) {
+    $title = strip_tags($result->title);
+    $title = decode_entities($title);
+    $options[$result->nid] = $title;
+  }
+
+  return $options;
+}
+
+/**
+ * Menu callback; AHAH function rebuilds the 'product purchases' section of the
+ * form, adding new fields.
+ */
+function promotion_fulfillment_purchases_ahah() {
+  $form_state = array(
+    'storage' => NULL,
+    'submitted' => FALSE,
+  );
+  $form_build_id = $_POST['form_build_id'];
+  $form = form_get_cache($form_build_id, $form_state);
+
+  $args = $form['#parameters'];
+  $form_id = array_shift($args);
+  $form_state['#post'] = $_POST;
+  $form_state['post'] = $_POST;
+  $form_state['#redirect'] = FALSE;
+  $form['#programmed'] = FALSE;
+
+  drupal_process_form($form_id, $form, $form_state);
+  $form = drupal_rebuild_form($form_id, $form_state, $args, $form_build_id);
+
+  $promo_fulfillment_user_form = $form['purchases'];
+  unset($promo_fulfillment_user_form['#prefix'], $promo_fulfillment_user_form['#suffix']); // Prevent duplicate wrappers.
+
+  // TODO Please change this theme call to use an associative array for the $variables parameter.
+  drupal_json_output(array(
+    'status' => TRUE,
+    'data' => theme('status_messages') . drupal_render($promo_fulfillment_user_form),
+  ));
+  drupal_exit();
+}
+
+/**
+ * Menu callback; Retrieve a JSON object containing autocomplete suggestions for existing users.
+ */
+function promotion_fulfillment_product_autocomplete($string = '') {
+  $matches = array();
+  $promo_nid = arg(2);
+
+  // cache should alleviate the expense of this node load.
+  $promo_node = node_load($promo_nid);
+  if (count($promo_node->field_pf_disqualified_purchases) > 0) {
+    foreach ($promo_node->field_pf_disqualified_purchases as $key => $value) {
+      if ($value != NULL) {
+        $nids[] = $value['value'];
+      }
+    }
+    $disqualified_products = !empty($nids) ? join(',', $nids) : FALSE;
+  }
+
+  // broaden search results, put wildcard in spaces
+  $string = preg_replace('/\s+/', '%%', $string);
+  //$sql_args[] = $string;
+  $sql = "
+    SELECT DISTINCT(title)
+    FROM {node}
+    WHERE status = 1
+      AND type = 'product'
+      AND title LIKE '%".$string."%'
+  ";
+
+  if ($disqualified_products) {
+    $sql .= "
+      AND nid NOT IN (".$disqualified_products.")
+    ";
+//    $sql_args[] = $disqualified_products;
+  }
+
+  $sql .= "
+    ORDER BY title ASC
+  ";
+
+  // BUG: there's a problem in here in that $product_title sometimes includes
+  // characters that don't render properly and you end up with a ♧ type of
+  // character appearing in the suggestions. This seems to occur where the
+  // ™ character is used. The following queries seem to fix it:
+  // UPDATE node SET title = REPLACE(title, '&#0153;' ,'™');
+  // UPDATE node_revisions SET title = REPLACE(title, '&#0153;' ,'™');
+
+  if ($string) {
+    // TODO Please convert this statement to the D7 database API syntax.
+//    $result = db_query_range($sql);
+    $result = db_query($sql);
+//    while ($product = db_fetch_object($result)) {
+    foreach ($result as $product) {
+      $product_title = strip_tags($product->title);
+      $product_title = decode_entities($product_title);
+      $matches[$product_title] = $product_title;
+    }
+  }
+
+  drupal_json_output($matches);
+}
+
+/**
+ * Provide selector checkbox options for the promotion fulfillment form. This
+ * is themed content that includes only items that are included in the given
+ * promotion.
+ *
+ * @return
+ * Array containing custom numeric value as keys and product titles as values
+ */
+function _promotion_fulfillment_product_selector($category) {
+  $all_results = _promotion_fulfillment_product_query();
+  $sorted_results = $all_results[$category];
+
+  foreach ($sorted_results as $result) {
+    $content = '';
+    $i++;
+
+    // FNET titles are unnecessarily HTML encoded
+    $title = decode_entities($result->title);
+    $description = decode_entities($result->body_value);
+    if (isset($result->url) && strlen($result->url) > 0 ) {
+      $link = $result->url;
+      $content .= '<div class="image">' . '<a href="' . $link . '">' .
+        theme_image(array(
+          'path' => $result->filepath,
+          'alt' => $description,
+          'title' => $title)) . '</a></div>';
+    }
+    else {
+      $content .= '<div class="image">' . theme_image(array(
+          'path' => $result->filepath,
+          'alt' => $description,
+          'title' => $title)) . '</div>';
+    }
+    $content .= '<div class="title">' . $title . '</div>';
+    $content .= '<div class="price">' . t('Value ') . '$' . number_format($result->price, 2, NULL, '') . '</div>';
+
+    $options[$i]['hidden_values'] = array(
+      'nid' => $result->nid,
+      'prod_model' => $result->prod_model,
+      'prod_item' => $result->prod_item,
+      'price' => $result->price,
+      'title' => $result->title,
+    );
+    $options[$i]['content'] = $content;
+    $i++;
+  }
+
+  return $options;
+}
+
+/**
+ * Returns product listings that will be shown to user based on his purchase
+ * amount and gold contract purchases.
+ *
+ * @param - (int) $promo_id - The node ID of the promotion
+ */
+function _promotion_fulfillment_product_query($promo_id = 0) {
+  static $sorted_results;
+
+  if (isset($sorted_results)) {
+    return $sorted_results;
+  }
+  else {
+    $price_limit = $_SESSION['promotion_fulfillment']['user_info']['user_credit'];
+    $price_limit = $price_limit > 0 ? $price_limit : 999999999;
+
+    $promo_nid = $promo_id > 0 ? $promo_id : arg(1);
+    $promo_node = node_load($promo_nid);
+    if ($promo_node->type != 'promotion_fulfillment') {
+      return FALSE;
+    }
+
+    // Which product nids are available for this promotion?
+    foreach ($promo_node->field_available_products['und'] as $key => $value) {
+      $nids[] = $value['value'];
+    }
+
+    $nid_list = implode(',', $nids);
+
+    // POTENTIAL BUG: This query assumes that promotional products only have one vocabulary.
+    // If another vocabulary is applied to this node type, each node will appear
+    // in this result set once per term that is applied. Not including vocabulary
+    // ID in this query because it ends up excluding nodes that have NO terms
+    // applied to them.
+/*    $sql = "
+      SELECT n.nid, n.title, nr.body, td.name category,
+      c.field_product_value_value AS price,
+        c.field_product_id_value AS prod_model, c.field_product_item_value AS
+        prod_item, c.field_product_image_link_value AS url,
+        i.field_prod_hub_img_fid AS img_fid, f.filepath, IFNULL(td.weight, 9999)
+        as weight
+      FROM {node} n
+      LEFT JOIN {node_revisions} nr ON nr.vid = n.vid
+      LEFT JOIN {content_field_prod_hub_img} i ON i.vid = n.vid
+      LEFT JOIN {content_type_promotion_product} c ON c.vid = n.vid
+      LEFT JOIN {files} f ON i.field_prod_hub_img_fid = f.fid
+      LEFT JOIN {taxonomy_term_node} tn ON tn.vid = n.vid
+      LEFT JOIN {taxonomy_term_data} td ON td.tid = tn.tid
+      WHERE type = 'promotion_product'
+        AND n.nid IN (%s)
+        AND c.field_product_value_value <= '%s'
+      ORDER BY weight ASC, td.name, price DESC
+    "; */
+    $sql = "
+      SELECT n.nid, n.title, nr.body_value, td.name category,
+      c.field_product_value_value AS price,
+        c.field_product_id_value AS prod_model, c.field_product_item_value AS
+        prod_item, c.field_product_image_link_value AS url,
+        i.field_prod_hub_img_fid AS img_fid, f.filepath, IFNULL(td.weight, 9999)
+        as weight
+      FROM {node} n
+      LEFT JOIN {field_revision_body} nr ON nr.revision_id = n.vid
+      LEFT JOIN {content_field_prod_hub_img} i ON i.vid = n.vid
+      LEFT JOIN {content_type_promotion_product} c ON c.vid = n.vid
+      LEFT JOIN {files} f ON i.field_prod_hub_img_fid = f.fid
+      LEFT JOIN {taxonomy_index} tn ON tn.tid = n.tnid
+      LEFT JOIN {taxonomy_term_data} td ON td.tid = tn.tid
+      WHERE type = 'promotion_product'
+        AND n.nid IN (".$nid_list.")
+        AND c.field_product_value_value <= '".$price_limit."'
+      ORDER BY weight ASC, td.name, price DESC
+    ";
+//    $db_result = db_query($sql, $nid_list, $price_limit);
+    $db_result = db_query($sql);
+
+    $result_count = 0;
+
+    // First sort results by category for easy formatting of categorized page
+//    while ($result = db_fetch_array($db_result)) {
+    foreach ($db_result as $result) {
+      $result->category = !is_null($result->category) ? $result->category : 'Other';
+      $sorted_results[$result->category][] = $result;
+      $result_count++;
+    }
+
+    if ($result_count == 0) {
+      watchdog('promo_fulfill', 'No results matched parameters. Cannot provide a list of products under $%amount.', array('%amount' => $price_limit), WATCHDOG_WARNING);
+      drupal_set_message('An error occurred. It has been recorded and we will work to fix it.', 'info');
+
+      return FALSE;
+    }
+
+    return $sorted_results;
+  }
+
+}
+
+/**
+ * Determine the initial amount of credit a user has towards free products
+ *
+ * @param
+ *  $purchase_amount - dollars spent on invoice being submitted
+ *
+ * @param
+ *  $promo_id - The node ID of the promotio whose rules are to be used.
+ *
+ * @return
+ *  dollar amount of available credit
+ */
+function _promotion_fulfillment_initial_credit($purchase_amount = 0, $gold_contracts = 0, $promo_id = NULL, $promo_code = '') {
+  if (is_numeric($promo_id)) {
+    $nid = $promo_id;
+  }
+  else {
+    $nid = arg(1);
+  }
+
+  $promo_node = node_load($nid);
+
+  if ($promo_node->type != 'promotion_fulfillment') {
+    return FALSE;
+  }
+
+  $gold_contract_bonus = $promo_node->field_gold_contract_bonus[0]['value'];
+  $promo_code_bonus = _promotion_fulfillment_code_value($promo_code, $nid);
+
+  $user_credit = 0;
+  $gold_contract_value = $gold_contracts * $gold_contract_bonus;
+  $adjusted_amount = $purchase_amount + $gold_contract_value + $promo_code_bonus;
+  $_SESSION['promotion_fulfillment']['user_info']['gold_contract_value'] = number_format($gold_contract_value, 2, NULL, '');
+  $_SESSION['promotion_fulfillment']['user_info']['gold_contract_bonus'] = number_format($gold_contract_bonus, 2, NULL, '');
+  $_SESSION['promotion_fulfillment']['user_info']['promo_code_bonus'] = number_format($promo_code_bonus, 2, NULL, '');
+  $_SESSION['promotion_fulfillment']['user_info']['adjusted_amount'] = number_format($adjusted_amount, 2, NULL, '');
+
+  $conversion_config = $promo_node->field_reward_conversion['und'][0]['value'];
+  if (empty($conversion_config)) {
+    watchdog('promo_fulfill', 'Campaign "%title" does not have a valid reward conversion configuration', array('%title' => $promo_node->title), WATCHDOG_ERROR);
+    return FALSE;
+  }
+
+  $rules = preg_split("/\n/", trim($conversion_config));
+
+  foreach ($rules as $rule) {
+    preg_match("/^(\d*)[^=]*=\s*(\d*)/", $rule, $matches);
+    $begin_range = $matches[1];
+    $credit_value = $matches[2];
+
+    if ($adjusted_amount >= $begin_range) {
+      $user_credit = $credit_value;
+      break;
+    }
+  }
+
+  return number_format($user_credit, 2, NULL, '');
+}
+
+/**
+ * Return markup for the reward conversion chart
+ */
+function _promotion_fulfillment_conversion_markup() {
+
+  $promo_node = node_load(arg(1));
+
+  if ($promo_node->type != 'promotion_fulfillment') {
+    return FALSE;
+  }
+
+  $conversion_config = $promo_node->field_reward_conversion['und'][0]['value'];
+
+  $rules = preg_split("/\n/", trim($conversion_config));
+
+  $html = '
+    <table id="reward_conversion">
+      <thead>
+        <tr>
+          <th>' . t('Purchase Amount') . '</th>
+          <th>' . t('Free Product Amount') . '</th>
+        </tr>
+      </thead>
+      <tbody>
+  ';
+
+  foreach ($rules as $rule) {
+    preg_match("/\s*([^\s]*)\s*\S\s*([^\s]*)\s*[^\s]*\s*([^\s]*)/", $rule, $matches);
+    $lo_spend = '$' . $matches[1];
+    if (is_numeric($matches[2])) {
+      $hi_spend = '$' . $matches[2];
+    }
+    else {
+      $hi_spend = $matches[2];
+    }
+    $credit = '$' . $matches[3];
+
+    $html .= '<tr><td>' . $lo_spend . ' - ' . $hi_spend . '</td><td>' . $credit . '</td></tr>';
+  }
+
+  $html .= '</tbody></table>';
+
+  return $html;
+}
+
+/**
+ * Attaches files to the body of an email message, adjusts mail headers
+ * accordingly.
+ *
+ * There's no apparent way to send emails with attachments in Drupal. We can
+ * either use a contrib module (mimemail) or do it ourselves here.
+ *
+ * Code based on http://us3.php.net/manual/en/function.mail.php#105661
+ *
+ * $attachment
+ *   Relative path to the file to be included in email. No support for multiple
+ *   files right now. Easy enough to add if we needed it.
+ *
+ * $message
+ *   The body of the email message to which the files should be attached
+ *
+ * $headers
+ *  The email headers which will need to be modified when we add attachments
+ *
+ * $sender_email
+ *   Just like it sounds
+ */
+function _promotion_fulfillment_email_attach($attachment, &$message, &$headers, $sender_email) {
+
+  $semi_rand = md5(REQUEST_TIME);
+  $mime_boundary = "==Multipart_Boundary_x{$semi_rand}x";
+
+  // headers for attachment
+  $headers .= "MIME-Version: 1.0\n" . "Content-Type: multipart/mixed;\n" . " boundary=\"{$mime_boundary}\"";
+
+  // multipart boundary
+  $message = "--{$mime_boundary}\n" . "Content-Type: text/plain; charset=\"iso-8859-1\"\n" .
+  "Content-Transfer-Encoding: 7bit\n\n" . $message . "\n\n";
+
+  if ($attachment != FALSE && !is_file($attachment)) {
+    watchdog('promo_fulfill', 'Could not locate file: %file', array('%file' => $attachment), WATCHDOG_WARNING);
+  }
+  else {
+    // preparing attachments
+    $message .= "--{$mime_boundary}\n";
+    $fp = @fopen($attachment, "rb");
+    $data = @fread($fp, filesize($attachment));
+    @fclose($fp);
+    $data = chunk_split(base64_encode($data));
+    $message .=
+      "Content-Type: application/octet-stream; name=\"" . basename($attachment) . "\"\n" .
+      "Content-Description: " . basename($attachment) . "\n" .
+      "Content-Disposition: attachment;\n" . " filename=\"" . basename($attachment) . "\"; size=" . filesize($attachment) . ";\n" .
+      "Content-Transfer-Encoding: base64\n\n" . $data . "\n\n"
+    ;
+  }
+  $message .= "--{$mime_boundary}--";
+
+  return;
+}
+
+/**
+ * Convert a newline and pipe delimited text to an array
+ *
+ * @param $string
+ *   Pipe and newline delimited configuration text.
+ *
+ * @return (array)
+ *   Key value pairs reflected in the config string
+ */
+function _promotion_fulfillment_conf2array($conf) {
+
+  if (empty($conf)) {
+    return array();
+  }
+
+  $entries = preg_split("/\n/", trim($conf));
+  foreach ($entries as $entry) {
+    list($key, $value) = explode('|', $entry);
+    $result[trim($key)] = trim($value);
+  }
+
+  return $result;
+}
+
+/**
+ * Validates submitted promotional codes
+ *
+ * @param (string)
+ *   A promotional code
+ *
+ * @param (int)
+ *   Optional promotional NID
+ *
+ * @return (int)
+ *   The dollar value of the code or 0 if a bad code was submitted
+ */
+function _promotion_fulfillment_code_value($promo_code, $promo_nid = NULL) {
+  static $promo_code_values;
+  $code_value = 0;
+
+  if (!isset($promo_code_values)) {
+    $promo_code_values = array();
+    $promo_nid = is_numeric($promo_nid) ? $promo_nid : arg(1);
+    $promo_node = node_load($promo_nid);
+
+    $promo_config = $promo_node->field_pf_promo_codes[0]['value'];
+    if (strlen($promo_config) > 0) {
+      $promo_code_values = array_change_key_case(_promotion_fulfillment_conf2array($promo_config));
+      $promo_code = strtolower($promo_code);
+    }
+  }
+
+  if (key_exists($promo_code, $promo_code_values)) {
+    $code_value = $promo_code_values[$promo_code];
+  }
+
+  return $code_value;
+}
+
+/**
+ * Returns next fullfillment request ID
+ *
+ * @return - (int) Request ID
+ */
+function _promotion_fulfillment_get_id() {
+  // We're doing it this way because we don't want to set up our own DB table
+  // just to store this one value.
+  $request_id = variable_get('promotion_fulfillment_get_id', 2395725);
+
+  if (!lock_acquire('promotion_fulfillment_get_id', 2)) {
+    lock_wait('promotion_fulfillment_get_id');
+    // If we can't get lock, we will have 0 as our request ID
+    return 0;
+  }
+  variable_set('promotion_fulfillment_get_id', $request_id + 1);
+  lock_release('promotion_fulfillment_get_id');
+
+  return $request_id;
+}
+
+/**
+ * Return a list of promo fulfillment nodes with user submissions suitable for
+ * FAPI options
+ */
+function _promotion_fulfillment_promo_selections() {
+  $options[] = '-- Select Promotion --';
+  $options[1] = 'All';
+
+  $sql = "
+    SELECT DISTINCT(promotion_id)
+    FROM {promotion_fulfillment_submissions}
+    ORDER BY promotion_id DESC
+  ";
+
+  $results = db_query($sql);
+//  while ($result = db_fetch_object($results)) {
+  foreach ($results as $result) {
+    $options[$result->promotion_id] = $result->promotion_id;
+  }
+
+  return $options;
+}
+/**
+ * Generatting CSV formatted string from an array.
+ * By Sergey Gurevich.
+ */
+function _array_to_csv($array, $header_row = true, $col_sep = ",", $row_sep = "\n", $qut = '"') {
+  $test22 = $array[0];
+
+  if (!is_array($array) ||  !(is_array($array[0]) || is_object($array[0]))) {
+    return false;
+  }
+
+  //Header row.
+  if ($header_row) {
+    foreach ($array[0] as $key => $val) {
+      //Escaping quotes.
+      $key = str_replace($qut, "$qut$qut", $key);
+      $output .= "$col_sep$qut$key$qut";
+    }
+    $output = substr($output, 1) . "\n";
+  }
+  //Data rows.
+  foreach ($array as $key => $val) {
+    $tmp = '';
+    foreach ($val as $cell_key => $cell_val) {
+      //Escaping quotes.
+      $cell_val = str_replace($qut, "$qut$qut", $cell_val);
+      $tmp .= "$col_sep$qut$cell_val$qut";
+    }
+    $output .= substr($tmp, 1) . $row_sep;
+  }
+
+  return $output;
+}

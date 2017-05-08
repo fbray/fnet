@@ -1,0 +1,20 @@
+<?php
+/**
+ * @file
+ * Code for the Blog Fnet feature.
+ */
+
+include_once 'blog_fnet.features.inc';
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function blog_fnet_preprocess_page(&$variables) {
+  // Hide default page title for the Blog pages.
+  if (isset($variables['node']) && $variables['node']->type == 'blog_article') {
+
+    // Hide title for this content type.
+    $variables['title'] = '';
+
+  }
+}

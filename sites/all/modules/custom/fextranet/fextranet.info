@@ -1,0 +1,36 @@
+name = FExtranet
+description = "Fluke Networks Extranet"
+package = FExtranet
+core = 7.x
+
+files[] = views/fextranet.views.inc
+files[] = views/fextranet_handler_filter_dci_related_products.inc
+files[] = views/fextranet_handler_field_search_results.inc
+files[] = fextranet.admin.inc
+files[] = forms/access_request.form.inc
+files[] = fextranet.rules_defaults.inc
+
+stylesheets[all][] = css/fextranet.css
+
+scripts[] = js/scripts.js
+
+dependencies[] = entityreference
+dependencies[] = fnet_common
+dependencies[] = group
+dependencies[] = gadd
+dependencies[] = gprofile
+dependencies[] = gnode
+dependencies[] = i18n_node
+dependencies[] = i18n_select
+dependencies[] = i18n_redirect
+dependencies[] = i18n_variable
+dependencies[] = rules
+dependencies[] = mailsystem
+dependencies[] = mimemail
+dependencies[] = search_api
+dependencies[] = views
+
+configure = admin/fnet/extranet
+
+
+

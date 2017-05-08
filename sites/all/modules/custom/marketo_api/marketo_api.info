@@ -1,0 +1,8 @@
+; $Id$
+name = Marketo API
+description = Provide a simple API for submitting data to Marketo
+package = Fluke Networks
+version = 7.x.1.0
+core = 7.x
+dependencies[] = 'fnet_helper'
+configure = admin/fnet/marketo_api

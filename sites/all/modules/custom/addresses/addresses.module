@@ -1,0 +1,368 @@
+<?php
+// $Id$
+
+/**
+ * List all countries on Planet! :)
+ *
+ * It uses the ISO notation.
+ * See http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+ * or http://www.iso.org/iso/country_codes/iso_3166_code_lists/english_country_names_and_code_elements.htm
+ * for further info.
+ *
+ * @param $available
+ *   Array (optional). A list of countries that are allowed.
+ * @param $top_countries
+ *   Array (optional). A list of countries to also display
+ *   at the top of the list.
+ * @param $upper
+ *   Boolean (optional). When TRUE, the country codes will
+ *   be totally in Upper Case. Its the default ISO code,
+ *   but the files and function are all named with lower
+ *   case, so its better to return lower case by default
+ * @return
+ *   Array. 'COUNTRY CODE' => 'COUNTRY NAME' pairs as layed out in
+ *   ISO 3166-1 alpha-2
+ */
+function addresses_country_get($available = array(), $top_countries = array(), $upper = FALSE) {
+  $countries = array(
+    'ad' => t('Andorra'),
+    'ae' => t('United Arab Emirates'),
+    'af' => t('Afghanistan'),
+    'ag' => t('Antigua and Barbuda'),
+    'ai' => t('Anguilla'),
+    'al' => t('Albania'),
+    'am' => t('Armenia'),
+    'an' => t('Netherlands Antilles'),
+    'ao' => t('Angola'),
+    'aq' => t('Antarctica'),
+    'ar' => t('Argentina'),
+    'as' => t('American Samoa'),
+    'at' => t('Austria'),
+    'au' => t('Australia'),
+    'aw' => t('Aruba'),
+    'ax' => t('Aland Islands'),
+    'az' => t('Azerbaijan'),
+    'ba' => t('Bosnia and Herzegovina'),
+    'bb' => t('Barbados'),
+    'bd' => t('Bangladesh'),
+    'be' => t('Belgium'),
+    'bf' => t('Burkina Faso'),
+    'bg' => t('Bulgaria'),
+    'bh' => t('Bahrain'),
+    'bi' => t('Burundi'),
+    'bj' => t('Benin'),
+    'bm' => t('Bermuda'),
+    'bn' => t('Brunei'),
+    'bo' => t('Bolivia'),
+    'br' => t('Brazil'),
+    'bs' => t('Bahamas'),
+    'bt' => t('Bhutan'),
+    'bv' => t('Bouvet Island'),
+    'bw' => t('Botswana'),
+    'by' => t('Belarus'),
+    'bz' => t('Belize'),
+    'ca' => t('Canada'),
+    'cc' => t('Cocos (Keeling) Islands'),
+    'cd' => t('Congo (Kinshasa)'),
+    'cf' => t('Central African Republic'),
+    'cg' => t('Congo (Brazzaville)'),
+    'ch' => t('Switzerland'),
+    'ci' => t('Ivory Coast'),
+    'ck' => t('Cook Islands'),
+    'cl' => t('Chile'),
+    'cm' => t('Cameroon'),
+    'cn' => t('China'),
+    'co' => t('Colombia'),
+    'cr' => t('Costa Rica'),
+    'cs' => t('Serbia And Montenegro'),
+    'cu' => t('Cuba'),
+    'cv' => t('Cape Verde'),
+    'cx' => t('Christmas Island'),
+    'cy' => t('Cyprus'),
+    'cz' => t('Czech Republic'),
+    'de' => t('Germany'),
+    'dj' => t('Djibouti'),
+    'dk' => t('Denmark'),
+    'dm' => t('Dominica'),
+    'do' => t('Dominican Republic'),
+    'dz' => t('Algeria'),
+    'ec' => t('Ecuador'),
+    'ee' => t('Estonia'),
+    'eg' => t('Egypt'),
+    'eh' => t('Western Sahara'),
+    'er' => t('Eritrea'),
+    'es' => t('Spain'),
+    'et' => t('Ethiopia'),
+    'fi' => t('Finland'),
+    'fj' => t('Fiji'),
+    'fk' => t('Falkland Islands'),
+    'fm' => t('Micronesia'),
+    'fo' => t('Faroe Islands'),
+    'fr' => t('France'),
+    'ga' => t('Gabon'),
+    'gd' => t('Grenada'),
+    'ge' => t('Georgia'),
+    'gf' => t('French Guiana'),
+    'gg' => t('Guernsey'),
+    'gh' => t('Ghana'),
+    'gi' => t('Gibraltar'),
+    'gl' => t('Greenland'),
+    'gm' => t('Gambia'),
+    'gn' => t('Guinea'),
+    'gp' => t('Guadeloupe'),
+    'gq' => t('Equatorial Guinea'),
+    'gr' => t('Greece'),
+    'gs' => t('South Georgia and the South Sandwich Islands'),
+    'gt' => t('Guatemala'),
+    'gu' => t('Guam'),
+    'gw' => t('Guinea-Bissau'),
+    'gy' => t('Guyana'),
+    'hk' => t('Hong Kong S.A.R., China'),
+    'hm' => t('Heard Island and McDonald Islands'),
+    'hn' => t('Honduras'),
+    'hr' => t('Croatia'),
+    'ht' => t('Haiti'),
+    'hu' => t('Hungary'),
+    'id' => t('Indonesia'),
+    'ie' => t('Ireland'),
+    'il' => t('Israel'),
+    'im' => t('Isle of Man'),
+    'in' => t('India'),
+    'io' => t('British Indian Ocean Territory'),
+    'iq' => t('Iraq'),
+    'ir' => t('Iran'),
+    'is' => t('Iceland'),
+    'it' => t('Italy'),
+    'je' => t('Jersey'),
+    'jm' => t('Jamaica'),
+    'jo' => t('Jordan'),
+    'jp' => t('Japan'),
+    'ke' => t('Kenya'),
+    'kg' => t('Kyrgyzstan'),
+    'kh' => t('Cambodia'),
+    'ki' => t('Kiribati'),
+    'km' => t('Comoros'),
+    'kn' => t('Saint Kitts and Nevis'),
+    'kp' => t('North Korea'),
+    'kr' => t('South Korea'),
+    'kv' => t('Kosovo'),
+    'kw' => t('Kuwait'),
+    'ky' => t('Cayman Islands'),
+    'kz' => t('Kazakhstan'),
+    'la' => t('Laos'),
+    'lb' => t('Lebanon'),
+    'lc' => t('Saint Lucia'),
+    'li' => t('Liechtenstein'),
+    'lk' => t('Sri Lanka'),
+    'lr' => t('Liberia'),
+    'ls' => t('Lesotho'),
+    'lt' => t('Lithuania'),
+    'lu' => t('Luxembourg'),
+    'lv' => t('Latvia'),
+    'ly' => t('Libya'),
+    'ma' => t('Morocco'),
+    'mc' => t('Monaco'),
+    'md' => t('Moldova'),
+    'me' => t('Montenegro'),
+    'mg' => t('Madagascar'),
+    'mh' => t('Marshall Islands'),
+    'mk' => t('Macedonia'),
+    'ml' => t('Mali'),
+    'mm' => t('Myanmar'),
+    'mn' => t('Mongolia'),
+    'mo' => t('Macao S.A.R., China'),
+    'mp' => t('Northern Mariana Islands'),
+    'mq' => t('Martinique'),
+    'mr' => t('Mauritania'),
+    'ms' => t('Montserrat'),
+    'mt' => t('Malta'),
+    'mu' => t('Mauritius'),
+    'mv' => t('Maldives'),
+    'mw' => t('Malawi'),
+    'mx' => t('Mexico'),
+    'my' => t('Malaysia'),
+    'mz' => t('Mozambique'),
+    'na' => t('Namibia'),
+    'nc' => t('New Caledonia'),
+    'ne' => t('Niger'),
+    'nf' => t('Norfolk Island'),
+    'ng' => t('Nigeria'),
+    'ni' => t('Nicaragua'),
+    'nl' => t('Netherlands'),
+    'no' => t('Norway'),
+    'np' => t('Nepal'),
+    'nr' => t('Nauru'),
+    'nu' => t('Niue'),
+    'nz' => t('New Zealand'),
+    'om' => t('Oman'),
+    'pa' => t('Panama'),
+    'pe' => t('Peru'),
+    'pf' => t('French Polynesia'),
+    'pg' => t('Papua New Guinea'),
+    'ph' => t('Philippines'),
+    'pk' => t('Pakistan'),
+    'pl' => t('Poland'),
+    'pm' => t('Saint Pierre and Miquelon'),
+    'pn' => t('Pitcairn'),
+    'pr' => t('Puerto Rico'),
+    'ps' => t('Palestinian Territory'),
+    'pt' => t('Portugal'),
+    'pw' => t('Palau'),
+    'py' => t('Paraguay'),
+    'qa' => t('Qatar'),
+    're' => t('Reunion'),
+    'ro' => t('Romania'),
+    'rs' => t('Serbia'),
+    'ru' => t('Russia'),
+    'rw' => t('Rwanda'),
+    'sa' => t('Saudi Arabia'),
+    'sb' => t('Solomon Islands'),
+    'sc' => t('Seychelles'),
+    'sd' => t('Sudan'),
+    'se' => t('Sweden'),
+    'sg' => t('Singapore'),
+    'sh' => t('Saint Helena'),
+    'si' => t('Slovenia'),
+    'sj' => t('Svalbard and Jan Mayen'),
+    'sk' => t('Slovakia'),
+    'sl' => t('Sierra Leone'),
+    'sm' => t('San Marino'),
+    'sn' => t('Senegal'),
+    'so' => t('Somalia'),
+    'sr' => t('Suriname'),
+    'st' => t('Sao Tome and Principe'),
+    'sv' => t('El Salvador'),
+    'sx' => t('Sint Maarten'),
+    'sy' => t('Syria'),
+    'sz' => t('Swaziland'),
+    'tc' => t('Turks and Caicos Islands'),
+    'td' => t('Chad'),
+    'tf' => t('French Southern Territories'),
+    'tg' => t('Togo'),
+    'th' => t('Thailand'),
+    'tj' => t('Tajikistan'),
+    'tk' => t('Tokelau'),
+    'tl' => t('East Timor'),
+    'tm' => t('Turkmenistan'),
+    'tn' => t('Tunisia'),
+    'to' => t('Tonga'),
+    'tr' => t('Turkey'),
+    'tt' => t('Trinidad and Tobago'),
+    'tv' => t('Tuvalu'),
+    'tw' => t('Taiwan'),
+    'tz' => t('Tanzania'),
+    'ua' => t('Ukraine'),
+    'ug' => t('Uganda'),
+    'uk' => t('United Kingdom'),
+    'um' => t('United States Minor Outlying Islands'),
+    'us' => t('United States'),
+    'uy' => t('Uruguay'),
+    'uz' => t('Uzbekistan'),
+    'va' => t('Vatican'),
+    'vc' => t('Saint Vincent and the Grenadines'),
+    've' => t('Venezuela'),
+    'vg' => t('British Virgin Islands'),
+    'vi' => t('U.S. Virgin Islands'),
+    'vn' => t('Vietnam'),
+    'vu' => t('Vanuatu'),
+    'wf' => t('Wallis and Futuna'),
+    'ws' => t('Samoa'),
+    'ye' => t('Yemen'),
+    'yt' => t('Mayotte'),
+    'za' => t('South Africa'),
+    'zm' => t('Zambia'),
+    'zw' => t('Zimbabwe'),
+  );
+
+  if (!empty($available)) {
+    foreach ($countries as $ccode => $country) {
+      if (empty($available[$ccode])) {
+        unset($countries[$ccode]);
+      }
+    }
+  }
+
+  // Sort the list and return
+  natcasesort($countries);
+
+  // Move any designated countries to the top of the list
+  if (!empty($top_countries) && is_array($top_countries)) {
+    $top_list = array();
+    foreach ($top_countries as $ccode => $ignore) {
+      if (!empty($countries[$ccode])) {
+        $top_list[$ccode] = $countries[$ccode];
+      }
+    }
+    if (!empty($top_list)) {
+      // merge in full countries list
+      $countries = array_merge($top_list, $countries);
+    }
+  }
+
+  // In fact, the ISO codes for countries are all Upper Case.
+  // So, if someone needs the list as the official records,
+  // it will convert.
+  if (!empty($upper)) {
+    $countries = array_change_key_case($countries, CASE_UPPER);
+  }
+
+  return $countries;
+}
+
+
+/**
+ * Get available states.
+ *
+ * @param $country
+ *   String (optional). The 2-digit country code
+ * @return
+ *   Array. If $country is passed, then return an array
+ *   of states for that country. If nothing is passed then return
+ *   an array of countrys who have states, where each country contains
+ *   an array of states.
+ */
+function addresses_province_get($country = NULL) {
+  static $provinces;
+  $country = strtolower($country);
+  // Get a list of countries
+  $countries_all = addresses_country_get();
+
+  // Test if its needed to update the province list
+  if (empty($country) && empty($provinces)) {
+    // Get the countries list
+    $countries = array_keys($countries_all);
+    $update = TRUE;
+  }
+  elseif (!empty($country) && $countries_all[$country] && empty($provinces[$country])) {
+    $countries[] = $country;
+    $update = TRUE;
+  }
+
+  if (!empty($update)) {
+    foreach ($countries as $country_code) {
+      // Load country specific code .inc file if it exists.
+      // For example, if country_code for U.S. == 'us', load 'addresses.us.inc'
+      include_once drupal_get_path('module', 'addresses') . '/countries/' . $country_code . '.inc';
+
+      // If the country have a province list, load it
+      $function = 'addresses_province_list_' . $country_code;
+      if (function_exists($function)) {
+        $provinces[$country_code] = $function();
+      }
+    }
+  }
+
+  // Return the states of a single country, if any
+  if (!empty($country)) {
+    if (isset($provinces[$country])) {
+      return $provinces[$country];
+    }
+    else {
+      return array();
+    }
+  }
+  else {
+    return $provinces;
+  }
+}
+

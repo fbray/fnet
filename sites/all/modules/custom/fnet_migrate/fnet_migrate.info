@@ -1,0 +1,9 @@
+name = fnet_migrate
+description = Migrate data from D6 DB to D7 DB
+core = 7.x
+version = 7.x 2014-12-24
+
+files[] = "fnet_migrate.migration.inc"
+package = "FNET Migration"
+dependencies[] = migrate
+dependencies[] = migrate_d2d

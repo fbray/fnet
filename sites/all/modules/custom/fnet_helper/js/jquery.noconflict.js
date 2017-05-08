@@ -1,0 +1,1 @@
+var $ = jQuery.noConflict(); // Make Drupal's installation of jQuery available to legacy code using the '$' variable name.

@@ -1,0 +1,1159 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * The MyAccount / SFDC integration module provide helper functions and wrappers for SFDC SOAP calls.
+ *
+ */
+require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'fnet_sfdc') . '/includes/FNETDataService.php';
+require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'fnet_sfdc') . '/includes/SFDCWebService.php';
+require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'fnet_sfdc') . '/includes/SFDCResponse.php';
+require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'fnet_sfdc') . '/includes/MACase.php';
+require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'fnet_sfdc') . '/sfdc_soapclient/SforceEnterpriseClient.php';
+
+/**
+ * Implementation of hook menu
+ *
+ * @return array
+ */
+function fnet_sfdc_menu() {
+  $items = array();
+  $items['admin/fnet/fnet_sfdc'] = array(
+    'title' => 'FNET SFDC settings',
+    'description' => "Settings for fnet_sfdc module.",
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fnet_sfdc_admin_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'fnet_sfdc.admin.inc',
+  );
+  $items['admin/fnet/fnet_sfdc/settings'] = array(
+    'title' => 'Settings',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -1,
+  );
+  if ($_SERVER['HTTP_HOST'] != 'www.flukenetworks.com') {
+    $items['admin/fnet/fnet_sfdc/test'] = array(
+      'title' => 'FNET SFDC Test',
+      'description' => "Test FNET SFDC soap calls",
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('fnet_sfdc_test'),
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_LOCAL_TASK,
+      'file' => 'fnet_sfdc.test.inc',
+    );
+    $items['admin/fnet/fnet_sfdc/test/contacts'] = array(
+      'title' => 'Contacts and Cases',
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => -1,
+    );
+    $items['admin/fnet/fnet_sfdc/test/assets'] = array(
+      'title' => 'Assets and Gold Contracts',
+      'description' => "Test FNET SFDC soap calls",
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('fnet_sfdc_test_assets'),
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_LOCAL_TASK,
+      'file' => 'fnet_sfdc.test.inc',
+    );
+  }
+  return $items;
+}
+
+/**
+ * Get registered products
+ *
+ * @param $email
+ * @return \SFDCResponse
+ */
+function fnet_sfdc_get_assets($email) {
+  $cache_key = $email . ':get_assets';
+  $response = new SFDCResponse();
+  if ($result = fnet_sfdc_cache_get($cache_key)) {
+    $response->status = TRUE;
+    $response->data = $result->data;
+    return $response;
+  }
+  else {
+    $param = new sfdc_getAssets();
+    $param->contactEmail = $email;
+    $client = new SFDCWebService();
+    $assets = array();
+    try {
+      $result = $client->getAssets($param)->result;
+      if ($result && !is_array($result)) {
+        $result = array($result->Id => $result);
+      }
+      if (is_array($result)) {
+        foreach ($result as $asset) {
+          $assets[$asset->Id] = $asset;
+        }
+      }
+      $response->data = $assets;
+      $response->status = TRUE;
+      fnet_sfdc_cache_set($cache_key, $assets);
+    } catch (SoapFault $fault) {
+      $response->data = array();
+      $response->message = $fault->getMessage();
+      $response->status = FALSE;
+    }
+  }
+  return $response;
+}
+
+/**
+ * Register a product
+ *
+ * @param $email
+ * @param $product_code
+ * @param $purchase_date
+ * @param $serial_number
+ * @return \SFDCResponse
+ */
+function fnet_sfdc_create_asset($email, $product_code, $purchase_date, $serial_number) {
+  $response = new SFDCResponse();
+  $param = new sfdc_createAsset();
+  $asset = new sfdc_AssetDataWrapper();
+  $asset->email = $email;
+  $asset->productCode = $product_code;
+  $asset->purchaseDate = $purchase_date;
+  $asset->serialNumber = $serial_number;
+  $param->assetWrapper = $asset;
+  $client = new SFDCWebService();
+  try {
+    $result = $client->createAsset($param)->result;
+    if (!empty($result->assetInfo)) {
+      $asset_information = $result->assetInfo;
+      $response->data = $asset_information->Id;
+    }
+    else {
+      $response->data = $serial_number;
+    }
+    $response->status = TRUE;
+    $response->message = $result->Status;
+    fnet_sfdc_cache_clear($email);
+  } catch (SoapFault $fault) {
+    $response->message = $fault->getMessage();
+    if (preg_match('/DUPLICATE_VALUE/', $response->message)) {
+      $response->message = 'DUPLICATE_VALUE';
+    }
+    $response->status = FALSE;
+    fnet_sfdc_log_event("createAsset($email, $product_code, $purchase_date, $serial_number): $response->message", WATCHDOG_ERROR);
+  }
+  return $response;
+}
+
+/**
+ * Get list of 'PCAT' Ids
+ *
+ * @return \SFDCResponse
+ */
+function fnet_sfdc_get_product_families() {
+  $cache_key = 'get_product_families';
+  $response = new SFDCResponse();
+  if ($result = fnet_sfdc_cache_get($cache_key)) {
+    $response->status = TRUE;
+    $response->data = $result->data;
+    return $response;
+  }
+  $client = new SFDCWebService();
+  $param = new sfdc_getProductFamilies();
+  $product_families = array();
+  try {
+    $result = $client->getProductFamilies($param)->result;
+    if ($result && !is_array($result)) {
+      $result = array($result);
+    }
+    if (is_array($result)) {
+      foreach ($result as $product_family) {
+        $product_families[$product_family->ProductFamilyID__c] = $product_family->ProductFamilyName__c;
+      }
+    }
+    $response->data = $product_families;
+    $response->status = TRUE;
+    fnet_sfdc_cache_set($cache_key, $product_families);
+  } catch (SoapFault $fault) {
+    $response->message = $fault->getMessage();
+    $response->status = FALSE;
+    $response->data = array();
+    fnet_sfdc_log_event("getProductFamilies(): $response->message", WATCHDOG_DEBUG);
+  }
+  return $response;
+}
+
+/**
+ * get customer's gold contracts
+ *
+ * @param $gold_number
+ * @param $gold_pin
+ * @return \SFDCResponse
+ */
+function fnet_sfdc_get_gold_contracts($gold_number, $gold_pin) {
+  $gold_number = preg_replace('/[^\d]/', '', $gold_number);
+  $cache_key = $gold_number . ':get_gold_contracts';
+  $response = new SFDCResponse();
+  if ($result = fnet_sfdc_cache_get($cache_key)) {
+    $response->status = TRUE;
+    $response->data = $result->data;
+    return $response;
+  }
+  $client = new SFDCWebService();
+  $param = new sfdc_getGoldContracts();
+  $param->goldNumber = $gold_number;
+  $param->goldPIN = $gold_pin;
+  $contracts = array();
+  try {
+    $result = $client->getGoldContracts($param)->result;
+    if ($result && !is_array($result)) {
+      $result = array($result);
+    }
+    if (is_array($result)) {
+      foreach ($result as $gold_contract) {
+        $contracts[] = $gold_contract;
+      }
+    }
+    $response->data = $contracts;
+    $response->status = TRUE;
+    fnet_sfdc_cache_set($cache_key, $contracts);
+  } catch (SoapFault $fault) {
+    $response->message = $fault->getMessage();
+    $response->status = FALSE;
+    $response->data = array();
+    fnet_sfdc_log_event("getGoldContracts($gold_number, $gold_pin): $response->message", WATCHDOG_DEBUG);
+  }
+  return $response;
+}
+
+/**
+ * Insert new contact into SFDC
+ *
+ * @param sfdc_contact $contact
+ * @return SFDCResponse
+ */
+function fnet_sfdc_insert_contact($contact) {
+  static $insert_contact_failed;
+
+  $response = new SFDCResponse();
+  if (!($contact instanceof sfdc_Contact)) {
+    $response->status = FALSE;
+    $response->data = $contact;
+    $response->message = 'fnet_sfdc_insert_contact call with invalid parameter';
+    return $response;
+  }
+  $cache_key = $contact->Email . ':insert_contact_failed';
+  if ($insert_contact_failed) {
+    $response->status = FALSE;
+    $response->data = NULL;
+    $response->message = 'fnet_sfdc_insert_contact not inserted (Static)';
+    return $response;
+  }
+  else {
+    if ($result = fnet_sfdc_cache_get($cache_key)) {
+      if ($result->data) {
+        $response->status = FALSE;
+        $response->data = NULL;
+        $response->message = 'fnet_sfdc_insert_contact not inserted (Cache)';
+        return $response;
+      }
+    }
+  }
+  if (empty($contact->Job_Role__c)) {
+    $contact->Job_Role__c = 'none';
+  }
+  $param = new sfdc_insertContact();
+  $param->drupalContact = $contact;
+  $client = new SFDCWebService();
+  $message = $contact->Email;
+  try {
+    $response->data = $client->insertContact($param)->result;
+    $response->status = TRUE;
+    fnet_sfdc_log_event("insertContact($message): Success", WATCHDOG_DEBUG);
+    fnet_sfdc_cache_clear($contact->Email);
+  } catch (SoapFault $fault) {
+    $insert_contact_failed = TRUE;
+    $response->message = $fault->getMessage();
+    $response->status = FALSE;
+    fnet_sfdc_log_event("insertContact($message): $response->message", WATCHDOG_ERROR);
+    fnet_sfdc_cache_set($cache_key, $insert_contact_failed);
+  }
+  return $response;
+}
+
+/**
+ * Create new support case in SFDC
+ *
+ * @param sfdc_SupportCase $case
+ * @return SFDCResponse
+ */
+function fnet_sfdc_insert_case($case) {
+  $response = new SFDCResponse();
+  $param = new sfdc_insertCase();
+  $param->drupalCase = $case;
+  $client = new SFDCWebService();
+  try {
+    $response->data = $client->insertCase($param)->result;
+    $response->status = TRUE;
+    fnet_sfdc_log_event("insertCase(): $response->data", WATCHDOG_DEBUG);
+    fnet_sfdc_cache_clear();
+  } catch (SoapFault $fault) {
+    $response->message = $fault->getMessage();
+    $response->status = FALSE;
+    fnet_sfdc_log_event("insertCase(): $response->message", WATCHDOG_DEBUG);
+  }
+  return $response;
+}
+
+/**
+ * Add comment to an existing case
+ *
+ * @param $case_number
+ * @param $comment
+ * @return SFDCResponse
+ */
+function fnet_sfdc_insert_case_comment($case_number, $comment) {
+  $response = new SFDCResponse();
+  $param = new sfdc_insertCaseComment();
+  $param->caseNumber = $case_number;
+  $param->drupalCaseComment = $comment;
+  $client = new SFDCWebService();
+  try {
+    $response->data = $client->insertCaseComment($param);
+    $response->status = TRUE;
+    fnet_sfdc_log_event("insertCaseComment($case_number)", WATCHDOG_DEBUG);
+
+  } catch (SoapFault $fault) {
+    $response->message = $fault->getMessage();
+    $response->status = FALSE;
+    fnet_sfdc_log_event("insertCaseComment($case_number): $response->message", WATCHDOG_DEBUG);
+  }
+  return $response;
+}
+
+/**
+ * Update contact information
+ *
+ * @param sfdc_Contact $contact
+ * @return SFDCResponse
+ */
+function fnet_sfdc_update_contact($contact) {
+  if (empty($contact->Job_Role__c)) {
+    $contact->Job_Role__c = 'none';
+  }
+  $response = new SFDCResponse();
+  $param = new sfdc_updateContact();
+  $param->drupalContact = $contact;
+  $client = new SFDCWebService();
+  $email = $contact->Email;
+  try {
+    $response->data = $client->updateContact($param);
+    $response->status = TRUE;
+    fnet_sfdc_cache_clear($email);
+    fnet_sfdc_log_event("updateContact($email): Success", WATCHDOG_DEBUG);
+
+  } catch (SoapFault $fault) {
+    $response->message = $fault->getMessage();
+    $response->status = FALSE;
+    fnet_sfdc_log_event("updateContact($email): $response->message", WATCHDOG_DEBUG);
+  }
+  return $response;
+}
+
+/**
+ * Retrieve contact from SFDC
+ *
+ * @param string $email
+ * @return SFDCResponse
+ */
+function fnet_sfdc_get_contact($email) {
+  static $contact;
+  $cache_key = $email . ':get_contact';
+  $response = new SFDCResponse();
+  if (!empty($contact)) {
+    $response->status = TRUE;
+    $response->data = $contact;
+    $response->message = $contact->Email;
+    fnet_sfdc_log_event("getContact(Static)($email): $contact->Email", WATCHDOG_DEBUG);
+    return $response;
+  }
+  else {
+    if ($result = fnet_sfdc_cache_get($cache_key)) {
+      $contact = $result->data;
+      $response->status = TRUE;
+      $response->data = $contact;
+      $response->message = $contact->Email;
+      fnet_sfdc_log_event("getContact(Cache)($email): $contact->Email", WATCHDOG_DEBUG);
+      return $response;
+    }
+  }
+  $client = new SFDCWebService();
+  $param = new sfdc_getContact();
+  $param->contactEmail = $email;
+  try {
+    $contact = $client->getContact($param)->result;
+    $response->data = $contact;
+    $response->status = TRUE;
+    $message = $response->data->Email;
+    fnet_sfdc_log_event("getContact(Web service)($email): $message", WATCHDOG_DEBUG);
+
+  } catch (SoapFault $fault) {
+    $response->message = $fault->getMessage();
+    $contact = new sfdc_Contact();
+    $response->status = FALSE;
+    $response->data = $contact;
+    if (preg_match('/List has no rows/', $response->message)) {
+      $response->message = 'Not found';
+    }
+    fnet_sfdc_log_event("getContact(Web service)($email): $response->message", WATCHDOG_DEBUG);
+  }
+  if ($response->status) {
+    fnet_sfdc_cache_set($cache_key, $contact);
+  }
+  return $response;
+}
+
+/**
+ * Get an array of support cases opened in last $days
+ * @param string $email
+ * @param int $days
+ * @return SFDCResponse
+ */
+function fnet_sfdc_get_cases($email, $days = 30) {
+  static $cases, $last_days;
+  $cache_key = $email . ':get_cases:' . $days;
+  $response = new SFDCResponse();
+  if (!empty($cases) && ($days == $last_days)) {
+    $response->status = TRUE;
+    $response->data = $cases;
+    $case_count = count($cases);
+    fnet_sfdc_log_event("getCases(Static)($email): $case_count", WATCHDOG_DEBUG);
+    return $response;
+  }
+  else {
+    if ($result = fnet_sfdc_cache_get($cache_key)) {
+      $cases = $result->data;
+      $last_days = $days;
+      $response->status = TRUE;
+      $response->data = $cases;
+      $case_count = count($cases);
+      fnet_sfdc_log_event("getCases(Cache)($email): $case_count", WATCHDOG_DEBUG);
+      return $response;
+    }
+  }
+  $client = new SFDCWebService();
+  $param = new sfdc_getCases();
+  if (!fnet_sfdc_contact_exists($email)) {
+    $response->status = FALSE;
+    $response->message = 'No contact';
+    return $response;
+  }
+  $param->contactEmail = $email;
+  $param->numberOfDays = $days;
+  $case_count = 0;
+  try {
+    $cases = array();
+    $result = $client->getCases($param)->result;
+    if ($result && !is_array($result)) {
+      $result = array($result);
+    }
+    if (is_array($result)) {
+      $last_days = $days;
+      foreach ($result as $support_case) {
+        $cases[] = new MACase($support_case);
+      }
+      $case_count = count($cases);
+      if ($case_count == 0) {
+        $response->message = 'Not found';
+        $response->status = FALSE;
+      }
+      else {
+        $response->data = $cases;
+        $response->status = TRUE;
+      }
+    }
+    fnet_sfdc_log_event("getCases(Web service)($email): $case_count", WATCHDOG_DEBUG);
+  } catch (SoapFault $fault) {
+    $cases = array();
+    $response->message = $fault->getMessage();
+    if (preg_match('/List has no rows/', $response->message)) {
+      $response->message = 'Not found';
+    }
+    $response->status = FALSE;
+    fnet_sfdc_log_event("getCases(Failure)($email): $response->message", WATCHDOG_DEBUG);
+  }
+  if ($response->status) {
+    fnet_sfdc_cache_set($cache_key, $cases);
+  }
+  return $response;
+}
+
+/**
+ * Retrieve a support case
+ *
+ * @param $case_number
+ * @return SFDCResponse
+ */
+function fnet_sfdc_get_case($case_number) {
+  $response = new SFDCResponse();
+  $client = new SFDCWebService();
+  $param = new sfdc_getCase();
+  $param->caseNumber = $case_number;
+  try {
+    $result = $client->getCase($param)->result;
+    $response->data = new MACase($result);
+    $response->status = TRUE;
+    fnet_sfdc_log_event("getCase($case_number): Success", WATCHDOG_DEBUG);
+  } catch (SoapFault $fault) {
+    $response->message = $fault->getMessage();
+    if (preg_match('/List has no rows/', $response->message)) {
+      $response->message = 'Not found';
+    }
+    $response->status = FALSE;
+    fnet_sfdc_log_event("getCase($case_number): $response->message", WATCHDOG_DEBUG);
+  }
+  return $response;
+}
+
+/**
+ * Get array of products valid for web registration
+ *
+ * @return SFDCResponse
+ */
+function fnet_sfdc_get_web_products() {
+  static $products;
+  $cache_key = 'get_web_products';
+  $response = new SFDCResponse();
+  if (!empty($products)) {
+    $response->status = TRUE;
+    $response->data = $products;
+    return $response;
+  }
+  else {
+    if ($result = fnet_sfdc_cache_get($cache_key)) {
+      $response->status = TRUE;
+      $products = $result->data;
+      $response->data = $products;
+      return $response;
+    }
+  }
+  $client = new SFDCWebService();
+  $param = new sfdc_getWebProducts();
+  $products = array();
+  try {
+    $result = $client->getWebProducts($param)->result;
+    if ($result && !is_array($result)) {
+      $result = array($result);
+    }
+    if (is_array($result)) {
+      foreach ($result as $product) {
+        $products[$product->Hierarchy__c][$product->ProductCode] = $product->Description;
+      }
+    }
+    $response->data = $products;
+    $response->status = TRUE;
+    fnet_sfdc_log_event("getWebProducts(): Success", WATCHDOG_DEBUG);
+    fnet_sfdc_cache_set($cache_key, $products);
+  } catch (SoapFault $fault) {
+    $response->message = $fault->getMessage();
+    if (preg_match('/List has no rows/', $response->message)) {
+      $response->message = 'Not found';
+    }
+    $response->status = FALSE;
+    $response->data = array();
+    fnet_sfdc_log_event("getWebProducts(): $response->message", WATCHDOG_DEBUG);
+  }
+  return $response;
+}
+
+
+/**
+ * Validate and Gold number/PIN combination
+ *
+ * @param string $gold_number
+ * @param int $gold_pin
+ * @return bool
+ */
+function fnet_sfdc_validate_gold($gold_number, $gold_pin) {
+  $client = new SFDCWebService();
+  $param = new sfdc_validateGold();
+  $param->goldNumber = preg_replace('/[^\d]/', '', $gold_number);
+  $param->goldPIN = $gold_pin;
+  try {
+    $return = $client->validateGold($param)->result;
+    $result = (strtoupper($return) == 'TRUE') ? TRUE : FALSE;
+    $message = ($result) ? 'True' : 'False';
+    fnet_sfdc_log_event("validateGold($gold_number - $gold_pin): $return : $message", WATCHDOG_DEBUG);
+    return $result;
+  } catch (SoapFault $fault) {
+    $message = $fault->getMessage();
+    fnet_sfdc_log_event("SOAP fault - validateGold($gold_number - $gold_pin): $message", WATCHDOG_ERROR);
+    return FALSE;
+  }
+}
+
+/**
+ * Determine if contact exists in SFDC
+ *
+ * @param string $email
+ * @return bool
+ */
+function fnet_sfdc_contact_exists($email) {
+  $result = fnet_sfdc_get_contact($email)->data;
+  $sfdc_contact_exists = ($result instanceof sfdc_Contact) && (!empty($result->Email));
+  return $sfdc_contact_exists;
+}
+
+/**
+ * Create sfdc contact object from Drupal profile
+ *
+ * @param string $email
+ * @param object $account
+ * @return sfdc_Contact
+ */
+function fnet_sfdc_create_contact_from_profile($email, $account) {
+  $contact = new sfdc_Contact();
+  $contact->FirstName = fnet_common_get_field_value('user', $account, 'field_user_first_name');
+  $contact->LastName = fnet_common_get_field_value('user', $account, 'field_user_last_name');
+  $contact->MailingStreet = fnet_common_get_field_value('user', $account, 'field_user_address_line_1');
+  $contact->MailingStreet2__c = fnet_common_get_field_value('user', $account, 'field_user_address_line_2');
+  $contact->MailingCity = fnet_common_get_field_value('user', $account, 'field_user_city');
+  $contact->MailingState = fnet_common_get_field_value('user', $account, 'field_user_province');
+  $contact->MailingCountry = strtoupper(fnet_common_get_field_value('user', $account, 'field_user_country'));  // Needs to be uppercase.
+  $contact->MailingPostalCode = fnet_common_get_field_value('user', $account, 'field_user_postal_code');
+  $contact->Phone = fnet_common_get_field_value('user', $account, 'field_user_phone');
+  $contact->Email = $email;
+  $contact->Company__c = fnet_common_get_field_value('user', $account, 'field_user_company');
+  $contact->IndividualId__c = fnet_common_get_field_value('user', $account, 'field_user_onyx_id');
+  if (empty($contact->MailingState)) {
+    $contact->MailingState = $contact->MailingCountry;
+  }
+  $preferred_language = fnet_helper_iso_language_to_english(fnet_common_get_field_value('user', $account, 'field_user_preferred_language'));
+  $contact->Language_Preference__c = $preferred_language;
+  $contact->Job_Role__c = fnet_common_get_field_value('user', $account, 'field_user_job_role') != '' ? fnet_common_get_field_value('user', $account, 'field_user_job_role') : 'Not Applicable';
+  return $contact;
+}
+
+/**
+ * Create sfdc contact from form values
+ *
+ * @param string $email
+ * @param array $values
+ * @return sfdc_Contact
+ */
+function fnet_sfdc_create_contact_from_form_values($email, $values) {
+  global $user;
+  $uid = db_query('SELECT uid FROM {users} WHERE mail = :mail', array(':mail' => $email))->fetchField();
+  if ($uid == $user->uid) {
+    $account = $user;
+  }
+  else {
+    $account = user_load($uid);
+  }
+  $contact = new sfdc_Contact();
+  $contact->FirstName = check_plain(trim($values['first_name']));
+  $contact->LastName = check_plain(trim($values['last_name']));
+  $contact->MailingStreet = check_plain(trim($values['address_line_1']));
+  $contact->MailingStreet2__c = check_plain(trim($values['address_line_2']));
+  $contact->MailingCity = check_plain(trim($values['city']));
+  $contact->MailingState = check_plain(trim($values['province']));
+  $contact->MailingCountry = check_plain(trim(strtoupper($values['country']))); // SF needs this value to be uppercase.
+  $contact->MailingPostalCode = check_plain(trim($values['postal_code']));
+  $contact->Phone = check_plain(trim($values['phone']));
+  $contact->Company__c = check_plain(trim($values['company']));
+  $contact->Email = $email;
+  $contact->IndividualId__c = check_plain(fnet_common_get_field_value('user', $account, 'field_user_onyx_id'));
+  if (empty($contact->MailingState)) {
+    $contact->MailingState = $contact->MailingCountry;
+  }
+  $preferred_language = fnet_helper_iso_language_to_english($values['preferred_language']);
+  $contact->Language_Preference__c = $preferred_language;
+  $contact->Job_Role__c = check_plain(trim($values['job_role']));
+  return $contact;
+}
+
+/**
+ * @param string $email
+ * @param object $account
+ * @return bool
+ */
+function fnet_sfdc_insert_contact_on_product_registration($email, $account = NULL) {
+  global $user;
+  if (empty($account)) {
+    $sql = "SELECT uid FROM {users} WHERE mail = '%s' LIMIT 1";
+    $uid = db_query("SELECT uid FROM {users} WHERE mail = :mail LIMIT 1", array(':mail' => $email))->fetchField();
+    if ($uid == $user->uid) {
+      $account = $user;
+    }
+    else {
+      $account = user_load($uid);
+    }
+  }
+  if (!fnet_sfdc_contact_exists($email)) {
+    $contact = fnet_sfdc_create_contact_from_profile($email, $account);
+    $response = fnet_sfdc_insert_contact($contact);
+    return $response->status;
+  }
+  return FALSE;
+}
+
+/**
+ * Get list of support cases for a period, optionally for an asset
+ *
+ * @param string $email
+ * @param int $days
+ * @param string|null $product_id
+ * @param bool $open_only
+ * @return array
+ */
+function fnet_sfdc_get_support_incidents($email, $days = 30, $asset_id = NULL, $open_only = FALSE) {
+  global $user;
+  static $cases, $last_days;
+  if (!isset($cases) || ($days != $last_days)) {
+    $last_days = $days;
+    $response = fnet_sfdc_get_cases($email, $days);
+    if ($response->status) {
+      $cases = $response->data;
+    }
+    else {
+      $cases = array();
+    }
+  }
+  $support_incidents = array();
+  if (is_array($cases)) {
+    foreach ($cases as $case) {
+      if (($asset_id && ($case->asset->id != $asset_id)) || ($open_only && ($case->status != 'Open'))) {
+        continue;
+      }
+      $support_incidents[$case->case_number]['iIncidentId'] = l($case->case_number, 'myaccount/view-support-incidents/' . $case->case_number, $options = array());
+      $support_incidents[$case->case_number]['vchProductDesc'] = l($case->asset->name, 'myaccount/view-support-incidents/' . $case->case_number, $options = array());
+      $support_incidents[$case->case_number]['vchProductNumber'] = $case->asset->name;
+      $support_incidents[$case->case_number]['vchStatusDesc'] = $case->status;
+      $support_incidents[$case->case_number]['dtInsertDate'] = $case->created_date;
+      $support_incidents[$case->case_number]['asset_id'] = $case->asset->id;
+      $support_incidents[$case->case_number]['description'] = $case->description;
+      $support_incidents[$case->case_number]['subject'] = $case->subject;
+    }
+  }
+  return $support_incidents;
+}
+
+/**
+ * Get specific support case data for My Account
+ * @param $case_number
+ * @param $section
+ * @return array
+ */
+function fnet_sfdc_get_support_incident($case_number, $section) {
+  static $case, $last_case_number;
+  if (!isset($case) || ($case_number != $last_case_number)) {
+    $response = fnet_sfdc_get_case($case_number);
+    if ($response->status) {
+      $case = $response->data;
+      $last_case_number = $case_number;
+    }
+  }
+  switch ($section) {
+    case 'comments':
+      $support_incident = array();
+      if (is_array($case->comments)) {
+        foreach ($case->comments as $comment) {
+          $support_incident[] = array(
+            'date' => $comment->created_date,
+            'message' => $comment->comment_body,
+          );
+        }
+      }
+      $support_incident[] = array(
+        'date' => $case->created_date,
+        'message' => $case->description,
+      );
+      break;
+    case 'details':
+      $support_incident = array(
+        'iIncidentId' => $case->case_number,
+        'vchDesc1' => $case->subject,
+        'vchStatusDesc' => $case->status,
+        'dtInsertDate' => $case->created_date,
+        'dtUpdateDate' => '',
+        'product_id' => $case->asset->id,
+      );
+      break;
+    case 'asset':
+      $support_incident = array(
+        'vchDescription' => $case->asset->name,
+        'vchSecondaryId' => $case->asset->model,
+        'vchSerialNumber' => $case->asset->serial_number,
+        'isGoldProduct' => $case->asset->is_gold_product,
+      );
+      if (empty($case->asset->name) && empty($case->asset->model) && empty($case->asset->serial_number)
+      ) {
+        $support_incident['has_product_details'] = FALSE;
+      }
+      else {
+        $support_incident['has_product_details'] = TRUE;
+      }
+      break;
+    default:
+      $support_incident = array();
+  }
+  return $support_incident;
+}
+
+/**
+ * Create new support case in SFDC from form values
+ *
+ * @param array $form_values
+ * @return bool
+ */
+function fnet_sfdc_insert_support_incident($form_values) {
+  global $user;
+  $case = new sfdc_SupportCase();
+  $case->Subject = $form_values['support_incident_subject'];
+  $case->Description = $form_values['support_incident_description'];
+  $case->AssetId = $form_values['product_numbers'];
+  $case->ContactId = $user->mail;
+  $response = fnet_sfdc_insert_case($case);
+  if (!$response->status) {
+    watchdog('fnet_sfdc', $response->message, array(), WATCHDOG_ERROR);
+    return FALSE;
+  }
+  else {
+    return $response->data;
+  }
+}
+
+/**
+ * Add comment to support case from form values
+ *
+ * @param $case_number
+ * @param array $form_values
+ * @return bool
+ */
+function fnet_sfdc_update_support_incident($case_number, $form_values) {
+  $comment = new sfdc_CaseComment();
+  $comment->CommentBody = $form_values['support_incident_description'];
+  $response = fnet_sfdc_insert_case_comment($case_number, $comment);
+  fnet_sfdc_cache_clear();
+  if (!$response->status) {
+    $error_message = 'SFDC call failed: fnet_sfdc_insert_case_comment(%%case__number, comment)<br/>%%message';
+    $variables = array(
+      '%%case_number' => $case_number,
+      '%%message' => $response->message,
+    );
+    watchdog('fnet_sfdc', $error_message, $variables, WATCHDOG_ERROR);
+    return FALSE;
+  }
+  else {
+    return TRUE;
+  }
+}
+
+/**
+ * Register a customer's product
+ *
+ * @param $email
+ * @param $product_code
+ * @param $purchase_date
+ * @param $serial_number
+ * @return mixed
+ */
+function fnet_sfdc_register_product($email, $product_code, $purchase_date, $serial_number) {
+  if (!fnet_sfdc_contact_exists($email)) {
+    fnet_sfdc_insert_contact_on_product_registration($email);
+  }
+  $date = date('Y-m-d', strtotime(urldecode($purchase_date)));
+  $response = fnet_sfdc_create_asset($email, $product_code, $date, $serial_number);
+  if ($response->message == 'DUPLICATE_VALUE') {
+    drupal_set_message("The product serial number: $serial_number duplicates one already in the system.", 'error');
+  }
+  if ($response->status) {
+    return $response->data;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Get registered product formatted for MA
+ *
+ * @param $email
+ * @return \stdClass
+ */
+function fnet_sfdc_get_registered_products($email, $product_number = NULL) {
+  $table = array();
+  $response = fnet_sfdc_get_assets($email);
+  if ($response->status) {
+    $assets = $response->data;
+    foreach ($assets as $asset) {
+      if (empty($product_number) || ($asset->Product_Name__c == $product_number)) {
+        $row = new stdClass();
+        $row->iProductId = $asset->Id;
+        $row->chProductNumber = $asset->Product_Name__c;
+        $row->vchSerialNumber = $asset->SerialNumber;
+        $row->dtPurchaseDate = $asset->PurchaseDate . 'T00:00:00';
+        $row->vchDescription = $asset->Product_Description__c;
+        $row->iHierarchyId = NULL;
+        $row->vchHierarchyDesc = isset($asset->Hierarchy__c) ? $asset->Hierarchy__c : '';
+        $row->iIncidentCount = 0;
+        $row->vchDescrSerial = $asset->SerialNumber . '-' . $asset->Product_Description__c;
+        $table[$asset->Id] = $row;
+      }
+    }
+  }
+  $doc = new stdClass();
+  $doc->NewDataSet = new stdClass();
+  $doc->NewDataSet->Table = $table;
+  return $doc;
+}
+
+/**
+ * Get registered product detail for a product formatted for MA
+ *
+ * @param $email
+ * @param $asset_id
+ * @param $gold_number
+ * @param $gold_pin
+ * @return \stdClass
+ */
+function fnet_sfdc_get_registered_product_detail($email, $asset_id, $gold_number, $gold_pin) {
+  $response = fnet_sfdc_get_assets($email);
+  if ($response->status && array_key_exists($asset_id, $response->data)) {
+    $asset = fnet_sfdc_cast_as_asset($response->data[$asset_id]);
+    $registered_product = new stdClass();
+    $registered_product->iProductId = $asset_id;
+    $registered_product->chProductNumber = $asset->Product_Name__c;
+    $registered_product->vchSerialNumber = $asset->SerialNumber;
+    $registered_product->dtPurchaseDate = $asset->PurchaseDate . 'T00:00:00';
+    $registered_product->vchDescription = $asset->Product_Description__c;
+    $registered_product->iHierarchyId = '';
+    $registered_product->chProductNumber1 = $asset->Product_Name__c;
+    $registered_product->vchHierarchyDesc = '';
+    $registered_product->isGoldProduct = fnet_sfdc_has_gold_coverage($gold_number, $gold_pin, $asset_id);
+    $doc = new stdClass();
+    $doc->NewDataSet = new stdClass();
+    $doc->NewDataSet->Table = $registered_product;
+
+  }
+  else {
+    $doc = new stdClass();
+  }
+  return $doc;
+}
+
+/**
+ * Get gold contracts formatted for MA
+ *
+ * @param $gold_number
+ * @param $gold_pin
+ * @return \stdClass
+ */
+function fnet_sfdc_get_gold_contracts_for_display($gold_number, $gold_pin) {
+  $response = fnet_sfdc_get_gold_contracts($gold_number, $gold_pin);
+  $doc = new stdClass();
+  $table = array();
+  if ($response->status) {
+    $contracts = $response->data;
+    foreach ($contracts as $contract) {
+      list($year, $month, $day) = explode('-', $contract->EndDate);
+      $end_date = mktime(0, 0, 0, $month, $day, $year);
+      if ($end_date > time()) {
+        $row = new stdClass();
+        $row->iProductId = $contract->AssetId;
+        $row->vchModelNumber = $contract->Gold_Model__c;
+        $row->vchSerialNumber = $contract->Serial_Number__c;
+        $row->dtExpirationDate = $contract->EndDate . 'T00:00:00';
+        $table[$contract->Id] = $row;
+      }
+    }
+    $doc->NewDataSet = new stdClass();
+    $doc->NewDataSet->Table = $table;
+  }
+  return $doc;
+}
+
+/**
+ * return true if customer has a non-expired gold contract
+ *
+ * @param $gold_number
+ * @param $gold_pin
+ * @return bool
+ */
+function fnet_sfdc_has_valid_gold_contract($gold_number, $gold_pin) {
+  $cache_key = $gold_number . ':has_valid_gold_contract';
+  if ($result = fnet_sfdc_cache_get($cache_key)) {
+    return $result->data;
+  }
+  $valid_gold = FALSE;
+  $response = fnet_sfdc_get_gold_contracts($gold_number, $gold_pin);
+  if ($response->status) {
+    foreach ($response->data as $contract) {
+      list($year, $month, $day) = explode('-', $contract->EndDate);
+      $end_date = mktime(0, 0, 0, $month, $day, $year);
+      if ($end_date > time()) {
+        $valid_gold = TRUE;
+      }
+    }
+  }
+  fnet_sfdc_cache_set($cache_key, $valid_gold);
+  return $valid_gold;
+}
+
+/**
+ * get 'PCAT' ids for a customer's register products and gold contracts
+ *
+ * @param $email
+ * @param $gold_number
+ * @param $gold_pin
+ * @return array
+ */
+function fnet_sfdc_get_download_category_ids($email, $gold_number, $gold_pin) {
+  $category_ids = array();
+  $response = fnet_sfdc_get_assets($email);
+  if ($response->status) {
+    $products = $response->data;
+    foreach ($products as $product) {
+      if (!empty($product->AMS_ProductFamilyId__c) && !empty($product->AMS_ProductFamilyName__c)) {
+        $category_ids[$product->AMS_ProductFamilyId__c] = array(
+          'description' => $product->AMS_ProductFamilyName__c,
+          'gold' => FALSE,
+        );
+      }
+    }
+  }
+  $response = fnet_sfdc_get_gold_contracts($gold_number, $gold_pin);
+  if ($response->status) {
+    $contracts = $response->data;
+    foreach ($contracts as $contract) {
+      list($year, $month, $day) = explode('-', $contract->EndDate);
+      $end_date = mktime(0, 0, 0, $month, $day, $year);
+      if ($end_date > time()) {
+        if (!empty($contract->AMS_ProductFamilyId__c) && !empty($contract->AMS_ProductFamilyName__c)) {
+          $category_ids[$contract->AMS_ProductFamilyId__c] = array(
+            'description' => $contract->AMS_ProductFamilyName__c,
+            'gold' => TRUE,
+          );
+        }
+      }
+    }
+  }
+  return $category_ids;
+}
+
+/**
+ * return true if a specific asset is covered by a gold contract
+ *
+ * @param $gold_number
+ * @param $gold_pin
+ * @param $asset_id
+ * @return bool
+ */
+function fnet_sfdc_has_gold_coverage($gold_number, $gold_pin, $asset_id) {
+  $response = fnet_sfdc_get_gold_contracts($gold_number, $gold_pin);
+  if ($response->status) {
+    $gold_contracts = $response->data;
+    return array_key_exists($asset_id, $gold_contracts);
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * return true if a specific category is covered by a gold contract
+ * @param $gold_number
+ * @param $gold_pin
+ * @param $category
+ * @return bool
+ */
+function fnet_sfdc_category_has_gold_coverage($gold_number, $gold_pin, $category) {
+  $response = fnet_sfdc_get_gold_contracts($gold_number, $gold_pin);
+  if ($response->status) {
+    $gold_contracts = $response->data;
+    foreach ($gold_contracts as $contract) {
+      if ($category == $contract->AMS_ProductFamilyId__c) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+  else {
+    return FALSE;
+  }
+}
+/**
+ * Cast stdObject or array as sfdc_Asset
+ *
+ * @param $object
+ * @return \sfdc_Asset
+ */
+function fnet_sfdc_cast_as_asset($object) {
+  $output = new sfdc_Asset();
+  foreach ($object as $key => $value) {
+    $output->$key = $value;
+  }
+  return $output;
+}
+
+/**
+ * Log an event to watchdog log
+ *
+ * @param string $message
+ * @param int $severity
+ */
+function fnet_sfdc_log_event($message, $severity) {
+  $logging_level = variable_get('fnet_sfdc_watchdog_log_level', 'normal');
+  if (($severity == WATCHDOG_DEBUG) && ($logging_level == 'normal')) {
+    return;
+  }
+  else {
+    watchdog('fnet_sfdc', $message, array(), $severity);
+  }
+}
+
+/**
+ * Retrieve data from Drupal cache
+ *
+ * @param string $cache_key
+ * @return bool|int|null|object|stdClass
+ */
+function fnet_sfdc_cache_get($cache_key) {
+  if (variable_get('fnet_sfdc_cache_soap_responses', 'yes') == 'no') {
+    return FALSE;
+  }
+  $cid = 'fnet_sfdc:' . $cache_key;
+  $cache = cache_get($cid, 'cache');
+  if ((!$cache) || (REQUEST_TIME > $cache->expire)) {
+    $cache = FALSE;
+  }
+  return $cache;
+}
+
+/**
+ * Save data to Drupal cache
+ *
+ * @param string $cache_key
+ * @param $data
+ * @param null $expire
+ */
+function fnet_sfdc_cache_set($cache_key, $data, $expire = NULL) {
+  if (variable_get('fnet_sfdc_cache_soap_responses', 'yes') == 'no') {
+    return;
+  }
+  if (empty($expire)) {
+    $expire = REQUEST_TIME + 300;
+  }
+  $cid = 'fnet_sfdc:' . $cache_key;
+  cache_set($cid, $data, 'cache', $expire);
+}
+
+/**
+ * flush this modules data from Drupal cache
+ *
+ * @param string|null $cache_key
+ */
+function fnet_sfdc_cache_clear($cache_key = NULL) {
+  $cache_key = 'fnet_sfdc:' . $cache_key;
+  cache_clear_all($cache_key, 'cache', TRUE);
+}
+

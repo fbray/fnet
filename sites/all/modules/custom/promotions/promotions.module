@@ -1,0 +1,191 @@
+<?php
+// $Id:  $
+/**
+ * @file
+ * Promotions and software downloads pages.
+ *
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function promotions_menu() {
+  $items = array();
+
+  $items['promotions'] = array(
+    'title' => 'Promotions',
+    'description' => 'Promotions page',
+    'page callback' => 'promotions_home_page',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'page arguments' => array('promo'),    
+  );
+  $items['promotions-home'] = array(
+    'title' => 'Promotions',
+    'description' => 'Promotions page',
+    'page callback' => 'promotions_home_page',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'page arguments' => array('promo'),    
+  );
+
+  $items['free-software-trials-downloads'] = array(
+    'title' => 'Free Software Trials',
+    'description' => 'Free Software Trials page',
+    'page callback' => 'promotions_home_page',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'page arguments' => array('free'),    
+  );
+
+
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function promotions_theme($existing, $type, $theme, $path) {
+
+  $hooks = array();
+  $hooks['promotions_page'] = array(
+    'template' => 'theme/promotions_home',
+    'variables' => array(),
+  );
+
+  return $hooks;
+}
+
+/**
+ * Returns 'Promotion' type lists
+ */
+function promotions_home_page($pagetype) {
+
+  $siteReg = module_invoke('fnet_helper', 'site_region');
+  $regLang = $siteReg["regLang"];
+
+  $nodes = node_load_multiple( get_promotion_nids($regLang) ); 
+
+  $nodes_by_category = array();
+
+  foreach ($nodes as $node) {
+      $promotion = array();
+      $tid = fnet_common_get_field_value('node', $node, 'taxonomy_vocabulary_5','tid');
+      $extlink = fnet_common_get_field_value('node', $node, 'field_promo_extlink','url' );
+      $link = $extlink ? $extlink : drupal_get_path_alias('node/' . $node->nid);
+
+      $thumb = file_create_url( fnet_common_get_field_value('node', $node, 'field_promo_thumbnail','uri') );
+      $intro = fnet_common_get_field_value('node', $node, 'field_promo_intro');
+      $date = fnet_common_get_field_value('node', $node, 'field_promo_expdate');
+    $priority = fnet_common_get_field_value('node', $node, 'field_promo_priority');
+
+      if ($date)   {
+        $timestamp = new DateObject($date); 
+        if ($timestamp) $date = t('Expires') . ' ' . format_date($timestamp->getTimestamp(), 'default', 'default');
+      }
+      $title = $node->title;
+
+      $promotion = array(
+          'link' => $link,
+          'image_uri' => $thumb,
+          'title' => $title,
+          'intro' => $intro,
+          'date' => $date,
+          'priority' => $priority,
+        );
+      $nodes_by_category[$tid][] = $promotion;
+  }
+
+  // sort by priority
+  foreach ($nodes_by_category as $category => &$promotions) {
+    usort($promotions, 'promotions_priority_compare');
+  }
+
+  // 16 = Purchase Promotions
+  // 17 = Software Trials
+  // 18 = Hardware Trials
+
+  $variables = array();
+  $page_section = array();
+
+  // 'free' is 'free-software-trials-downloads' path. Only software
+  if ($pagetype=='free') {
+      $page_section[] = array('title' => t('Free Software Trials'),
+                                            'promotions' => $nodes_by_category[17],
+                                            );
+  } else {
+      $page_section[] = array('title' => t('Purchase Promotions'),
+                                            'promotions' => $nodes_by_category[16],
+                                            );
+      $page_section[] = array('title' => t('Software Trials'),
+                                            'promotions' => $nodes_by_category[17],
+                                            );
+      $page_section[] = array('title' => t('Hardware Trials'),
+                                            'promotions' => $nodes_by_category[18],
+                                            );
+    }
+  $variables['page_section'] = $page_section;
+
+  // to do: add caching from fnet_news_events
+  // may want to adjust css before adding
+
+  // dot blue in css
+
+  return theme('promotions_page', $variables);
+
+}
+
+
+
+
+function get_promotion_nids($regLang) {
+
+  $today = date('Y-m-d 00:00:00');
+  $today = str_replace(' ', 'T', $today);
+  $expired_nids = array();
+
+  // Need future expiration date, or no date
+
+  $query = new EntityFieldQuery();
+  $expired_nodes = $query->entityCondition('entity_type', 'node')
+        ->propertyCondition('type', 'promotion')
+        ->fieldCondition('field_promo_expdate', 'value', 'NULL' ,  'IS NOT NULL')
+        ->fieldCondition('field_promo_expdate', 'value', $today ,  '<')
+        ->propertyCondition('status', NODE_PUBLISHED)
+        ->execute();
+
+  if (isset($expired_nodes['node']) ) $expired_nids =   array_keys($expired_nodes['node']);
+
+  // We want items with either a future date, or no date set
+  // Queries lack a good 'OR' so as workaround:
+  // * Get all NIDs for items with a date in the past
+  // * Do another query for all items
+  // * Remove the items in the first query from the second query
+
+  // tid 54 = not in the 3 categories we want
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+       ->entityCondition('bundle', 'promotion')
+        ->fieldCondition('field_promo_langreg', 'value', $regLang , '=')
+        ->fieldCondition('taxonomy_vocabulary_5', 'tid', 54, '!=')
+        ->propertyCondition('status', NODE_PUBLISHED);
+
+  $entities = $query->execute();
+
+  if ( isset($entities['node']) ) {
+
+    $return = array();
+    foreach ($entities['node'] as $nid => $node) {
+      if (! in_array($nid, $expired_nids) ) $return[$nid] = $nid;
+    }
+
+    return $return;
+  } 
+
+  return array();
+
+}
+
+function promotions_priority_compare($a, $b) {
+  return ((int) $b['priority'] - (int) $a['priority']);
+}

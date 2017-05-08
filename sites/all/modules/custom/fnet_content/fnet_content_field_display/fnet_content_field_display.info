@@ -1,0 +1,7 @@
+name = FNET Content Field Display
+package = FNET
+description = FNET Content Types,  Displays content in different view modes. Not to be enabled on production
+version = 7.x.1.0-20150617
+core = 7.x
+
+Dependencies[] fnet_content

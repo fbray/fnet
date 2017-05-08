@@ -1,0 +1,418 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Module to maintain profile information from old content_profile module
+ *
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function fnet_profile_menu() {
+  $items = array();
+  $items['myaccount/%user/edit/profile'] = array(
+    'title' => t('Edit profile'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fnet_profile_profile_edit_form', 1),
+    'access callback' => 'fnet_profile_access',
+    'access arguments' => array(1),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function fnet_profile_access($account) {
+  global $user;
+  if ($account->uid == $user->uid) {
+    if (user_access('edit own user profile') || user_access('edit any user profile')) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+  }
+  else {
+    if (user_access('edit any user profile')) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+  }
+}
+/**
+ * Implements hook_permission().
+ */
+function fnet_profile_permission() {
+  return array(
+    'edit own user profile' => array(
+      'title' => 'Edit own profile information',
+    ),
+    'edit any user profile' => array(
+      'title' => 'Edit any profile information',
+    ),
+  );
+}
+
+/**
+ * Main profile edit form
+ * @param $form
+ * @param $form_state
+ */
+function fnet_profile_profile_edit_form($form, &$form_state, $user) {
+  $form_state['#user'] = $user;
+  $form['#attached']['css'][] = drupal_get_path('module', 'fnet_profile') . '/fnet_profile.css';
+  $field_size = 40;
+  if ((isset($user->uid)) && ($user->uid != 0)) {
+    $form['page_header'] = array(
+      '#markup' => '<div class="my-account-headlines">' . ('Edit My Profile') . '</div>',
+      '#weight' => '-50',
+    );
+  }
+  $form['first_column'] = array(
+    '#markup' => '<div class="field-group"><div id="profile-column-one">',
+  );
+  $form['first_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('First Name'),
+    '#size' => $field_size,
+    '#required' => TRUE,
+    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_first_name'),
+  );
+  $form['last_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Last Name'),
+    '#size' => $field_size,
+    '#required' => TRUE,
+    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_last_name'),
+  );
+  $form['company'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Company'),
+    '#size' => $field_size,
+    '#required' => TRUE,
+    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_company'),
+  );
+  $form['address_line_1'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Address Line 1'),
+    '#size' => $field_size,
+    '#required' => TRUE,
+    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_address_line_1'),
+  );
+  $form['address_line_2'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Address Line 2'),
+    '#size' => $field_size,
+    '#required' => FALSE,
+    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_address_line_2'),
+  );
+  $form['ascii_profile_link'] = array(
+    '#type' => 'markup',
+    '#markup' => '',
+  );
+  $form['second_column'] = array(
+    '#markup' => '</div><div id="profile-column-two">',
+  );
+  $form['city'] = array(
+    '#type' => 'textfield',
+    '#title' => t('City'),
+    '#size' => $field_size,
+    '#required' => TRUE,
+    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_city'),
+  );
+  $country = (isset($form_state['values']['country'])) ? $form_state['values']['country'] : fnet_common_get_field_value('user', $user, 'field_user_country');
+  $options = addresses_province_get($country);
+  $form['province'] = array(
+    '#type' => 'select',
+    '#title' => t('State or Province'),
+    '#options' => $options,
+    '#required' => (!empty($options)),
+    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_province'),
+    '#prefix' => '<div id="province-wrapper">',
+    '#suffix' => '</div>',
+  );
+  $form['postal_code'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Zip/Postal Code'),
+    '#size' => $field_size,
+    '#required' => TRUE,
+    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_postal_code'),
+  );
+  $form['country'] = array(
+    '#type' => 'select',
+    '#title' => t('Country'),
+    '#options' => addresses_country_get(array(), array(
+      'us' => 'United States',
+      'ca' => 'Canada'
+    )),
+    '#required' => TRUE,
+    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_country'),
+    '#ajax' => array(
+      'wrapper' => 'province-wrapper',
+      'callback' => 'fnet_profile_province_callback',
+      'progress' => array('message' => ''),
+    ),
+  );
+  $form['phone'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Phone'),
+    '#size' => $field_size,
+    '#required' => TRUE,
+    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_phone'),
+  );
+  $form['preferred_language'] = array(
+    '#type' => 'select',
+    '#title' => t('Preferred Language'),
+    '#options' => fnet_helper_language_list(),
+    '#required' => TRUE,
+    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_preferred_language'),
+  );
+  $form['job_role'] = array(
+    '#type' => 'select',
+    '#title' => t('Job Role'),
+    '#options' => fnet_profile_job_role_list(),
+    '#required' => TRUE,
+    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_job_role'),
+    '#suffix' => '</div></div>',
+  );
+  $form['gold_message'] = array(
+    '#markup' => '<strong>Gold Support Members Only</strong></br><div>Add a Gold Number and PIN here to associate it with your account.</div>',
+    '#prefix' => '<div class="field-group"><div id="gold-number">',
+  );
+  $form['gold_number'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Gold Number'),
+    '#size' => 10,
+    '#required' => FALSE,
+    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_gold_number'),
+  );
+
+  $form['gold_pin'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Gold PIN'),
+    '#size' => 10,
+    '#required' => FALSE,
+    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_gold_pin'),
+    '#suffix' => '</div></div>',
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save Changes'),
+    '#attributes' => array('class' => array('customfn-buttons')),
+  );
+  if ((!isset($user)) || ((isset($user->uid)) && ($user->uid == 0))) {
+    $t_and_c_link = l('Terms and Conditions.', "node/" . variable_get('fn_myaccount_gold_credentials_terms_and_condition', ''), array(
+      'html' => TRUE,
+      'attributes' => array('target' => '_blank')
+    ));
+    $suffix = t("By clicking the button below I agree to Fluke Network's ");
+    $form['terms'] = array(
+      '#markup' => '<div>' . $suffix . $t_and_c_link . '</div>',
+    );
+
+  }
+  return $form;
+}
+
+/**
+ * Validate function for profile form
+ *
+ * @param $form
+ * @param $form_state
+ */
+function fnet_profile_profile_edit_form_validate($form, &$form_state) {
+  // Add a validation rule for Phone number to only contain: (  )  -  0123456789 + . 'spaces/dashes'
+  $phone_number = check_plain(trim($form_state['values']['phone']));
+  if (preg_match('/[^0-9\(\)\+\-\.\s]+/', $phone_number)) {
+    form_set_error('field_phone', t('You must enter a valid phone number. (Digits 0 through 9 and the characters +,-,( and )'));
+  }
+  if (!empty($form_state['values']['gold_number'])) {
+    $gold_member = fnet_sfdc_validate_gold($form_state['values']['gold_number'], $form_state['values']['gold_pin']);
+    if (!$gold_member) {
+      form_set_error('gold_pin', t('The Gold Number/Gold PIN combination that you entered is not valid.'));
+    }
+  }
+}
+
+/**
+ * Submit function for profile form
+ *
+ * @param $form
+ * @param $form_state
+ */
+function fnet_profile_profile_edit_form_submit($form, &$form_state) {
+  $user = isset($form['#user']) ? $form['#user'] : $form_state['#user'];
+  $edit = array();
+  $edit['field_user_first_name'][LANGUAGE_NONE][0]['value'] = $form_state['values']['first_name'];
+  $edit['field_user_last_name'][LANGUAGE_NONE][0]['value'] = $form_state['values']['last_name'];
+  $edit['field_user_company'][LANGUAGE_NONE][0]['value'] = $form_state['values']['company'];
+  $edit['field_user_phone'][LANGUAGE_NONE][0]['value'] = $form_state['values']['phone'];
+  $edit['field_user_address_line_1'][LANGUAGE_NONE][0]['value'] = $form_state['values']['address_line_1'];
+  $edit['field_user_address_line_2'][LANGUAGE_NONE][0]['value'] = $form_state['values']['address_line_2'];
+  $edit['field_user_city'][LANGUAGE_NONE][0]['value'] = $form_state['values']['city'];
+  $edit['field_user_province'][LANGUAGE_NONE][0]['value'] = $form_state['values']['province'];
+  $edit['field_user_postal_code'][LANGUAGE_NONE][0]['value'] = $form_state['values']['postal_code'];
+  $edit['field_user_country'][LANGUAGE_NONE][0]['value'] = $form_state['values']['country'];
+  $edit['field_user_preferred_language'][LANGUAGE_NONE][0]['value'] = $form_state['values']['preferred_language'];
+  $edit['field_user_job_role'][LANGUAGE_NONE][0]['value'] = $form_state['values']['job_role'];
+  $edit['field_user_gold_number'][LANGUAGE_NONE][0]['value'] = $form_state['values']['gold_number'];
+  $edit['field_user_gold_pin'][LANGUAGE_NONE][0]['value'] = $form_state['values']['gold_pin'];
+  $user = user_save($user, $edit);
+  // fnet_profile_marketo_lead_sync($user);
+  $gold_pin = check_plain(trim($form_state['values']['gold_pin']));
+  $gold_number = check_plain(trim($form_state['values']['gold_number']));
+  fnet_ma_set_user_gold_role($gold_number, $gold_pin);
+  drupal_set_message('Profile updated.');
+}
+
+/**
+ * implementation of hook_init
+ */
+function fnet_profile_init() {
+  global $user;
+  // the full user profile is not loaded with the user object on a normal page load.  This user_load is
+  // to insure that we have the full profile.
+  if (($user->uid != 0) && (!isset($user->field_user_first_name))) {
+    $user = user_load($user->uid);
+  }
+}
+
+/**
+ * callback for ajax country/province look up in profile form
+ *
+ * @param $form
+ * @param $form_state
+ * @return mixed
+ */
+function fnet_profile_province_callback($form, $form_state) {
+  return $form['province'];
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function fnet_profile_form_user_register_form_alter(&$form, &$form_state, $form_id) {
+  drupal_add_css(drupal_get_path('module', 'fnet_profile') . '/fnet_profile.css');
+  $user = new stdClass();
+  $user->field_user_country[LANGUAGE_NONE][0]['value'] = 'us';
+  $profile_form = fnet_profile_profile_edit_form(array(), $form_state, $user);
+  unset($profile_form['submit']);
+  $form += $profile_form;
+  $form['#submit'][] = 'fnet_profile_profile_edit_form_submit';
+}
+
+/**
+ * hook for email registration api to set the username to be the part of the email before the @
+ *
+ * @param $edit
+ * @param $account
+ * @return mixed
+ */
+function fnet_profile_email_registration_name($email) {
+  if ( is_array($email) ) {
+    $mail = $email['mail'];
+    return preg_replace('/@.*$/', '', $mail);
+  } else {
+    return preg_replace('/@.*$/', '', $email);
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function fnet_profile_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
+  global $user;
+  $admin = user_access('administer users');
+  // prevent out 'profile' fields from show up on the standard drupal user profile form
+  if (!$admin) {
+    $form['timezone']['#access'] = FALSE;
+    $form['account']['mail']['#disabled'] = TRUE;
+    $form['field_user_address_line_1']['#access'] = FALSE;
+    $form['field_user_address_line_2']['#access'] = FALSE;
+    $form['field_user_city']['#access'] = FALSE;
+    $form['field_user_province']['#access'] = FALSE;
+    $form['field_user_country']['#access'] = FALSE;
+    $form['field_user_postal_code']['#access'] = FALSE;
+    $form['field_user_job_role']['#access'] = FALSE;
+    $form['field_user_first_name']['#access'] = FALSE;
+    $form['field_user_last_name']['#access'] = FALSE;
+    $form['field_user_phone']['#access'] = FALSE;
+    $form['field_user_company']['#access'] = FALSE;
+    $form['field_user_gold_number']['#access'] = FALSE;
+    $form['field_user_gold_pin']['#access'] = FALSE;
+    $form['field_user_preferred_language']['#access'] = FALSE;
+    $form['field_user_onyx_id']['#access'] = FALSE;
+    $form['account']['current_pass']['#description'] = 'Enter your current password to change the <em class="placeholder">Password</em>. <a href="/user/password" title="Request new password via e-mail.">Request new password</a>.';
+  }
+}
+
+/**
+ * Implements hook_menu_alter().
+ */
+function fnet_profile_menu_alter(&$items) {
+  $items['user/%user']['title'] = '';
+  $items['user/%user']['title callback'] = '';
+  unset($items['user/%user/view']);
+  unset($items['user/%user_category/edit/account']);
+  $items['user/%user/edit']['#type'] = MENU_CALLBACK;
+  $items['myaccount/%user/edit'] = $items['user/%user/edit'];
+  $items['user'] = array(
+    'title' => 'User account',
+    'title callback' => '',
+    'page callback' => 'fnet_profile_user_page',
+    'access callback' => TRUE,
+    'file' => '',
+    'weight' => -10,
+    'menu_name' => 'user-menu',
+  );
+}
+
+function fnet_profile_user_page() {
+  global $user;
+  if ($user->uid) {
+    menu_set_active_item('myaccount');
+    return menu_execute_active_handler(NULL, FALSE);
+  }
+  else {
+    return drupal_get_form('user_login');
+  }
+}
+
+function fnet_profile_job_role_list() {
+  $options = drupal_map_assoc(array(
+    'Other',
+    'C-Level',
+    'Owner/Business Manager',
+    'VP',
+    'IT Director',
+    'IT Manager',
+    'Project Manager',
+    'Project Crew Leader',
+    'Consultant/Analyst',
+    'Network Engineer',
+    'Network Tech/Admin',
+    'Technician/Installer',
+    'Student',
+  ));
+  return $options;
+}
+
+function fnet_profile_marketo_lead_sync($account) {
+
+  $marketo_data = array(
+    'FirstName' => fnet_common_get_field_value('user', $account, 'field_user_first_name'),
+    'LastName' => fnet_common_get_field_value('user', $account, 'field_user_last_name'),
+    'Job_Role__c' => fnet_common_get_field_value('user', $account, 'field_user_job_role'),
+    'Company' => fnet_common_get_field_value('user', $account, 'field_user_company'),
+    'Address' => fnet_common_get_field_value('user', $account, 'field_user_address_line_1') . ' ' . fnet_common_get_field_value('user', $account, 'field_user_address_line_2'),
+    'City' => fnet_common_get_field_value('user', $account, 'field_user_city'),
+    'State' => fnet_common_get_field_value('user', $account, 'field_user_province'),
+    'PostalCode' => fnet_common_get_field_value('user', $account, 'field_user_postal_code'),
+    'Country' => fnet_common_get_field_value('user', $account, 'field_user_country'),
+    'Phone' => fnet_common_get_field_value('user', $account, 'field_user_phone'),
+  );
+  // marketo_api_user_sync($account->mail, $marketo_data);
+}

@@ -1,0 +1,53 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Part of the edocs system
+ */
+
+/**
+ * Implements hook_enable().
+ */
+function doc_links_enable() {
+
+}
+
+/**
+ * Implements hook_disable().
+ */
+function doc_links_disable() {
+
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function doc_links_uninstall() {
+  db_delete('variable')->condition('name', 'doc_links_%', 'LIKE')->execute();
+  // delete our cache directory
+
+  $file_directory_path = variable_get('file_directory_path', '/tmp');
+  $doc_links_cache_dir = $file_directory_path . '/doc_links';
+
+  $handle = opendir($doc_links_cache_dir);
+  if ($handle) {
+    while ($file = readdir($handle)) {
+      if ($file == "." || $file == "..") {
+        continue;
+      }
+      unlink($doc_links_cache_dir . "/" . $file);
+    }
+    rmdir($doc_links_cache_dir);
+    closedir($doc_links_cache_dir);
+  }
+}
+
+/**
+ * Implements hook_install().
+ */
+function doc_links_install() {
+  db_update('system')->fields(array(
+      'weight' => 5,
+    ))->condition('NAME', 'doc_links')->execute();
+}

@@ -1,0 +1,11 @@
+; $Id$
+name = FindIt
+package = Fluke Networks
+description = FindIt ensures that a user is entitled to download a digital asset and redirects browser to correct URL to download asset.
+version = 7.x.0.0
+core = 7.x
+;
+dependencies[] = digital_asset
+files[] = includes/DigitalAsset.php
+files[] = includes/OCREaseRequest.php
+files[] = includes/OCRLog.php

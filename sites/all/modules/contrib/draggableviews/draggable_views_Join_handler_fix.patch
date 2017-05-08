@@ -1,0 +1,16 @@
+Index: sites/all/modules/draggableviews/views/draggableviews_join_handler.inc
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- views/draggableviews_join_handler.inc	(revision 39)
++++ views/draggableviews_join_handler.inc	(revision )
+@@ -54,7 +54,7 @@
+ 
+       // Arguments passed to view (including exposed filters).
+       $view_arguments = isset($view->args) ? $view->args : array();
+-      if (isset($view->exposed_raw_input)) {
++      if (!empty($view->exposed_raw_input)) {
+         $view_arguments += $view->exposed_raw_input;
+         // Remove 'items_per_page' argument if added by exposed pager filter.
+         unset($view_arguments['items_per_page']);

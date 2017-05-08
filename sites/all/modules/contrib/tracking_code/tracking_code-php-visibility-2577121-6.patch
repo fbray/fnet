@@ -1,0 +1,144 @@
+diff --git a/tracking_code.admin.inc b/tracking_code.admin.inc
+index 1bcea2f..2a560aa 100644
+--- a/tracking_code.admin.inc
++++ b/tracking_code.admin.inc
+@@ -262,15 +262,47 @@ function tracking_code_edit_form($form, &$form_state, $delta) {
+     '#default_value' => $snippet['region'],
+   );
+ 
+-  $form['tracking_code_options']['tracking_code_visibility'] = array(
+-    '#type' => 'radios',
+-    '#title' => t('Invoke this tracking code on specific pages:'),
+-    '#options' => array(
++  $access = user_access('use PHP for tracking code visibility');
++  if (isset($snippet['visibility']) && $snippet['visibility'] == TRACKING_CODE_VISIBILITY_PHP && !$access) {
++    $form['tracking_code_options']['tracking_code_visibility'] = array(
++      '#type' => 'value',
++      '#value' => TRACKING_CODE_VISIBILITY_PHP,
++    );
++    $form['tracking_code_options']['tracking_code_pages'] = array(
++      '#type' => 'value',
++      '#value' => isset($snippet['pages']) ? $snippet['pages'] : '',
++    );
++  }
++  else {
++    $options = array(
+       TRACKING_CODE_VISIBILITY_NOTLISTED => t('All pages except those listed'),
+       TRACKING_CODE_VISIBILITY_LISTED => t('Only the listed pages'),
+-    ),
+-    '#default_value' => $snippet['visibility'],
+-  );
++    );
++    $description = t("Specify pages by using their paths. Enter one path per line. The '*' character is a wildcard. Example paths are blog for the blog page and blog/* for every personal blog. &lt;front&gt; is the front page.");
++
++    if (module_exists('php') && $access) {
++      $options += array(TRACKING_CODE_VISIBILITY_PHP => t('Pages on which this PHP code returns <code>TRUE</code> (experts only)'));
++      $title = t('Pages or PHP code');
++      $description .= ' ' . t('If the PHP option is chosen, enter PHP code between %php. Note that executing incorrect PHP code can break your Drupal site.', array('%php' => '<?php ?>'));
++
++    }
++    else {
++      $title = t('Pages');
++    }
++    
++    $form['tracking_code_options']['tracking_code_visibility'] = array(
++      '#type' => 'radios',
++      '#title' => t('Invoke this tracking code on specific pages:'),
++      '#options' => $options,
++      '#default_value' => isset($snippet['visibility']) ? $snippet['visibility'] : TRACKING_CODE_VISIBILITY_NOTLISTED,
++    );
++    $form['tracking_code_options']['tracking_code_pages'] = array(
++      '#type' => 'textarea',
++      '#title' => $title,
++      '#description' => $description,
++      '#default_value' => isset($snippet['pages']) ? $snippet['pages'] : '',
++    );
++  }
+ 
+   $form['tracking_code_options']['tracking_code_pages'] = array(
+     '#type' => 'textarea',
+diff --git a/tracking_code.module b/tracking_code.module
+index 894f1f7..8eb6da8 100644
+--- a/tracking_code.module
++++ b/tracking_code.module
+@@ -10,6 +10,7 @@
+  */
+ define('TRACKING_CODE_VISIBILITY_NOTLISTED', 0);
+ define('TRACKING_CODE_VISIBILITY_LISTED', 1);
++define('TRACKING_CODE_VISIBILITY_PHP', 2);
+ 
+ /**
+  * Implements hook_init().
+@@ -127,6 +128,12 @@ function tracking_code_permission() {
+   return array(
+     'administer tracking code' => array(
+       'title' => t('Administer Tracking Code Snippets'),
++      'description' => t('Perform maintenance tasks for Tracking Code snippets.'),
++    ),
++    'use PHP for tracking code visibility' => array(
++      'title' => t('Use PHP for tracking visibility'),
++      'description' => t('Enter PHP code in the field for tracking visibility settings.'),
++      'restrict access' => TRUE,
+     ),
+   );
+ }
+@@ -216,25 +223,42 @@ function _tracking_code_enabled_by_region() {
+       }
+     }
+ 
+-    // Need to match clean URLs as well as Drupal paths.
+-    $path = drupal_strtolower(drupal_get_path_alias($_GET['q']));
+-    $page_match = drupal_match_path($path, $snippet->pages);
+-    if ($path != $_GET['q']) {
+-      $page_match = $page_match || drupal_match_path($_GET['q'], $snippet->pages);
+-    }
+-
+-    switch ($snippet->visibility) {
+-      case TRACKING_CODE_VISIBILITY_NOTLISTED:
+-        if (!$page_match) {
+-          $snippets[$snippet->region][$snippet->tcid] = $snippet;
++    if ($snippet->pages) {
++      $pages = drupal_strtolower($snippet->pages);
++      if ($snippet->visibility < TRACKING_CODE_VISIBILITY_PHP) {
++        // Need to match clean URLs as well as Drupal paths.
++        $path = drupal_strtolower(drupal_get_path_alias($_GET['q']));
++        $page_match = drupal_match_path($path, $pages);
++        if ($path != $_GET['q']) {
++          $page_match = $page_match || drupal_match_path($_GET['q'], $pages);
+         }
+-        break;
++      }
++      elseif (module_exists('php')) {
++        $page_match = php_eval($snippet->pages);
++      }
++      else {
++        $page_match = TRUE;
++      }
+ 
+-      case TRACKING_CODE_VISIBILITY_LISTED:
+-        if ($page_match) {
+-          $snippets[$snippet->region][$snippet->tcid] = $snippet;
+-        }
+-        break;
++      switch ($snippet->visibility) {
++        case TRACKING_CODE_VISIBILITY_NOTLISTED:
++            if (!$page_match) {
++              $snippets[$snippet->region][$snippet->tcid] = $snippet;
++            }
++            break;
++
++        case TRACKING_CODE_VISIBILITY_LISTED:
++          if ($page_match) {
++            $snippets[$snippet->region][$snippet->tcid] = $snippet;
++          }
++          break;
++
++        case TRACKING_CODE_VISIBILITY_PHP:
++          if ($page_match) {
++            $snippets[$snippet->region][$snippet->tcid] = $snippet;
++          }
++          break;
++      }
+     }
+ 
+     // Unset snippet if not in selected content types.

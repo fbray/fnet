@@ -1,0 +1,1725 @@
+<?php
+// $Id$
+/**
+ * @file
+ *   Product distributor module file
+ */
+
+
+define("NO_REGIONS_IN_COUNTRY", -1);
+define("NO_RESULTS_FOR_PROXIMITY_SEARCH", -2);
+
+
+/**
+ * Implements hook_help().
+().
+ */
+function product_distributor_help($path, $arg) {
+  //Help content
+}
+
+
+/**
+ * Add css for admin toolbar position fix - avoid overlap by admin menu
+ */
+function product_distributor_init() {
+  drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/admin_toolbar_top_postion_fix.css');
+}
+
+
+/**
+ * Implements hook_menu().
+().
+ */
+function product_distributor_menu() {
+  $items = array();
+  //Where To Buy public facing page
+  $items['where2buy'] = array(  //
+    'title' => 'Where to Buy',
+    'page callback' => 'where2buy_page',
+    'access arguments' => array('access wtb'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['contactus'] = array(
+    'title' => 'Contact Us',
+    'page callback' => 'contactus_page',
+    'access arguments' => array('access wtb'),
+    'type' => MENU_CALLBACK,
+  );
+
+  //AJAX callbacks:
+  //Get cities in a region of a country
+  $items['where2buy_ajax/get_cities'] = array(
+    'title' => 'Where to Buy: AJAX Response Handler: Get cities by regions',
+    'file' => 'product_distributor.ajax.inc',
+    'page callback' => 'where2buy_get_cities',
+    'access arguments' => array('access wtb'),
+    'type' => MENU_CALLBACK,
+  );
+  //Get available delivery types in a country
+  $items['where2buy_ajax/get_delivery_types'] = array(
+    'title' => 'Where to Buy: AJAX Response Handler: Get delivery types by country',
+    'file' => 'product_distributor.ajax.inc',
+    'page callback' => 'where2buy_get_delivery_types',
+    'access arguments' => array('access wtb'),
+    'type' => MENU_CALLBACK,
+  );
+  //Get distributors' search result
+  $items['where2buy_ajax/get_distributors'] = array(
+    'title' => 'Where to Buy: Get Distributors',
+    'file' => 'product_distributor.ajax.inc',
+    'page callback' => 'where2buy_get_distributors',
+    'access arguments' => array('access wtb'),
+    'type' => MENU_CALLBACK,
+  );
+  //Get WTB error message
+  $items['where2buy_ajax/wtb_error_message'] = array(
+    'title' => 'Where to Buy: Get Distributors',
+    'file' => 'product_distributor.ajax.inc',
+    'page callback' => 'wtb_error_message',
+    'access arguments' => array('access wtb'),
+    'type' => MENU_CALLBACK,
+  );
+  //Is country flagged to skip region
+  $items['distributor_location_form_ajax/is_country_flagged'] = array(
+    'title' => 'Distributor Location Form: Is country flagged to skip region search',
+    'file' => 'product_distributor.ajax.inc',
+    'page callback' => 'is_country_flagged',
+    'access arguments' => array('access wtb'),
+    'type' => MENU_CALLBACK,
+  );
+
+  //Admin callbacks
+  $items['admin/fnet/wtb'] = array(
+    'title' => 'WTB configurations',
+    'description' => 'Configure WTB settings',
+    'file' => 'product_distributor.admin.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('product_distributor_admin'),
+    'access arguments' => array('configure wtb tabs'),
+  );
+  $items['admin/fnet/wtb/configure'] = array(
+    'title' => 'Configure Tabs',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -11,
+  );
+  $items['admin/fnet/wtb/configure-countries'] = array(
+    'title' => 'Configure countries',
+    'file' => 'product_distributor.admin.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('wtb_configure_countries_form'),
+    'access arguments' => array('configure wtb countries'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -10,
+  );
+  $items['admin/fnet/wtb/export-distributors'] = array(
+    'title' => 'Export distributor records',
+    'file' => 'product_distributor.admin.inc',
+    'page callback' => 'export_distributor_records',
+    'access arguments' => array('export distributors'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -9,
+  );
+  $items['admin/content/wtb-location-query'] = array(
+    'title' => 'WTB location query',
+    'page callback' => 'product_distributor_location_query',
+    'access arguments' => array('export distributors'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 10,
+  );
+  $items['admin/content/countries-regions'] = array(
+    'title' => 'Countries & Regions',
+    'description' => 'List of Countries and Regions.',
+    'page callback' => 'wtb_countries_regions_listing',
+    'file' => 'product_distributor.admin.inc',
+    'access arguments' => array('view countries-regions list'),
+  );
+  $items['admin/content/countries-regions/configure'] = array(
+    'title' => 'Countries & Regions',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -11,
+  );
+
+  $items['admin/content/product-distributor-sync/configure'] = array(
+    'title' => 'Update distributors',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'access arguments' => array('view countries-regions list'),
+    'weight' => -11,
+  );
+  return $items;
+}
+
+
+/**
+ * Implements hook_permission().
+().
+ */
+function product_distributor_permission() {
+  return array(
+    'access wtb' => array(
+      'title' => t('access wtb'),
+      'description' => t('Access WhereToBuy'),
+    ),
+    'configure wtb tabs' => array(
+      'title' => t('configure wtb tabs'),
+      'description' => t('Configure WhereToBuy Tabs'),
+    ),
+    'configure wtb countries' => array(
+      'title' => t('configure wtb countries'),
+      'description' => t('Configure WhereToBuy Countries'),
+    ),
+    'administer wtb' => array(
+      'title' => t('administer wtb'),
+      'description' => t('Administer WhereToBuy'),
+    ),
+    'view countries-regions list' => array(
+      'title' => t('view countries-regions list'),
+      'description' => t('View countries-regions List'),
+    ),
+    'synchronize distributors' => array(
+      'title' => t('synchronize distributors'),
+      'description' => t('Synchronize Distributors'),
+    ),
+    'export distributors' => array(
+      'title' => t('export distributors'),
+      'description' => t('Export Distributors'),
+    ),
+  );
+}
+
+
+/**
+ * Implements hook_theme()
+().
+ */
+function product_distributor_theme() {
+  return array(
+    'fnet_wtb_online_location_list_item' => array(
+      'template' => 'fnet_wtb_online_location_list_item',
+      'variables' => array('data' => array()),
+    ),
+    'fnet_wtb_storefront_location_list_item' => array(
+      'template' => 'fnet_wtb_storefront_location_list_item',
+      'variables' => array('data' => array()),
+    ),
+    'fnet_wtb_national_default_location_list_item' => array(
+      'template' => 'fnet_wtb_national_default_location_list_item',
+      'variables' => array('data' => array()),
+    ),
+  );
+}
+
+
+/**
+ * Implements hook_form_alter().
+().
+ */
+function product_distributor_menu_alter(&$menu) {
+  if (isset($menu['location/autocomplete'])) {
+    $menu['location/autocomplete']['page callback'] = '_custom_location_autocomplete';
+  }
+}
+
+
+/**
+ * Helper function to modify the list of regions that show in autocomplete suggestions
+ * This function overrides the default autocomplete function "_location_autocomplete" of location module
+ * located in location.module
+ */
+function _custom_location_autocomplete($country, $string = '') {
+  $counter = 0;
+  $string   = strtolower($string);
+  $string   = '/^' . $string . '/';
+  $matches  = array();
+
+  if (strpos($country, ',') !== FALSE) {
+    // Multiple countries specified.
+    $provinces = array();
+    $country = explode(',', $country);
+    foreach ($country as $c) {
+      $provinces = $provinces + location_get_provinces($c);
+    }
+  }
+  else {
+    $provinces = location_get_provinces($country);
+  }
+
+  if (!empty($provinces)) {
+    while (list($code, $name) = each($provinces)) {
+      if (preg_match($string, strtolower($name))) {
+        $matches[$name] = $name;
+      }
+    }
+  }
+  drupal_json_output($matches);
+}
+
+
+/**
+ * Implements hook_form_alter().
+().
+ */
+function product_distributor_form_alter(&$form, &$form_state, $form_id) {
+  switch ($form_id) {
+    case 'product_node_form':
+      drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/product_form.css');
+      break;
+
+    case 'product_distributor_group_node_form':
+      drupal_add_js(drupal_get_path('module', 'product_distributor') . '/javascripts/distributor_group_form.js');
+      drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/distributor_group_form.css');
+      //To resolve multiselect issue: Product with &reg; does not show in Selected Products list
+      //Bring the entire multiselect form in same text format with htmlentities
+      $form['#after_build'] = array('modify_distributor_form');
+      //Confert entire form back into HTML entities
+      $form['field_products']['#post_render'][] = 'process_product_text';
+
+      //Set default value of custom published flag according
+      if ($form['field_custom_publish_content']['#default_value'][0]['value'] != $form['#node']->status) {
+        $form['field_custom_publish_content']['#default_value'][0]['value'] = $form['#node']->status;
+        $form['#field_info']['field_custom_publish_content']['widget']['default_value'][0]['value'] = $form['#node']->status;
+      }
+
+      //show/hide custom published flag
+      global $user;
+      $is_wtb_author = FALSE;
+      foreach ($user->roles as $role) {
+        if ($role == 'wtb author') {
+          $is_wtb_author = TRUE;
+        }
+      }
+      if (!$is_wtb_author || user_access('administer nodes')) {
+        unset($form['field_custom_publish_content']);
+      }
+      break;
+
+    case 'distributor_node_form':
+      drupal_add_js(drupal_get_path('module', 'product_distributor') . '/javascripts/distributor_form.js');
+      drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/distributor_form.css');
+      $form['title']['#description'] = 'This is an internal facing name to help you search and manage your locations. It does not appear to the customer.';
+      $form['#after_build'] = array('modify_location_form');
+
+      //Set default value of custom published flag according
+      if ($form['field_custom_publish_content']['#default_value'][0]['value'] != $form['#node']->status) {
+        $form['field_custom_publish_content']['#default_value'][0]['value'] = $form['#node']->status;
+        $form['#field_info']['field_custom_publish_content']['widget']['default_value'][0]['value'] = $form['#node']->status;
+      }
+
+      //show/hide custom published flag
+      global $user;
+      $is_wtb_author = FALSE;
+      foreach ($user->roles as $role) {
+        if ($role == 'wtb author') {
+          $is_wtb_author = TRUE;
+        }
+      }
+      if (!$is_wtb_author || user_access('administer nodes')) {
+        unset($form['field_custom_publish_content']);
+      }
+      break;
+  }
+
+  /*Distributor Countries form alterations*/
+  if ($form['#id'] == 'views-exposed-form-wtb-distributor-countries-page-1' || $form['#id'] == 'views-exposed-form-wtb-distributor-countries-page-2') {
+    /**
+     * See filter_distributors_by_countries() to know where the filtering code is implemented
+     */
+    $countries = array();
+    $countries = array_change_key_case(location_get_iso3166_list(), CASE_UPPER);
+    $inactive_countries = get_inactive_countries();
+    $countries = array_diff_key($countries, $inactive_countries);
+    $form['countries'] =  array(
+      '#type' => 'select',
+      '#default_value' => NULL,
+      '#title' => '',
+      '#options' => $countries,
+      '#description' => t('Select a country'),
+      '#multiple' => TRUE,
+      '#size' => 15,
+      '#weight' => -10,
+    );
+
+    // Add label and reposition the field after 'title' field
+    // this value determines the position of the new element.
+    $insert_index = 1;
+    $element_to_insert = array();
+    $element_to_insert['filter-countries'] = array(
+      'operator' => 'countries_op',
+      'value' => 'countries',
+      'label' => 'Location: Country',
+    );
+    $form_info_top = array_slice($form['#info'], 0, $insert_index);
+    $form_info_bottom = array_slice($form['#info'], $insert_index);
+    $new_form_info = $form_info_top + $element_to_insert + $form_info_bottom;
+    $form['#info'] = $new_form_info;
+  }
+  return $form;
+}
+
+
+/**
+ * Implements hook_ajax_data_alter().
+().
+ */
+function product_distributor_ajax_data_alter(&$object, $type, $view) {
+  if ($type == 'views' && $view->display_handler->uses_exposed() && $view->display_handler->get_option('exposed_block')) {
+    $object->exposed_form = $view->render_exposed_form(TRUE);
+    $object->exposed_form_id = $view->exposed_form_id;
+    $object->__callbacks[] = 'Drupal.productDistributor.ajaxViewResponse';
+  }
+}
+
+/**
+ * Post build alterations for Distributor node create/edit form
+ * Refer hook_form_alter() for details
+ */
+function modify_distributor_form($form_element, &$form_state) {
+  //For NAD functionality
+  $form_element['locations'][0]['#description'] = 'Location is compulsory if "Not available for distribution" is selected.';
+
+  //For Product selector
+  ////First part of form
+  $form_element['field_products']['nid']['#prefix'] = htmlentities($form_element['field_products']['nid']['#prefix']);
+
+  ////Second part of form
+  if (is_array($form_element['field_products']['nid']['#options'])) {
+    $prod_arr = array();
+    foreach ($form_element['field_products']['nid']['#options'] as $key => $val) {
+      //$form_element['field_products']['nid']['#options'][$key] = htmlentities($val);
+      $prod_arr[] = $key;
+    }
+    if (count($prod_arr) > 0) {
+      $result = db_query("SELECT n.nid, n.title " . "FROM {node} n " . "WHERE n.nid IN (" . implode(',', $prod_arr) . ") " . "ORDER BY n.title ASC", array());
+      unset($prod_arr);
+      $prod_arr = array();
+      foreach ($result as $record) {
+        $prod_arr[$record->nid] = $record->title;
+      }
+      $form_element['field_products']['nid']['#options'] = $prod_arr;
+    }
+  }
+
+  //Remove 'NOT LISTED' from country drop-down
+  unset($form_element['locations'][0]['country']['#options']['xx']);
+
+  return $form_element;
+}
+
+
+/**
+ * Filter out inactive countries
+ * Refer hook_form_alter() for details
+ */
+function modify_location_form($form_element, &$form_state) {
+  $inactive_countries = array_change_key_case(get_inactive_countries(), CASE_LOWER);
+  foreach ($inactive_countries as $key => $val) {
+    unset($form_element['locations'][0]['country']['#options'][$key]);
+  }
+  return $form_element;
+}
+
+
+/**
+ * Implementation of hook_page() to implement Where2Buy public facing website
+ */
+function where2buy_page() {
+  $default_map_img = 'productcollage.jpg';
+  drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/tabs.css');
+  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/javascripts/tabs.js', array('defer' => TRUE, 'preprocess' => FALSE));
+
+  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/javascripts/where2buy_page_1.js', array('defer' => TRUE, 'preprocess' => FALSE));
+  // drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/where2buy_page.css');
+
+  drupal_add_js(array('where2buy_path' => drupal_get_path('module', 'product_distributor')), array('type' => 'setting', 'scope' => JS_DEFAULT));
+  drupal_add_js(array('where2buy_default_img' => base_path() . drupal_get_path('module', 'product_distributor') . '/images/' . $default_map_img), array('type' => 'setting', 'scope' => JS_DEFAULT));
+
+
+  $vars1 = variable_get('wtb_settings_tab1', array());
+//  $vars2 = variable_get('wtb_settings_tab2', array());
+  $vars3 = variable_get('wtb_settings_tab3', array());
+  $output = '';
+  // <li class="second"><a href="#tab2">' . $vars2['tab2_title'] . '</a></li>
+//        <div id="tab2" style="display:none" class="tab_content">' . get_tab_content(2) . '
+//  </div>
+
+  $output .= '<ul class="tabs">
+        <li class=""><a href="#tab3">' . variable_get('product_distributor_tab1_title', '') . '</a></li>
+        <li class=""><a href="#tab1">' . variable_get('product_distributor_tab2_title', '') . '</a></li>
+        </ul>
+      <div id="wtb-tabs-container" class="tab_container">
+        <div id="tab3" style="display:none" class="tab_content">' . get_tab_content(3) . '
+        </div>
+        <div id="tab1" style="display:none" class="tab_content">' . get_tab_content(1) . '
+        </div>
+      </div>';
+
+
+  //<div id="map_canvas" style="width:500px;height:500px"></div>
+  return $output;
+}
+
+/**
+ * Implementation of hook_page() to implement ContactUs public facing website
+ */
+function contactus_page() {
+  $default_map_img = 'productcollage.jpg';
+  drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/tabs.css');
+//  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/javascripts/tabs.js', 'module', 'header', TRUE, TRUE, FALSE);
+
+  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/javascripts/where2buy_page_1.js', array('defer' => TRUE, 'preprocess' => FALSE));
+  drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/where2buy_page.css');
+
+  drupal_add_js(array('where2buy_path' => drupal_get_path('module', 'product_distributor')), array('type' => 'setting', 'scope' => JS_DEFAULT));
+  drupal_add_js(array('where2buy_default_img' => base_path() . drupal_get_path('module', 'product_distributor') . '/images/' . $default_map_img), array('type' => 'setting', 'scope' => JS_DEFAULT));
+
+  $output = '<ul class="tabs">
+        <li class="fulltab active"><a>' . variable_get('product_distributor_tab2_title', '') . '</a></li>
+        </ul><div id="wtb-tabs-container" class="tab_container">
+       <div id="tab2" class="tab_content">' . get_tab_content(2) . '
+        </div>
+      </div>';
+
+  return $output;
+}
+
+/**
+ * Provide tab contents for WTB user-facing functionality
+ */
+function get_tab_content($tab = 1) {
+  $output = '';
+
+  switch ($tab) {
+    case 1:
+      $output .= variable_get('product_distributor_tab2_content', '');
+      break;
+    case 2:
+      $form = drupal_get_form('eloqua_form');
+      $output .= drupal_render($form);
+      break;
+    case 3:
+      $form = array();
+      $default_map_img = 'productcollage.jpg';
+      $continent_code = ''; //should probably have some value
+      $output .= '<div id="w2b-form-img-wrapper"><div id="w2b-form-wrapper">';
+      $form = drupal_get_form('pd_l1_form');
+      $output .=  drupal_render($form);
+      $output .= '</div>';
+      $output .= '<div id="global-img-map-wrapper">'
+        . '<div id="map-wrapper"><img width="488" height="385" border="0" id="fpAnimswapImgFP1" src="' . drupal_get_path('module', 'product_distributor') . '/images/' . $default_map_img . '"></div>'
+        . '<div id="pimg-wrapper" style="display:none"></div>'
+        . '<div id="gmap-wrapper" style="width:488px;height:385px;display:none"></div>'
+        . '</div>'
+        . '</div>';
+      $output .= '<div id="ajax-loader-wrapper" style="display:none;margin-left:17px;"><img src="' . drupal_get_path('module', 'product_distributor') . '/images/ajax-loader.gif' . '"/></div>';
+      $output .= '<div id="dsearch-results"></div>';
+      break;
+    default:
+      $output = 'No content found for this tab';
+  }
+
+  return $output;
+}
+
+
+/**
+ * Implementation of hook_form().
+ */
+function eloqua_form($form) {
+  $form = array();
+
+  $form['elqFormName'] = array(
+    '#type' => 'hidden',
+    '#value' => 'WheretoBuy',
+  );
+  $form['C_Campaign1'] = array(
+    '#type' => 'hidden',
+    '#value' => 'WheretoBuy',
+  );
+  $form['C_FirstName'] = array(
+    '#type' => 'textfield',
+    '#title' => t('First Name'),
+    '#attributes' =>array('class'=>array('elqFormField')),
+    '#size' => 25,
+    '#required' => TRUE,
+  );
+  $form['C_LastName'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Last Name'),
+    '#attributes' => array('class' => array('elqFormField')),
+    '#size' => 25,
+    '#required' => TRUE,
+  );
+  $form['C_EmailAddress'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Email'),
+    '#attributes' => array('class' => array('elqFormField')),
+    '#size' => 25,
+    '#required' => TRUE,
+  );
+  $form['C_Title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Job Title'),
+    '#attributes' => array('class' => array('elqFormField')),
+    '#size' => 25,
+    '#required' => TRUE,
+  );
+  $form['C_Company'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Company'),
+    '#attributes' => array('class' => array('elqFormField')),
+    '#size' => 25,
+    '#required' => TRUE,
+  );
+  $form['C_BusPhone'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Telephone'),
+    '#attributes' => array('class' => array('elqFormField')),
+    '#size' => 25,
+    '#required' => TRUE,
+  );
+  $form['C_Address1'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Address Line 1'),
+    '#attributes' => array('class' => array('elqFormField')),
+    '#size' => 25,
+    '#required' => TRUE,
+  );
+  $form['C_Address2'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Address Line 2'),
+    '#attributes' => array('class' => array('elqFormField')),
+    '#size' => 25,
+    '#required' => FALSE,
+  );
+  $form['C_City'] = array(
+    '#type' => 'textfield',
+    '#title' => t('City'),
+    '#attributes' => array('class' => array('elqFormField')),
+    '#size' => 25,
+    '#required' => TRUE,
+  );
+  $state_prov_options = array(
+    "" => "Please Select",
+    "AK" => "Alaska",
+    "AL" => "Alabama",
+    "AR" => "Arkansas",
+    "AS" => "American Samoa",
+    "AZ" => "Arizona",
+    "CA" => "California",
+    "CO" => "Colorado",
+    "CT" => "Connecticut",
+    "DC" => "D.C.",
+    "DE" => "Delaware",
+    "FL" => "Florida",
+    "FM" => "Micronesia",
+    "GA" => "Georgia",
+    "GU" => "Guam",
+    "HI" => "Hawaii",
+    "IA" => "Iowa",
+    "ID" => "Idaho",
+    "IL" => "Illinois",
+    "IN" => "Indiana",
+    "KS" => "Kansas",
+    "KY" => "Kentucky",
+    "LA" => "Louisiana",
+    "MA" => "Massachusetts",
+    "MD" => "Maryland",
+    "ME" => "Maine",
+    "MH" => "Marshall Islands",
+    "MI" => "Michigan",
+    "MN" => "Minnesota",
+    "MO" => "Missouri",
+    "MP" => "Marianas",
+    "MS" => "Mississippi",
+    "MT" => "Montana",
+    "NC" => "North Carolina",
+    "ND" => "North Dakota",
+    "NE" => "Nebraska",
+    "NH" => "New Hampshire",
+    "NJ" => "New Jersey",
+    "NM" => "New Mexico",
+    "NV" => "Nevada",
+    "NY" => "New York",
+    "OH" => "Ohio",
+    "OK" => "Oklahoma",
+    "OR" => "Oregon",
+    "PA" => "Pennsylvania",
+    "PR" => "Puerto Rico",
+    "PW" => "Palau",
+    "RI" => "Rhode Island",
+    "SC" => "South Carolina",
+    "SD" => "South Dakota",
+    "TN" => "Tennessee",
+    "TX" => "Texas",
+    "UT" => "Utah",
+    "VA" => "Virginia",
+    "VI" => "Virgin Islands",
+    "VT" => "Vermont",
+    "WA" => "Washington",
+    "WI" => "Wisconsin",
+    "WV" => "West Virginia",
+    "WY" => "Wyoming",
+    "AA" => "Military Americas",
+    "AE" => "Military Europe/ME/Canada",
+    "AP" => "Military Pacific",
+    "AB" => "Alberta",
+    "MB" => "Manitoba",
+    "BC" => "British Columbia",
+    "NB" => "New Brunswick",
+    "NL" => "Newfoundland and Labrador",
+    "NS" => "Nova Scotia",
+    "NT" => "Northwest Territories",
+    "NU" => "Nunavut",
+    "ON" => "Ontario",
+    "PE" => "Prince Edward Island",
+    "QC" => "Quebec",
+    "SK" => "Saskatchewan",
+    "YT" => "Yukon Territory",
+  );
+  $form['C_State_Prov'] = array(
+    '#type' => 'select',
+    '#title' => t('State or Province'),
+    '#default_value' => '',
+    '#required' => FALSE,
+    '#options' => $state_prov_options,
+  );
+  $form['C_Zip_Postal'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Zip or Postal Code'),
+    '#attributes' => array('class' => array('elqFormField')),
+    '#size' => 25,
+    '#required' => FALSE,
+  );
+  $country_options = array(
+    "" => "Please Select",
+    "US" => "United States",
+    "AC" => "Ascension Island",
+    "AD" => "Andorra",
+    "AF" => "Afghanistan",
+    "AG" => "Antigua and Barbuda",
+    "AI" => "Anguilla",
+    "AL" => "Albania",
+    "AM" => "Armenia",
+    "AN" => "Netherland Antilles",
+    "AO" => "Angola",
+    "AQ" => "Antarctica",
+    "AR" => "Argentina",
+    "AT" => "Austria",
+    "AU" => "Australia",
+    "AW" => "Aruba",
+    "AZ" => "Azerbaijan",
+    "BA" => "Bosnia-Herzegovina",
+    "BB" => "Barbados",
+    "BD" => "Bangladesh",
+    "BE" => "Belgium",
+    "BF" => "Burkina Faso",
+    "BG" => "Bulgaria",
+    "BH" => "Bahrain",
+    "BI" => "Burundi",
+    "BJ" => "Benin",
+    "BM" => "Bermuda",
+    "BN" => "Brunei Darussalam",
+    "BO" => "Bolivia",
+    "BR" => "Brazil",
+    "BS" => "Bahamas",
+    "BT" => "Bhutan",
+    "BV" => "Bouvet Island",
+    "BW" => "Botswana",
+    "BY" => "Belarus",
+    "BZ" => "Belize",
+    "CA" => "Canada",
+    "CC" => "Cocos (Keeling) Islands",
+    "CF" => "Central African Republic",
+    "CG" => "Congo",
+    "CH" => "Switzerland",
+    "CI" => "Cote D''Ivoire",
+    "CK" => "Cook Islands",
+    "CL" => "Chile",
+    "CM" => "Cameroon",
+    "CN" => "China",
+    "CO" => "Colombia",
+    "CR" => "Costa Rica",
+    "CV" => "Cape Verde",
+    "CX" => "Christmas Island",
+    "CY" => "Cyprus",
+    "CZ" => "Czech Republic",
+    "DE" => "Germany",
+    "DJ" => "Djibouti",
+    "DK" => "Denmark",
+    "DM" => "Dominica",
+    "DO" => "Dominican Republic",
+    "DZ" => "Algeria",
+    "EC" => "Ecuador",
+    "EE" => "Estonia",
+    "EG" => "Egypt",
+    "EH" => "Western Sahara",
+    "ES" => "Spain",
+    "ET" => "Ethiopia",
+    "FI" => "Finland",
+    "FJ" => "Fiji",
+    "FK" => "Falkland Islands (Malvinas)",
+    "FM" => "Micronesia, Fed. States of",
+    "FO" => "Faeroe Islands",
+    "FR" => "France",
+    "GA" => "Gabon",
+    "GB" => "United Kingdom",
+    "GD" => "Grenada",
+    "GE" => "Georgia",
+    "GF" => "French Guiana",
+    "GH" => "Ghana",
+    "GI" => "Gibraltar",
+    "GL" => "Greenland",
+    "GM" => "Gambia",
+    "GN" => "Guinea",
+    "GP" => "Guadeloupe",
+    "GQ" => "Equatorial Guinea",
+    "GR" => "Greece",
+    "GT" => "Guatemala",
+    "GW" => "Guinea-Bissau",
+    "GY" => "Guyana",
+    "HK" => "Hong Kong",
+    "HM" => "Heard and McDonald Islands",
+    "HN" => "Honduras",
+    "HR" => "Croatia",
+    "HT" => "Haiti",
+    "HU" => "Hungary",
+    "ID" => "Indonesia",
+    "IE" => "Ireland",
+    "IL" => "Israel",
+    "IN" => "India",
+    "IO" => "British Indian Ocean Territory",
+    "IQ" => "Iraq",
+    "IS" => "Iceland",
+    "IT" => "Italy",
+    "JM" => "Jamaica",
+    "JO" => "Jordan",
+    "JP" => "Japan",
+    "KE" => "Kenya",
+    "KG" => "Kyrgyzstan",
+    "KH" => "Cambodia",
+    "KI" => "Kiribati",
+    "KM" => "Comoros",
+    "KN" => "Saint Kitts and Nevis",
+    "KR" => "Korea, Republic of",
+    "KW" => "Kuwait",
+    "KY" => "Cayman Islands",
+    "KZ" => "Kazakhstan",
+    "LA" => "Lao Peoples Democratic Republi",
+    "LB" => "Lebanon",
+    "LC" => "Saint Lucia",
+    "LI" => "Liechtenstein",
+    "LK" => "Sri Lanka",
+    "LR" => "Liberia",
+    "LS" => "Lesotho",
+    "LT" => "Lithuania",
+    "LU" => "Luxembourg",
+    "LV" => "Latvia",
+    "LY" => "Libyan Arab Jamahiriya",
+    "MA" => "Morocco",
+    "MC" => "Monaco",
+    "MD" => "Moldova, Republic of",
+    "ME" => "Montenegro",
+    "MG" => "Madagascar",
+    "MH" => "Marshall Islands",
+    "MK" => "Macedonia",
+    "ML" => "Mali",
+    "MM" => "Myanmar",
+    "MN" => "Mongolia",
+    "MO" => "Macau",
+    "MP" => "Northern Mariana Islands",
+    "MQ" => "Martinique",
+    "MR" => "Mauritania",
+    "MS" => "Montserrat",
+    "MT" => "Malta",
+    "MU" => "Mauritius",
+    "MV" => "Maldives",
+    "MW" => "Malawi",
+    "MX" => "Mexico",
+    "MY" => "Malaysia",
+    "MZ" => "Mozambique",
+    "NA" => "Namibia",
+    "NC" => "New Caledonia",
+    "NE" => "Niger",
+    "NF" => "Norfolk Island",
+    "NG" => "Nigeria",
+    "NI" => "Nicaragua",
+    "NL" => "Netherlands",
+    "NO" => "Norway",
+    "NP" => "Nepal",
+    "NR" => "Nauru",
+    "NT" => "Neutral Zone (Saudi/Iraq)",
+    "NU" => "Niue",
+    "NZ" => "New Zealand",
+    "OM" => "Oman",
+    "PA" => "Panama",
+    "PE" => "Peru",
+    "PF" => "French Polynesia",
+    "PG" => "Papua New Guinea",
+    "PH" => "Philippines",
+    "PK" => "Pakistan",
+    "PL" => "Poland",
+    "PM" => "St. Pierre and Miquelon",
+    "PN" => "Pitcairn",
+    "PR" => "Puerto Rico",
+    "PS" => "Palestine",
+    "PT" => "Portugal",
+    "PW" => "Palau",
+    "PY" => "Paraguay",
+    "QA" => "Qatar",
+    "RE" => "Reunion",
+    "RO" => "Romania",
+    "RS" => "Serbia",
+    "RU" => "Russian Federation",
+    "RW" => "Rwanda",
+    "SA" => "Saudi Arabia",
+    "SB" => "Solomon Islands",
+    "SC" => "Seychelles",
+    "SE" => "Sweden",
+    "SG" => "Singapore",
+    "SH" => "St. Helena",
+    "SI" => "Slovenia",
+    "SJ" => "Svalbard and Jan Mayen Islands",
+    "SK" => "Slovakia",
+    "SL" => "Sierra Leone",
+    "SM" => "San Marino",
+    "SN" => "Senegal",
+    "SO" => "Somalia",
+    "SR" => "Suriname",
+    "ST" => "Sao Tome and Principe",
+    "SV" => "El Salvador",
+    "SZ" => "Swaziland",
+    "TC" => "Turks and Caicos Islands",
+    "TD" => "Chad",
+    "TF" => "French Southern Territories",
+    "TG" => "Togo",
+    "TH" => "Thailand",
+    "TJ" => "Tajikistan",
+    "TK" => "Tokelau",
+    "TM" => "Turkmenistan",
+    "TN" => "Tunisia",
+    "TO" => "Tonga",
+    "TP" => "East Timor",
+    "TR" => "Turkey",
+    "TT" => "Trinidad and Tobago",
+    "TV" => "Tuvalu",
+    "TW" => "Taiwan",
+    "TZ" => "Tanzania, United Republic of",
+    "AE" => "U.A.E",
+    "UA" => "Ukraine",
+    "UG" => "Uganda",
+    "UM" => "U.S.Minor Outlying Islands",
+    "UY" => "Uruguay",
+    "UZ" => "Uzbekistan",
+    "VA" => "Vatican City State",
+    "VC" => "St. Vincent and the Grenadines",
+    "VE" => "Venezuela",
+    "VG" => "Virgin Islands (British)",
+    "VN" => "Viet Nam",
+    "VU" => "Vanuatu",
+    "WF" => "Wallis and Futuna Islands",
+    "WS" => "Samoa",
+    "YE" => "Yemen, Republic of",
+    "ZA" => "South Africa",
+    "ZM" => "Zambia",
+    "ZR" => "Zaire",
+    "ZW" => "Zimbabwe",
+  );
+  $submit_button = '<div class="btn_143w">
+                      <a href="#" id="edit-Submit-dummy" onclick="$(this).parents(\'form\').find(\'#edit-Submit\').click();return false;">Submit &raquo;</a>
+                    </div>';
+  $form['C_Country'] = array(
+    '#type' => 'select',
+    '#title' => t('Country'),
+    '#default_value' => '',
+    '#required' => TRUE,
+    '#options' => $country_options,
+  );
+
+  $presults = db_query('SELECT nid, title FROM {node} WHERE type = :type AND status = :status ORDER BY title ASC', array(':type' => "product", ':status' => 1));
+  $products = array();
+
+  $products[0] = 'Select a Product';
+  //$products[-1] = 'All Products';
+//  while ($pdata = db_fetch_object($presults)) {
+  foreach ($presults as $pdata) {
+    $products[trim($pdata->title)] = trim($pdata->title);
+  }
+
+  $form['C_Product'] = array(
+    '#type' => 'select',
+    '#title' => t('Which product are you interested in?'),
+    '#default_value' => '',
+    '#required' => FALSE,
+    '#options' => $products,
+    '#suffix' => $submit_button,
+  );
+
+  $form['Submit'] = array(
+    '#type' => 'image_button',
+    '#value' => t('Submit'),
+    '#attributes' => array(
+      'class' =>array('form-submit'),
+      'src' => drupal_get_path('module', 'product_distributor') . '/images/submit_button.gif',
+    ),
+  );
+
+  return $form;
+}
+
+
+/**
+ * Implementation of hook_validate()
+ */
+function eloqua_form_validate($form, &$form_state) {
+  if (!valid_email_address($form['C_EmailAddress']['#value'])) {
+    form_set_error('C_EmailAddress', 'Email address is not valid');
+  }
+}
+
+
+/**
+ * Implementation of hook_submit()
+ */
+function eloqua_form_submit($form, &$form_state) {
+  $Url = "http://now.eloqua.com/e/f.aspx?elqSiteID=1194";
+  $skipFieldArray = array(
+    "Submit" => TRUE,
+    "elqSiteID" => TRUE,
+    "Submit_x" => TRUE,
+    "Submit_y" => TRUE,
+    "form_build_id" => TRUE,
+    "form_token" => TRUE,
+    "form_id" => TRUE,
+  );
+  $allKeys = array_keys($form['#post']);
+  foreach ($form['#post'] as $k => $v) {
+    if (!$skipFieldArray[$k] && $v) {
+      $Url .= "&" . $k . "=" . urlencode($v);
+    }
+  }
+
+  $ch = curl_init();
+  curl_setopt($ch, CURLOPT_URL, $Url);
+  curl_setopt($ch, CURLOPT_HEADER, 0);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+  curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+  $data = curl_exec($ch);
+  curl_close($ch);
+
+  if (!strpos($data, "Success")) {
+    drupal_set_message('Your request could not be submitted  successfully!', 'error');
+  }
+  else {
+    drupal_set_message('<b>Thank you. We have received a request to contact you and will do so shortly.</b>', 'success');
+  }
+}
+
+
+/**
+ * Return a list of inactive countries
+ */
+function get_inactive_countries() {
+  return array(
+    "AX" => "Aland Islands",
+    "AL" => "Albania",
+    "AS" => "American Samoa",
+    "AD" => "Andorra",
+    "AI" => "Anguilla",
+    "AQ" => "Antarctica",
+    "BT" => "Bhutan",
+    "BV" => "Bouvet Island",
+    "IO" => "British Indian Ocean Territory",
+    "KH" => "Cambodia",
+    "CV" => "Cape Verde",
+    "CX" => "Christmas Island",
+    "CC" => "Cocos (Keeling) Islands",
+    "KM" => "Comoros",
+    "CD" => "Congo (Kinshasa)",
+    "CK" => "Cook Islands",
+    "CU" => "Cuba",
+    "DM" => "Dominica",
+    "TL" => "East Timor",
+    "GQ" => "Equatorial Guinea",
+    "ER" => "Eritrea",
+  //  "EE" => "Estonia",
+    "FK" => "Falkland Islands",
+    "FO" => "Faroe Islands",
+    "FJ" => "Fiji",
+    "PF" => "French Polynesia",
+    "TF" => "French Southern Territories",
+    "GI" => "Gibraltar",
+    "GL" => "Greenland",
+    "GU" => "Guam",
+    "GG" => "Guernsey",
+    "HM" => "Heard Island and McDonald Islands",
+    "IR" => "Iran",
+    "IM" => "Isle of Man",
+    "JE" => "Jersey",
+    "KI" => "Kiribati",
+    "LA" => "Laos",
+    "LI" => "Liechtenstein",
+    "MK" => "Macedonia",
+    "MV" => "Maldives",
+    "ML" => "Mali",
+    "MH" => "Marshall Islands",
+    "MR" => "Mauritania",
+    "YT" => "Mayotte",
+    "FM" => "Micronesia",
+    "MC" => "Monaco",
+    "MN" => "Mongolia",
+    "ME" => "Montenegro",
+    "MS" => "Montserrat",
+    "NR" => "Nauru",
+    "AN" => "Netherlands Antilles",
+    //"NC" => "New Caledonia",
+    "NU" => "Niue",
+    "NF" => "Norfolk Island",
+    "KP" => "North Korea",
+    "MP" => "Northern Mariana Islands",
+    "PW" => "Palau",
+    "PS" => "Palestinian Territory",
+    "PY" => "Paraguay",
+    "PN" => "Pitcairn",
+    "SH" => "Saint Helena",
+    "PM" => "Saint Pierre and Miquelon",
+    "WS" => "Samoa",
+    "SM" => "San Marino",
+    "CS" => "Serbia And Montenegro",
+    "SB" => "Solomon Islands",
+    "GS" => "South Georgia and the South Sandwich Islands",
+    "SD" => "Sudan",
+    "SJ" => "Svalbard and Jan Mayen",
+    "SY" => "Syria",
+    "TK" => "Tokelau",
+    "TO" => "Tonga",
+    "TC" => "Turks and Caicos Islands",
+    "TV" => "Tuvalu",
+    "VI" => "U.S. Virgin Islands",
+    "UM" => "United States Minor Outlying Islands",
+    "VU" => "Vanuatu",
+    "VA" => "Vatican",
+    "WF" => "Wallis and Futuna",
+  );
+}
+
+
+/**
+ * Implementation of hook_form().
+ */
+function pd_l1_form($form, $form_state, $continent_code = NULL) {
+  $form = array();
+  $countries = array();
+  $countries = array_change_key_case(location_get_iso3166_list(), CASE_UPPER);
+  $inactive_countries = get_inactive_countries();
+  $countries = array_diff_key($countries, $inactive_countries);
+  $continent_text = '';
+  if ($continent_code) {
+    try {
+      include_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'product_distributor') . '/continents/countries.' . $continent_code . '.inc';
+      $continent_callback = 'get_countries_in_' . $continent_code;
+      $continent_countries = $continent_callback();
+      $countries = array_intersect_key($countries, $continent_countries);
+      switch ($continent_code) {
+        case 'af':
+          $continent_text = ' in Africa';
+          break;
+        case 'as':
+          $continent_text = ' in Asia';
+          break;
+        case 'eu':
+          $continent_text = ' in Europe';
+          break;
+        case 'na':
+          $continent_text = ' in North America';
+          break;
+        case 'oc':
+          $continent_text = ' in Australia';
+          break;
+        case 'sa':
+          $continent_text = ' in South America';
+          break;
+      }
+    }
+    catch (Exception $e) {
+      $countries = array_change_key_case(location_get_iso3166_list(), CASE_UPPER);
+      $countries = array_diff_key($countries, $inactive_countries);
+    }
+  }
+
+
+  $sql = <<<sql
+SELECT
+	n.nid,
+	n.title
+FROM
+	{node} AS n
+INNER JOIN field_data_field_business_entity AS be ON n.nid = be.entity_id
+AND n.vid = be.revision_id
+WHERE
+	n.type = 'product'
+AND n.`status` = 1
+AND be.field_business_entity_tid IN (:tids)
+ORDER BY
+	n.title ASC
+sql;
+  $presults = db_query($sql, array(':tids' => site_split_personality_tids()));
+  $products = array();
+
+  $products[0] = t('Select a Product');
+
+  foreach ($presults as $pdata) {
+    $products[$pdata->nid] = trim($pdata->title);
+  }
+
+  $distributor = field_info_instances('node', 'distributor');
+  $buying_methods = array();
+  $default_buying_methods = explode(chr(10), "O|Online\r\nS|Storefront\r\nN|National/Default");
+  foreach ($default_buying_methods as $dbm) {
+    if ($dbm != '') {
+      $temp = explode('|', $dbm);
+      $buying_methods[$temp[0]] = $temp[1];
+    }
+  }
+
+  if (isset($_COOKIE['regCountry'])) {
+    $country_code = $_COOKIE['regCountry'];
+  }
+  else {
+    if (isset($headers['X-OriginalIP']) && $headers['X-OriginalIP'] != '') {
+      $ip = $headers['X-OriginalIP'];
+    }
+    else {
+      $ip = $_SERVER['REMOTE_ADDR'];
+    }
+    $country_code = 'US';
+    // Testing
+    // $ip = '116.50.61.180';
+    // TODO: Move this into a module config setting.
+    $url = 'http://www2.tek.com/cmswpt/tekipvalidate?ip=' . $ip . '&return=country';
+    //open connection
+    $ch = curl_init();
+    //set the url, number of POST vars, POST data
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    //execute post
+    $country_str = curl_exec($ch);
+    //close connection
+    curl_close($ch);
+
+    if (strtolower($country_str) != 'null') {
+      $country_arr = explode(':', $country_str);
+      if (strlen($country_arr[1]) == 2) {
+        $country_code = $country_arr[1];
+      }
+    }
+    if (module_exists('devel')) {
+      dpm('IP address:' . $ip);
+      dpm($country_code);
+    }
+  }
+  // Debugging
+
+  if ($country_code == 'GB') {
+    $country_code = 'UK';
+  }
+
+  $form['countries'] = array(
+    '#type' => 'select',
+    '#title' => t('1. Select a Country' . check_plain($continent_text)),
+    '#default_value' => $country_code,
+    '#options' => $countries,
+  );
+  $form['products'] = array(
+    '#type' => 'select',
+    '#prefix' => '<div class="OneLinkNoTx">',
+    '#title' => t('2. Select a Product'),
+    '#default_value' => 0,
+    '#options' => $products,
+    '#post_render' => array('process_product_text'),
+    '#suffix' => '</div>',
+  );
+  $form['buying_methods'] = array(
+    '#type' => 'select',
+    '#title' => t('3. Select a Buying Method'),
+    '#options' => $buying_methods,
+  );
+  $form['regions'] = array(
+    '#type' => 'select',
+    '#title' => t('4. Select a Region'),
+    '#options' => array(0 => '--Select a country from above--'),
+  );
+  $form['cities'] = array(
+    '#type' => 'select',
+    '#title' => t('Select a City'),
+    '#options' => array(0 => '--Select a region from above--'),
+  );
+  $form['postal_code'] = array(
+    '#type' => 'textfield',
+    '#title' => t('OR Search by Postal Code'),
+  );
+  $form['gsa_schedule'] = array(
+    '#title' => t('Only see resellers on GSA schedule'),
+    '#type' => 'checkbox',
+    '#default_value' => FALSE,
+  );
+  $submit_button = '<div id="edit-submit" class="btn_46w" style="display: none;">
+            <a href="#" id="edit-submit-go" onclick="return false;">Go</a>
+          </div>';
+  $form['wtbsubmit'] = array(
+    '#markup' => $submit_button,
+  );
+  return $form;
+}
+
+
+/**
+ * Sanitize string to display in select list
+ */
+function process_product_text($element, $children) {
+  $src_strs = array('&lt;sup&gt;TM&lt;/sup&gt;', '&#0153;');
+  $rep_strs = array('&trade;', '&trade;');
+  return html_entity_decode(str_replace($src_strs, $rep_strs, $element));
+}
+
+
+/**
+ * Implements hook_views_api().
+().
+ */
+function product_distributor_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'product_distributor'),
+  );
+}
+
+
+/**
+ * Implements hook_views_pre_render
+().
+ */
+function product_distributor_views_pre_render(&$view) {
+  if ($view->name == 'improved_admin_content' || $view->name == 'improved_admin_content_wtb' || $view->name == 'wtb_distributor_countries') {
+    // Add CSS to improved_admin_content view: IE8 fix
+    drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/distributor_group_form.css');
+  }
+}
+
+
+/**
+ * Implements hook_node_view().
+ */
+function product_distributor_node_view($node, $view_mode = 'full') {
+  if (TRUE) {
+    if (isset($node->location['province']) && isset($node->location['province_name']) && isset($node->content['locations']['#value'])) {
+      $source_str = '<span class="region">' . $node->location['province'] . '</span>';
+      $target_str = '<span class="region">' . $node->location['province_name'] . '</span>';
+      $node->content['locations']['#value'] = str_replace($source_str, $target_str, $node->content['locations']['#value']);
+    }
+    //Distributor Location - Display the value of GSA Schedule as 'Yes' instead of 'Is this a distributor on GSA Schedule?'
+    if ($node->type == 'distributor') {
+      if ($node->content['field_gsa_schedule']['field']['items'][0]['#item']['value'] == 1) {
+        $node->content['field_gsa_schedule']['field']['items'][0]['#item']['value'] = 2;
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_node_load().
+ */
+function product_distributor_node_load($nodes, $types) {
+  foreach ($nodes as $node) {
+    //Product Distributor Group - Sort products alphabetically
+    if ($node->type == 'product_distributor_group' && is_array($node->field_products[LANGUAGE_NONE])) {
+      foreach ($node->field_products[LANGUAGE_NONE] as $key => $value) {
+        $result = db_query("SELECT title FROM {node} WHERE nid = :nid", array(':nid' => $value['nid']));
+        $data = (object)$result->fetchObject();
+        $node->field_products[LANGUAGE_NONE][$key]['title'] = $data->title;
+        unset($node->field_products[LANGUAGE_NONE][$key]['nid']);
+        $node->field_products[LANGUAGE_NONE][$key]['nid'] = $value['nid'];
+      }
+      array_multisort($node->field_products);
+    }
+  }
+}
+
+/**
+ * Implements hook_nodeapi
+().
+ */
+function product_distributor_nodeapi_OLD(&$node, $op, $a3 = NULL, $a4 = NULL) { }
+
+
+/**
+ * Views helper function to provide results for custom field in view wtb_distributor_countries
+ */
+function get_countries_of_distributors($distributor_nid = NULL, $csv = FALSE, $return_country_code_array = FALSE) {
+  if ($distributor_nid) {
+    $countries = array();
+    $location_countries = location_get_iso3166_list();
+/*    $lresults = db_query('SELECT n.vid FROM {node} n'
+      . ' INNER JOIN {content_field_product_groups} cfpg ON cfpg.vid = n.vid'
+      . ' WHERE cfpg.field_product_groups_nid = :distributorNid '
+      , array(":distributorNid"=>$distributor_nid)); */
+    $lresults = db_query('SELECT n.vid FROM {node} n'
+      . ' INNER JOIN {field_data_field_product_groups} cfpg ON cfpg.revision_id = n.vid'
+      . ' WHERE cfpg.field_product_groups_nid = :distributorNid '
+      , array(":distributorNid"=>$distributor_nid));
+
+    foreach ($lresults as $ldata) {
+      $cresults = db_query('SELECT DISTINCT l.country FROM {location} l'
+        . ' INNER JOIN {location_instance} li ON li.lid = l.lid'
+        . ' INNER JOIN {node} n ON n.vid = li.vid'
+        . ' WHERE n.vid = :dataVid '
+        , array(":dataVid"=>$ldata->vid));
+      foreach ($cresults as $cdata) {
+        if (!isset($countries[$cdata->country])) {
+          $countries[$cdata->country] = $location_countries[$cdata->country];
+        }
+      }
+    }
+    $countries = array_change_key_case($countries, CASE_UPPER);
+    if ($return_country_code_array) {
+      return array_keys($countries);
+    }
+    else {
+      if ($csv) {
+        echo implode(";", $countries);
+      }
+      else {
+        echo '<ul><li>' . implode("</li><li>", $countries) . '</li></ul>';
+      }
+    }
+  }
+}
+
+
+/**
+ * Views helper function to provide results for custom filter in view wtb_distributor_countries.
+ * See hook_form_alter() to see where the country field is added
+ */
+function filter_distributors_by_countries() {
+  if (isset($_GET['countries'])) {
+    $countries_filter = array_flip(array_change_key_case(array_flip($_GET['countries']), CASE_LOWER));
+
+    $cresults = db_query('SELECT DISTINCT n.nid FROM {node} n'
+      . ' INNER JOIN {location_instance} li ON li.vid = n.vid'
+      . ' INNER JOIN {location} l ON l.lid = li.lid AND l.country IN (\'' . implode("','",$countries_filter) . '\')'
+      , array());
+    $distributors = array();
+    $locations = array();
+    foreach ($cresults as $cdata) {
+      $locations[] = $cdata->nid;
+    }
+    if (count($locations)) {
+/*      $dresults = db_query('SELECT n.nid FROM {node} n'
+        . ' INNER JOIN {content_field_product_groups} cfpg ON cfpg.field_product_groups_nid = n.nid AND cfpg.nid IN (' . implode(',',$locations) . ')'
+        , array()); */
+      $dresults = db_query('SELECT n.nid FROM {node} n'
+        . ' INNER JOIN {field_data_field_product_groups} cfpg ON cfpg.field_product_groups_nid = n.nid AND cfpg.entity_id IN (' . implode(',',$locations) . ')'
+        , array());
+
+      foreach ($dresults as $ddata) {
+        $distributors[] = $ddata->nid;
+      }
+    }
+    return $distributors;
+  }
+  return NULL;
+}
+
+
+/**
+ * Provides list of products available at a distributor to show in Views PHP field
+ */
+function product_distributor_get_products_for_distributor($distributor_vid = NULL, $csv = FALSE, $return_array = FALSE ) {
+  if ($distributor_vid) {
+/*    $sql = <<<sql
+SELECT DISTINCT n.title AS product, IF(n.`status`,'','(unpublished)') AS status
+FROM content_field_products AS cfp
+INNER JOIN node AS n ON cfp.field_products_nid = n.nid
+WHERE cfp.vid = :distributorVid
+ORDER BY product ASC;
+sql; */
+    $sql = <<<sql
+SELECT DISTINCT n.title AS product, IF(n.`status`,'','(unpublished)') AS status
+FROM field_data_field_products AS cfp
+INNER JOIN node AS n ON cfp.field_products_nid = n.nid
+WHERE cfp.revision_id = :distributorVid
+ORDER BY product ASC;
+sql;
+
+    $products = array();
+    $result = db_query($sql, array(":distributorVid"=>$distributor_vid));
+    if ($result) {
+      foreach ($result as $record) {
+        $product = ($csv) ? _product_distributor_clean_string($record->product) : $record->product;
+        $products[] = $product . ' ' . $record->status;
+      }
+    }
+    if ($return_array) {
+      return $products;
+    }
+    else {
+      if ($csv) {
+        echo implode(";", $products);
+      }
+      else {
+        echo '<ul><li>' . implode("</li><li>", $products) . '</li></ul>';
+      }
+    }
+  }
+}
+
+
+/**
+ * Provides export of distributor's locations in CSV format
+ */
+function product_distributor_location_query() {
+/*  $sql = <<<sql
+SELECT node.nid AS LocationNID,
+   node.title AS LocationTitle,
+   node_data_field_display_name.field_display_name_value AS LocationDisplayName,
+   node_data_field_product_groups.field_product_groups_nid AS DistributorNID,
+   dn.title AS DistributorName,
+   location.lid AS LocationID,
+   location.name AS LocationName,
+   location.street AS LocationStreet,
+   location.additional AS LocationStreet2,
+   location.city AS LocationCity,
+   location.province AS LocationProvince,
+   location.country AS LocationCountry,
+   location.postal_code AS LocationPostalCode,
+   location_phone.phone AS LocationPhone,
+   location_fax.fax AS LocationFax,
+   node_data_field_display_name.field_toll_free_phone_value AS TollFreePhone,
+   node_data_field_display_name.field_email_contact_value AS Email,
+   node_data_field_display_name.field_website_url_value AS WebsiteURL,
+   node_data_field_display_name.field_buy_online_url_value AS BuyOnlineURL,
+   node_data_field_display_name.field_gsa_schedule_value AS GSA,
+   node_data_field_display_name.field_stocking_rating_value AS Stocking,
+   node_data_field_display_name.field_sales_force_rating_value AS SalesForce,
+   node_data_field_display_name.field_point_of_sale_rating_value AS PointOfSale,
+   node_data_field_display_name.field_distributor_type_rating_value AS DistributorType,
+   GROUP_CONCAT(DISTINCT node_data_field_delivery_type.field_delivery_type_value
+   SEPARATOR '|') AS DeliveryType,
+   node_data_field_display_name.field_comments_value AS Comments
+FROM node node
+LEFT JOIN content_type_distributor node_data_field_display_name ON node.vid = node_data_field_display_name.vid
+LEFT JOIN content_field_product_groups node_data_field_product_groups ON node.vid = node_data_field_product_groups.vid
+LEFT JOIN location_instance location_instance ON node.vid = location_instance.vid
+LEFT JOIN location location ON location_instance.lid = location.lid
+LEFT JOIN location_phone location_phone ON location_instance.lid = location_phone.lid
+LEFT JOIN location_fax location_fax ON location_instance.lid = location_fax.lid
+LEFT JOIN content_field_delivery_type node_data_field_delivery_type ON node.vid = node_data_field_delivery_type.vid
+LEFT JOIN node dn ON node_data_field_product_groups.field_product_groups_nid = dn.nid
+WHERE node.type = 'distributor'
+GROUP BY node.nid
+ORDER BY node.title;
+sql; */
+  $sql = <<<sql
+SELECT node.nid AS LocationNID,
+   node.title AS LocationTitle,
+   node_data_field_1.field_display_name_value AS LocationDisplayName,
+   node_data_field_product_groups.field_product_groups_nid AS DistributorNID,
+   dn.title AS DistributorName,
+   location.lid AS LocationID,
+   location.name AS LocationName,
+   location.street AS LocationStreet,
+   location.additional AS LocationStreet2,
+   location.city AS LocationCity,
+   location.province AS LocationProvince,
+   location.country AS LocationCountry,
+   location.postal_code AS LocationPostalCode,
+   location_phone.phone AS LocationPhone,
+   location_fax.fax AS LocationFax,
+   node_data_field_2.field_toll_free_phone_value AS TollFreePhone,
+   node_data_field_3.field_email_contact_value AS Email,
+   node_data_field_4.field_website_url_value AS WebsiteURL,
+   node_data_field_5.field_buy_online_url_value AS BuyOnlineURL,
+   node_data_field_6.field_gsa_schedule_value AS GSA,
+   node_data_field_7.field_stocking_rating_value AS Stocking,
+   node_data_field_8.field_sales_force_rating_value AS SalesForce,
+   node_data_field_9.field_point_of_sale_rating_value AS PointOfSale,
+   node_data_field_10.field_distributor_type_rating_value AS DistributorType,
+   GROUP_CONCAT(DISTINCT node_data_field_delivery_type.field_delivery_type_value
+   SEPARATOR '|') AS DeliveryType,
+   node_data_field_11.field_comments_value AS Comments
+FROM node node
+LEFT JOIN field_data_field_display_name node_data_field_1 ON node.vid = node_data_field_1.revision_id
+LEFT JOIN field_data_field_toll_free_phone node_data_field_2 ON node.vid = node_data_field_2.revision_id
+LEFT JOIN field_data_field_email_contact node_data_field_3 ON node.vid = node_data_field_3.revision_id
+LEFT JOIN field_data_field_website_url node_data_field_4 ON node.vid = node_data_field_4.revision_id
+LEFT JOIN field_data_field_buy_online_url node_data_field_5 ON node.vid = node_data_field_5.revision_id
+LEFT JOIN field_data_field_gsa_schedule node_data_field_6 ON node.vid = node_data_field_6.revision_id
+LEFT JOIN field_data_field_stocking_rating node_data_field_7 ON node.vid = node_data_field_7.revision_id
+LEFT JOIN field_data_field_sales_force_rating node_data_field_8 ON node.vid = node_data_field_8.revision_id
+LEFT JOIN field_data_field_point_of_sale_rating node_data_field_9 ON node.vid = node_data_field_9.revision_id
+LEFT JOIN field_data_field_distributor_type_rating node_data_field_10 ON node.vid = node_data_field_10.revision_id
+LEFT JOIN field_data_field_comments node_data_field_11 ON node.vid = node_data_field_11.revision_id
+LEFT JOIN field_data_field_product_groups node_data_field_product_groups ON node.vid = node_data_field_product_groups.revision_id
+LEFT JOIN location_instance location_instance ON node.vid = location_instance.vid
+LEFT JOIN location location ON location_instance.lid = location.lid
+LEFT JOIN location_phone location_phone ON location_instance.lid = location_phone.lid
+LEFT JOIN location_fax location_fax ON location_instance.lid = location_fax.lid
+LEFT JOIN field_data_field_delivery_type node_data_field_delivery_type ON node.vid = node_data_field_delivery_type.revision_id
+LEFT JOIN node dn ON node_data_field_product_groups.field_product_groups_nid = dn.nid
+WHERE node.type = 'distributor'
+GROUP BY node.nid
+ORDER BY node.title;
+sql;
+
+  $output_filename = 'location_query.csv';
+  $output_filepath = 'public://location_query.csv'; //file_directory_temp()
+  $output = fopen($output_filepath, 'w');
+  if (!$output) {
+    drupal_set_message('Error opening output file', 'error');
+    return;
+  }
+  $result = db_query($sql, array());
+  $headers = NULL;
+  foreach ($result as $record) {
+    $record = json_decode(json_encode($record), true);
+    if (!$headers) {
+      $headers = array_keys($record);
+      fputcsv($output, $headers);
+    }
+    fputcsv($output, $record);
+  }
+  fclose($output);
+//  $headers = array("Content-Type: text/csv", "Content-Disposition: attachment; filename=\"$output_filename\"");
+  $http_headers = array(
+    'Content-Type' => 'text/csv',
+    'Content-Disposition' => 'attachment; filename="' . $output_filename . '"',
+    'Content-Length' => filesize($output_filepath),
+  );
+  if(strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE')) {
+    $http_headers['Cache-Control'] = 'must-revalidate, post-check=0, pre-check=0';
+    $http_headers['Pragma'] = 'public';
+  } else {
+    $http_headers['Pragma'] = 'no-cache';
+  }
+
+  file_transfer($output_filepath, $http_headers);
+}
+
+
+/**
+ * Return unicode char by its code
+ *
+ * @param int $u
+ * @return char
+ */
+function _product_distributor_unichr($u) {
+  return mb_convert_encoding('&#' . intval($u) . ';', 'UTF-8', 'HTML-ENTITIES');
+}
+
+
+/**
+ * helper function to sanitize string
+ */
+function _product_distributor_clean_string($string) {
+  $string = str_replace('<sup>', '', $string);
+  $string = str_replace('</sup>', '', $string);
+  $string = str_replace(_product_distributor_unichr(0xAE), '', $string); //registered symbol
+  $string = str_replace(_product_distributor_unichr(0x2122), '', $string); //TradeMark symbol
+  return $string;
+}
+
+
+/**
+ * Implements hook_clone_node_alter()
+().
+ */
+function product_distributor_clone_node_alter(&$node, $original_node, $method) {
+  if ($method === 'prepopulate' && $node->type === 'distributor') {
+    unset($node->location['name'], $node->location['lid'], $node->locations[0]['name'], $node->locations[0]['lid']);
+    // print '<pre>';
+    // print_r($node);
+    // print '</pre>';
+  }
+}
+
+
+/**
+ * Implements hook_action_info().
+().
+ * Called by VBO on its own hook_action_info().
+ */
+function product_distributor_action_info() {
+  if (!module_exists('content')) {
+    return array();
+  }
+  return array('wtb_remove_product_action' => array(
+      'type' => 'node',
+      'label' => t('Distributor: Remove products'),
+      'configurable' => TRUE,
+      'behavior' => array('changes_node_property'),
+      'form properties' => array('#field_info'),
+      'rules_ignore' => TRUE,
+    ));
+}
+
+
+/**
+ * Implementation of hook_theme().
+ * Called by VBO on its own hook_theme().
+ */
+function wtb_remove_product_action_theme() {
+  return array(
+    'wtb_remove_product_action_form' => array(
+      'arguments' => array('form' => NULL),
+    ),
+  );
+}
+
+
+/**
+ * Action function for removing products
+ */
+function wtb_remove_product_action(&$node, $context) {
+
+  //Remove selected products.
+  $products_selected = array();
+  foreach ( $context['values']['field_products'] as $sp) {
+    $products_selected[] = $sp['nid'];
+  }
+  $new_field_products = array();
+  foreach ($node->field_products as $fp) {
+    if (in_array($fp['nid'], $products_selected)) {
+      continue;
+    }
+    $new_field_products[] = $fp;
+  }
+  $node->field_products = $new_field_products;
+
+}
+
+
+/**
+ * VBO remove products action: Configuration form
+ */
+function wtb_remove_product_action_form($context) {
+  module_load_include('inc', 'content', 'includes/content.node_form');
+  $form = array();
+
+  //Pull multiselect field used to select products
+  $field = content_fields('field_products');
+  $field['widget']['description'] = t('Select products to be removed');
+  $field['required'] = TRUE;
+  $form['#field_info']['field_products'] = $field;
+  $form_state = array();
+  $form += content_field_form($form, $form_state, $field);
+
+  return $form;
+}
+
+
+/**
+ * VBO remove products action: Configuration form submit handler
+ */
+function wtb_remove_product_action_submit($form, $form_state) {
+  return (array('values' => $form_state['values']));
+}

@@ -1,0 +1,11 @@
+core = 7.x
+dependencies[] = "fnet_helper"
+dependencies[] = "multiselect"
+dependencies[] = "number"
+dependencies[] = "taxonomy"
+dependencies[] = "text"
+description = "A product marketing campaign that allows users to redeem credits towards free products."
+name = "Promotion fulfillment"
+package = Fluke Networks
+project = "promotion_fulfillment"
+version = "7.x-1.0-20150327"

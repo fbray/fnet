@@ -1,0 +1,17 @@
+{
+  "user": {
+    "email": "steveogden.emstest@gmail.com",
+    "password": "Test123",
+    "first_name": "Stephen",
+    "middle_name": "",
+    "last_name": "Ogden",
+    "company_name": "Fluke Networks",
+    "company_address1": "2575 Augustine Dr",
+    "city": "Santa Clara",
+    "state_code": "CA",
+    "postal_code": "95054",
+    "country_code": "us",
+    "language_code": "en",
+    "phone_number": "(408)753-1500"
+  }
+}

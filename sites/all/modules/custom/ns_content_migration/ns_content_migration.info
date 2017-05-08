@@ -1,0 +1,5 @@
+name = NetScout Content Migration
+package = NetScout
+description = Correct URLs in Migrated content
+version = 7.x.0.0
+core = 7.x

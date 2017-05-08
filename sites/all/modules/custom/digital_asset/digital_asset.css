@@ -1,0 +1,76 @@
+.view-id-digital_asset_children table {
+    width: 100%;
+}
+
+#tabs-wrapper ul.primary li a {
+    padding: 10px 50px 10px 50px;
+    display: inline;
+}
+
+div.digital_asset ul.primary li a {
+    background-color: rgba(182, 200, 226, 1);
+    border-color: rgb(71, 95, 128);
+    border-style: solid solid none;
+    border-width: 1px;
+    height: auto;
+    margin-right: 10px;
+    padding: 0 1em;
+    text-decoration: none;
+    color: #3A3A3A;
+    display: block;
+    border-top-left-radius: 6px;
+    width: inherit;
+    border-top-right-radius: 6px;
+}
+
+div.digital_asset ul.primary li a:hover {
+    background-color: #c0c0c0;
+    border: 1px solid #bbb;
+}
+
+div.digital_asset ul.primary li.active a {
+    background-color: #fff;
+    border: 1px solid #bbb;
+    border-bottom: #fff 1px solid;
+}
+
+div#action-code-fieldset {
+    width: 200px;
+}
+
+div.digital_asset .alert {
+    color: red;
+}
+
+div#asset-page .form-element,
+div#asset-query-form .form-element {
+    float: left;
+    padding-right: 10px;
+}
+
+div#asset-page .form-row,
+div#asset-query-form .form-row {
+    clear: both;
+}
+
+div#asset-page .form-item {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.form-element ul {
+    margin-top: 0px;
+}
+
+div#digital-asset-query-result {
+    margin-top: 10px;
+}
+
+div#digital-asset-query-result table {
+    width: 100%;
+}
+
+
+
+
+

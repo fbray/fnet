@@ -1,0 +1,27 @@
+.view-solutions {
+
+  .views-row {
+    margin: 0 0 1em;
+    padding: 0 0 0.75em;
+    border-bottom: 1px solid #eee;
+
+    &.views-row-last {
+      border-bottom: 0;
+    }
+  }
+
+  /* These are for nested views loading in footer of "Solutions" page */
+  .view {
+    margin-top: 3em;
+    padding-top: 1em;
+    border-top: 2px solid #eee;
+  }
+
+}
+
+.views-field-field-exp-tpc-thumbnail,
+.views-field-field-exp-rle-thumbnail,
+.views-field-field-exp-ind-thumbnail {
+  float: right;
+  margin: 0 0 1em 1em;
+}

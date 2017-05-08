@@ -1,0 +1,309 @@
+<?php
+/*
+ *  Implementation of hook_migrate_api()
+ */
+function migrate_fnet_migrate_api() {
+  $api = array(
+    'api' => 2,
+    'field handlers' => array(
+      'DateMigrateFieldHandler',
+    ),
+  );
+  return $api;
+}
+
+function migrate_fnet_flush_caches() {
+  migrate_fnet_register_migrations();
+}
+
+function migrate_fnet_register_migrations() {
+  $common_www_arguments = array(
+    'source_connection' => 'drupal7tek',
+    'source_version' => 7,
+    'group_name' => 'FNetTek',
+  );
+  
+  /*
+   * User Roles
+   */
+  $www_role_arguments = $common_www_arguments + array(
+    'machine_name' => 'Roles',
+    'description' => t('Import Drupal 7 roles'),
+    'role_mappings' => array(
+      'administrator' => 'administrator',
+      'airmagnet license author' => 'airmagnet license author',
+      'anonymous user' => 'anonymous user',
+      'authenticated user' => 'authenticated user',
+      'author' => 'author',
+      'blog article author' => 'blog article author',
+      'business owner' => 'business owner',
+      'creative' => 'creative',
+      'developer' => 'developer',
+      'digital asset owner' => 'digital asset owner',
+      'editor' => 'editor',
+      'export control' => 'export control',
+      'extranet user' => 'extranet user',
+      'extranet admin' => 'extratnet admin',
+      'Gold customer' => 'Gold customer',
+      'idoco author' => 'idoco author',
+      'knowledge base author' => 'knowledge base author',
+      'linguist' => 'linguist',
+      'manager' => 'manager',
+      'reviewer' => 'reviewer',
+      'software notifications author' => 'software notificiations author',
+      'support agent' => 'support agent',
+      'wtb author' => 'wtb author',
+    ),
+  );
+  Migration::registerMigration('DrupalRoleTekMigration', $www_role_arguments['machine_name'], $www_role_arguments);
+  
+  /*
+  *  User Pictures
+  */
+  $picture_arguments = $common_www_arguments + array(
+    'machine_name' => 'UserPicture',
+    'description' => t('User pictures from WWW to be imported to Drupal 7'),
+    'default_uid' => 1, // The default owner id if owner is not present
+    // 'source_dir' => '/webdev/playon.tv/drupal-6.30/sites/default/files/',  // This is the location of the original files. Modify as needed.
+    'source_dir' =>  '/home/dev/playon-import-files/',
+    'destination_dir' => 'public://',
+  );
+  Migration::registerMigration('DrupalPicture6Migration', $picture_arguments['machine_name'], $picture_arguments);
+  
+  /*
+   * Users
+   */
+  $arguments = $common_www_arguments + array(
+    'description' => t('Migration of users from Drupal 7 to D7 Pantheon'),
+    'machine_name' => 'ExUser',
+    'role_migration' => 'Roles',
+    'picture_migration' => 'UserPicture',
+  );
+  
+  // Use the d2d D6 migration module class.
+  Migration::registerMigration('PlayOn6UserMigration', $arguments['machine_name'], $arguments);
+
+  
+  /*
+   *  Taxonomies
+   */
+   // For vocabulary migrations, source_vocabulary and destination_vocabulary are
+  // required arguments. Note that in Drupal 6 vocabularies did not have machine
+  // names, so we use the vocabulary ID to uniquely identify them.
+  $vocabulary_arguments = array(
+    array(
+      'description' => t('Migration of Forums terms from Drupal 6'),
+      'machine_name' => 'Forums',
+      'source_vocabulary' => '1',  // D6 Vocabulary ID
+      'destination_vocabulary' => 'forums',
+    ),
+    array(
+      'description' => t('Migration of Products terms from Drupal 6'),
+      'machine_name' => 'Products',
+      'source_vocabulary' => '2',  // D6 Vocabulary ID
+      'destination_vocabulary' => 'products',
+    ),
+    array(
+      'description' => t('Migration of Blog Category terms from Drupal 6'),
+      'machine_name' => 'BlogCategories',
+      'source_vocabulary' => '3',  // D6 Vocabulary ID
+      'destination_vocabulary' => 'categories',
+    ),
+    array(
+      'description' => t('Migration of Blog Tag terms from Drupal 6'),
+      'machine_name' => 'BlogTags',
+      'source_vocabulary' => '4',  // D6 Vocabulary ID
+      'destination_vocabulary' => 'tags',
+    ),
+  );
+
+  // Again, we're using the migrate_d2d class directly.
+  // The soft dependency says that while we don't have to run the user migration
+  // first, we want to make sure it's listed first so the vocubularies are
+  // listed right ahead of the node migrations.
+  $common_vocabulary_arguments = $common_www_arguments + array(
+    'class_name' => 'DrupalTerm6Migration',
+    'soft_dependencies' => array('ExUser'),
+  );
+  foreach ($vocabulary_arguments as $arguments) {
+    $arguments += $common_vocabulary_arguments;
+    Migration::registerMigration($arguments['class_name'], $arguments['machine_name'],
+                                 $arguments);
+  }
+  
+  // Node migrations - each has its own class derived from the migrate_d2d class,
+  // specifying its particular field mappings and transformations. source_type
+  // and destination_type are required arguments.
+  $node_arguments = array(
+    array(
+      'class_name' => 'FNETAssetGatewayMigration',
+      'description' => t('Migration of News nodes from Drupal 6 to Drupal 7.'),
+      'machine_name' => 'News',
+      'source_type' => 'news',
+      'destination_type' => 'news',
+    ),
+    array(
+      'class_name' => 'FNETPageMigration',
+      'description' => t('Migration of Page nodes from Drupal.'),
+      'machine_name' => 'Page',
+      'source_type' => 'page',
+      'destination_type' => 'page',
+      'dependencies' => array('Products', 'BlogCategories', 'BlogTags'),
+    ),
+    array(
+      'class_name' => 'FNETBlogArticleMigration',
+      'description' => t('Migration of Blog Article nodes from Drupal'),
+      'machine_name' => 'Blog Article',
+      'source_type' => 'blog_article',
+      'destination_type' => 'blog_article',
+    ),
+    /* CIO Briefs are DEPRECATED.
+    array(
+      'class_name' => 'FNETCIOBriefMigration',
+      'description' => t('Migration of Forum topic nodes from Drupal 6'),
+      'machine_name' => 'CIO Brief',
+      'source_type' => 'cio_brief',
+      'destination_type' => 'cio_brief',
+      // 'dependencies' => array('Forums'),
+    ),
+    */
+    array(
+      'class_name' => 'FNETAwardMigration',
+      'description' => t('Migration of Award nodes from Drupal.'),
+      'machine_name' => 'Award',
+      'source_type' => 'award',
+      'destination_type' => 'award',
+      // 'dependencies' => array('BlogCategories', 'BlogTags'),
+    ),
+    array(
+      'class_name' => 'FNETDigitalAssetMigration',
+      'description' => t('Migration of Digital Asset nodes from Drupal.'),
+      'machine_name' => 'Digital Asset',
+      'source_type' => 'digital_asset',
+      'destination_type' => 'digital_asset',
+      // TODO: dependency on files?
+    ),
+     array(
+      'class_name' => 'FNETDistributorMigration',
+      'description' => t('Migration of Distributor nodes from Drupal 6 to Drupal 7'),
+      'machine_name' => 'Product Distributor', // Changed from 'Distributor'.
+      'source_type' => 'product_distributor_group',
+      'destination_type' => 'product_distributor',
+    ),
+    array(
+      'class_name' => 'FNETeDocMigration',
+      'description' => t('Migration of eDoc nodes from Drupal.'),
+      'machine_name' => 'eDoc',
+      'source_type' => 'edoc',
+      'destination_type' => 'edoc',
+      // 'dependencies' => array('Channel'),
+      // TODO: file dependencies?
+    ),
+     array(
+      'class_name' => 'FNETeDocLanguageMigration',
+      'description' => t('Migration of eDoc Language nodes from Drupal.'),
+      'machine_name' => 'eDoc Language',
+      'source_type' => 'edoclanguage',
+      'destination_type' => 'edoclanguage',
+    ),
+    array(
+      'class_name' => 'FNETEventMigration',
+      'description' =>  t('Migration of Event nodes from Drupal.'),
+      'machine_name' => 'Event',
+      'source_type' => 'event',
+      'destination_type' => 'event',
+    ),
+    // Event Occurance
+    // Expertise
+    // Expertise Industry
+    // Expertise Industry Language
+    // Expertise Role
+    // Expertise Role Language
+    // Expertise Topic
+    // Expertise Topic Language
+    // Extranet News
+    // Extranet Page
+    // Extranet Promotion
+    // Family
+    // Feature (Change to Product Feature)
+    // Homepage 2013
+    // Homepage 2013 Language
+    // Industry
+    // Industry Language
+    // Knowledge Base Article
+    // Localized Email
+    // Location (Change to Distributor)
+    // Marketo Form
+    // Media Gallery
+    // Microsite Page
+    // Microsite Page Language
+    // Microsite Story
+    // Microsite Story Language
+    // Page
+    // Page Region
+    // Press Releases
+    // Product
+    // Product Language
+    // Product Sub Type
+    // Profile (Move to user?)
+    // Promotion
+
+
+  );
+  // Tell the node migrations where the users are coming from, so they can
+  // set up the dependency and resolve D6->D7 uids.
+  $common_node_arguments = $common_www_arguments + array(
+    'user_migration' => 'ExUser',
+  );
+  foreach ($node_arguments as $arguments) {
+    $arguments = array_merge_recursive($arguments, $common_node_arguments);
+    Migration::registerMigration($arguments['class_name'], $arguments['machine_name'], $arguments);
+  }
+  
+    /*
+   *  File Migration
+   */
+   $file_arguments = $common_www_arguments + array(
+    'machine_name' => 'Files',
+    'description' => t('Import Drupal 6 files'),
+    'user_migration' => 'ExUser',
+    'default_uid' => 1,
+    'destination_dir' => 'public://',  // Maybe comment this out to force default.
+    'file_replace' => FILE_EXISTS_REPLACE,
+  );
+  if (variable_get('environment') == 'local') {
+    $file_arguments['source_dir'] = '/webdev/playon.tv/drupal-6.30/sites/default/files/';
+  }
+  else {
+    $file_arguments['source_dir'] = '/home/dev/playon-import-files/';
+  }
+  Migration::registerMigration('PlayOn6FileMigration', $file_arguments['machine_name'], $file_arguments);
+  
+  $plugin_file_arguments = $common_plugin_arguments + array(
+    'machine_name' => 'PluginFiles',
+    'description' => t('Import Drupal 6 files'),
+    'user_migration' => 'PluginUser',
+    'default_uid' => 1,
+    'destination_dir' => 'public://',  // Maybe comment this out to force default.
+    'file_replace' => FILE_EXISTS_REPLACE,
+  );
+  if (variable_get('environment') == 'local') {
+      $plugin_file_arguments['source_dir'] = '/webdev/playon.tv/plugin/sites/default/files';
+    } else {
+      $plugin_file_arguments['source_dir'] = '/home/dev/plugin-import-files/';
+    }
+  Migration::registerMigration('PlayOn6FileMigration', $plugin_file_arguments['machine_name'], $plugin_file_arguments);
+
+
+   /*
+   * Download Count Migration
+   */
+  $counts_arguments = $common_plugin_arguments + array(
+    'machine_name' => 'FileCounts',
+    'description' => t('File Download Count'),
+
+  );
+  Migration::registerMigration('PlayOn6PluginDownloadCountMigration', $counts_arguments['machine_name'], $counts_arguments);
+}
+
+ 

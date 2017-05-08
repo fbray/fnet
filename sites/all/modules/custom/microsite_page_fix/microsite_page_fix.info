@@ -1,0 +1,9 @@
+name = microsite page fix
+core = 7.x
+package = Features
+features[features_api][] = api:2
+features[field_instance][] = node-microsite_page-field_ms_page_language_override
+
+field_ms_page_language_override
+
+

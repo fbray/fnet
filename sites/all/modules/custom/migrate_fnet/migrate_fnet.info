@@ -1,0 +1,30 @@
+name = "Migrate from D7 on Tek to D7 on Pantheon."
+description = "Module to migrate from D7 on Tek to D7 on Pantheon."
+package = "Migration"
+core = 7.x
+
+dependencies[] = migrate
+dependencies[] = migrate_d2d
+dependencies[] = migrate_extras
+dependencies[] = date
+
+#  include the files that contain your Migrate classes
+;files[] = migrate_playon6.module
+files[] = user.inc
+;files[] = news.inc
+files[] = page.inc
+;files[] = forum.inc
+;files[] = blog.inc
+;files[] = flex.inc
+;files[] = channel.inc
+;files[] = show.inc
+;files[] = device.inc
+;files[] = comments.inc
+files[] = file.inc
+;files[] = book.inc
+;files[] = plugin.inc
+;files[] = simple_web_page.inc
+;files[] = reviews.inc
+;files[] = bounty.inc
+;files[] = intent.inc
+;files[] = download_count.inc

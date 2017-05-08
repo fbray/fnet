@@ -1,0 +1,244 @@
+<style>
+#about-box-wrapper {
+    width:938px;
+    border:solid 1px #CCCCCC;
+}
+.suites-tab-desc-box {
+    display:none;
+}
+.suites-tab-desc-box-inner {
+    padding:20px;
+}
+.suites-tab-desc-box-inner table {
+    width:900px;
+    border:0;
+}
+.suites-tab-desc-box-inner table td {
+    vertical-align:top;
+    padding: 0 10px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.suites-tab-desc-box-title {
+    font-size: 1.5em;
+    color: #293f6a;
+    letter-spacing:.040em;
+    font-weight:bold;
+}
+
+#about-us-tabs {
+    width:938px;
+    height:95px;
+}
+#about-us-tabs td {
+    width:20%;
+    vertical-align:top;
+    border-right:solid 1px #CCCCCC;
+    font-size:14px;
+    font-weight:bold;
+}
+
+.suites-spotlight-box {
+    
+}
+.suites-spotlight-box-inner {
+    padding:10px;
+}
+</style>
+<script type="text/javascript">
+
+    var tab-list = new Array("industry_overview", "industry_expertise", "industry_products");
+
+    function suitesToggle(current_tab) {
+
+        var tab-count;
+        current_tab = current_tab.toLowerCase();
+        current_tab = current_tab.replace(" ", "_");
+
+        for (tab-count in tab-list) {
+            temp_box = "box-" + tab-list[tab-count];
+            temp_tab = "tab-" + tab-list[tab-count];
+            document.getElementById(temp_tab).className = "suites-tab-off";
+            document.getElementById(temp_box).style.display = 'none';
+        }
+        temp_current_box = "box-" + current_tab;
+        temp_current_tab = "tab-" + current_tab;
+        document.getElementById(temp_current_tab).className = "suites-tab-on";
+        document.getElementById(temp_current_box).style.display = '';
+    }
+
+</script>
+<script language="javascript" type="text/javascript">
+    var tab-list = new Array('customers', 'acquisitions', 'products', 'worldwide_presence', 'careers');
+</script>
+<script type="text/javascript">
+(function ($) {
+    $('#about-us-tabs td').click(function() {
+        var tab = $(this).attr('id');
+        alert(tab);
+    });
+})(jQuery);
+</script>
+
+<div id="about-box-wrapper">
+    <div id="box-customers" class="suites-tab-desc-box" style="display:block;">
+        <div class="suites-tab-desc-box-inner">
+            <table>
+                <tr>
+                    <td>
+                        <div class="suites-tab-desc-box-title">Fluke Networks is Trusted</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><p>Fluke Networks offers best of breed solutions that span network deployment, network performance management and
+                        troubleshooting, as well as security and performance monitoring. Fluke Networks solutions are
+                        trusted by:</p>
+                        <ul>
+                            <li>Network professionals to help them deploy, manage and troubleshoot business critical networks</li>
+                            <li>Agencies, Enterprises &amp; Carriers around the world</li>
+                            <li>By 98 of the Fortune 100 Companies</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><p><a href="/case-studies" target="_blank">See what customers think about Fluke Networks&#39; solutions.&raquo;</a></p>
+                        <p><a href="/case-studies"><img src="http://images.flukenetworks.com/HP_We_Know_Networks.jpg" alt="" style="width:794px; height:75px; margin:5px 0; border:0;" /></a></p></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div id="box-acquisitions" class="suites-tab-desc-box">
+        <div class="suites-tab-desc-box-inner">
+            <table>
+                <tr>
+                    <td>
+                        <div class="suites-tab-desc-box-title">Fluke Networks is Growing</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><p>Backed by the financial strength of Danaher Corporation (NYSE: DHR), a $18B corporate parent company, Fluke Networks has
+                remained profitable and grown significantly both organically and through acquisition. This allows us to
+                expand in and enter new markets to deliver best of breed solutions that span IT Networking, Datacom
+                Cabling and Telecom.</p></td>
+                </tr>
+                <tr>
+                    <td><img alt="Growing Timeline" src="http://images.flukenetworks.com/TimeLine_Growing.jpg"
+                        style="width: 897px; height: 98px" /></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div id="box-products" class="suites-tab-desc-box">
+        <div class="suites-tab-desc-box-inner">
+            <table>
+                <tr>
+                    <td><div class="suites-tab-desc-box-title">Fluke Networks is Innovative</div></td>
+                </tr>
+                <tr>
+                    <td>
+                        <p>Twenty years ago, Fluke Corporation instituted a new program for innovation, built around carefully selected groups called Phoenix Teams. Each was given 100 days and $100,000 to do something remarkably simple: watch how customers work, analyze the problems they face and turn those insights into new businesses.</p>
+                        <p>After spending days with harried networking technicians, the original team had an epiphany: there was no easy way to determine whether network problems were related to hardware, software or cabling. So they created a new way.</p>
+                    <p>Today we help simplify troubleshooting of complex networks with products that provide deep visibility and uncover previously unseen problems.</p></td>
+                </tr>
+                <tr>
+                    <td><img src="http://images.flukenetworks.com/Timeline-SM2.jpg" style="width:900px; height:100px;" alt="Timeline" /></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div id="box-worldwide_presence" class="suites-tab-desc-box">
+        <div class="suites-tab-desc-box-inner">
+            <table>
+                <tr>
+                    <td><div class="suites-tab-desc-box-title">Fluke Networks is Global</div></td>
+                </tr>
+                <tr>
+                    <td>
+                        <ul>
+                            <li>Over 700 employees worldwide</li>
+                            <li>Service customers in more than 120 countries</li>
+                            <li>45% of revenue from outside the U.S.</li>
+                            <li>Worldwide Headquarters in Everett WA; Engineering Centers, sales offices and Technical Assistance Centers worldwide.</li>
+                            <li>Fluke Networks is a division of Fluke Electronics Corporation&nbsp;</li>
+                        </ul>
+                        <p><a href="/content/corporate-offices">See our office locations worldwide Locations&raquo;</a></p></td>
+                </tr>
+                <tr>
+                    <td><img src="http://images.flukenetworks.com/Global2.jpg" style="width:900px; height:100px;" alt="timeline" /></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div id="box-careers" class="suites-tab-desc-box">
+        <div class="suites-tab-desc-box-inner">
+            <table>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="suites-tab-desc-box-title">Fluke Networks is a Great Place to Work</div></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p>Whether you/re in engineering, design, operations, manufacturing, sales or accounting, you'll have the opportunity to grow professionally as part of a multi-disciplinary team focused on a single mission: to imagine and deliver the world's best network test solutions.</p>
+                            <ul>
+                                <li><a href="jobs">Go to Career Site</a></li>
+                                <li><a href="content/aep-home">Advanced Engineering Program</a></li>
+                                <li><a href="content/fluke-networks-reaches-out-communities-organizations-and-people-need">Corporate Giving Program</a></li>
+                                <li><a href="content/equal-employment-opportunity-and-affirmative-action-policy">Equal Employment Opportunity and Affirmative Action Policy</a></li>
+                                <li><a href="content/employees-and-applicants-who-have-received-offers-employment">Notice of Self-Identification for Employees or Applicants who have received offers</a></li>
+                            </ul></td>
+                    </tr>
+                    <tr>
+                        <td><img alt="careers" style="height:100px; width:900px;" src="http://images.flukenetworks.com/careers.jpg" /></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <table id="about-us-tabs">
+        <tr>
+            <td id="tab-customers" class="active"><h4>Customers</h4><p>Fluke Networks is Trusted</p></td>
+            <td id="tab-acquisitions"><h4>Acquisitions</h4><p>Fluke Networks is Growing</p></td>
+            <td id="tab-products"><h4>Products</h4><p>Fluke Networks is Innovative</p></td>
+            <td id="tab-worldwide_presence"><h4>Worldwide Presence</h4><p>Fluke Networks is Global</p></td>
+            <td id="tab-careers"><h4>Careers</h4><p>Fluke Networks is a Great Place to Work</p></td>
+        </tr>
+    </table>
+</div>
+<div class="clear" style="height:17px;line-height:17px">&nbsp;</div>
+    <div class="suites-spotlight-box">
+        <div class="suites-spotlight-box-inner">
+            <div class="suites-spotlight-title">Careers</div>
+            <div class="clear_10px">&nbsp;</div>
+            <div class="suites-spotlight-image"><img src='/sites/flukenetworks.com/files/Job_Openings_0.jpg' width='95' height='110' border='0' align='left' /></div>
+            <div class="suites-spotlight-desc"><p>Check out current job postings and apply online!</p>
+                <p><a href="/jobs" target="_blank">Go to Career Site</a></p></div>
+            <div class="clear_1px">&nbsp;</div>
+        </div>
+    </div>
+    <div class="suites-spotlight-box">
+        <div class="suites-spotlight-box-inner">
+            <div class="suites-spotlight-title">Follow Fluke Networks</div>
+            <div class="clear_10px">&nbsp;</div>
+            <div class="suites-spotlight-image"><img src="/sites/flukenetworks.com/files/Community_0.jpg" style="width:95px; height:110px;" /></div>
+            <div class="suites-spotlight-desc">
+                <p>See updates from our subject matter experts online by connecting with us on Facebook, Twitter, LinkedIn and
+                    YouTube.</p>
+            <p><a href='http://flukenetworkstst.danahertm.com:8000/community' target='_blank'>Go to
+                Community </a></p>
+            </div>
+            <div class="clear_1px">&nbsp;</div>
+        </div>
+    </div>
+    <div class="suites-spotlight-box">
+        <div class="suites-spotlight-box-inner">
+            <div class="suites-spotlight-title">Contact Us</div>
+            <div class="clear_10px">&nbsp;</div>
+            <div class="suites-spotlight-image"><img src="/sites/flukenetworks.com/files/Contact_Us.jpg" style="width:95px; height:110px;" /></div>
+            <div class="suites-spotlight-desc">
+                <p>Call 1-800-283-5853 (US/CA) or 425-446-4519 (Other Locations) or email <a href="mailto:info@flukenetworks.com">info@flukenetworks.com</a></p>
+                <p><a href="/wheretobuy?tab=2">Fill out the contact us form</a></p></div>
+            <div class="clear_1px">&nbsp;</div>
+        </div>
+    </div>
+    <div class="clear_1px">&nbsp;</div>
+ </div>

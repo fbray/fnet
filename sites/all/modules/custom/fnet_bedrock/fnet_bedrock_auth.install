@@ -1,0 +1,25 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * install file for fnet_bedrock_auth module
+ *
+ */
+
+/**
+ * Update weight of module to be greater than ldap_authentication.
+ */
+function fnet_bedrock_auth_update_7000() {
+  $ret = array();
+  $sql = "SELECT weight FROM system WHERE `name` = :name";
+  $weight = db_query($sql, array(':name' => 'ldap_authentication'))->fetchField();
+  if ($weight) {
+    $weight += 1;
+    db_update('system')
+      ->fields(array('weight' => $weight))
+      ->condition('name', 'fnet_bedrock_auth')
+      ->execute();
+  }
+  return t('Set fnet_bedrock_auth module weight to one greater that ldap_authentication in system table.');
+}

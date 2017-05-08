@@ -1,0 +1,92 @@
+
+.box-thumbnails {
+
+}
+
+.box-gallery-paged {
+	width:1110px;
+	height:800px;
+}
+
+.box-thumbnail-entry {
+	display:inline-block;
+	width:232px;
+	height:232px;
+	overflow:hidden;
+	padding:0px;
+	margin:0px;
+	margin-right:18px;
+	margin-bottom:18px;
+	position:relative;
+}
+
+.box-thumbnail-entry .box-title {
+	display:none;
+}
+
+.box-thumbnail {
+	width:232px;
+	height:112px;
+}
+
+box-image-sizes {
+	background-color:white;
+	width:232px;
+}
+
+.download-options {
+    background-color: white;
+    bottom: 0px;
+    font-weight: bold;
+    height: 20px;
+    position: absolute;
+    text-align: center;
+    width: 232px
+}
+
+.multiple-images {
+	bottom:20px;
+	position:absolute;
+    text-align: center;
+    width: 232px;
+    background-color:transparent;
+}
+
+.single-image {
+    bottom: 20px;
+    position: relative;
+    text-align: center;
+}
+
+.box-thumbnail-entry .image-size-list  {
+	sdisplay:none;
+	sposition:relative;
+	sbottom:-100px;
+}
+
+
+.image-size-list {
+	display:none;
+	width:232px;
+}
+
+.active-list {
+	display:inline;
+	background-color:white;
+}
+
+.image-size-name {
+	background-color:white;
+}
+}
+
+.box-thumbnail-entry .image-size-list {
+
+	padding:0px;
+	margin:0px;
+
+}
+
+.multiple-images .image-size-list {
+
+}

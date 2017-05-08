@@ -1,0 +1,5 @@
+name = Microsites
+description = Package of Microsite page and story content types with Taxonomy, View, and Menus
+core = 7.x
+package = Fluke Networks
+version = 7.x-1.0-20150609

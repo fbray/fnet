@@ -1,0 +1,301 @@
+.node-type-marketo-form #bodyId {
+    margin: 0;
+    padding: 0;
+}
+
+.node-type-marketo-form div#outerWrapDiv {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.node-type-marketo-form div#innerWrapDiv {
+    position: relative;
+    padding: 0;
+    margin-bottom: 0;
+    text-align: left;
+}
+
+.node-type-marketo-form span.mktFormMsg {
+    clear: both;
+}
+
+/* Main Content Area - Controls height of page */
+.node-type-marketo-form div#mktContent {
+    position: relative;
+    height: 450px;
+    width: 325px;
+}
+
+.node-type-marketo-form #container {
+    background: #ededed;
+    margin: 20px auto;
+    padding: 20px;
+    width: 240px;
+}
+
+.node-type-marketo-form input {
+    border: 1px solid #767676;
+    color: #767676;
+    font: inherit;
+    padding: 4px;
+}
+
+.node-type-marketo-form input:focus, input.focused {
+    border-color: #000;
+    color: #333;
+}
+
+.node-type-marketo-form label {
+    display: none;
+}
+
+.node-type-marketo-form select {
+    width: 100%;
+    font: 300 1.25em "Roboto", Arial, sans-serif;
+    -ms-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    border: 1px solid #767676;
+    color: #767676;
+    padding: 4px 0;
+}
+
+.node-type-marketo-form form.lpeRegForm ul select {
+    width: 100%;
+    font: 300 1.25em "Roboto", Arial, sans-serif;
+    -ms-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    border: 1px solid #767676;
+    color: #767676;
+    padding: 0.375em;
+    border-radius: 0.2em;
+    margin: 0 0 0.5em;
+    -webkit-box-shadow: inset 2px 2px 2px 0 #dddddd;
+    -moz-box-shadow: inset 2px 2px 2px 0 #dddddd;
+    box-shadow: inset 2px 2px 2px 0 #dddddd;
+}
+
+.node-type-marketo-form input[type='text'] {
+    width: 100%;
+    font: 300 1.25em "Roboto", Arial, sans-serif;
+    -ms-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    border: 1px solid #767676;
+    color: #767676;
+}
+
+.node-type-marketo-form form.lpeRegForm ul input[type='text'] {
+    width: 100%;
+    font: 300 1.25em "Roboto", Arial, sans-serif;
+    -ms-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    border: 1px solid #767676;
+    color: #767676;
+    border-radius: 0.2em;
+    padding: 0.375em;
+    margin: 0 0 0.5em;
+    -webkit-box-shadow: inset 2px 2px 2px 0 #dddddd;
+    -moz-box-shadow: inset 2px 2px 2px 0 #dddddd;
+    box-shadow: inset 2px 2px 2px 0 #dddddd;
+}
+
+.node-type-marketo-form textarea {
+    width: 100%;
+    font: 300 1.25em "Roboto", Arial, sans-serif;
+    -ms-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    border: 1px solid #767676;
+    color: #767676;
+    padding: 0.375em;
+    border-radius: 0.2em;
+    -webkit-box-shadow: inset 2px 2px 2px 0 #dddddd;
+    -moz-box-shadow: inset 2px 2px 2px 0 #dddddd;
+    box-shadow: inset 2px 2px 2px 0 #dddddd;
+}
+
+.node-type-marketo-form form.lpeRegForm ul textarea {
+    width: 100%;
+    font: 300 1.25em "Roboto", Arial, sans-serif;
+    -ms-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    border: 1px solid #767676;
+    color: #767676;
+    padding: 0.375em;
+}
+
+/* Start fancy button */
+.node-type-marketo-form div.buttonSubmit {
+    position: relative;
+}
+
+.node-type-marketo-form div.buttonSubmit input, div.buttonSubmit span {
+    /*
+    background-image:url(http://images.flukenetworks.com/button-submit02.gif);
+    background-position:right 0;
+    background-repeat:no-repeat;
+    border:0 none;
+    color:#293F6a;
+    cursor:pointer;
+    float:left;
+    font-weight:bold;
+    height:36px;
+    margin:0;
+    padding:0 15px 2px;
+    position:relative;
+    z-index:5;
+    */
+}
+
+.node-type-marketo-form div.buttonSubmit input {
+    width: auto;
+    color: #293f6a;
+    display: block;
+    margin: 1em auto;
+    padding: 0.75em 1em !important;
+    border-radius: 5px;
+    font: 500 1.3em "Roboto", Arial, sans-serif;
+    text-transform: uppercase;
+    text-align: center;
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#edb11a+0,ddab17+50,c99316+100 */
+    background: #edb11a; /* Old browsers */
+    background: -moz-linear-gradient(top, #edb11a 0%, #ddab17 50%, #c99316 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #edb11a), color-stop(50%, #ddab17), color-stop(100%, #c99316)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, #edb11a 0%, #ddab17 50%, #c99316 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, #edb11a 0%, #ddab17 50%, #c99316 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, #edb11a 0%, #ddab17 50%, #c99316 100%); /* IE10+ */
+    background: linear-gradient(to bottom, #edb11a 0%, #ddab17 50%, #c99316 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#edb11a', endColorstr='#c99316', GradientType=0); /* IE6-9 */
+
+}
+
+.node-type-marketo-form div.buttonSubmit:hover input {
+
+}
+
+.node-type-marketo-form div.buttonSubmit:hover span {
+
+}
+
+/* end fancy button */
+
+/* Moved here from the node--marketo_form.tpl.php */
+
+.node-type-marketo-form div.boxSpan {
+    overflow: hidden;
+}
+
+.node-type-marketo-form span.lpContentsItem.richTextSpan {
+    display: block;
+}
+
+.node-type-marketo-form span.lpContentsItem p:first-child {
+    margin-top: 0;
+}
+
+.node-type-marketo-form a.lpImageLink img {
+    border: none;
+}
+
+.node-type-marketo-form form.lpeRegForm {
+    margin: 0;
+    padding: 0;
+}
+
+.node-type-marketo-form form.lpeRegForm ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.node-type-marketo-form form.lpeRegForm li {
+    margin: 0;
+    padding: 1px 0 5px 10px;
+    list-style: none;
+    clear: both;
+}
+
+.node-type-marketo-form form.lpeRegForm label {
+    padding-right: 20px;
+    float: left;
+    text-align: left;
+}
+
+.node-type-marketo-form form.lpeRegForm li.mktLblRight label {
+    float: none;
+}
+
+.node-type-marketo-form form.lpeRegForm li.mktLblRight input[type='checkbox'] {
+    position: relative;
+    left: -4px;
+}
+
+.node-type-marketo-form form.lpeRegForm ul.mktLblCenter label {
+    text-align: right;
+}
+
+.node-type-marketo-form form.lpeRegForm ul.mktLblAbove span.mktInput {
+    clear: both;
+}
+
+.node-type-marketo-form form.lpeRegForm ul.mktLblAbove label {
+    padding-left: 10px;
+}
+
+.node-type-marketo-form form.lpeRegForm ul.mktLblAbove li.mktFormReq label {
+    background: url(/images/forms/backRequiredGray.gif) no-repeat -5px 0;
+}
+
+.node-type-marketo-form form.lpeRegForm ul.mktLblAbove li#mktFrmButtons label {
+    display: none;
+}
+
+.node-type-marketo-form form.lpeRegForm li.mktFormReq label {
+    font-weight: bold;
+    background: url('/images/forms/backRequiredGray.gif') no-repeat right 0;
+}
+
+.node-type-marketo-form span.mktError {
+    text-align: left;
+    position: relative;
+}
+
+.node-type-marketo-form span.mktError input {
+    background: #ECEFFF;
+}
+
+.node-type-marketo-form span.mktError span.mktFormMsg {
+    display: inline;
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    color: red;
+    font-size: small;
+    width: 200px;
+}
+
+/* Ideally it is normalized for all the browser
+   but we'll make it targetted for apple devices. Note that this
+   issue is not applicable for android devices which is a mobile
+   safari webkit as well */
+.node-type-marketo-form .mktIpad span.mktInput input,
+.node-type-marketo-form .mktIpod span.mktInput input,
+.node-type-marketo-form .mktIphone span.mktInput input {
+    margin-bottom: 1px;
+    padding: 1px 0;
+}
+
+.node-type-marketo-form .lpeCElement {
+    width: 380px;
+}

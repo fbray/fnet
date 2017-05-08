@@ -1,0 +1,1230 @@
+<?php
+// $Id$
+
+/**
+ * @file Provides miscellaneous bits of custom functionality that do not merit
+ * their own module
+ *
+ */
+
+define('FNET_HELPER_TABS_WIDTH_PX', 988);
+
+/**
+ * Implements hook_menu().
+ */
+function fnet_helper_menu() {
+
+  $items['admin/fnet/fnet_helper'] = array(
+    'title' => 'FNET Helper',
+    'description' => "Settings for FNET Helper module.",
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fnet_helper_admin_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['reglang'] = array(
+    'title' => 'Region Language',
+    'description' => "Return regLang based on caller ip",
+    'page callback' => 'fnet_helper_region_language_from_ip_json',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_menu_alter().
+ */
+function fnet_helper_menu_alter(&$items) {
+  // the menu item to list nodes by taxonomy term
+  unset($items['taxonomy/term/%']);
+}
+
+/**
+ * Module configuration admin form.
+ *
+ */
+function fnet_helper_admin_form($form, &$form_state) {
+  $form['fnet_helper_auto_alias_default'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable URL aliasing by default'),
+    '#description' => t('Turn automatic aliasing on for new nodes.'),
+    '#default_value' => variable_get('fnet_helper_auto_alias_default', 0),
+  );
+
+  $form = system_settings_form($form);
+
+  return $form;
+}
+
+/**
+ * Implements hook_css_alter().
+ */
+function fnet_helper_css_alter(&$css) {
+  global $theme;
+  // Block the jquery ui theme css from loading...
+  // which would happen by default when a ui library is added to a page.
+  if ($theme == 'adaptivetheme_subtheme_fnet' && isset($css['misc/ui/jquery.ui.theme.css'])) {
+    unset($css['misc/ui/jquery.ui.theme.css']);
+  }
+}
+
+/**
+ * Implements hook_preprocess_html().
+ */
+function fnet_helper_preprocess_html(&$variables) {
+
+  // Adding classes to the <body> element indicating the user's
+  // currently selected region and language.
+  $siteReg = fnet_helper_site_region(); // Return the user's site region/language info.
+  if (module_exists('devel')) {
+    // dpm('Calling fnet_helper_node_region from the fnet_helper_preprocess_html function.');
+  }
+  $regLang = $siteReg["regLang"]; // Store the value.
+  $region = substr($regLang, 3); // Get the region string.
+  $language = substr($regLang, 0, 2); // Get the language string.
+  $region_class = 'region-'.$region; // Create region class name.
+  $language_class = 'language-'.$language; // Create language class name.
+  $variables['classes_array'][] = $region_class; // Add new classes to the <body> element.
+  $variables['classes_array'][] = $language_class; // Add new classes to the <body> element.
+
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function fnet_helper_preprocess_page(&$variables) {
+
+  // Need to get the following scripts in early...
+  // - 'migrate' makes sure all legacy jQuery can still function
+  // - 'noconflict' makes sure that '$' works.
+  drupal_add_js(drupal_get_path('module', 'fnet_helper').'/js/jquery-migrate-1.2.1.js', array("weight" => -10)); // Adding a negative weight ensures it loads before any other module tries to use jQuery.
+  drupal_add_js(drupal_get_path('module', 'fnet_helper').'/js/jquery.noconflict.js', array("weight" => -10)); // Adding a negative weight ensures it loads before any other module tries to use jQuery.
+
+  if (isset($variables['node']) && ($variables['node']->type == 'page' || $variables['node']->type == 'page_reg')) {
+    //setting cookie to stop bmobilized from redirecting campaign landing pages
+    setcookie('fullweb', 1, 0, '/');
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ */
+function fnet_helper_form_alter(&$form, $form_state, $form_id) {
+  // NOTE: our system weight must be higher than pathauto for this to work
+  // see .install file
+  switch ($form_id) {
+    case 'page_node_form':
+      // this is a new node, set our custom default
+      if ($form['nid']['#value'] == NULL) {
+        $form['path']['pathauto_perform_alias']['#default_value'] = $alias_enabled = variable_get('fnet_helper_auto_alias_default', 0);
+      }
+      else {
+        $alias_enabled = isset($form['#node']->pathauto_perform_alias) ? $form['#node']->pathauto_perform_alias : variable_get('fnet_helper_auto_alias_default', 0);
+        $form['path']['pathauto_perform_alias']['#default_value'] = $alias_enabled;
+      }
+
+      break;
+
+    case 'productsubtype_node_form':
+      $form['search_exclude']['#default_value'] = 1;
+      break;
+
+    // Ticket #153 - the /wheretobuy form submits to eloqua, but we aren't using
+    // eloqua anymore, so we intercept that form and redirect the input to
+    // Marketo
+    case 'eloqua_form':
+      unset($form['#submit']);
+      $form['#submit'][] = '_fnet_helper_eloqua_form_submit';
+      break;
+    default:
+      break;
+  }
+
+  // This is a more generalized alteration based on $form[#id], which is a
+  // little more generic than the $form_id.
+  switch ($form['#id']) {
+    case 'node-form':
+      // This section is for "global" re-arranging of the node form elements for
+      // all node types.
+      $form['search_exclude']['#weight'] = 10;
+      $form['contentanalysis']['#weight'] = 10;
+
+      break;
+
+    default:
+      break;
+  }
+}
+
+/**
+ * Implements hook_language_negotiation_info_alter().
+ *
+ * This is a non-hackish function to allow Drupal's internationalization modules to be
+ * able to use the regLang cookie as a language detection method. -Ryan Ositis
+ * 8/11/2016
+ *
+ * @param $providers
+ */
+function fnet_helper_language_negotiation_info_alter(&$providers) {
+  // Add the regLang Detection method to the list of language providers.
+  if (module_exists('devel')) {
+    // dpm($providers);
+  }
+
+  $providers['locale-cookie-language'] = array(
+    'callbacks' => array(
+      'language' => 'fnet_helper_language_negotiation_from_language_cookie',
+    ),
+    'file' => drupal_get_path('module', 'fnet_helper') . '/fnet_helper.module',
+    'name' => t('Language Cookie'),
+    'description' => t('Determine the language from the custom language cookie.'),
+  );
+}
+
+/**
+ * Identify language via language cookie excluding administrative paths.
+ *
+ * @param $languages
+ * @return string
+ */
+function fnet_helper_language_negotiation_from_language_cookie($languages) {
+  // Use the regLang cookie to determine what lang code to provide to the internationalization module.
+  $langcode = isset($_COOKIE['language']) ? $_COOKIE['language'] : 'en'; // Default to English.
+
+  // If it is an administrative page, return the default language.
+  if (isset($_GET['q']) && strtok($_GET['q'], '/') == 'admin') {
+    return language_default()->language;
+  }
+
+  return $langcode;
+}
+
+/**
+ * Shared pseudo theming function used by several node types to provide a
+ * tabbed interface for primary content.
+ * //TODO: we probably won't need this anymore.
+ */
+function fnet_helper_theme_tabs($tabs) {
+  $tabs_titles = '';
+  $tabs_content = '';
+  $tab_count = count($tabs);
+  if ($tab_count < 2) {
+    watchdog('fnet_helper', t('fnet_helper_theme_tabs() called with invalid array: !array'), array('!array' => print_r($tabs, TRUE)), WATCHDOG_WARNING);
+    return;
+  }
+  // each tab has 2px padding on either side, so subtract that from available width
+  // The -4 at the end is a complete hack to prevent overflow
+  $tab_title_width = round((FNET_HELPER_TABS_WIDTH_PX - ($tab_count * 4)) / $tab_count) - 2;
+
+  drupal_add_js(drupal_get_path('module', 'fnet_helper') . '/fnet_helper_tabs.js');
+  drupal_add_css(drupal_get_path('module', 'fnet_helper') . '/fnet_helper_tabs.css');
+
+  $i = 0;
+  // grab any active anchor tag in the URL
+  $url_pieces = parse_url(request_uri());
+  $path = $url_pieces['path'];
+  $active_tab = 'tab-0';
+  if ($url_pieces['query']) {
+    $queryPart = preg_split("/[&]/", $url_pieces['query']);
+    foreach ($queryPart as $qPart) {
+      list($k, $v) = explode("=", $qPart);
+      if ($k == "t") {
+        $active_tab = $v;
+      }
+    }
+  }
+
+  foreach ($tabs as $title => $content) {
+    $tab_id = 'tab-' . $i;
+    $active_class = $tab_id == $active_tab ? ' active' : '';
+
+    $tabs_titles .= '<li class="tab-title' . $active_class . '" id="title-' . $tab_id . '" style="width: ' . $tab_title_width . 'px;' . '" onclick="return fnetHelperTabSelect(event, id)">
+      <a href="' . $path . '?t=' . $tab_id . '">' . $title . '</a></li>';
+    $tabs_content .= '<div id="' . $tab_id . '" class="tab-content' . $active_class . '">' . $content;
+    // We need to add this additional div in order to prevent our tab content
+    // from bleeding into the footer area
+    $tabs_content .= '<div class="tab-closure" style="clear: both; height: 1px; line-height: 1px;">&nbsp;</div>';
+    $tabs_content .= '</div>';
+    $i++;
+  }
+
+  // This is NOT compatible with non-js clients
+  $output = '<div id="fnet-tabs-wrapper">';
+
+  $output .= '<div id="tabs-seperator">';
+  $output .= '<div id="tabs-titles">';
+  $output .= '<ul>' . $tabs_titles . '</ul>';
+  $output .= '</div>';
+  $output .= '</div>';
+
+
+  $output .= '<div id="tabs-content">';
+  $output .= $tabs_content;
+  $output .= '</div>';
+
+  $output .= '</div>';
+
+  return $output;
+}
+
+/**
+ * Return list of countries. This function should be used instead of adding
+ * more and more custom lists of country id/name data.
+ *
+ * @param (string) $type - request a specific format of country codes, such
+ * as 'marketo'
+ *
+ * @return (array) Keys are country codes, values are country names. Suitable
+ * for use in <select> field options.
+ *
+ */
+function fnet_helper_countries($type = NULL) {
+  static $countries;
+
+  // POTENTIAL BUG: This will only return one $type of data per execution
+  if (!$countries) {
+    if ($type) {
+      include_once drupal_get_path('module', 'fnet_helper') . '/' . 'fnet_helper_' . drupal_strtolower($type) . '_countries.inc';
+    } else {
+      include_once drupal_get_path('module', 'fnet_helper') . '/' . 'fnet_helper_countries.inc';
+    }
+  }
+  return ($countries);
+}
+
+
+/**
+ * Get Regional settings.
+ *
+ * @param string $type
+ * @return array
+ */
+function fnet_helper_site_region($type = "COOKIE") {
+  // It should do this:
+  // 1) Look for the regLang cookie and defer to that.
+  // 2) If no regLang cookie (e.g. new visitor), check the Server Name and set the cookie to the default for that.
+  // 3) Then, and only then, should it default to the U.S. site.
+
+  // Initialize the variables
+  $region = array(
+    'serverName' => $_SERVER['SERVER_NAME'],
+    'lang' => 'en',
+  );
+  $language = '';
+  $subdomain = '';
+  // If there is a regLang cookie
+  if ($type == "COOKIE" && isset($_COOKIE["regLang"])) {
+    // regLang should be lowercase.
+    $region["regLang"] = strtolower($_COOKIE["regLang"]);
+
+    // get the first two letters of the regLang cookie. Still uppercase.
+    $language = substr($_COOKIE["regLang"], 0, 2);
+    if (module_exists('devel')) {
+      // dpm('FNET Helper Site Region: There is a cookie. It is: ' . $_COOKIE["regLang"]);
+    }
+  }
+  // No cookie. Check the server name.
+  // This will become deprecated when switched over to Pantheon for hosting. -Ryan Ositis 7/20/2016
+  elseif (isset($_SERVER['HTTP_X_ORIGINALHOST'])) {
+    $region["serverName"] = $_SERVER['HTTP_X_ORIGINALHOST'];
+
+    // Cut up the domain to get the prefix.
+    $domain_parts = explode('.', $region["serverName"]);
+    // TODO: This is a problem. There is no check on what it might be.
+    // flukenetworks7.dev.com would return 'fl'.
+    $language = $domain_parts[0]; // What if the value isn't a country? Like 'www' or 'prd'?
+    // Log these values, just in case.
+    // watchdog('fnet_helper', 'Server Name: %servername - Language: %language', array('%servername' => $region['serverName'], '%language' => $language));
+    if (module_exists('devel')) {
+      /*
+      dpm('Using Server Name');
+      dpm($region);
+      dpm($domain_parts);
+      */
+    }
+  }
+  else {
+    if (module_exists('devel')) {
+      // dpm('No cookie. Defaulting to EN.');
+    }
+    $language = 'EN'; // should be uppercase, right?
+  }
+
+  if ($language) { // Uh, this just checks to see if $language exists. Think about this.
+    if (module_exists('devel')) {
+      // dpm('Language: ' . $language);
+    }
+    switch (strtolower($language)) {
+      case "fr":
+        $region["langReg"] = "fr-fr";
+        $region["lang"] = "fr";
+        if (!isset($region["regLang"])) {
+          $region["regLang"] = "fr-eu";
+        }
+        $subdomain = "fr";
+        break;
+      case "de":
+        $region["langReg"] = "de-de";
+        $region["lang"] = "de";
+        if (!isset($region["regLang"])) {
+          $region["regLang"] = "de-eu";
+        }
+        $subdomain = "de";
+        break;
+      case "es":
+        $region["langReg"] = "es-es";
+        $region["lang"] = "es";
+        if (!isset($region["regLang"])) {
+          $region["regLang"] = "es-eu";
+        }
+        $subdomain = "es";
+        break;
+      case "cn":
+      case "zh":
+        $region["langReg"] = "zh-cn";
+        $region["lang"] = "zh";
+      if (!isset($region["regLang"])) {
+          $region["regLang"] = "cn-zh";
+        }
+        $subdomain = "cn";
+        break;
+      case "jp":
+      case "ja":
+        $region["langReg"] = "ja-jp";
+        $region["lang"] = "ja";
+      if (!isset($region["regLang"])) {
+          $region["regLang"] = "jp-ja";
+        }
+        $subDomain = "jp";
+        break;
+      case "ko":
+        $region["langReg"] = "ko-kr";
+        $region["lang"] = "ko";
+        if (!isset($region["regLang"])) {
+          $region["regLang"] = "ko-kr";
+        }
+        $subdomain = "ko";
+        break;
+      case "pt":
+        $region["langReg"] = "pt-br";
+        $region["lang"] = "pt";
+        if (!isset($region["regLang"])) {
+          $region["regLang"] = "pt-eu";
+        }
+        $subdomain = "pt";
+        break;
+      case "ru":
+        $region["langReg"] = "ru-ru";
+        $region["lang"] = "ru";
+        if (!isset($region["regLang"])) {
+          $region["regLang"] = "ru-ru";
+        }
+        $subdomain = "ru";
+        break;
+      default:
+        if (module_exists('devel')) {
+          // dpm('Hitting the default option.');
+        }
+        $region["langReg"] = "en-us";
+        if (!isset($region["regLang"])) {
+          $region["regLang"] = "en-us";
+        }
+    }
+    if ($subdomain) {  // WTF?
+      if (module_exists('devel')) {
+        // dpm('Subdomain: ' . $subdomain);
+      }
+      $region["serverName"] = $subdomain . ".flukenetworks.com";
+    }
+  }
+  else {  // No language?
+    $region["langReg"] = "en-us";
+    if (!$region["regLang"]) {
+      $region["regLang"] = "en-us";
+    }
+  }
+  if (module_exists('devel')) {
+    // dpm($region);
+  }
+  return ($region);
+}
+
+function fnet_helper_reg_lang() {
+  $region = fnet_helper_site_region();
+  return $region['regLang'];
+}
+
+/**
+ * Search Literature ID fields for AMS ID
+ */
+
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function fnet_helper_search_edoc($id) {
+  $nid = NULL;
+  $languages = array('en', 'fr', 'de', 'es', 'cn', 'jp', 'ko', 'pt', 'ru');
+  foreach ($languages as $language) {
+    $table = "field_data_field_edoc_lid_$language";
+    $field = "field_edoc_lid_{$language}_value";
+    $query = db_select('node', 'n');
+    $query->fields('n', array('nid', 'vid'));
+    $query->addJoin('INNER', $table, 'l', 'n.vid = l.revision_id');
+    $query->fields('l', array($field));
+    $query->condition($field, $id);
+    $results = $query->execute();
+    foreach ($results as $row) {
+      $nid = $row->nid;
+      break 2;
+    }
+  }
+  $result = array(
+    "nid" => $nid,
+    "lang" => $language,
+  );
+  return $result;
+}
+
+/**
+ * Form seen at: /wheretobuy
+ */
+function _fnet_helper_eloqua_form_submit($form, &$form_state) {
+  $user_data = $form_state['values'];
+  $user_email = $user_data['C_EmailAddress'];
+
+  $marketo_data = array(
+    //'Lead_Source_Most_Recent__c' => $user_data['C_Campaign1'],
+    'Lead_Source_Most_Recent__c' => 'Contact Us Form',
+    'FirstName' => $user_data['C_FirstName'],
+    'LastName' => $user_data['C_LastName'],
+    'Title' => $user_data['C_Title'],
+    'Company' => $user_data['C_Company'],
+    'Address' => $user_data['C_Address1'] . "\n" . $user_data['C_Address2'],
+    'City' => $user_data['C_City'],
+    'State' => $user_data['C_State_Prov'],
+    'PostalCode' => $user_data['C_Zip_Postal'],
+    'Country' => $user_data['C_Country'],
+    'Phone' => $user_data['C_BusPhone'],
+    'Comments__c' => 'Interested in: ' . $user_data['C_Product'],
+  );
+
+  marketo_api_user_sync($user_email, $marketo_data);
+}
+
+/**
+ * @return bool
+ */
+function fnet_helper_is_bot() {
+  $spiders = array(
+    "abot",
+    "dbot",
+    "ebot",
+    "hbot",
+    "kbot",
+    "lbot",
+    "mbot",
+    "nbot",
+    "obot",
+    "pbot",
+    "rbot",
+    "sbot",
+    "tbot",
+    "vbot",
+    "ybot",
+    "zbot",
+    "bot.",
+    "bot/",
+    "_bot",
+    ".bot",
+    "/bot",
+    "-bot",
+    ":bot",
+    "(bot",
+    "crawl",
+    "slurp",
+    "spider",
+    "seek",
+    "accoona",
+    "acoon",
+    "adressendeutschland",
+    "ah-ha.com",
+    "ahoy",
+    "altavista",
+    "ananzi",
+    "anthill",
+    "appie",
+    "arachnophilia",
+    "arale",
+    "araneo",
+    "aranha",
+    "architext",
+    "aretha",
+    "arks",
+    "asterias",
+    "atlocal",
+    "atn",
+    "atomz",
+    "augurfind",
+    "backrub",
+    "bannana_bot",
+    "baypup",
+    "bdfetch",
+    "big brother",
+    "biglotron",
+    "bjaaland",
+    "blackwidow",
+    "blaiz",
+    "blog",
+    "blo.",
+    "bloodhound",
+    "boitho",
+    "booch",
+    "bradley",
+    "butterfly",
+    "calif",
+    "cassandra",
+    "ccubee",
+    "cfetch",
+    "charlotte",
+    "churl",
+    "cienciaficcion",
+    "cmc",
+    "collective",
+    "comagent",
+    "combine",
+    "computingsite",
+    "csci",
+    "curl",
+    "cusco",
+    "daumoa",
+    "deepindex",
+    "delorie",
+    "depspid",
+    "deweb",
+    "die blinde kuh",
+    "digger",
+    "ditto",
+    "dmoz",
+    "docomo",
+    "download express",
+    "dtaagent",
+    "dwcp",
+    "ebiness",
+    "ebingbong",
+    "e-collector",
+    "ejupiter",
+    "emacs-w3 search engine",
+    "esther",
+    "evliya celebi",
+    "ezresult",
+    "falcon",
+    "felix ide",
+    "ferret",
+    "fetchrover",
+    "fido",
+    "findlinks",
+    "fireball",
+    "fish search",
+    "fouineur",
+    "funnelweb",
+    "gazz",
+    "gcreep",
+    "genieknows",
+    "getterroboplus",
+    "geturl",
+    "glx",
+    "goforit",
+    "golem",
+    "grabber",
+    "grapnel",
+    "gralon",
+    "griffon",
+    "gromit",
+    "grub",
+    "gulliver",
+    "hamahakki",
+    "harvest",
+    "havindex",
+    "helix",
+    "heritrix",
+    "hku www octopus",
+    "homerweb",
+    "htdig",
+    "html index",
+    "html_analyzer",
+    "htmlgobble",
+    "hubater",
+    "hyper-decontextualizer",
+    "ia_archiver",
+    "ibm_planetwide",
+    "ichiro",
+    "iconsurf",
+    "iltrovatore",
+    "image.kapsi.net",
+    "imagelock",
+    "incywincy",
+    "indexer",
+    "infobee",
+    "informant",
+    "ingrid",
+    "inktomisearch.com",
+    "inspector web",
+    "intelliagent",
+    "internet shinchakubin",
+    "ip3000",
+    "iron33",
+    "israeli-search",
+    "ivia",
+    "jack",
+    "jakarta",
+    "javabee",
+    "jetbot",
+    "jumpstation",
+    "katipo",
+    "kdd-explorer",
+    "kilroy",
+    "knowledge",
+    "kototoi",
+    "kretrieve",
+    "labelgrabber",
+    "lachesis",
+    "larbin",
+    "legs",
+    "libwww",
+    "linkalarm",
+    "link validator",
+    "linkscan",
+    "lockon",
+    "lwp",
+    "lycos",
+    "magpie",
+    "mantraagent",
+    "mapoftheinternet",
+    "marvin/",
+    "mattie",
+    "mediafox",
+    "mediapartners",
+    "mercator",
+    "merzscope",
+    "microsoft url control",
+    "minirank",
+    "miva",
+    "mj12",
+    "mnogosearch",
+    "moget",
+    "monster",
+    "moose",
+    "motor",
+    "multitext",
+    "muncher",
+    "muscatferret",
+    "mwd.search",
+    "myweb",
+    "najdi",
+    "nameprotect",
+    "nationaldirectory",
+    "nazilla",
+    "ncsa beta",
+    "nec-meshexplorer",
+    "nederland.zoek",
+    "netcarta webmap engine",
+    "netmechanic",
+    "netresearchserver",
+    "netscoop",
+    "newscan-online",
+    "nhse",
+    "nokia6682/",
+    "nomad",
+    "noyona",
+    "nutch",
+    "nzexplorer",
+    "objectssearch",
+    "occam",
+    "omni",
+    "open text",
+    "openfind",
+    "openintelligencedata",
+    "orb search",
+    "osis-project",
+    "pack rat",
+    "pageboy",
+    "pagebull",
+    "page_verifier",
+    "panscient",
+    "parasite",
+    "partnersite",
+    "patric",
+    "pear.",
+    "pegasus",
+    "peregrinator",
+    "pgp key agent",
+    "phantom",
+    "phpdig",
+    "picosearch",
+    "piltdownman",
+    "pimptrain",
+    "pinpoint",
+    "pioneer",
+    "piranha",
+    "plumtreewebaccessor",
+    "pogodak",
+    "poirot",
+    "pompos",
+    "poppelsdorf",
+    "poppi",
+    "popular iconoclast",
+    "psycheclone",
+    "publisher",
+    "python",
+    "rambler",
+    "raven search",
+    "roach",
+    "road runner",
+    "roadhouse",
+    "robbie",
+    "robofox",
+    "robozilla",
+    "rules",
+    "salty",
+    "sbider",
+    "scooter",
+    "scoutjet",
+    "scrubby",
+    "search.",
+    "searchprocess",
+    "semanticdiscovery",
+    "senrigan",
+    "sg-scout",
+    "shai'hulud",
+    "shark",
+    "shopwiki",
+    "sidewinder",
+    "sift",
+    "silk",
+    "simmany",
+    "site searcher",
+    "site valet",
+    "sitetech-rover",
+    "skymob.com",
+    "sleek",
+    "smartwit",
+    "sna-",
+    "snappy",
+    "snooper",
+    "sohu",
+    "speedfind",
+    "sphere",
+    "sphider",
+    "spinner",
+    "spyder",
+    "steeler/",
+    "suke",
+    "suntek",
+    "supersnooper",
+    "surfnomore",
+    "sven",
+    "sygol",
+    "szukacz",
+    "tach black widow",
+    "tarantula",
+    "templeton",
+    "/teoma",
+    "t-h-u-n-d-e-r-s-t-o-n-e",
+    "theophrastus",
+    "titan",
+    "titin",
+    "tkwww",
+    "toutatis",
+    "t-rex",
+    "tutorgig",
+    "twiceler",
+    "twisted",
+    "ucsd",
+    "udmsearch",
+    "url check",
+    "updated",
+    "vagabondo",
+    "valkyrie",
+    "verticrawl",
+    "victoria",
+    "vision-search",
+    "volcano",
+    "voyager/",
+    "voyager-hc",
+    "w3c_validator",
+    "w3m2",
+    "w3mir",
+    "walker",
+    "wallpaper",
+    "wanderer",
+    "wauuu",
+    "wavefire",
+    "web core",
+    "web hopper",
+    "web wombat",
+    "webbandit",
+    "webcatcher",
+    "webcopy",
+    "webfoot",
+    "weblayers",
+    "weblinker",
+    "weblog monitor",
+    "webmirror",
+    "webmonkey",
+    "webquest",
+    "webreaper",
+    "websitepulse",
+    "websnarf",
+    "webstolperer",
+    "webvac",
+    "webwalk",
+    "webwatch",
+    "webwombat",
+    "webzinger",
+    "wget",
+    "whizbang",
+    "whowhere",
+    "wild ferret",
+    "worldlight",
+    "wwwc",
+    "wwwster",
+    "xenu",
+    "xget",
+    "xift",
+    "xirq",
+    "yandex",
+    "yanga",
+    "yeti",
+    "yodao",
+    "zao/",
+    "zippp",
+    "zyborg",
+    "....",
+  );
+
+  foreach ($spiders as $spider) {
+    //If the spider text is found in the current user agent, then return true
+    if (stripos($_SERVER['HTTP_USER_AGENT'], $spider) !== FALSE) {
+      return TRUE;
+    }
+  }
+  //If it gets this far then no bot was found!
+  return FALSE;
+}
+
+/**
+ * Wrapper around drupal_mail_send() to allow for attachments to email
+ *
+ * @param $message - array with keys: to, subject, body and optionally headers array and attachments array.
+ *  Attachments array has keys name, mime, and filepath: name is the file name, mime is the mime type of the file and
+ *  filepath is the path to the file. From address can either be in $message['from'] or $message['headers']['From'].
+ *  All other $message elements are the same as for drupal_mail_send.
+ * @param bool $html - true to set body content type to html, false to send as plain text
+ * @return bool = true if message is accepted for delivery, false on failure.
+ */
+function fnet_helper_mail_send($message, $html = FALSE) {
+  $headers = array(
+    'MIME-Version' => '1.0',
+    'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+    'Content-Transfer-Encoding' => '8Bit',
+    'X-Mailer' => 'Drupal',
+  );
+  if ($html) {
+    $headers['Content-Type'] = 'text/html; charset=UTF-8';
+  }
+  if (isset($message['from'])) {
+    $from = $message['from'];
+  }
+  elseif (isset($message['headers']['From'])) {
+    $from = $message['headers']['From'];
+  }
+  else {
+    return FALSE; //$message has no from address, so fail
+  }
+  $headers['From'] = $headers['Sender'] = $headers['Return-Path'] = $headers['Errors-To'] = $message['from'] = $from;
+  if (isset($message['headers'])) {
+    $message['headers'] = array_merge($headers, $message['headers']);
+  }
+  else {
+    $message['headers'] = $headers;
+  }
+  if (is_array($message['body'])) {
+    $message['body'] = implode("\r\n", $message['body']);
+  }
+  if (isset($message['attachments']) && is_array($message['attachments'])) {
+    $separator = md5(date(DATE_RFC2822));
+    $body_content_type = "Content-Type: " . $message['headers']['Content-Type'];
+    $message['headers']['Content-Type'] = "multipart/mixed; boundary=\"" . $separator . "\"";
+    $content_header = "--$separator\r\n" . $body_content_type . "\r\n\r\n";
+    $message['body'] = $content_header . $message['body'] . "\r\n";
+    foreach ($message['attachments'] as $attachment) {
+      if (is_array($attachment)) {
+        $filepath = $attachment['filepath'];
+        $type = $attachment['mime'];
+        $name = $attachment['name'];
+      }
+      else {
+        $filepath = $attachment;
+        $type = file_get_mimetype($filepath);
+        $name = pathinfo($filepath, PATHINFO_BASENAME);
+      }
+      if (file_exists($filepath)) {
+        $content_header = "--" . $separator . "\r\n" . "Content-Type: " . $type . "; name=" . $name . "\r\n" . "Content-Disposition: attachment; filename=" . $name . "\r\n" . "Content-Transfer-Encoding: base64\r\n\r\n";
+        $content = chunk_split(base64_encode(file_get_contents($filepath)));
+        $message['body'] .= $content_header . $content . "\r\n";
+      }
+    }
+  }
+  //move return path for mail.inc return-path patch
+  if (isset($message['headers']['Return-Path']) && !ini_get('safe_mode')) {
+    $return_path_set = strpos(ini_get('sendmail_path'), ' -f');
+    if (!$return_path_set) {
+      $message['Return-Path'] = $message['headers']['Return-Path'];
+      unset($message['headers']['Return-Path']);
+    }
+  }
+  return drupal_mail_system('fnet_helper', '')->mail($message);
+}
+
+/**
+ * Use different methods to determine user's ip address
+ *
+ * @return string - ip address
+ */
+function fnet_helper_get_client_ip() {
+  $ip_address = '';
+  if ( isset($_COOKIE['test_geoip']) ) {
+    $ip_address = $_COOKIE['test_geoip'];
+  }
+  else {
+    $ip_address = ip_address();
+  }
+  return $ip_address;
+}
+
+/**
+ * Check to see if an ip address if located in an embargoed country
+ *
+ * @param $ip_address
+ * @return bool
+ */
+function fnet_helper_get_country_from_ip($ip_address) {
+  $ip_country = &drupal_static(__FUNCTION__);
+  if (!empty($ip_country[$ip_address])) {
+    return $ip_country[$ip_address];
+  }
+  else {
+    $cached_ip_country = cache_get('fnet_helper_geoip:' . $ip_address);
+    if ($cached_ip_country) {
+      $ip_country[$ip_address] = $cached_ip_country->data;
+      return $ip_country[$ip_address];
+    }
+  }
+  $url = variable_get('fnet_helper_tek_geoip_url', 'http://www2.tek.com/cmswpt/tekipvalidate') . "?ip={$ip_address}&return=country";
+  $result = drupal_http_request($url);
+  switch ($result->code) {
+    case 301:
+      // Alert admin that url has changed, fall through to normal behavior.
+      watchdog('fnet_helper', 'The Tek geoip url has changed from %old to %new', array(
+        '%old' => $url,
+        '%new' => $result->redirect_url,
+      ), WATCHDOG_WARNING);
+    case 200:
+    case 302:
+    case 307:
+      // Results are in the form:
+      //   Country Name:<Country Code>:<ip address>:<embargo flag>
+      //
+      // Example:
+      //   Cuba:CU:169.158.0.0:YES
+      $response = explode(':', $result->data);
+      if (count($response) == 4) {
+        $return = array_combine(array(
+          'country',
+          'country_code',
+          'ip_address',
+          'embargoed'
+        ), $response);
+        $ip_country[$ip_address] = $return;
+        cache_set('fnet_helper_geoip:' . $ip_address, $return);
+        return $return;
+      }
+      else {
+        return FALSE;
+      }
+      break;
+    case 403:
+    case 404:
+    default:
+      watchdog('fnet_helper', 'Could not fetch geo ip info from %url.', array('%url' => $url), WATCHDOG_ERROR);
+      return FALSE;
+  }
+}
+
+/**
+ * Return json object with region_language data to browser
+ */
+function fnet_helper_region_language_from_ip_json() {
+  include_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'fnet_helper') . '/fnet_helper_region_language.inc';
+  $ip_address = fnet_helper_get_client_ip();
+  if (module_exists('geoip')) {
+    $geoip = array('country_code' => geoip_country_code($ip_address));
+  }
+  else {
+    $geoip = fnet_helper_get_country_from_ip($ip_address);
+  }
+  if (is_array($geoip)) {
+    $region_language = fnet_helper_get_region_language_from_country($geoip['country_code']);
+  }
+  else {
+    $region_language = 'EN-US';
+  }
+  $data = new stdClass();
+  $data->regLang = $region_language;
+  $data->region = substr($region_language, -2);
+  $data->language = substr($region_language, 0, 2);
+  $data->ipCountryCode = ($geoip['country_code'] != 'UNKNOWN') ? $geoip['country_code'] : 'US';
+  //Content-Type header should be application/json but apparently ie7 doesn't like that
+  drupal_add_http_header('Content-Type', 'text/javascript; charset=utf-8');
+  print json_encode($data);
+  exit;
+}
+
+/**
+ * Return iso 3166 country code from regLang cookie
+ * @return string
+ */
+function fnet_helper_get_language() {
+  if (!empty($_COOKIE['regLang'])) {
+    $language = strtolower(substr($_COOKIE['regLang'], 0, 2));
+  }
+  else {
+    $language = 'en';
+  }
+  // the regLang cookie has the values reversed for china. Is cn-zh should be zh-cn.
+  $language = ($language == 'cn') ? 'zh' : $language;
+  return $language;
+}
+
+/**
+ * Convert iso 3166 to English language equivalent
+ * @param $code
+ * @return string
+ */
+function fnet_helper_iso_language_to_english($code) {
+  $translation = array(
+    'ar' => 'Arabic',
+    'bg' => 'Bulgarian',
+    'cs' => 'Czech',
+    'da' => 'Danish',
+    'de' => 'German',
+    'el' => 'Greek',
+    'en' => 'English',
+    'es' => 'Spanish',
+    'et' => 'Estonian',
+    'fr' => 'French',
+    'hu' => 'Hungarian',
+    'it' => 'Italian',
+    'ja' => 'Japanese',
+    'ko' => 'Korean',
+    'lt' => 'Lithuanian',
+    'lv' => 'Latvian',
+    'nl' => 'Dutch',
+    'pl' => 'Polish',
+    'pt' => 'Portuguese',
+    'ro' => 'Romanian',
+    'ru' => 'Russian',
+    'sk' => 'Slovakian',
+    'sl' => 'Slovenian',
+    'sv' => 'Swedish',
+    'tr' => 'Turkish',
+    // tw isn't really an iso code.
+    'tw' => 'Traditional Chinese',
+    'zh' => 'Chinese',
+  );
+  if (array_key_exists($code, $translation)) {
+    return $translation[$code];
+  }
+  else {
+    return 'English';
+  }
+}
+
+function fnet_helper_language_list() {
+  $languages = array(
+    'en' => 'English',
+    'zh' => 'Chinese',
+    'de' => 'German',
+    'es' => 'Spanish',
+    'fr' => 'French',
+    'ru' => 'Russian',
+    'ja' => 'Japanese',
+    'ko' => 'Korean',
+    'pt' => 'Portuguese',
+  );
+  return $languages;
+}
+
+
+/**
+ * TODO: we can probably remove this function because the view it supported will be rewritten
+ */
+function fnet_helper_views_query_alter(&$view, &$query) {
+
+  // This code is only meant for the "industry_family_products" view.
+  // We need to pass two arguments to this view to filter results properly.
+  // However, passing multiple arguments breaks the draggableviews module's sorting feature
+  // which is also enabled in the view. The following code fixes the "bug" which exists in the
+  // "draggableviews_views_query_alter" function of the draggableviews module.
+  // We are making sure the argument passed to the draggableviews sorting feature is indeed the first argument
+  // rather than a concatenation of the two arguments we are passing in this view's case.
+  if ($view->name == "industry_family_products") {
+
+    for ($i = 0; $i < 2; $i++) {
+      // This function is meant only to affect the draggableviews module's query
+      if (isset($query->table_queue['draggableviews_structure_' . $view->base_table . $i])) {
+
+        // Additionally this function should only affect the "args" values set in the draggableviews query
+        for ($j = 0; $j < count($query->table_queue['draggableviews_structure_' . $view->base_table . $i]['join']->extra); $j++) {
+          if ($query->table_queue['draggableviews_structure_' . $view->base_table . $i]['join']->extra[$j]['field'] == "args") {
+
+            $query->table_queue['draggableviews_structure_' . $view->base_table . $i]['join']->extra[$j]['value'] = $view->args[0];
+
+          }
+        }
+      }
+    }
+  }
+}
+
+
+/**
+ * Shifted below function from FNET content alter module to here for resolving SP ID 110
+ *
+ * Implements hook_preprocess_node(&$variables)
+ *
+ * auto forwards not handled elsewhere
+ *
+ * @param $variables
+ */
+function fnet_helper_preprocess_node(&$variables) {
+  if ($variables['view_mode'] == 'full') {
+    // types to forward to other URL
+    $external = array(
+      'award' => 'field_award_link',
+      );
+    if ( in_array($variables['type'], array_keys($external) ) ){
+      $url = fnet_common_get_field_value($variables['type'], $variables['node'], $external[$variables['type']], 'url' );
+      if ($url) {
+        drupal_goto($url);
+      }
+    }
+  }
+}

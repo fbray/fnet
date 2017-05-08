@@ -1,0 +1,7 @@
+; $Id$
+name = FNET Bedrock
+package = Fluke Networks
+description = Interfaces with the FNET Bedrock IAM system.
+version = 7.x.1.0
+core = 7.x
+files[] = includes/fnet_bedrock_user.php

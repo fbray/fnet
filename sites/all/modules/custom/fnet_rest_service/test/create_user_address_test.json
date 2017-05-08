@@ -1,0 +1,17 @@
+{
+  "address": {
+    "uid": "109379",
+    "address_type": "billing",
+    "contact_email": "steveogden.emstest@gmail.com",
+    "contact_name": "Steve Ogden",
+    "company": "Self",
+    "address1": "1624 Molitor Rd",
+    "address2": null,
+    "city": "Belmont",
+    "province": "CA",
+    "country": "us",
+    "postal_code": "94002",
+    "phone": "650-430-8529",
+    "fax": null
+  }
+}

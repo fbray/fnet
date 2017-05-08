@@ -1,0 +1,123 @@
+.view-display-id-page_1,
+.view-display-id-page_2,
+.view-display-id-page_3,
+.view-display-id-page_4,
+.view-display-id-page_5,
+.view-display-id-page_6 {
+    width: 940px;
+/*    padding-left: 40px; */
+}
+
+.view-solutions .views-row {
+    /* These are for nested views loading in footer of "Solutions" page */
+    margin: 0 0 1em;
+}
+
+.view-solutions .views-row.views-row-last {
+    border-bottom: 0;
+}
+
+.view-solutions h1 {
+    font-size: 24px;
+    color: #555555;
+}
+
+.view-solutions h3 {
+    font-size: 18px;
+    color: #555555;
+}
+
+.view-solutions h4.field-content {
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.view-solutions .field-content p {
+    margin: 0 0 6px 0;
+}
+
+.views-field-body {
+    font-size: 12px;
+}
+
+.views-field-field-exp-tpc-thumbnail,
+.views-field-field-exp-rle-thumbnail,
+.views-field-field-exp-ind-thumbnail {
+    float: right;
+    margin: 0 0 0 1em;
+}
+
+/*# sourceMappingURL=solutions.css.map */
+
+/* Solutions Tabs */
+#solutions_tabs_wrapper {
+  padding: 0px;
+}
+#tabs-seperator {
+  background-image: url(images/tab_bg.png);
+  width: 100%;
+  background-position: bottom;
+}
+
+#solutions_tabs_wrapper #tabs #tabs-seperator ul.ui-tabs-nav {
+  border-bottom: 0px; }
+
+#solutions_tabs_wrapper #tabs #tabs-seperator ul {
+    /*  display: table-cell;*/
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+    width:955px;
+}
+#solutions_tabs_wrapper #tabs #tabs-seperator ul.ui-tabs-nav li {
+/*  float: none; */
+  display: inline-block;
+  height: 37px;
+  line-height: 43px;
+  text-align: center;
+  border-left: 1px solid #17294F;
+  border-top: 1px solid #17294F;
+  border-right: 1px solid #17294F;
+  border-bottom: none;
+  margin: 10px 2px 0px 2px;
+}
+
+#solutions_tabs_wrapper ul li a {
+    line-height: 37px;
+    display: block;
+    color: #45454A;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+#solutions_tabs_wrapper #tabs #tabs-seperator ul.ui-tabs-nav li a {
+  float: none;
+}
+#solutions_tabs_wrapper #tabs #tabs-seperator ul.ui-tabs-nav li {
+  background-image: url(images/tab_off.jpg);
+  background-repeat: repeat-x;
+  background-position: bottom;
+}
+
+#solutions_tabs_wrapper #tabs #tabs-seperator ul.ui-tabs-nav li.ui-tabs-active,
+#solutions_tabs_wrapper #tabs #tabs-seperator ul.ui-tabs-nav li.ui-tabs-active:hover {
+  background-image: url(images/tab_on.jpg);
+  background-repeat: repeat-x;
+}
+
+#solutions_tabs_wrapper #tabs #tabs-seperator ul.ui-tabs-nav li:hover {
+  background-image: url(images/tab_hover.jpg);
+  background-repeat: repeat-x;
+}
+
+h1.ExpertiseHeader {
+    font-size: 22px;
+}
+
+#solutions_tabs_wrapper .ui-tabs .ui-tabs-nav li a {
+    padding: 0px;
+}
+
+#solutions_tabs_wrapper .ui-tabs .ui-tabs-nav li.ui-tabs-active {
+    padding-bottom: 0px;
+}

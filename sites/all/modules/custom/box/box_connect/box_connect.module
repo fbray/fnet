@@ -1,0 +1,712 @@
+<?php
+/**
+ *  Module to handle connections to box.com, and retrieving data. 
+ *  Entities built in separate module
+ */
+
+/*
+ * TODO List:
+ * 1) Check if box_item and box_item_temporary are in sync - DONE
+ * 2) Write update scripts - DONE
+ * 3) Destroy Cron hook and replace with Queue API
+ * 4) Flesh out help hook.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function box_connect_help() {
+
+}
+
+/**
+ * Implements hook_menu().
+ *
+ * @return array
+ */
+function box_connect_menu() {
+
+    $items = array();
+
+    $items['admin/fnet/box_connect'] = array(
+      'type' => MENU_NORMAL_ITEM,
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('box_connect_admin'),
+      'title' => 'Box Connect',
+      'access arguments' => array('administer site configuration'),
+      'file' => 'box_connect.admin.inc',
+    );
+
+    $items['admin/fnet/box_connect/settings'] = array(
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'title' => 'Settings',
+      'access arguments' => array('administer site configuration'),
+      'file' => 'box_connect.admin.inc',
+    );
+
+    $items['admin/fnet/box_connect/status'] = array(
+      'page callback' => 'box_connect_status',
+      'title'   =>    'Connection Test',
+      'type' => MENU_LOCAL_TASK,
+      'access arguments' => array('administer site configuration'),
+    );
+
+    $items['admin/fnet/box_connect/sync'] = array(
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('box_connect_directory_scan_form'),
+      'title'   => 'Sync',
+      'type' => MENU_LOCAL_TASK,
+      'access arguments' => array('administer site configuration'),
+      'file' => 'box_connect.admin.inc',
+    );
+
+    $items['admin/fnet/box_connect/payload_test'] = array(
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('box_connect_payload_test_form'),
+      'title' => t('Test Data Payload'),
+      'type' => MENU_LOCAL_TASK,
+      'access arguments' => array('administer site configuration'),
+      'file' => 'box_connect.admin.inc',
+    );
+
+    return $items;
+}
+
+// TODO: Replace this with Queue API
+/**
+ * Implements hook_cron().
+ */
+/*
+function box_connect_cron() {
+  module_load_include('inc', 'box_connect', 'box_connect.batch');
+  $ids = _get_unprocessed_ids();
+
+  $start_count = count($ids);
+
+  $count=0;
+
+  foreach ($ids as $entry) {
+    _process_folder( $entry->box_id, FALSE, $entry->box_top_folder_name , $entry->box_top_folder_id );
+    if ( $count++ > 50 ) continue;
+  }
+}
+*/
+
+/*
+ * Menu Callbacks
+ * -------------------------------------------------
+ */
+
+/**
+ * @return string
+ */
+function box_connect_status() {
+  $parent_folder = variable_get('box_connect_parent_folder', '0');
+
+  $box = get_box();
+
+  if ( ($data = $box->get_folder_details($parent_folder) ) ) {
+    return 'Connection Success to ' . $data['name'] ;
+  }
+  else {
+    $reason = '<h2>Unable to connect to Box</h2>';
+    if (isset($box->error)) {
+      $reason .= '<p>Cause: ' . $box->error . '</p>';
+    }
+    // TODO: Add additional debugging information.
+    return $reason;
+  }
+}
+
+/**
+ * Helper Functions
+ * -------------------------------------------------
+ */
+
+/**
+ * Compares the box_item_temporary table to the box_item table.
+ * Returns TRUE if they are different, FALSE if the same.
+ * @return bool
+ */
+function _box_connect_compare_tables() {
+  $query = 'SELECT box_id, box_name
+FROM (
+  SELECT box_id, box_name FROM box_item
+UNION ALL
+SELECT box_id, box_name FROM box_item_temporary
+) tbl
+GROUP BY box_id, box_name
+HAVING count(*) = 1
+ORDER BY box_id;';
+  $result = db_query($query);
+  if ($result->rowCount() > 0) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Deletes the content of the box_item table and replaces it with the content
+ * of the box_item_temporary table.
+ *
+ * @return bool|string
+ */
+function _box_connect_copy_tables() {
+  try {
+    // First, delete the exisitng data in the box_item table
+    db_delete('box_item')->execute();
+
+    // Copy the table over
+    db_query('INSERT INTO box_item SELECT * FROM  box_item_temporary');
+    return TRUE;
+  }
+  catch(Exception $e) {
+    return $e->getMessage();
+  }
+}
+
+/**
+ * @param $original
+ * @return array|bool
+ */
+function _box_get_name_size($original) {
+  $sizes = array(
+    'h'   =>  'Large',
+    'c'   =>  'Medium',
+    's'   =>  'Small',
+    'ko'   =>  'Web',
+    'cmyk'   =>  'CMYK',
+  );
+
+  $start = strrpos($original, '_', -1);
+  $end = strrpos($original, '.', -1) ;
+  $key = substr($original, $start+1, $end - $start - 1) ;
+  if ( isset( $sizes[$key] ) ) {
+    $sizename=$sizes[$key];
+    // $base = substr($original, 0, $start) . substr($original, $end-start);
+    // extension can be tif/jpg/png  .  so don't count file type
+    $base = substr($original, 0, $start) ;
+
+    return array( $sizename => $base) ;
+  }
+  return FALSE;
+}
+
+/**
+ *  Handles Box Folder processing.  Passes along name/id for easier access to root
+ */
+function _process_folder($id = 0, $box=FALSE, $top_folder_name=FALSE, $top_folder_id=FALSE) {
+  if (!$box) {
+    $box = get_box();
+  }
+
+  $data = $box->get_folder_details($id);
+  $name = $data['name'];
+  watchdog('Box Connect', 'Processed Box folder @name (ID: @id)', $variables = array('@name' => $name, '@id' => $id));
+
+  if (!$top_folder_name) {
+    $top_folder_name = $name;
+  }
+
+  // update dir record, mark as recently checked
+  try {
+    db_merge('box_item_temporary')
+      ->key(array('box_id' => $id))
+      ->fields(array(
+        'box_id' => $id,
+        'box_name' => $name,
+        'box_top_folder_name' => $top_folder_name,
+        'box_top_folder_id' => $top_folder_id,
+        'box_description' => $data['description'],
+        'box_type' => 'folder',
+        'last_checked' => time(),
+        'box_parent_id' => $data['parent']['id'],
+      ))
+      ->execute();
+  } catch (Exception $e) {
+    watchdog('box_connect', 'SQL error: ' . $e->getMessage() );
+    drupal_goto('admin/reports/dblog');
+  }
+
+  //  Loop over results of current folder
+  foreach ($data['item_collection']['entries'] as $entry) {
+    // drupal_set_message('Item ' . $entry['id'] . ' is a ' . $entry['type']);
+    if ($entry['type'] == 'folder') {
+      try {
+        db_merge('box_item_temporary')
+          ->key(array('box_id' => $entry['id']))
+          ->fields(array(
+            'box_top_folder_name' => $top_folder_name,
+            'box_top_folder_id' => $top_folder_id,
+            'box_type' => 'folder',
+            'last_checked' => 0,
+          ))
+          ->execute();
+        // Recursively process this folder.
+        _process_folder($entry['id'], $box, $top_folder_name, $top_folder_id);
+      }
+      catch (Exception $e) {
+        watchdog('box_connect', 'SQL error: ' . $e->getMessage() );
+        drupal_goto('admin/reports/dblog');
+      }
+
+    } else {
+      // It's a file!
+      _process_file($entry['id'], $box, $top_folder_name, $top_folder_id);
+    }
+  }
+  // drupal_set_message('Directory processed: ' . $name);
+}
+
+/**
+ * @param $file_id
+ * @param bool $box
+ * @param string $top_folder_name
+ * @param string $top_folder_id
+ * @throws \Exception
+ * @throws \InvalidMergeQueryException
+ */
+function _process_file($file_id, $box=FALSE, $top_folder_name='', $top_folder_id='') {
+  if (!$box) {
+    $box = get_box();
+  }
+  // What if box is TRUE?
+  $data = $box->get_file_details($file_id);
+
+  if ( $data['name'] ) {
+    $name_size_array = _box_get_name_size($data['name']);
+    $size_name = key($name_size_array);
+    $original_file_name = $name_size_array[$size_name];
+
+    if (!$original_file_name) {
+      // $size_name = $other;  // What would be the other? Hmm.
+      $original_file_name = $data['name'];
+    }
+
+    db_merge('box_item_temporary')
+      ->key(array('box_id' => $file_id))
+      ->fields(array(
+        'box_name' => $data['name'],
+        'box_top_folder_name' => $top_folder_name,
+        'box_top_folder_id' => $top_folder_id,
+        'box_type' => 'file',
+        'size_name' => $size_name,
+        'file_size' => $data['size'],
+        'original_file_name' => $original_file_name,
+        'box_description' => $data['description'],
+        'box_parent_id' => $data['parent']['id'],
+      ))
+      ->execute();
+  }
+}
+
+/**
+ * Function to connect with Box.
+ *
+ * @return bool|\Drupal_Box_API
+ */
+function get_box() {
+
+  if (!class_exists('Box_API')) {
+    $path = drupal_get_path('module', 'box_connect');
+    include_once($path . '/BoxPHPAPI/library/BoxAPI.class.php');
+  }
+
+  if (!class_exists('Drupal_Box_API')) {
+    $path = drupal_get_path('module', 'box_connect');
+    include_once($path . '/DrupalBoxAPI.class.php');
+  }
+
+  $box_array = array(
+    'client_id' => variable_get('box_connect_client_id', ''),
+    'client_secret' => variable_get('box_connect_client_secret', ''),
+  );
+
+  // These are hard coded. Where are they coming from?
+  // ANSWER: These are the connections to an Box application Scott created called Extranet Box. I don't currently have access to it.
+  // $box_array['client_id'] = 'jiijswth805ajj5ot37j158budml0jru';
+  // $box_array['client_secret'] = 'AY6SeITX2znwpHadaXhTcnwmNTkPICyW';
+
+  global $base_url;
+
+  $url = $base_url . '/admin/fnet/box_connect/status';
+
+  try {
+    $box = new Drupal_Box_API($box_array['client_id'], $box_array['client_secret'], $url);
+    // drupal_set_message(print_r($box));
+    if(!$box->load_token()){
+
+      // Get the authorization code from the response.
+      if(isset($_GET['code'])){
+        drupal_set_message('Authorization Code: ' . $_GET['code']);
+        $token = $box->get_token($_GET['code'], true);
+        drupal_set_message('Token: ' . $token);
+        if($box->write_token($token, 'file')){
+          $box->load_token();
+        }
+      } else {
+        $box->get_code();
+      }
+    }
+    return $box;
+  }
+  catch(Exception $e) {
+    $box = new Drupal_Box_API($box_array['client_id'], $box_array['client_secret'], $url);
+    if(!$box->load_token()) {
+      if (isset($_GET['code'])) {
+        drupal_set_message($_GET['code']);
+        $token = $box->get_token($_GET['code'], TRUE);
+        drupal_set_message('Token: ' . $token);
+        drupal_set_message('This is the Exception.');
+      }
+    }
+    drupal_set_message(t('Error: ' . $e->getMessage()));
+  }
+  return TRUE;
+}
+
+/**
+ * TODO: DEPRECATED
+ * @return mixed
+ */
+function _get_unprocessed_ids() {
+  // TODO: If last_checked is no longer used for keeping track, rework this.
+  $checked_refresh_seconds = variable_get('box_refresh_interval', 60*60*24); // 1 day
+  $check_overdue = time() - $checked_refresh_seconds;
+
+  $query = db_query("SELECT box_id, box_top_folder_name, box_top_folder_id
+  FROM {box_item_temporary}
+  WHERE last_checked < :overdue
+  AND box_type = 'file'
+  ORDER BY last_checked ASC", array(':overdue' => $check_overdue));
+  $rows = $query->fetchAllAssoc('box_id');
+  return $rows;
+}
+
+/**
+ * The function sets up the batch job for syncing with Box.
+ *
+ * @param int $parent_id
+ * @return string
+ */
+function box_batch_sync($parent_id = -1) {
+  // Clear the temporary table
+  db_delete('box_item_temporary')->execute();
+
+  // Fill the temporary table
+  $parent_folder = variable_get('box_connect_parent_folder', '0');
+  $box = get_box();
+  $data = $box->get_folder_details($parent_folder);
+  $box_ids = array();
+
+  // This gets us the top level directories.
+  if ($data) {
+    $entries = $data['item_collection']['entries'];
+    foreach ($entries as $entry) {
+      $box_id = 0 + $entry['id'];
+      // load the box_ids array
+      $values = new stdClass();
+      $values->box_top_folder_name = $entry['name'];
+      $values->box_top_folder_id = $box_id;
+      $values->box_id = $box_id;
+      $box_ids[$box_id] = $values;
+
+      // write to the temp table
+      db_merge('box_item_temporary')
+        ->key(array('box_id' => $box_id))
+        ->fields(array(
+          'box_type'  => $entry['type'],
+          'box_name' => $entry['name'],
+          'box_parent_id' => $parent_folder,
+          'box_top_folder_name' => $entry['name'],
+          'box_top_folder_id' => $box_id,
+        ))
+        ->execute();
+    }
+  }
+
+  if ( count($box_ids) == 0 ) {
+    drupal_set_message('The website is synced with Box.');
+    return TRUE;
+  }
+
+  $batch = array(
+    'title' => t('Processing Box Items'),
+    'operations' => array(
+      array('box_batch_iterate', array($box_ids)), // Go through the folders and files and add them to the temp table.
+      array('box_batch_update', array()),
+      array('box_batch_update_box_thumbnails', array()),
+      array('box_batch_update_box_galleries', array()),
+      array('box_batch_acquire_image_files', array()),
+      array('box_batch_thumbnails_cleanup', array()),
+    ),
+    'finished' => 'box_batch_finish',
+    'init_message' => t("Updating folders and files from Box."),
+    'progress_message' => t('Sync with Box started. Completed @current out of @total sync tasks.'),
+    'error_message' => t('Error.'),
+    'file' => drupal_get_path('module', 'box_connect') . '/' . 'box_connect.batch.inc',
+  );
+  batch_set($batch);
+}
+
+/**
+ * TODO: DEPRECATED
+ * @return int
+ */
+function _update_box_galleries() {
+
+  $top_id = variable_get('box_connect_parent_folder');
+
+  $now = new DateTime();
+  $timestamp = $now->getTimeStamp();
+
+  $box_refresh_interval = variable_get('box_refresh_interval', 60*60*24); // 1 day
+
+  $check_overdue = $timestamp - $box_refresh_interval;
+
+  $query = db_select('box_item', 'bi');
+  $query->leftJoin('box_ent_gallery', 'beg', 'beg.gid = bi.box_id');
+  $query->fields('bi', array('box_id', 'box_name', 'box_parent_id', 'box_description', 'box_top_folder_id' ) );
+  $query->fields('beg', array('gid') );
+  // if top-level item
+  $query->condition('bi.box_parent_id', $top_id, '=');
+  $query->range(0,100);
+
+  $results = $query->execute()->fetchAllAssoc('box_id');
+
+  if ($results) {
+    // Get the array of product names.
+    $products = _get_product_name_array();
+    $tally=0;
+    foreach($results as $result) {
+
+      if (! $result->gid) {
+        drupal_set_message('Creating Box Gallery ' .  $result->box_name );
+        $content_nid = 0;
+
+        if ( $match = array_search($result->box_name, $products) ) $content_nid = $match;
+
+        $values = array(
+          'box_title' => $result->box_name,
+          'content_nid' => $content_nid,
+          'gid' => $result->box_id,
+          'box_description' => $result->box_description,
+          'box_folder_id' => $result->box_id,
+          'checked' => $timestamp,
+        );
+        $new = entity_create('box_gallery', $values);
+        $new->save();
+        //entity_save('box_gallery', $new);
+
+        $tally++;
+      }
+    }
+
+    if ($tally) drupal_set_message('Created Box Galleries ' . $tally);
+
+    return ( $tally );
+
+  }
+
+  return 1;
+
+}
+
+
+/**
+ * TODO: DEPRECATED
+ *
+ * @return int
+ * @throws \Exception
+ * @throws \InvalidMergeQueryException
+ */
+function _update_box_thumbnails() {
+
+  $top_id = variable_get('box_connect_parent_folder');
+  
+  // Get all the items from box_item to process into box_ent_thumb.
+  $query = db_select('box_item', 'bi');
+  $query->leftJoin('box_ent_image_size', 'beis', 'beis.box_file_id = bi.box_id');
+  $query->fields('bi', array( 'box_id', 'box_parent_id', 'box_name', 'box_description', 'box_top_folder_name', 'box_top_folder_id', 'size_name', 'original_file_name', 'last_checked' ) );
+  $query->fields('beis', array('box_name', 'box_file_id', 'checked') );
+  $query->addExpression('COALESCE(beis.checked,1)', 'valid_checked');
+  $query->condition('bi.box_type','file', '=');
+  $query->condition('beis.box_name', NULL);
+  $query->orderBy('valid_checked', 'ASC');
+  $exe = $query->execute();
+
+  /*
+  SELECT
+    bi.box_id,
+  bi.box_parent_id,
+  bi.box_name,
+  bi.box_name', 'box_description', 'box_top_folder_name', 'box_top_folder_id', 'size_name', 'original_file_name', 'last_checked'beis.box_file_id
+  FROM box_item bi
+  LEFT JOIN box_ent_image_size beis ON beis.box_file_id = bi.box_id
+  WHERE bi.box_type = 'file'
+  AND beis.box_name IS NULL
+
+  */
+
+  $results = $exe->fetchAllAssoc('box_id');
+
+  drupal_set_message( 'Box Images to create: ' . count($results) );
+
+  if ($results) {
+
+    foreach ($results as $result) {
+
+      // find thumb if exists so we don't do duplicate work.
+      $query = db_select('box_ent_thumb', 'bet');
+      $query->fields('bet', array('root_folder_id', 'tid') );
+      $query->condition('bet.original_file_name', $result->original_file_name, '=');
+      $query->condition('bet.gallery_id', $result->box_top_folder_id, '=');
+      $query->range(0,1);
+
+      $existing_thumb_array=$query->execute()->fetchAll();
+
+      $tid = 0;
+      if (! $existing_thumb_array) {
+
+        $new_thumb_values = array(
+          'gallery_id' =>  $result->box_top_folder_id,
+          'original_file_name' => $result->original_file_name,
+          'thumbnail' => '',
+          'root_folder_id' => $result->box_top_folder_id,
+          'root_folder_name' => $result->box_top_folder_name,
+          'status' => 1,
+          'checked' => time(),
+        );
+
+        $new_thumb = entity_create('box_thumbnail', $new_thumb_values);
+
+        $new_thumb->save();
+
+        $tid = $new_thumb->tid;
+
+      } else {
+
+        $existing_thumb = array_shift($existing_thumb_array);
+        $tid = $existing_thumb->tid;
+
+      } // end if not exist
+
+      $new_box_image_size_values = array(
+        'box_file_id' =>  $result->box_id,
+        'box_parent_id' =>  $result->box_parent_id,
+        'box_name' =>  $result->box_name,
+        'box_description' =>  $result->box_description,
+        'thumb_id' =>  $tid,
+        'size_name' =>  $result->size_name,
+        'box_file_size' =>  0,
+        'root_folder_id' =>  $result->box_top_folder_id,
+        'root_folder_name' =>  $result->box_top_folder_name,
+        'status' => 1,
+        'checked' => time(),
+      );
+
+      // tough to save over existing, so delete/re-create
+      $query = db_delete('box_ent_image_size');
+      $query->condition('box_file_id', $result->box_id, '=');
+      $query->execute();
+
+      $new_box_image_size = entity_create('box_image_size', $new_box_image_size_values);
+      
+      /* Deprecated
+      $update_id = FALSE;
+
+      $new_box_image_size->save();
+      $update_id = $new_box_image_size->box_file_id;
+      
+      
+      if ($update_id) {
+
+        $query = db_merge('box_item');
+        $query->condition('box_id', $update_id, '=');
+        $query->fields(  array(
+            'last_checked' => $timestamp,
+          )
+        );
+        $query->execute();
+      }
+      */
+
+    } // end foreach
+
+    return count( $results );
+
+  } // end if results
+
+
+  return 0;
+
+
+}
+
+/**
+ * @return int
+ */
+function create_pngs() {
+
+  $path = variable_get('box_connect_thumbnail_directory', 'public://extranet/box');
+  $query = "SELECT bet.tid, bet.original_file_name, beis.box_file_id, beis.size_name
+FROM box_ent_thumb bet
+LEFT JOIN box_ent_image_size beis ON beis.thumb_id = bet.tid
+WHERE bet.thumbnail = ''";
+  $results = db_query($query);
+  $rows = $results->fetchAllAssoc('tid');
+
+  // Connect to Box to get the images.
+  $box = get_box();
+
+  //todo - add check for existing files
+  // save pngs by name?
+
+  if ($rows) {
+    foreach ($rows as $row) {
+      $thumbnail = _retrieve_thumb($row->box_file_id , $box, $path) ;
+      if ($thumbnail) {
+        $box_ent_thumb = entity_load_unchanged('box_thumbnail', $row->tid );
+        $box_ent_thumb->thumbnail = $thumbnail;
+        if ( isset($box_ent_thumb->tid) ) $box_ent_thumb->save();
+      }
+    }
+
+    drupal_set_message('Retrieved thumbnails: ' . count($rows) );
+
+    return count($rows);
+  }
+
+  return 1;
+}
+
+/**
+ * @param $file_id
+ * @param $box
+ * @param $path
+ * @return bool|null|string
+ */
+function _retrieve_thumb($file_id, $box, $path) {
+
+  $options = array(
+    'method' => 'GET',
+    'headers' => array('Authorization' => 'Bearer ' . $box->access_token),
+  );
+
+  $params = array(
+    'max_height' => 512,
+    'max_width' => 512,
+  );
+
+  $url =  url('https://api.box.com/2.0/files/' . $file_id . '/thumbnail.png',  array('query' => $params) );
+
+  $response = drupal_http_request($url , $options);
+
+  if ($response->code == 200) {
+    $thumbfile = $path . '/' . $file_id . ".png";
+    return file_unmanaged_save_data($response->data, $thumbfile);
+  }
+
+  return FALSE;
+}
+

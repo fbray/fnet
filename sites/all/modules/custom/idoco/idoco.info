@@ -1,0 +1,9 @@
+; $Id: idoco.info 1016 2013-06-14 21:44:36Z sogden1 $
+name = Idoco
+package = Fluke Networks
+description = Converts tech documentation into browsable Drupal pages.
+; dependencies[] = doc_links
+version = 7.x.1.0-20150414
+core = 7.x
+
+files[] = simplehtmldom_1_5/simple_html_dom.php

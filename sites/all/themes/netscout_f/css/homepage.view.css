@@ -1,0 +1,222 @@
+/* This is where the styles for the homepage heroes live. */
+/* =============================================================================
+ *   Legacy CSS
+ * ========================================================================== */
+#hero_main {
+    height: 343px;
+}
+
+#hero_wrapper {
+    width: 1000px;
+    height: 343px;
+    margin: 0px auto;
+}
+
+#arrow_hero_hp_left {
+    float: left;
+    margin-top: 120px;
+    width: 30px;
+    height: 40px;
+}
+
+#arrow_hero_hp_left a {
+    display: block;
+    width: 30px;
+    height: 40px;
+    background: url(images/css-sprites.png) -660px -321px no-repeat transparent;
+}
+
+#arrow_hero_hp_left a:hover {
+    background: url(images/css-sprites.png) -690px -321px no-repeat transparent;
+}
+
+#arrow_hero_hp_right {
+    float: right;
+    margin-top: 120px;
+    width: 30px;
+    height: 40px;
+}
+
+#arrow_hero_hp_right a {
+    display: block;
+    width: 30px;
+    height: 40px;
+    background: url(images/css-sprites.png) -660px -361px no-repeat transparent;
+}
+
+#arrow_hero_hp_right a:hover {
+    background: url(images/css-sprites.png) -690px -361px no-repeat transparent;
+}
+
+#hero_hp_content {
+    float: left;
+    width: 930px;
+    height: 343px;
+    margin: 0px 0px 0px 5px;
+}
+
+#hero_hp_content_main {
+    width: 930px;
+    height: 296px;
+}
+
+#hero_h1 {
+    clear: both;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 40px;
+    line-height: 40px;
+    font-weight: normal;
+    color: #FFFFFF;
+    text-align: left;
+}
+
+.hero_marquee {
+    clear: both;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    font-weight: normal;
+    color: #FFFFFF;
+    text-align: left;
+}
+
+/* =============================================================================
+ *   Styles for the new homepage heroes view format
+ * ========================================================================== */
+.views-field-field-home13-banner-html .field-content .item-list > ul > li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.views-field-field-home13-banner-html .field-content .item-list > ul > li:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.homepage-hero:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* =============================================================================
+ *   Styles for the new homepage expertise view format
+ * ========================================================================== */
+.homepage-expertise {
+    float: left;
+    width: 25%;
+}
+
+.homepage-expertise:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.homepage-expertise ul {
+    margin: 0;
+    padding: 0;
+}
+
+.homepage-expertise ul li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* =============================================================================
+ *   Styles for the new homepage expertise view format
+ * ========================================================================== */
+.homepage-industry {
+    float: left;
+    width: 33%;
+}
+
+.homepage-industry:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.homepage-industry ul {
+    margin: 0;
+    padding: 0;
+}
+
+.homepage-industry ul li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.homepage-industry.views-field-field-home13-ind-desc-2 {
+    width: 34%;
+}
+
+/* =============================================================================
+ *   Styles for the new homepage "full content" display
+ * ========================================================================== */
+body.front #page-title,
+body.front header.node-header {
+    display: none;
+}
+
+.field-group-div:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.group-hero-banners {
+    width: auto;
+    height: 350px;
+    overflow: hidden;
+    margin: 1em 0;
+}
+
+.group-hero-banners .field-item {
+    width: auto;
+    height: 350px;
+    overflow: hidden;
+}
+
+.group-hero-banners .field-item:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.group-solutions .field-name-field-home13-exptpc,
+.group-solutions .field-name-field-home13-exprle,
+.group-solutions .field-name-field-home13-expind,
+.group-solutions .field-name-field-home13-ads {
+    float: left;
+    width: 25%;
+}
+
+.group-solutions .field-name-field-home13-exptpc:after,
+.group-solutions .field-name-field-home13-exprle:after,
+.group-solutions .field-name-field-home13-expind:after,
+.group-solutions .field-name-field-home13-ads:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.group-industries .field-name-field-home13-ind-desc-1,
+.group-industries .field-name-field-home13-ind-desc-2,
+.group-industries .field-name-field-home13-ind-desc-3 {
+    float: left;
+    width: 33%;
+}
+
+.group-industries .field-name-field-home13-ind-desc-1:after,
+.group-industries .field-name-field-home13-ind-desc-2:after,
+.group-industries .field-name-field-home13-ind-desc-3:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/*# sourceMappingURL=homepage.view.css.map */

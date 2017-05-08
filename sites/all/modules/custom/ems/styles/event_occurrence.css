@@ -1,0 +1,149 @@
+/* $Id$*/
+.field-field-evnt-occ-date {
+    width: 200px;
+    margin: 5px;
+    float: left;
+}
+
+.field-field-evnt-occ-time {
+    width: 200px;
+    margin: 5px;
+    clear: both;
+}
+
+.location-locations-wrapper {
+    width: 250px;
+    margin: 5px;
+    float: left;
+}
+
+.location-locations-wrapper .field-label {
+    font-weight: bold;
+}
+
+.field-field-evnt-occ-cost {
+    width: 200px;
+    margin: 5px;
+    clear: both;
+}
+
+.field-field-evnt-occ-parent {
+    margin: 5px;
+    float: left;
+    clear: both;
+    display: none;
+}
+
+.field-field-evnt-occ-accommodations {
+    margin: 5px;
+    clear: both;
+    float: left;
+}
+
+.field-field-evnt-occ-transportation {
+    margin: 5px;
+    clear: both;
+    float: left;
+}
+
+.field-field-evnt-occ-notes {
+    margin: 5px;
+    clear: both;
+    float: left;
+}
+
+.field-field-evnt-occ-contact {
+    margin: 5px;
+    float: left;
+    clear: both;
+}
+
+.field-field-evnt-occ-capacity {
+    margin: 5px;
+    float: left;
+    clear: both;
+}
+
+.field-field-evnt-occ-waitlist {
+    margin: 5px;
+    float: left;
+}
+
+.field-field-evnt-occ-req-gold-number {
+    margin: 5px;
+    float: left;
+    clear: both;
+}
+
+.field-field-evnt-occ-req-address {
+    margin: 5px;
+    float: left;
+}
+
+.field-field-event-marketo-id {
+    margin: 5px;
+    float: left;
+}
+
+.geo {
+    display: none;
+}
+
+.link-wrapper {
+    float: left;
+    clear: both;
+}
+
+#event-occurrence {
+    margin: 0 50px 0 50px;
+}
+
+#event-occurrence .event-title, #event-summary .event-title, #event .event-title {
+    font-size: 22px;
+    line-height: 28px;
+}
+
+#event-occurrence .field-field-evnt-occ-date .field-label,
+#event-occurrence .field-field-evnt-occ-time .field-label,
+#event-occurrence .field-field-evnt-occ-cost .field-label {
+    float: left;
+}
+
+#event-summary .event-intro, #event-summary .event-occurrence-title {
+    width: 800px;
+    font-size: 16px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+#event-summary {
+
+}
+
+#event-summary .form-title {
+    border-bottom: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: #666666;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.event-occ-title {
+    font-size: 22px;
+    padding-bottom: 5px;
+    line-height: 28px;
+}
+
+.view-ems-event-with-occurrences table {
+    width: 600px;
+}
+
+.view-ems-event-with-occurrences table tr {
+    height: 20px;
+}
+
+.view-ems-event-with-occurrences table tr td.views-field-field-evnt-occ-date-value {
+    padding-left: 10px;
+}

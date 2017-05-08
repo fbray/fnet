@@ -1,0 +1,2987 @@
+
+// _base.scss imports _custom.scss (variables and mixins) and other partials.
+@import "base";
+
+/*
+ * @file
+ * global.styles
+ *
+ * Styles you add here will load for all device sizes, they are "global", as
+ * opposed to "responsive" styles, which only load for a given breakpoint (media
+ * query) that you set in theme settings. See the README for more details.
+ *
+ *
+ * How to use this file:
+ * --------------------
+ *
+ * There are many empty selectors and some basic styles to act as a guide.
+ * Nothing is set in stone and you can change anything - even delete all of it
+ * and start with your own clean slate.
+ *
+ * To FORCE PRINT all selectors you can search and replace a single { (opening
+ * curly brace) and insert an empty comment. This is very useful in conjuction
+ * with FireSass: https://addons.mozilla.org/en-US/firefox/addon/firesass-for-firebug/
+ *
+ * See global.base also which includes normalize.css and some additional
+ * helper classes and base styles.
+ */
+
+/* =============================================================================
+ *   Base
+ * ========================================================================== */
+
+/*
+ * To preserve theme settings never apply font properties to the HTML element.
+ * This is critically important if you are using the Responsive JavaScript
+ * feature as this relies on being able to set a pseudo font family on the HTML
+ * element. If you need to set default font properties of any kind use the BODY
+ * element as these can be overridden using font theme settings.
+ */
+
+html {
+  background: $page;
+}
+
+body {
+  font-family: $sans-serif-small; // Set from _custom.scss font variables
+  font-size: 100%;
+}
+
+
+/* =============================================================================
+ *   HTML Elements
+ * ========================================================================== */
+
+h1 {}
+
+
+h2 {
+  font-size:1.875em;
+}
+
+.section-header h2 {
+  font-weight:normal;
+  text-align:center;
+  padding:4.3125rem 0 1.3125rem;
+  margin:0;
+  line-height:1;
+}
+
+
+h3 {
+  font-size:1.8em;
+}
+
+.section-header h3 {
+  text-align:center;
+  margin:0;
+  font-weight:normal;
+}
+
+
+h4 {}
+
+
+h5 {}
+
+
+h6 {}
+
+
+p {}
+
+
+b,
+strong {}
+
+
+i,
+em {}
+
+
+dfn {}
+
+
+sup {}
+
+
+sub {}
+
+
+del {}
+
+
+ins {}
+
+
+blockquote {
+  font: 400 1.5em "Roboto", Arial, sans-serif;
+  line-height: 1.75;
+  padding: .5em 1.5em 0;
+  position: relative;
+  margin:0;
+
+  p {
+    font-size: 1.5rem;
+  }
+  &:before, p:last-child:after {
+    color: #ccc;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 1.875em;
+  }
+  &:before {
+    content: open-quote;
+    position: absolute;
+    top: -0.2em;
+    left: 0.2em;
+  }
+  p:last-child:after {
+    display: inline;
+    content: close-quote;
+    line-height: 0;
+    vertical-align: text-bottom;
+    margin-left: 0.125em;
+  }
+  & + figcaption {
+    margin-right: 2em;
+    text-align:right;
+    font-size:1.25em;
+  }
+}
+
+
+cite {}
+
+
+q {}
+
+
+address {}
+
+
+ul {}
+
+
+ol {}
+
+
+li {}
+
+
+dl {}
+
+
+dd {}
+
+
+dt {}
+
+
+abbr {}
+
+
+acronym {}
+
+
+pre,
+code,
+tt,
+samp,
+kbd,
+var {
+  font-family: $mono;
+}
+
+
+/* =============================================================================
+ *   Wrappers
+ * ========================================================================== */
+
+/*
+ * Outer wrappers:
+ * - #page-wrapper: body > #page-wrapper
+ * - #page: body > #page-wrapper > #page
+ * - .container: body > #page-wrapper > #page.container
+ *
+ * The .container class holds the page width value from theme settings. You can
+ * style the .container class but do not add width such as border, padding,
+ * margins etc.
+ */
+
+#page-wrapper {}
+
+
+#page  {
+  &.container {}
+}
+
+
+/*
+ * Wraps all header elements - branding and .region-header
+ */
+#header {}
+
+
+/*
+ * Wraps the sidebars the content column
+ */
+#columns {}
+
+
+/*
+ * Main content column wrapper
+ */
+#content-column {}
+
+
+/*
+ * Wraps the main-content-header, the content region and feed-icons. Use this
+ * wrapper to style the entire main content column
+ */
+#main-content {
+  margin-left:0;
+  margin-right:0;
+  margin-top:70px;
+  position:relative;
+}
+
+
+/*
+ * Wraps the content region, avoid applying styles to this wrapper, its used
+ * mainly for position and invisible gutters and can be problematic to style
+ */
+#content {}
+
+
+/*
+ * Footer wrapper
+ */
+#footer {
+  background-color: #ebebeb;
+  color: #959595;
+  margin: 0;
+  padding: 2em 2em 4em;
+  text-align: center;
+
+  #block-menu-menu-social-media {
+
+    ul.menu {
+      margin: 0 auto;
+      padding: 0;
+      text-align: center;
+
+      li {
+        list-style: outside none none;
+        margin: 0;
+        padding: 0;
+        vertical-align: baseline;
+        display:inline;
+
+        a {
+          margin: 0 0.5em;
+          padding: 0;
+          text-indent: -9999px;
+          display:inline-block;
+
+          &#menu-social-twitter {
+            background: transparent url("images/icons-social-twitter.png") no-repeat scroll 0 0;
+            height: 27px;
+            width: 32px;
+          }
+
+          &#menu-social-facebook {
+            background: transparent url("images/icons-social-facebook.png") no-repeat scroll 0 0;
+            height: 27px;
+            width: 27px
+          }
+
+          &#menu-social-youtube {
+            background: transparent url("images/icons-social-youtube.png") no-repeat scroll 0 0;
+            height: 27px;
+            width: 33px
+          }
+        }
+      }
+    }
+  }
+}
+
+
+/*
+ * Panels may need additional margin wrangling when in the $content region
+ */
+#content .panel-display {}
+
+/*
+ * Full Width Wrappers
+ * These are used in the optional page--full-width-wrappers.tpl.php template.
+ * All have internal .container classes. In the full width wrapper template the
+ * .container classes set the width or max-width - you can style this but never
+ * add any width/margin/padding/borders etc to .container
+ */
+
+/*
+ * Wraps the leaderboard
+ */
+#leaderboard-wrapper {
+  .container {}
+}
+
+
+/*
+ * Wraps the header
+ */
+#header-wrapper {
+  /* Debug styles, is this working */
+  background: $debug;
+  .container {}
+}
+
+
+/*
+ * Wraps the nav elements
+ */
+#nav-wrapper {
+  .container {}
+}
+
+
+/*
+ * Wraps breadcrumb
+ */
+#breadcrumb-wrapper {
+  .container {}
+}
+
+
+/*
+ * Wraps messages and help
+ */
+#messages-help-wrapper {
+  .container {}
+}
+
+
+/*
+ * Wraps the secondary content/preface region
+ */
+#secondary-content-wrapper {
+  .container {}
+}
+
+
+/*
+ * Wraps the main content column
+ */
+#content-wrapper {
+  .container {}
+}
+
+
+/*
+ * Wraps the tertiary content/postfix region
+ */
+#tertiary-content-wrapper {
+  .container {}
+}
+
+
+/*
+ * Footer wrapper
+ */
+#footer-wrapper {
+  /* Debug styles, is this working? */
+  background: $debug;
+
+  .container {}
+}
+
+
+/* =============================================================================
+ *   Branding
+ * ========================================================================== */
+
+/*
+ * Wraps all the branding elements, logo, name and slogan
+ */
+#branding {
+  height:72px;
+  position:relative;
+}
+
+
+/*
+ * Logo
+ */
+#logo {
+  padding: 1em 1em 0;
+  max-width:980px;
+  margin:0 auto;
+  position:relative;
+
+  img {
+    vertical-align: bottom;
+  }
+
+  #linkware-live-logo {
+    display:inline;
+    margin: 0 0 0 1em;
+  }
+}
+
+#sign-in-wrapper {
+  position:absolute;
+  top:0.5em;
+  right:0;
+
+  a {
+    display:block;
+    padding:1em 4em;
+    font-size: 0.9em;
+    font-weight: 700;
+    text-transform:uppercase;
+    border-radius:4px;
+    color:white;
+    background: #fec10e; /* Old browsers */
+    background: -moz-linear-gradient(top, #fec10e 0%, #d29d00 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fec10e), color-stop(100%,#d29d00)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, #fec10e 0%,#d29d00 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, #fec10e 0%,#d29d00 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, #fec10e 0%,#d29d00 100%); /* IE10+ */
+    background: linear-gradient(to bottom, #fec10e 0%,#d29d00 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fec10e', endColorstr='#d29d00',GradientType=0 ); /* IE6-9 */
+
+    &:hover {
+      text-decoration: none;
+    }
+
+    #sign-in-button {
+
+    }
+  }
+}
+
+#hamburger {
+  display:none;
+}
+
+
+
+
+/*
+ * Wrapper for the site name and slogan
+ */
+#name-and-slogan {}
+
+
+/*
+ * Site name (h1)
+ */
+#site-name {
+  margin: 0;
+
+  a {
+
+    &:link,
+    &:visited {
+      text-decoration: none;
+    }
+
+    &:hover,
+    &:focus {
+      text-decoration: underline;
+    }
+  }
+}
+
+
+/*
+ * Site slogan (h2)
+ */
+#site-slogan {
+  margin: 0;
+}
+
+
+/* =============================================================================
+ *   Page content header
+ * ========================================================================== */
+
+/*
+ * Main content header wraps the page title, tabs and actions links
+ */
+#main-content-header {}
+
+.node-type-microsite-page #main-content-header {
+  background-color:#293f6a;
+
+  #main-content-header-inner, #tasks {
+    max-width:980px;
+    padding:1em;
+    margin:0 auto;
+    width:auto;
+
+    h1 {
+      font:400 2.5em "Roboto", Arial, sans-serif;
+      color:#eeeeee;
+      letter-spacing:0;
+      line-height:1em;
+      text-align:left;
+
+      &:after {
+        margin:0.5em 0 0;
+        background-color:#ffc20e;
+        border-top:0 none;
+        clear:both;
+        height:3px;
+        top:0;
+        width:150px;
+        content:"";
+        display:block;
+      }
+    }
+  }
+}
+/*
+ * The main page title (h1)
+ */
+#page-title {
+  margin: 0;
+}
+
+
+/* =============================================================================
+ *   Misc Global Styles
+ * ========================================================================== */
+
+/*
+ * Feed icons
+ */
+.feed-icon {}
+
+/*
+ * Action Buttons
+ */
+.action-button {
+  padding:1.25em 1.5em;
+  font-size: 0.85em;
+  font-weight: 700;
+  text-transform:uppercase;
+  border-radius:4px;
+  color:white;
+  letter-spacing:0.125em;
+  line-height:1.25em;
+  white-space:nowrap;
+  background: #fec10e; /* Old browsers */
+  background: -moz-linear-gradient(top, #fec10e 0%, #d29d00 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fec10e), color-stop(100%,#d29d00)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, #fec10e 0%,#d29d00 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, #fec10e 0%,#d29d00 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, #fec10e 0%,#d29d00 100%); /* IE10+ */
+  background: linear-gradient(to bottom, #fec10e 0%,#d29d00 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fec10e', endColorstr='#d29d00',GradientType=0 ); /* IE6-9 */
+
+  &:hover {
+    text-decoration:none;
+  }
+}
+
+/*
+ * Aggregator feed source
+ */
+#aggregator .feed-source .feed-icon {
+  display: inline;
+  float: none;
+  margin-right: 10px;
+}
+
+
+.feed-details dt,
+.feed-details dd {
+  display: inline;
+  margin: 0;
+}
+
+
+/*
+ * Generic styles for the more link
+ */
+.more-link {}
+
+
+/*
+ * Generic styles for links. See the ul.links declaration in node and comment stylesheets
+ */
+ul.links {
+  margin: 0;
+  padding: 0;
+
+  &.inline {
+    display: block;
+  }
+
+  li {
+    display: inline;
+    list-style: none;
+    padding: 0 10px 0 0;
+  }
+}
+
+
+/*
+ * Search results are an ordered list so reset the margin
+ */
+.search-results {
+  margin: 0;
+  padding: 0;
+}
+
+
+/*
+ * Attribution message and link
+ */
+.attribution {
+  display: block;
+  opacity: 0.65;
+  padding: 1em 0;
+  text-align: center;
+
+  a {
+    text-decoration: none;
+    color: inherit;
+
+    &:hover,
+    &:focus {
+      text-decoration: underline;
+    }
+  }
+}
+
+
+/* =============================================================================
+ *   Regions
+ * ========================================================================== */
+
+/*
+ * Standard region wrapper, don't add width to any regions, you will bork the layout - no margin, padding or borders etc
+ */
+.region {}
+
+
+/*
+ * Regions have an inner div - perfect for adding margin, padding or borders
+ */
+.region-inner {}
+
+
+/*
+ * Regions can be nested, such as when using Panels
+ */
+.region-inner .region-inner {}
+
+
+/*
+ * Header region, embedded in the #header
+ */
+.region-header {}
+
+
+/*
+ * Generally used to output Drupals help block, if the help module is enabled
+ */
+.region-help {}
+
+
+/*
+ * Secondary content
+ */
+.region-secondary-content {}
+
+
+/*
+ * Sits above the main content header, like a content-top region
+ */
+.region-highlighted {}
+
+
+/*
+ * Sits below the main content, like a content-bottom region
+ */
+.region-content-aside {}
+
+
+/*
+ * Sidebars - targets both
+ */
+.sidebar {}
+
+
+/*
+ * First sidebar
+ */
+.region-sidebar-first {}
+
+
+/*
+ * Second sidebar
+ */
+.region-sidebar-second {}
+
+
+/*
+ * Tertiary content
+ */
+.region-tertiary-content {}
+
+
+/*
+ * Footer region
+ */
+.region-footer {
+  margin: 0;
+  padding: 0 0 2em;
+  text-align: center;
+}
+
+#footer-message {
+  font-size:0.75em;
+}
+
+/*
+ * Content styles
+ */
+
+.light {
+  color:#16386e;
+
+  hr {
+    width:10%;
+    background-color:#999999;
+    height:3px;
+    border:medium none;
+    margin:0 auto 2.875rem;
+  }
+}
+.dark {
+  background-color: #293f6a;
+  color: #EEEEEE;
+
+  hr {
+    width:10%;
+    background-color:#ddab17;
+    height:4px;
+    border:medium none;
+    margin:0 auto 2.875rem;
+  }
+
+}
+
+#intro {
+  color:#eeeeee;
+  background: #293f6a url("../images/intro-background-big.jpg") no-repeat scroll center 0;
+
+  #intro-inner {
+    max-width:980px;
+    display:flex;
+    margin: 0 auto;
+    padding:30px 1em;
+
+    #intro-left {
+      max-width:401px;
+      padding:0;
+    }
+
+    #intro-right {
+      flex-grow:1;
+      padding:0 2em;
+
+      .text {
+        padding:1em 2em;
+        background-color: rgba(22,56,110,0.6);
+        margin-bottom:2em;
+        max-width:445px;
+
+        h2 {
+          font:400 1.875em/1.5em "Roboto", Arial, sans-serif;
+          margin:0;
+
+          strong {
+            color: #ffc20f;
+          }
+        }
+
+        p {
+          font-size:1.5rem;
+          margin:1em 0;
+        }
+      }
+
+      p {
+
+      }
+    }
+  }
+}
+
+#overview {
+
+  #overview-inner {
+    max-width:980px;
+    text-align:center;
+    font-size:1.8em;
+    padding:0 1em 4.1875rem;
+    margin:0 auto;
+  }
+}
+
+#what-it-does {
+  color:#eeeeee;
+
+  #what-it-does-inner {
+    max-width:980px;
+    display:flex;
+    margin: 0 auto;
+    padding:0 1em 6.875rem;
+
+    #what-it-does-left {
+      max-width:367px;
+      padding:0;
+    }
+
+    #what-it-does-right {
+      flex-grow:1;
+      padding:0 1em 0 0;
+    }
+  }
+}
+
+#test-result-management {
+   padding:1em 0;
+
+   #test-result-management-inner {
+     margin: 1em auto;
+     max-width: 980px;
+     display: flex;
+     justify-content: center;
+     flex-flow: row wrap;
+     align-items: center;
+     padding:0 1em;
+
+     div {
+       margin:0 2%;
+
+       &#test-result-management-left {
+         flex: 1 1 50%;
+
+         p {
+           font-size: 1.25em;
+         }
+       }
+
+       &#test-result-management-right {
+         flex: 1 1 30%;
+
+         img {
+           max-width: 367px;
+         }
+       }
+     }
+   }
+ }
+
+#manage-your-testers {
+  padding:1em 0;
+
+  #manage-your-testers-inner {
+    margin: 1em auto;
+    max-width: 980px;
+    display: flex;
+    justify-content: center;
+    flex-flow: row wrap;
+    align-items: center;
+    padding: 1em;
+
+    div {
+      margin:0 2%;
+
+      &#manage-your-testers-left {
+        flex: 1 1 auto;
+
+        img {
+          max-width: 367px;
+        }
+      }
+
+      &#manage-your-testers-right {
+        flex: 1 1 50%;
+
+        p {
+          font-size: 1.25em;
+        }
+      }
+    }
+  }
+}
+
+#turbocharge {
+   padding:1em;
+
+   #turbocharge-inner {
+     margin: 1em auto;
+     max-width: 980px;
+     display: flex;
+     justify-content: center;
+     flex-flow: row wrap;
+     align-items: center;
+
+     div {
+       margin:0 2%;
+
+       &#turbocharge-left {
+         flex: 1 1 50%;
+
+         p {
+           font-size: 1.25em;
+         }
+         .button-wrapper {
+           text-align:right;
+           padding:1.25em 1.5em;
+         }
+       }
+
+       &#turbocharge-right {
+         flex: 1 1 30%;
+
+         img {
+           max-width: 367px;
+         }
+       }
+     }
+   }
+ }
+
+#setup-testers {
+  padding:1em;
+
+  #setup-testers-inner {
+    margin: 0 auto;
+    max-width: 980px;
+    display: flex;
+    justify-content: center;
+    flex-flow: row wrap;
+    align-items: center;
+    padding:1em 0;
+
+    div {
+      margin:0 2%;
+
+      &#setup-testers-left {
+        flex: 1 1 50%;
+
+        p {
+          font-size: 1.25em;
+        }
+      }
+
+      &#setup-testers-right {
+        flex: 1 1 30%;
+        text-align:center;
+
+        img {
+          max-width: 367px;
+        }
+      }
+    }
+  }
+}
+
+#maximize-the-benefit {
+  margin:0 auto;
+  padding:2em 0;
+
+  #maximize-the-benefit-inner {
+    max-width:980px;
+    display: -webkit-flex;
+    display:flex;
+    -webkit-justify-content: center;
+    justify-content:center;
+    -webkit-flex-flow:row-wrap;
+    flex-flow:row wrap;
+    -webkit-align-items:flex-start;
+    align-items:flex-start;
+    margin:2em auto;
+
+    div {
+      -webkit-flex:1 0 50%;
+      flex:1 0 50%;
+
+      p{
+        font-size:1.25em;
+      }
+    }
+  }
+}
+#visibility {
+
+  #visibility-inner {
+    display: flex;
+    justify-content: center;
+    flex-flow: row wrap;
+    align-items: flex-start;
+    margin:0 auto;
+    max-width:980px;
+    padding:2em 0;
+
+    #visibility-left {
+      flex: 1 1 25%;
+    }
+    #visibility-right {
+      flex: 1 1 55%;
+      margin:0 5%;
+
+      h2 {
+        font-weight: 700;
+        margin:0.25em 0;
+      }
+      p {
+        font-size:1.25em;
+      }
+    }
+  }
+}
+
+
+
+#enter-to-win {
+
+  #enter-to-win-inner {
+    max-width: 980px;
+    /* text-align: center; */
+    font-size: 1em;
+    padding: 0 1em 6.875rem;
+    margin: 0 auto;
+
+    p {
+      font-size: 1.8em;
+      margin:0 0 0.9em;
+      text-align:center;
+
+      &.fine-print {
+        font-size: 0.75em;
+      }
+    }
+
+    li {
+      font-size:1.8em;
+      text-align:center;
+      list-style-position:inside;
+    }
+
+    div {
+      padding: 20px 0;
+      margin:10px 0;
+      text-align:center;
+
+      a:hover {
+        text-decoration:none;
+      }
+    }
+
+    .action-button {
+
+    }
+  }
+}
+
+.learn {
+
+  &.dark {
+    padding: 0 0 6.875rem;
+    text-align: center;
+  }
+
+  &.light {
+
+    #learn-light-inner {
+      max-width:980px;
+      padding:0 1em;
+      margin:0 auto;
+
+      >div {
+        clear:both;
+        overflow:hidden;
+        border-bottom:1px solid #cccccc;
+        padding:30px 0;
+
+        h3 {
+          font-weight:300;
+          text-align:center;
+          margin:0 0 1em;
+        }
+
+        &#track-certification h3 {
+          text-align: left;
+        }
+
+        &#upload img {
+
+          &#ipad {
+            float:right;
+            margin:0 0 0 1em;
+          }
+
+          &#illustration {
+            display: block;
+            margin: 0 auto;
+            clear:both;
+          }
+        }
+
+        &#projx img {
+          margin:0 auto;
+          display:block;
+        }
+
+        &#get-notified #get-notified-images {
+          display:flex;
+          align-items:center;
+          justify-content:center;
+        }
+
+        #compatibility-inner {
+          display:flex;
+
+          #compatibility-left {
+            flex-grow:1;
+            padding: 0 1em 0 0;
+
+            ul {
+              list-style-type:none;
+            }
+          }
+
+          #compatibility-right {
+            width:439px;
+            padding:0;
+            margin:0;
+          }
+        }
+
+        &#plans table {
+          width:80%;
+          border:none;
+          margin:0 auto;
+
+          tbody {
+            border-top:none;
+          }
+
+          tr {
+            background-color:transparent;
+            border-top:none;
+
+            td {
+              width:50%;
+            }
+          }
+        }
+      }
+
+    }
+  }
+}
+
+#resources {
+  border-bottom: 1px solid #cccccc;
+  padding:2em 1em;
+  margin:0 auto;
+  max-width:980px;
+
+  #resources-inner {
+    text-align: center;
+    display:flex;
+    box-sizing:border-box;
+    justify-content:center;
+    flex-direction:row;
+
+    .linkware-resource {
+      -webkit-flex: 0 1 25%;
+      flex: 0 1 25%;
+      margin:2%;
+      background-color: #efebeb;
+      border-radius:10px;
+      position:relative;
+
+      .linkware-blue {
+        background-color: #293f6a;
+        color: #eeeeee;
+        border-radius: 10px 10px 0 0;
+        padding:20px 5px;
+        font-size:1.6em;
+      }
+
+      .linkware-grey {
+        color: #293f6a;
+        font-size: 1em;
+        padding: 5px 30px 60px;
+        position: relative;
+        text-align:left;
+      }
+
+      .button-wrapper {
+        padding:18px 0;
+        width:100%;
+        position:absolute;
+        bottom:10px;
+        left:0;
+
+
+        .action-button {
+          padding:18px 20px;
+          font-size: 0.9em;
+          font-weight: 800;
+          text-transform:uppercase;
+          border-radius:4px;
+          color:white;
+          background: #fec10e; /* Old browsers */
+          background: -moz-linear-gradient(top, #fec10e 0%, #d29d00 100%); /* FF3.6+ */
+          background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fec10e), color-stop(100%,#d29d00)); /* Chrome,Safari4+ */
+          background: -webkit-linear-gradient(top, #fec10e 0%,#d29d00 100%); /* Chrome10+,Safari5.1+ */
+          background: -o-linear-gradient(top, #fec10e 0%,#d29d00 100%); /* Opera 11.10+ */
+          background: -ms-linear-gradient(top, #fec10e 0%,#d29d00 100%); /* IE10+ */
+          background: linear-gradient(to bottom, #fec10e 0%,#d29d00 100%); /* W3C */
+          filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fec10e', endColorstr='#d29d00',GradientType=0 ); /* IE6-9 */
+
+          &:hover {
+
+          }
+        }
+      }
+    }
+  }
+}
+
+#faq {
+  border-bottom: 1px solid #cccccc;
+
+  #faq-inner {
+    max-width: 980px;
+    padding: 0 1em 6.875rem;
+    margin: 0 auto;
+    font-family: "Roboto", Arial, sans-serif;
+
+    h3 {
+      font-size:1.75em;
+      border:none;
+      background:none;
+      position:relative;
+      font-weight:300;
+      cursor:pointer;
+      line-height:1.1em;
+
+      span {
+        position:absolute;
+        top:5px;
+        left:-20px;
+      }
+    }
+
+    .underline {
+      text-decoration:underline;
+    }
+
+    div.ui-widget-content {
+      padding:5px 10px;
+      margin:10px 0;
+      background:transparent none repeat scroll 0 0;
+      border:none;
+    }
+  }
+}
+
+#customers-think {
+  padding:2em 1em 1em;
+
+   #customers-think-inner {
+     max-width:980px;
+     padding:1em 0;
+     margin:0 auto;
+
+     h2 {
+       margin:0.83em;
+     }
+     .button-wrapper {
+       padding:1.25em 1.5em;
+       margin:0 1em;
+     }
+   }
+ }
+
+
+
+#related-products {
+
+  .related-products-inner {
+    padding:0 1em 6.875rem;
+
+    #related-products-images {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+    }
+
+    ul {
+      list-style:none;
+      margin:0;
+      padding:0;
+      text-align:center;
+
+      li {
+        display:inline;
+
+        a {
+          display:inline-block;
+          padding:10px;
+          color:#293f6a;
+        }
+      }
+    }
+  }
+}
+
+.node-microsite-page {
+
+  ul.resources, ul.rants-raves {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    float:none;
+    background-color:transparent;
+
+    li {
+      padding: 0;
+      margin: 1em 0;
+      list-style: none;
+
+      &:after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+
+      .thumbnail {
+        float: right;
+        margin: 0 0 1em 1em;
+        width: 15%;
+        text-align: center;
+
+        img {
+          width: auto;
+          max-width: 100%;
+        }
+      }
+
+      p {
+        font:300 1.6em "Roboto", Arial, sans-serif;
+        margin:1em 0;
+        line-height:1.25em;
+
+        &.smaller {
+          font-size:1.25em;
+          margin:0.8em 0;
+        }
+
+        strong {
+          font-weight:400;
+        }
+      }
+    }
+  }
+}
+
+.node-type-microsite-page #content {
+  margin: 0 auto;
+  max-width: 980px;
+  padding: 1em;
+  width: auto;
+
+  h3 {
+    font: 300 2em "Roboto", Arial, sans-serif;
+    line-height: 1.1em;
+    color: #293f6a;
+    margin: 1em 0 0.25em;
+  }
+}
+
+div.section-header.header-truview.page-header span:after {
+  margin: 0.5em 0 0;
+}
+
+/* =============================================================================
+ *   Links
+ * ========================================================================== */
+
+a {
+  text-decoration: none;
+
+  &:link,
+  &:visited {}
+
+  &:active,
+  &.active {}
+
+  &:hover,
+  &:focus {
+    text-decoration: underline;
+  }
+}
+
+
+/* =============================================================================
+ *   Primary, Secondary and Menu Bar region menus
+ * ========================================================================== */
+
+.nav {
+  clear: both;
+  margin: 10px 0;
+
+  ul,
+  ul.menu {
+    margin: 0;
+    padding: 0;
+  }
+
+  li,
+  ul.menu li {
+    display: inline;
+    float: left;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  li a,
+  ul.menu li a {
+    display: block;
+    white-space: nowrap;
+    padding: 0 10px;
+
+    &:visited {}
+
+    &:hover,
+    &:focus {}
+  }
+
+  .block {
+    margin-bottom: 0;
+  }
+}
+
+#block-responsive-dropdown-menus-menu-microsite-linkware-live-top {
+  background-color: #293f6a;
+  left: 0;
+  opacity: 0.9;
+  position: absolute;
+  min-height:70px;
+  width: 100%;
+  z-index: 999;
+  font-family:"Roboto", Arial, sans-serif;
+  box-shadow: 0 2px 3px rgba(0,0,0,.4);
+
+  .menu-toggle {
+    margin:1em 0 0;
+
+    .toggle-help {
+      color:white;
+    }
+  }
+
+  &.main-nav-scrolled {
+    position: fixed;
+    width: 100%;
+    top: 0;
+  }
+
+  ul {
+    margin: 0 auto;
+    padding: 0.5em 0;
+    text-align: center;
+
+    li {
+      list-style:none;
+      display:inline-block;
+      padding:0;
+      margin:0;
+      display: -moz-inline-stack;
+      vertical-align: baseline;
+      zoom: 1;
+      *display: inline;
+
+      a {
+        background-image: none;
+        border: 1px solid transparent;
+        border-radius: 0.25em;
+        color: #ffffff;
+        cursor: pointer;
+        display: block;
+        font-size: 0.85em;
+        font-weight: 700;
+        letter-spacing: 0.125em;
+        line-height: 1.25em;
+        margin: 0;
+        padding: 1.25em 1em;
+        position: relative;
+        text-align: center;
+        text-decoration: none;
+        text-transform: uppercase;
+        vertical-align: baseline;
+        white-space: nowrap;
+
+        &.home-icon {
+          background:transparent url('images/icon-homepage.png') no-repeat scroll 13px 18px;
+          text-indent: -10000px;
+          width:16px;
+          margin-right:1em;
+
+          &:hover {
+            background:transparent url('images/icon-homepage.png') no-repeat scroll -32px 18px;
+          }
+        }
+
+        &.lwl-logo {
+          background:transparent url('images/lwl-logo-sprite.png') no-repeat scroll 0 -23px;
+          text-indent: -10000px;
+          width:96px;
+          margin-right:1em;
+          margin-top:-21px;
+          padding:0;
+          border-radius:0;
+          height:22px;
+
+
+          &:hover {
+            background:transparent url('images/lwl-logo-sprite.png') no-repeat scroll 0 -1px;
+          }
+        }
+
+        &.active, &:visited {
+          color: #fff;
+        }
+
+        &:hover,
+        &.current {
+          color: #ffc20e;
+        }
+
+        &.btn {
+          padding: 1.25em 1em;
+          border-color: #79b19e;
+          background-color: #79b19e;
+          color: #fff;
+        }
+
+        &.menu-sign-in {
+          display:none;
+          padding:1em 2em;
+          font-size: 0.9em;
+          font-weight: 700;
+          text-transform:uppercase;
+          border-radius:4px;
+          color:white;
+          background: #fec10e; /* Old browsers */
+          background: -moz-linear-gradient(top, #fec10e 0%, #d29d00 100%); /* FF3.6+ */
+          background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fec10e), color-stop(100%,#d29d00)); /* Chrome,Safari4+ */
+          background: -webkit-linear-gradient(top, #fec10e 0%,#d29d00 100%); /* Chrome10+,Safari5.1+ */
+          background: -o-linear-gradient(top, #fec10e 0%,#d29d00 100%); /* Opera 11.10+ */
+          background: -ms-linear-gradient(top, #fec10e 0%,#d29d00 100%); /* IE10+ */
+          background: linear-gradient(to bottom, #fec10e 0%,#d29d00 100%); /* W3C */
+          filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fec10e', endColorstr='#d29d00',GradientType=0 ); /* IE6-9 */
+        }
+      }
+    }
+  }
+}
+
+
+
+/* =============================================================================
+ *   Superfish
+ * ========================================================================== */
+
+ul.sf-menu {
+  margin-bottom: 0;
+
+  a {
+    border-left: 0;
+    border-top: 0;
+    padding: 0 10px;
+    text-decoration: none;
+    height: 2.5em;
+    line-height: 2.5em;
+
+    &:link,
+    &:visited {}
+  }
+
+  li {
+    &:hover,
+    &.sfHover {
+      outline: 0;
+    }
+  }
+
+  a {
+    &:focus,
+    &:hover,
+    &:active {
+      outline: 0;
+    }
+  }
+}
+
+
+/*
+ * Superfish blocks
+ */
+.block-superfish {
+
+  .block-inner .content {}
+
+  ul {
+    margin: 0 !important;
+    padding: 0 !important;
+
+    ul {
+      ul {
+        ul {}
+      }
+    }
+  }
+
+  li {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+
+/*
+ * Vertical style
+ */
+.sf-vertical {
+  width: 100%;
+
+  li {
+    width: 100%;
+
+    &.last {}
+
+    &:hover ul,
+    &.sfHover ul {
+      left: 100%;
+      top: 0;
+      margin: 0;
+      padding: 0;
+    }
+
+    a {
+      padding: 0 10px;
+    }
+  }
+}
+
+
+/*
+ * Navbar style
+ */
+.sf-navbar {
+  padding-bottom: 0 !important;
+}
+
+
+/*
+ * Sensible padding for the default style
+ */
+.sf-menu.sf-style-default a {
+  padding: 0 10px;
+}
+
+
+/* =============================================================================
+ *   Menu Toggles
+ * ========================================================================== */
+// .at-mt is a page class
+.at-mt {
+  .at-menu-toggle,
+  .at-menu-toggle ul,
+  .at-menu-toggle ul.menu {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0;
+  }
+
+  .at-menu-toggle-button {
+    margin: 0;
+  }
+
+  .at-menu-toggle ul a {
+    padding: 0 10px;
+    white-space: nowrap;
+  }
+}
+
+
+/* =============================================================================
+ *   Menus, usually blocks
+ * ========================================================================== */
+
+ul.menu {
+  padding-left: 15px;
+
+  ul {
+    padding-left: 15px;
+
+    ul {
+      ul {}
+    }
+  }
+
+  li {
+    margin: 0;
+
+    &.collapsed,
+    &.expanded,
+    &.leaf {}
+
+    a {
+
+      &:link,
+      &:visited {}
+
+      &:active,
+      &.active {}
+
+      &:hover,
+      &:focus {}
+    }
+
+    &.active a,
+    &.active-trail a {}
+
+    &.first,
+    &.last {}
+  }
+}
+
+
+/* If li.content exists it's a problem, so reset the padding */
+.block .menu li.content {
+  padding: 0;
+}
+
+/* =============================================================================
+ *   Book navigation menu
+ * ========================================================================== */
+
+.book-navigation {
+
+  .page-links {}
+
+  .page-previous {}
+
+  .page-next {}
+
+  .page-up {
+    /* Prevent text wrapping to a new line, assumes English "up" is used (two characters) */
+    min-width: 2em;
+    white-space: nowrap;
+  }
+
+  .menu {
+    margin-left: 0;
+  }
+}
+
+
+/* =============================================================================
+ *   Breadcrumbs
+ * ========================================================================== */
+
+#breadcrumb {
+  margin: 10px 0;
+
+  /* If the label is set to show in theme settings the label class is added */
+  .breadcrumb-label {
+    font-size: 1em;
+    display: inline;
+    padding-right: 10px;
+
+    &:after {
+      content: ":";
+    }
+  }
+
+  ol {
+    margin: 0;
+    padding: 0;
+  }
+
+  .with-breadcrumb-label ol {
+    display: inline;
+  }
+
+  li {
+    list-style: none;
+    display: inline;
+  }
+
+  li.crumb-first {}
+
+  li.crumb-last {}
+
+  a {
+
+    &:link,
+    &:visited {}
+
+    &:active,
+    &.active {}
+
+    &:hover,
+    &:focus {}
+  }
+}
+
+
+/* =============================================================================
+ *   Pagers
+ * ========================================================================== */
+
+ul.pager {
+  clear: both;
+  margin: 0;
+  text-align: center;
+}
+
+
+.item-list ul.pager li {
+  margin: 0;
+}
+
+
+ul.pager li {
+  background-image: none;
+  display: inline;
+  list-style-type: none;
+  padding: .5em;
+
+  &.pager-current {
+    font-weight: 700;
+  }
+}
+
+
+.block ul.pager li {
+  margin: 0;
+}
+
+
+/*
+ * Theme the various states of pager links
+ */
+ul.pager li {
+
+  a {
+
+    &:link,
+    &:visited {}
+
+    &:active,
+    &.active {}
+
+    &:hover,
+    &:focus {}
+  }
+
+  &.pager-item {}
+  &.first {}
+  &.last {}
+  &.pager-current {}
+  &.pager-first {}
+  &.pager-previous {}
+  &.pager-next {}
+  &.pager-last {}
+}
+
+
+/* =============================================================================
+ *   Skip Navigation
+ * ========================================================================== */
+
+#skip-link {
+  left: 50%;
+  margin-left: -6.5em;
+  margin-top: 0;
+  padding: 0 0.5em;
+  position: absolute;
+  width: 12em;
+  z-index: 50;
+
+  a {
+    background: #444;
+    background: rgba(0, 0, 0, 0.6);
+    color: $page;
+    display: block;
+    line-height: 2;
+    padding: 0;
+    text-align: center;
+    text-decoration: none;
+
+    &:link,
+    &:visited {
+      background: #444;
+      background: rgba(0, 0, 0, 0.6);
+      color: $page;
+      display: block;
+      line-height: 2;
+      padding: 0;
+      text-align: center;
+      text-decoration: none;
+    }
+    &:hover,
+    &:focus,
+    &:active {
+      outline: 0;
+    }
+  }
+}
+
+
+/* =============================================================================
+ *   Tabs (local tasks)
+ * ========================================================================== */
+
+#tasks {
+  margin-bottom: 15px;
+}
+
+
+ul.primary {
+  border-bottom-color: $border;
+  margin: 20px 0;
+  padding: 0 0 0 5px;
+
+  li {
+    display: block;
+    float: left;
+    margin: 0 1px -1px;
+
+    a {
+      background-color: $ultralight;
+      border-color: $border;
+      margin-right: 1px;
+      padding: 0 10px;
+      display: block;
+      float: left;
+      height: 1.5em;
+      line-height: 1.5em;
+
+      &:hover,
+      &:focus {
+        background-color: $light;
+        border-color: $border;
+      }
+    }
+  }
+
+  li.active {
+    a,
+    a:hover,
+    a:focus {
+      background-color: $page;
+      border-bottom-color: $page;
+    }
+  }
+}
+
+
+ul.secondary {
+  border-bottom: 1px solid $border;
+  margin: 1em 0 0;
+  padding: 0 .3em 1em;
+
+  li {
+    border-right: 0;
+    list-style: none;
+    padding: 0 10px 0 0;
+
+    a {
+      &:hover,
+      &.active {
+        border-bottom: none;
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+
+/* =============================================================================
+ *   Action links
+ * ========================================================================== */
+
+ul.action-links {
+  margin: 20px 0 0;
+  list-style: none;
+
+  li {}
+}
+
+
+/* =============================================================================
+ *  Field Styling
+ * ========================================================================== */
+
+/*
+ * Wrapper for any field
+ */
+.field {}
+
+
+/*
+ * Above and inline classes are on the field wrapper
+ */
+.field-label-above {}
+
+
+/*
+ * When labels are set to inline in field display settings the clearfix class is automatically added
+ */
+.field-label-inline {
+
+  /* Remove the margin on inline field lables to preserve vertical formatting */
+  .field-label {
+    margin: 0;
+  }
+}
+
+/*
+ * Labels are h2 in Adaptivetheme. Use a strong selector to mitigate unwanted ineritance issues
+ */
+.field-label {
+  font-size: 1em;
+  font-weight: 700;
+  font-family: inherit;
+  line-height: inherit;
+  margin-bottom: 0;
+}
+
+
+/*
+ * Field types (Core)
+ */
+
+/*
+ * Image fields use the <figure> and <figcaption> elements from HTML5
+ */
+.field-type-image {
+
+  .caption {}
+
+  .full-caption {}
+
+  .teaser-caption {}
+}
+
+
+/*
+ * Taxonomy
+ */
+.field-type-taxonomy-term-reference {
+
+  /* The same bottom margin as p, blockquote, ul, ol and dl */
+  margin-bottom: 1.5em;
+
+  &.field-label-inline .field-items {
+    margin: 0;
+    padding: 0;
+  }
+
+  &.field-label-inline .field-item {
+    display: inline;
+    list-style: none;
+    padding: 0 10px 0 0;
+  }
+}
+
+
+/*
+ * Text
+ */
+.field-type-text {}
+
+
+/*
+ * Long text
+ */
+.field-type-text-long {}
+
+
+/*
+ * Text with summary
+ */
+.field-type-text-with-summary {}
+
+
+/*
+ * File
+ */
+.field-type-file {}
+
+
+/*
+ * Number/Integer
+ */
+.field-type-number-integer {}
+
+
+/*
+ * Decimal
+ */
+.field-type-number-decimal {}
+
+
+/*
+ * Number float
+ */
+.field-type-number-float {}
+
+
+/*
+ * List
+ */
+.field-type-list-text {}
+
+
+/*
+ * List boolean
+ */
+.field-type-list-boolean {}
+
+
+/*
+ * List integer
+ */
+.field-type-list-integer {}
+
+
+/*
+ * List float
+ */
+.field-type-list-float {}
+
+
+/*
+ * Field types (Contrib)
+ */
+.field-type-datetime {}
+
+.field-type-node-reference {}
+
+.field-type-user-reference {}
+
+
+/*
+ * Named fields
+ */
+.field-name-body {}
+
+.field-name-field-image {}
+
+.field-name-field-tags {}
+
+
+/*
+ * Underscores in field name are replaced with dashes
+ */
+.field-name-field-FIELDNAME {}
+
+
+/*
+ * Image Alignment Theme Settings - included here so you can easily override
+ */
+
+/*
+ * Float none setting
+ */
+.ia-n .field-type-image,
+.iat-n .field-type-image {}
+
+
+/*
+ * Float left setting
+ */
+.ia-l .field-type-image figure,
+.iat-l .field-type-image figure {
+  margin: 5px 20px 15px 0;
+}
+
+
+/*
+ * Centered setting
+ */
+.ia-c .field-type-image figure,
+.iat-c .field-type-image figure {
+  margin: 5px auto 15px;
+}
+
+
+/*
+ * Float right setting
+ */
+.ia-r .field-type-image figure,
+.iat-r .field-type-image figure {
+  margin: 5px 0 15px 20px;
+}
+
+
+
+/* =============================================================================
+ *   Block Styling
+ * ========================================================================== */
+
+/*
+ * Main wrapper for most blocks, block_system_main does not have it
+ */
+.block {
+  margin-bottom: 20px;
+}
+
+
+/*
+ * Inner wrapper for most blocks, good for margin, padding and borders, block_system_main does not have it
+ */
+.block-inner {}
+
+
+/*
+ * The first block in the region
+ */
+.block.first {}
+
+
+/*
+ * The last block in the region
+ */
+.block.last {}
+
+
+/*
+ * Zebra striping for each block in the region
+ */
+.block.odd {}
+
+
+/*
+ * Zebra striping for each block in the region
+ */
+.block.even {}
+
+
+/*
+ * Block title
+ */
+.block-title {
+  margin: 0;
+}
+
+
+/*
+ * Block content wrapper
+ */
+.block-content {}
+
+
+/*
+ * Match item list and block menu margin and padding
+ */
+.block-content {
+
+  ul,
+  ol {
+    padding: 0 0 0 15px;
+  }
+
+  li {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+
+/*
+ * Block for the latest news items in the first category
+ */
+#block-aggregator-category-1 {}
+
+
+/*
+ * Block for the latest news items in the first feed
+ */
+#block-aggregator-feed-1 {}
+
+
+/*
+ * First block created with "Add block" link
+ */
+#block-block-1 {}
+
+
+/*
+ * "Recent blog posts" block
+ */
+#block-blog-recent {}
+
+
+/*
+ * "Book navigation" block for the current book's table of contents
+ */
+#block-book-navigation {}
+
+
+/*
+ * "Recent comments" block
+ */
+#block-comment-recent {}
+
+
+/*
+ * "Active forum topics" block
+ */
+#block-forum-active {}
+
+
+/*
+ * "New forum topics" block
+ */
+#block-forum-new {}
+
+
+/*
+ * Language switcher block
+ */
+#block-locale-language {}
+
+
+/*
+ * Custom menu block
+ */
+#block-menu-menu-NAME {}
+
+
+/*
+ * "Recent content" block
+ */
+#block-node-recent {}
+
+
+/*
+ * "Syndicate" block for primary RSS feed; see also page.css's .feed-icon
+ */
+#block-node-syndicate {}
+
+
+/*
+ * "Most recent poll" block
+ */
+#block-poll-recent {}
+
+
+/*
+ * "Author information" block for the profile of the page's author
+ */
+#block-profile-author-information {}
+
+
+/*
+ * "Search form" block
+ */
+#block-search-form {}
+
+
+/*
+ * "Shortcuts" block
+ */
+#block-shortcut-shortcuts {}
+
+
+/*
+ * "Popular content" block
+ */
+#block-statistics-popular {}
+
+
+/*
+ * "Main menu" block
+ */
+#block-system-main-menu {}
+
+
+/*
+ * "Management" block for Drupal management menu
+ */
+#block-system-management {}
+
+
+/*
+ * "Navigation" block for Drupal navigation menu
+ */
+#block-system-navigation {}
+
+
+/*
+ * "User menu" block for Drupal user menu
+ */
+#block-system-user-menu {}
+
+
+/*
+ * "System help" block
+ */
+#block-system-help {}
+
+
+/*
+ * "Main page content" block
+ */
+#block-system-main {}
+
+
+/*
+ * "Powered by Drupal" block
+ */
+#block-system-powered-by {}
+
+
+/*
+ * "User login form" block
+ */
+#block-user-login {}
+
+
+/*
+ * "Who's new" block for a list of the newest users
+ */
+#block-user-new {}
+
+
+/*
+ * "Who's online" block for a list of the online users
+ */
+#block-user-online {}
+
+
+/* =============================================================================
+ *   Node Styling
+ * ========================================================================== */
+
+.node {
+  margin-bottom: 0;
+
+  &.node-promoted {}
+
+  &.node-sticky {}
+
+  &.node-by-viewer {}
+
+  &.node-teaser {}
+
+  &.node-full {}
+
+  &.odd {}
+
+  &.even {}
+
+  .node-title {
+    margin: 0;
+  }
+
+  .user-picture {}
+
+  .submitted {
+
+    .username {}
+
+    time {}
+  }
+
+  .node-content {}
+
+  ul.links {
+
+    li {}
+    li a {}
+
+    li.node-read-more a {}
+    li.comment-add a {}
+    li.comment-comments a {}
+    li.comment-new-comments a {}
+    li.blog-sernames-blog a {}
+    li.print-html a {}
+    li.print-email a {}
+    li.print-pdf a {}
+  }
+}
+
+
+.preview .node {}
+
+
+/*
+ * All nodes are given a node-FOO class that describes the type of content that
+ * it is. If you create a new content type called "my-custom-type", it will
+ * receive a "node-my-custom-type" class.
+ */
+.node-page {}
+
+.node-article {}
+
+.node-book {}
+
+.node-forum {}
+
+.node-poll {}
+
+
+/* =============================================================================
+ *   Comment Styling - Comments, comment wrapper, comment form
+ * ========================================================================== */
+
+/*
+ * Wrapper for the list of comments and its titles
+ */
+#comments {
+  margin: 1.5em 0;
+
+  h2 {
+    &.comment-title {
+      margin: 0;
+    }
+
+    &.comment-form {
+      margin: 0;
+    }
+  }
+}
+
+
+/*
+ * Wrapper for a single comment
+ */
+.comment {
+  margin-bottom: 20px;
+
+  &.first {}
+
+  &.last {}
+
+  &.odd {}
+
+  &.even {}
+
+  .user-picture {}
+
+  .submitted {
+
+    p {}
+
+    .username {}
+
+    time {}
+  }
+
+  .user-signature {}
+
+  ul.links {}
+}
+
+
+/*
+ * Comment title
+ */
+.comment-title {
+  margin: 0;
+}
+
+
+/*
+ * Comment states
+ */
+.comment-new {}
+
+.comment-by-anonymous {}
+
+.comment-by-node-author {}
+
+.comment-by-viewer {}
+
+.comment-title-hidden {}
+
+.comment-with-picture {}
+
+.comment-with-signature {}
+
+
+/*
+ * Preview of the comment before submitting new or updated comment
+ */
+.comment-preview {}
+
+
+/*
+ * "New" marker for comments that are new for the current user
+ */
+.new {
+  color: $highlight;
+}
+
+
+/*
+ * Nested comments are indented
+ */
+.indented {
+  margin-left: 40px;
+}
+
+
+/* =============================================================================
+ *   Forms
+ * ========================================================================== */
+
+/*
+ * Wrapper for a form element (or group of form elements) and its label
+ */
+.form-item {
+
+  input.error,
+  textarea.error,
+  select.error {
+    border: 1px solid $highlight;
+  }
+
+  label {
+    font-weight: 700;
+  }
+
+  label.option {
+  }
+
+  .description {
+    font-size: 0.85em;
+  }
+
+  &.form-checkboxes ,
+  &.form-radios {
+  }
+}
+
+
+/*
+ * Highlight marks and form required mark
+ */
+.marker,
+.form-required {
+  color: $highlight;
+}
+
+
+/*
+ * The submit button
+ */
+.form-submit {
+}
+
+
+.container-inline {
+  div,
+  label {
+    display: inline;
+  }
+}
+
+/*
+ * Define consistent borders
+ */
+fieldset {
+  border: 1px solid $border;
+}
+
+/*
+ * Tips for Drupal's input formats
+ */
+.tips {
+}
+
+
+/*
+ * Buttons used by contrib modules like Media
+ */
+a.button {
+  @include appearance(button);
+}
+
+
+/*
+ * Password confirmation
+ */
+.password-parent,
+.confirm-parent {
+  margin: 0;
+}
+
+
+/* =============================================================================
+ *   Tables
+ * ========================================================================== */
+
+table {
+  margin: 10px 0;
+  padding: 0;
+  width: 100%;
+
+  &.sticky-header {
+    z-index: 10;
+  }
+}
+
+
+table,
+thead,
+tbody,
+tr,
+th,
+td {
+  border-color: $border;
+}
+
+
+table,
+td,
+th {
+  vertical-align: middle;
+}
+
+
+caption,
+th,
+td {
+  text-align: left;
+}
+
+
+thead tr {
+  font-weight: 700;
+  background-color: $medium_dark;
+}
+
+
+td,
+th {
+  border-bottom: 0;
+  margin: 0;
+  padding: 5px 7px;
+}
+
+
+tbody {}
+
+
+tbody tr {
+  border-top: 1px solid $border;
+}
+
+
+tr {
+
+  &.odd {
+    background: $page;
+  }
+
+  /* Table row striping */
+  &.info,
+  &.even,
+  &:nth-child(2n+2)  {
+    border-bottom: 0;
+    background-color: $ultralight;
+  }
+
+  &.drag {}
+
+  &.drag-previous {}
+
+  &.odd td.active {
+    background-color: $light;
+  }
+
+  &.even td.active {
+    background-color: $medium_light;
+  }
+}
+
+
+.lt-ie8 tr {
+
+  &.even,
+  &.odd {
+
+    th,
+    td {
+    }
+  }
+}
+
+
+/*
+ * Forum tables
+ * Core sets white-space to nowrap, which makes no sense
+ */
+#forum td {
+  &.created,
+  &.posts,
+  &.topics,
+  &.last-reply,
+  &.replies,
+  &.pager {
+    white-space: normal;
+  }
+}
+
+
+/* =============================================================================
+ *   Messages
+ * ========================================================================== */
+
+div {
+  &.messages {
+  // Left and right margin are set by the global gutter width
+  margin-bottom: 10px;
+  margin-top: 10px;
+
+    ul {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+  }
+
+  &.status {
+  }
+
+  &.warning {
+  }
+}
+
+tr.warning {
+}
+
+
+div.error,
+tr.error {
+}
+
+
+.error {
+}
+
+
+.warning {
+}
+
+
+/*
+ * Unpublished nodes
+ */
+.node-unpublished,
+.comment-unpublished {
+}
+
+
+.node-unpublished,
+.comment-unpublished {
+
+  p.unpublished {
+    @include unpublished;
+  }
+}
+
+
+/* =============================================================================
+ *    Maintenance pages
+ * ========================================================================== */
+
+.maintenance-page {
+  .container {
+    padding: 40px 0;
+  }
+
+  #site-name,
+  #page-title {
+    margin: 0;
+  }
+}
+
+
+.db-offline {
+  .container {
+    margin: 0 auto;
+    padding: 40px 0;
+    width: 100%;
+    max-width: 960px;
+  }
+
+  div.messages {
+    margin: 20px 0 0;
+  }
+
+  #content {
+    padding: 20px 0;
+  }
+}
+
+
+/* =============================================================================
+ *   Misc overrides for contrib modules
+ * ========================================================================== */
+
+/*
+ * Admin menu overrides
+ */
+#admin-menu {
+  margin: 0;
+  padding: 0;
+}
+
+
+/*
+ * Devel Module
+ */
+.dev-query {
+  background: $light;
+  padding: 30px;
+}
+
+
+/*
+ * Styleguide module tweaks
+ */
+#styleguide-header {
+  padding: 0 10px;
+
+  .item-list {
+    font-family: inherit;
+    margin: 0 20px 20px 0;
+    min-height: 260px;
+    width: auto;
+  }
+}

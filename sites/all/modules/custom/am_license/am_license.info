@@ -1,0 +1,7 @@
+name = AirMagnet Product License
+description = Build AirMagnet Product License Configuration and Software License Files Generation
+package = Fluke Networks
+version = "7.x-1.0-20150121"
+core = 7.x
+files[] = includes/License.php
+files[] = includes/SerialNumber.php

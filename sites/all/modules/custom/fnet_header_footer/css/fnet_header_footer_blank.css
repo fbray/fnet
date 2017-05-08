@@ -1,0 +1,8 @@
+body div.region-page-bottom {
+    background-color: #ffffff;
+}
+
+body #utility_nav a:hover {
+    color: #d4d4d4;
+    text-decoration: none;
+}

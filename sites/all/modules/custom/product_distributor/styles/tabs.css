@@ -1,0 +1,90 @@
+.page-where2buy ul.tabs {
+    background: none repeat scroll 0 0 #D6D6D6;
+    display: block;
+    float: left;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 950px;
+}
+.page-where2buy ul.tabs li {
+/*    background: url("../images/tab2.gif") no-repeat scroll 0 0 #5A7495; */
+    background: url("../images/tab_1px.gif") repeat-x scroll 0 0 #5A7495;
+    border-left: 2px solid #D6D6D6;
+    border-top: 2px solid #D6D6D6;
+    border-bottom: 1px solid #D6D6D6;
+    display: block;
+    float: left;
+    height: 94px;
+    margin-bottom:-2px;
+    overflow: hidden;
+    padding: 0;
+    position: relative;
+/*    width: 314px; */
+    width: 472px;
+}
+
+.page-where2buy ul.tabs li.fulltab {
+    width: 946px;
+}
+/*
+ul.tabs li.first {
+background: url("../images/tab1.gif") no-repeat scroll 0 0 transparent;
+    background: url("../images/tab_1px.gif") repeat-x scroll 0 0 transparent;
+    margin-left: 0;
+}
+ul.tabs li.third {
+background: url("../images/tab3.gif") no-repeat scroll 0 0 transparent;
+    background: url("../images/tab_1px.gif") repeat-x scroll 0 0 transparent;
+    margin-left: 0;
+}
+*/
+.page-where2buy ul.tabs li a {
+    color: #FFFFFF;
+    display: block;
+    height: 94px;
+    outline: none;
+    padding: 0;
+    text-decoration: none;
+}
+
+/*
+ul.tabs li a:hover {
+    background: url("../images/tabselected.gif") no-repeat scroll 0 0 transparent;
+}
+*/
+html .page-where2buy ul.tabs li.active, html ul.tabs li.active a:hover {
+/*    background: url("../images/tabselected.gif") no-repeat scroll 0 0 transparent; */
+    background: url("../images/tabselected_1px.gif") repeat-x scroll 0 0 transparent;
+    border-bottom: 1px solid #FFFFFF;
+}
+.page-where2buy .tab_container {
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 2px solid #D6D6D6;
+    clear: both;
+    overflow: hidden;
+    width: 946px;
+}
+.page-where2buy .tab_content {
+    font-size: 1.2em;
+    padding: 30px;
+}
+.page-where2buy .tab_container .place-order .form-item {
+    float: left;
+    margin-right: 3em;
+}
+.page-where2buy .tab_container .place-order .form-item label {
+    display: inline;
+    font-weight: bold;
+}
+.page-where2buy ul.tabs li a {
+    padding-left: 20px;
+    padding-top: 5px;
+}
+
+.page-where2buy ul.tabs .wtb-tab-icon-wrapper{float:left}
+/* ul.tabs .wtb-tab-title-wrapper{float:left;padding-left:5px;padding-top:3px;width:225px;} */
+.page-where2buy ul.tabs .wtb-tab-title-wrapper{float:left;padding-left:5px;padding-top:3px;width:350px;}
+.page-where2buy ul.tabs li.fulltab .wtb-tab-title-wrapper{float:left;padding-left:5px;padding-top:3px;width:800px;}
+.page-where2buy ul.tabs li a div.title {font-size: 26px;margin-bottom: 3px;}
+.page-where2buy ul.tabs li.active .wtb-tab-title-wrapper .desc{color:#293F6A}

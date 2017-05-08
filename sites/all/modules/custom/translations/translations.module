@@ -1,0 +1,926 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Provides content types with feature to wrap body in no-translate div
+ */
+
+define('DISPLAY_LANGUAGES_DO_NOT_DISPLAY', 0);
+define('DISPLAY_LANGUAGES_SELECT_NONE', 1);
+define('DISPLAY_LANGUAGES_SELECT_ALL', 2);
+
+/**
+ * Implements hook_help().
+ */
+function translations_help($path, $arg) {
+  //Help
+}
+
+/**
+ * Implements hook_menu().
+ */
+function translations_menu() {
+
+  $items['admin/fnet/translations'] = array(
+    'title' => 'Translations',
+    'description' => 'Configure translations settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('translations_display_region_node_type_form'),
+    'access arguments' => array('administer translations'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/fnet/translations/display_region'] = array(
+    'title' => 'Display Region',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+  $items['admin/fnet/translations/languages'] = array(
+    'title' => 'Languages',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('translations_language_node_type_form'),
+    'access arguments' => array('administer translations'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -9,
+  );
+  $items['admin/fnet/translations/non_content_urls'] = array(
+    'title' => 'Non Content URLs',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('translations_non_content_urls_form'),
+    'access arguments' => array('administer translations'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -8,
+  );
+  $items['admin/fnet/translations/rebuild_cache'] = array(
+    'title' => 'Rebuild Cache',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('translations_rebuild_cache_form'),
+    'access arguments' => array('administer translations'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -7,
+  );
+  $items['translations.xml'] = array(
+    'title' => 'Output xml file',
+    'page callback' => 'translations_output',
+    'access callback' => true,
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+
+}
+
+/**
+ * Implements hook_permission().
+ */
+function translations_permission() {
+  return array(
+    'administer translations' => array(
+      'title' => t('administer translations'),
+      'description' => t('TODO Add a description for \'administer translations\''),
+    ),
+  );
+}
+
+/**
+ * language region info
+ */
+function _translations_display_regions() {
+  return array(
+    "en-us" => "en-us (English/United States)",
+    "en-au" => "en-au (English/Australia)",
+    "en-ca" => "en-ca (English/Canada)",
+    "en-eu" => "en-eu (English/Europe)",
+    "en-in" => "en-in (English/India)",
+    "en-ln" => "en-ln (English/Latin America)",
+    "en-su" => "en-su (English/Southeast Asia)",
+    "fr-eu" => "fr-eu (French/Europe)",
+    "fr-ca" => "fr-ca (French/Canada)",
+    "de-eu" => "de-eu (German/Europe)",
+    "es-eu" => "es-eu (Spanish/Europe)",
+    "es-ln" => "es-ln (Spanish/Latin America)",
+    "pt-eu" => "pt-eu (Portuguese/Europe)",
+    "pt-br" => "pt-br (Portuguese/Brazil)",
+    "cn-zh" => "cn-zh (Chinese/China)",
+    "jp-ja" => "jp-ja (Japanese/Japan)",
+    "ko-kr" => "ko-kr (Korean/Korea)",
+    "ru-ru" => "ru-ru (Russian/Russia)",
+  );
+}
+
+function _translations_languages() {
+  return array(
+    'cn' => 'Chinese',
+    'fr' => 'French',
+    'de' => 'German',
+    'jp' => 'Japanese',
+    'ko' => 'Korean',
+    'pt' => 'Portuguese',
+    'ru' => 'Russian',
+    'es' => 'Spanish',
+  );
+}
+
+/**
+ * Implementation of content specific form alteration form().
+ * hook_form_alter(&$form, &$form_state, $form_id)
+ * if only for 'product_node_form' can use
+ * hook_form_FORM_ID_alter(&$form, &$form_state)
+ * as translations_form_product_node_form_alter and remove form_id check
+ */
+function translations_form_alter(&$form, &$form_state, $form_id) {
+
+  if ( substr($form_id, -9) != "node_form")  return;
+
+  $display_region_node_types = variable_get('translations_display_region_node_types', array());
+  if (isset($form['type']) && in_array($form['type']['#value'], $display_region_node_types)) {
+//  if (in_array($form['#node']->type, $display_region_node_types)) {
+    if ($form_id == $form['type']['#value'] . '_node_form') {
+      $langReg_sel = array();
+      if ($form['nid']['#value']) {
+        $results = db_query('SELECT langreg, status FROM {language_region} WHERE nid = :nid', array(':nid' => $form['nid']['#value']));
+        foreach ($results as $record) {
+//        while ($row = db_fetch_object($results)) {
+          $langReg_sel[$record->langreg] = ($record->status) ? $record->langreg : "0";
+        }
+      }
+
+      $form['display_region_checkboxes'] = array(
+        '#type' => 'checkboxes',
+        '#title' => t('Display Regions'),
+        '#options' => _translations_display_regions(),
+        '#default_value' => $langReg_sel,
+        '#weight' => 1,
+      );
+    }
+  }
+  $language_node_types = variable_get('translations_languages_node_types', array());
+  $weight = 1; // Default weight value
+  if (isset($form['type']) && isset($language_node_types[$form['type']['#value']]) && $language_node_types[$form['type']['#value']] > 0) {
+    if ($form_id == $form['type']['#value'] . '_node_form') {
+      if (isset($form['dnt_checkbox']) && isset($form['dnt_checkbox']['#weight'])) {
+        $weight = $form['dnt_checkbox']['#weight'] + 1;
+      }
+      $languages_selected = array();
+      $form['#validate'][] = 'translations_node_form_validate';
+      if ($form['nid']['#value']) {
+        $results = db_query('SELECT language, status FROM {translations} WHERE nid = :nid', array(':nid' => $form['nid']['#value']));
+        foreach ($results as $record) {
+//        while ($row = db_fetch_object($results)) {
+          $languages_selected[$record->language] = ($record->status) ? $record->language : "0";
+        }
+      }
+      else {
+        if ($language_node_types[$form['#node']->type] == DISPLAY_LANGUAGES_SELECT_ALL) {
+          foreach (_translations_languages() as $code => $language) {
+            $languages_selected[$code] = $code;
+          }
+          // un-check dnt_checkbox
+          if (isset($form['dnt_checkbox'])) {
+            $form['dnt_checkbox']['#default_value'] = 0;
+          }
+        }
+      }
+
+      $form['translated_languages_checkboxes'] = array(
+        '#type' => 'checkboxes',
+        '#title' => t('Translated Languages'),
+        '#options' => _translations_languages(),
+        '#default_value' => $languages_selected,
+        '#weight' => $weight,
+      );
+    }
+  }
+
+  $langreg_fields = array(
+    'award_node_form' => 'field_award_langreg',
+    'event_node_form' => 'field_event_langreg',
+    'event_occurrence_node_form' => 'field_evnt_occ_langreg',
+    'exp_ind_node_form' => 'field_exp_ind_region',
+    'exp_rle_node_form' => 'field_exp_rle_region',
+    'exp_tpc_node_form' => 'field_exp_tpc_region',
+    'pressrelease_node_form' => 'field_news_langreg',
+    'promotion_node_form' => 'field_promo_langreg',
+  );
+
+  if (in_array($form_id, array_keys($langreg_fields))) {
+    // use validate function to copy values from display_region checkboxes 
+    $form['#validate'][] = '_translations_custom_langreg_form_validate';
+    // add display:none css to hide from node edit page
+    $form[$langreg_fields[$form_id]]['#attributes']['class'][] = 'element-hidden';
+  } 
+
+}
+
+/**
+ * Custom validation function. Copies display region settings to langreg field.
+ * Similar in functionality to hook_form_alter()
+ */
+function _translations_custom_langreg_form_validate($form, &$form_state) {
+
+  $form_id = $form['#form_id'];
+
+  $langreg_fields = array(
+    'award_node_form' => 'field_award_langreg',
+    'event_node_form' => 'field_event_langreg',
+    'event_occurrence_node_form' => 'field_evnt_occ_langreg',
+    'exp_ind_node_form' => 'field_exp_ind_region',
+    'exp_rle_node_form' => 'field_exp_rle_region',
+    'exp_tpc_node_form' => 'field_exp_tpc_region',
+    'pressrelease_node_form' => 'field_news_langreg',
+    'promotion_node_form' => 'field_promo_langreg',
+  );
+
+  if (in_array($form_id, array_keys($langreg_fields))) {
+    $field_name = $langreg_fields[$form_id];
+
+    $form_state['values'][$field_name]['und'] = array();
+    foreach ($form_state['values']['display_region_checkboxes'] as $key => $value) {
+      if ($value) {
+        $insert_value = array('value' => $value);
+        $form_state['values'][$field_name]['und'][] = $insert_value;
+      }
+    }
+
+  }
+
+  return TRUE;
+
+} 
+
+
+
+/**
+ * Implements hook_node_insert().
+ */
+function translations_node_insert($node) {
+  $display_regions_node_types = variable_get('translations_display_region_node_types', array());
+  if (in_array($node->type, $display_regions_node_types) && isset($node->display_region_checkboxes)) {
+    _translations_write_display_region_record($node->nid, $node->display_region_checkboxes);
+  }
+  $translation_languages_node_types = variable_get('translations_languages_node_types', array());
+  $translation_node_types = array();
+  foreach ($translation_languages_node_types as $type => $display) {
+    if (($display == DISPLAY_LANGUAGES_SELECT_ALL) || ($display == DISPLAY_LANGUAGES_SELECT_NONE)) {
+      $translation_node_types[] = $type;
+    }
+  }
+  if (in_array($node->type, $translation_node_types) && isset($node->translated_languages_checkboxes)) {
+    _translations_write_translation_record($node->nid, $node->translated_languages_checkboxes);
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function translations_node_update($node) {
+  $display_regions_node_types = variable_get('translations_display_region_node_types', array());
+  if (in_array($node->type, $display_regions_node_types) && isset($node->display_region_checkboxes)) {
+    _translations_write_display_region_record($node->nid, $node->display_region_checkboxes);
+  }
+  $translation_languages_node_types = variable_get('translations_languages_node_types', array());
+  $translation_node_types = array();
+  foreach ($translation_languages_node_types as $type => $display) {
+    if (($display == DISPLAY_LANGUAGES_SELECT_ALL) || ($display == DISPLAY_LANGUAGES_SELECT_NONE)) {
+      $translation_node_types[] = $type;
+    }
+  }
+  if (in_array($node->type, $translation_node_types) && (isset($node->translated_languages_checkboxes))) {
+    _translations_write_translation_record($node->nid, $node->translated_languages_checkboxes);
+  }
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function translations_node_delete($node) {
+  $display_regions_node_types = variable_get('translations_display_region_node_types', array());
+  if (in_array($node->type, $display_regions_node_types)) {
+    db_delete('language_region')
+          ->condition('nid', $node->nid)
+          ->execute();
+  }
+  $translation_languages_node_types = variable_get('translations_languages_node_types', array());
+  $translation_node_types = array();
+  foreach ($translation_languages_node_types as $type => $display) {
+    if (($display == DISPLAY_LANGUAGES_SELECT_ALL) || ($display == DISPLAY_LANGUAGES_SELECT_NONE)) {
+      $translation_node_types[] = $type;
+    }
+  }
+  if (in_array($node->type, $translation_node_types)) {
+    db_delete('translations')
+          ->condition('nid', $node->nid)
+          ->execute();
+  }
+}
+
+/**
+ * Helper function to write translations record
+ * @param $nid - node id
+ * @param $translations_status - do not translate status
+ */
+function _translations_write_translation_record($nid, $translated_languages_checkboxes) {
+  if (!is_array($translated_languages_checkboxes)) {
+    $translated_languages_checkboxes = array();
+  }
+  $results = db_query('SELECT language, status FROM {translations} WHERE nid = :nid', array(':nid' => $nid));
+  $language_result = array();
+  foreach ($results as $row) {
+//  while ($row = db_fetch_object($results)) {
+    $language_result[$row->language] = $row->language . "~" . $row->status;
+  }
+  $record = new stdClass();
+  $record->nid = $nid;
+  foreach ($translated_languages_checkboxes as $language => $val) {
+    $record->language = $language;
+    $record->status = ($language = $val) ? '1' : '0';
+    if (isset($language_result[$record->language])) {
+      if ($language_result[$record->language] != $record->language . "~" . $record->status) {
+        $result = drupal_write_record('translations', $record, array('nid', 'language'));
+        if (($result != SAVED_NEW) && ($result != SAVED_UPDATED)) {
+          watchdog('Translations', 'translations record update failed for node %node with %language', array('%node' => $nid, '%language' => $language), WATCHDOG_ERROR);
+        }
+      }
+    }
+    else {
+      $result = drupal_write_record('translations', $record);
+      if (($result != SAVED_NEW) && ($result != SAVED_UPDATED)) {
+        watchdog('Translations', 'translations record update failed for node %node with %language', array('%node' => $nid, '%language' => $language), WATCHDOG_ERROR);
+      }
+    }
+  }
+
+}
+
+function _translations_write_display_region_record($nid, $languageRegion_checks) {
+  $results = db_query('SELECT langreg, status FROM {language_region} WHERE nid = :nid', array(':nid' => $nid));
+  $langRegResult = array();
+  foreach ($results as $row) {
+//  while ($row = db_fetch_object($results)) {
+    $langRegResult[$row->langreg] = $row->langreg . "~" . $row->status;
+  }
+  $record = new stdClass();
+  $record->nid = $nid;
+  foreach ($languageRegion_checks as $langReg => $val) {
+    $record->langreg = $langReg;
+    $record->status = ($langReg = $val) ? '1' : '0';
+    if (isset($langRegResult[$record->langreg])) {
+      if ($langRegResult[$record->langreg] != $record->langreg . "~" . $record->status) {
+        $result = drupal_write_record('language_region', $record, array('nid', 'langreg'));
+        if (($result != SAVED_NEW) && ($result != SAVED_UPDATED)) {
+          watchdog('Translations', 'translations language-region record update failed for node %node with %langReg', array('%node' => $nid, '%langReg' => $langReg), WATCHDOG_ERROR);
+        }
+      }
+    }
+    else {
+      $result = drupal_write_record('language_region', $record, null);
+      if (($result != SAVED_NEW) && ($result != SAVED_UPDATED)) {
+        watchdog('Translations', 'translations language-region record update failed for node %node with %langReg', array('%node' => $nid, '%langReg' => $langReg), WATCHDOG_ERROR);
+      }
+    }
+  }
+
+}
+
+/**
+ * building translation XML files
+ */
+function translations_write_xml_file() {
+  global $base_url, $base_path;
+  $translations_cache_file = variable_get('file_public_path', conf_path() . '/files') . '/translations.xml';
+  $xsl = drupal_get_path('module', 'translations') . '/gss/gss.xsl';
+  $xml_node_types = variable_get('translations_languages_node_types', array());
+  $typeFilter = "";
+  foreach ($xml_node_types as $node_type => $status) {
+    if ($status > 0) {
+      if (strlen($typeFilter) > 1) {
+        $typeFilter .= ",";
+      }
+      $typeFilter .= "'$node_type'";
+    }
+  }
+  if (strlen($typeFilter) > 1) {
+    $typeFilter = " AND n.type IN (" . $typeFilter . ")";
+  }
+
+  $sql = <<<eot
+SELECT DISTINCT n.nid, t.language
+FROM ((node n LEFT JOIN translations t ON n.nid = t.nid AND t.status = 1)
+LEFT JOIN do_not_translate dnt ON dnt.nid = n.nid)
+WHERE n.status = 1
+AND (dnt.do_not_translate IS NULL OR dnt.do_not_translate = 0)
+$typeFilter
+ORDER BY n.nid, t.language;
+eot;
+  // TODO Please convert this statement to the D7 database API syntax.
+  $results = db_query($sql);
+  $out = new XMLWriter();
+  $out->openMemory();
+  $out->setIndent(true);
+  $out->startDocument('1.0', 'UTF-8');
+  $out->writeRaw('<?xml-stylesheet type="text/xsl" href="' . $xsl . '" ?>' . "\n" );
+  $out->startElement('urlset');
+  $last_nid = 0;
+  $url_started = false;
+  $languages = array();
+  foreach ($results as $record) {
+//  while ($record = db_fetch_object($result)) {
+    if (is_null($record->language)) {
+      continue;
+    }
+    if ($record->nid != $last_nid) {
+      if (($last_nid != 0) && $url_started) {
+        $out->startElement('languages');
+        $out->text(implode(',', $languages));
+        $out->endElement(); //languages
+        $out->endElement(); //url
+      }
+      $last_nid = (int) $record->nid;
+      $out->startElement('url');
+      $url_started = true;
+      $out->startElement('loc');
+      $out->text($base_url . $base_path . translations_get_url_alias($record->nid));
+      $out->endElement(); //loc
+      $out->startElement('nid');
+      $out->text($record->nid);
+      $out->endElement(); //nid
+      $languages = array();
+    }
+    if (is_null($record->language)) {
+      $language = 'en';
+    }
+    else {
+      $language = $record->language;
+    }
+    $languages[] = $language;
+  }
+  $out->startElement('languages');
+  $out->text(implode(',', $languages));
+  $out->endElement(); //languages
+  $out->endElement(); //url    }
+  // add non content urls
+  $urls = explode("\n", trim(variable_get('translations_non_content_urls', '')));
+  foreach ($urls as $url) {
+    if (trim($url) == '') {
+      continue;
+    }
+    $out->startElement('url');
+    $out->startElement('loc');
+    $out->text(trim($url));
+    $out->endElement(); //loc
+    $out->startElement('nid');
+    $out->text(' ');
+    $out->endElement(); //nid
+    $out->startElement('languages');
+    $out->text('cn,de,es,fr,jp,ko,pt,ru');
+    $out->endElement(); //languages
+    $out->endElement(); //url
+  }
+  $out->endElement(); //urlset
+  $out->endDocument();
+  //header("Content-Type: text/xml");
+  //echo $out->outputMemory();
+  //exit;
+  $output_file = fopen($translations_cache_file, 'w');
+  fwrite($output_file, $out->outputMemory());
+  fclose($output_file);
+}
+
+/**
+ * get URL alias of the node
+ */
+function translations_get_url_alias($nid) {
+  $alias = drupal_get_path_alias("node/$nid");
+  if ($alias) {
+    return $alias;
+  }
+  else {
+    return "node/$nid";
+  }
+}
+
+/**
+ * Administrator configuration form for Node Types selection
+ */
+function translations_language_node_type_form($form, &$form_state) {
+  $form = array();
+  $node_types = node_type_get_types();
+  $node_types_arr = array();
+  $options = array(
+    t('Do not display'),
+    t('Display - Default select NO languages'),
+    t('Display - Default select ALL languages'),
+  );
+  foreach ($node_types as $type) {
+    $node_types_arr[$type->type] = $type->name;
+  }
+  $defaults = variable_get('translations_languages_node_types', array());
+  natcasesort($node_types_arr);
+  foreach ($node_types_arr as $type => $name) {
+    $form["language_options_$type"] = array(
+      '#type' => 'radios',
+      '#title' => t('!name translation languages', array('!name' => $name)),
+      '#default_value' => $defaults[$type],
+      '#options' => $options,
+      '#description' => '<b>' . t('Language display settings for !name', array('!name' => $name)) . '</b>',
+    );
+  }
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  );
+  return $form;
+}
+
+/**
+ * submit function for translations_settings_form
+ */
+function translations_language_node_type_form_submit($form, &$form_state) {
+  $translations_node_types = array();
+  $node_types = node_type_get_types();
+  $node_types_arr = array();
+  foreach ($node_types as $type) {
+    $node_types_arr[$type->type] = $type->name;
+  }
+  natcasesort($node_types_arr);
+  foreach ($node_types_arr as $type => $name) {
+    $translations_node_types[$type] = (int) $form_state['values']["language_options_$type"];
+  }
+  variable_set('translations_languages_node_types', $translations_node_types);
+  drupal_set_message(t('<strong>Configuration options have been saved.</strong>'));
+}
+
+/**
+ * Administrator configuration form for languages Regionality
+ */
+function translations_display_region_node_type_form($form, &$form_state) {
+  $form = array(
+  );
+
+  $node_types     = node_type_get_types();
+  $node_types_arr = array();
+
+  foreach ($node_types as $type) {
+    $node_types_arr[$type->type] = $type->name;
+  }
+  natcasesort($node_types_arr);
+
+  $form['node_type_options'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Select node types for display region capability:'),
+    '#default_value' => variable_get('translations_display_region_node_types', array()),
+    '#options' => $node_types_arr,
+    '#description' => '<b>' . t('Select node types for which you want to add display language-region (formerly called Regionality).') . '</b>',
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  );
+  return $form;
+}
+
+/**
+ * submit function for translations_settings_form
+ */
+function translations_display_region_node_type_form_submit($form, &$form_state) {
+  $translations_node_types = array();
+  foreach ($form_state['values']['node_type_options'] as $key => $value) {
+    if ($value) {
+      $translations_node_types[] = $value;
+    }
+  }
+  variable_set('translations_display_region_node_types', $translations_node_types);
+  drupal_set_message(t('<strong>Configuration options have been saved.</strong>'));
+}
+
+/**
+ * add non content type URLs for translation
+ */
+function translations_non_content_urls_form($form, &$form_state) {
+  $form = array();
+  $nonContentUrls = variable_get('translations_non_content_urls', '');
+  $form['translations_non_content_urls'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Additional Non Content URLs for translation'),
+    '#cols' => 100,
+    '#rows' => 25,
+    '#required' => false,
+    '#default_value' => $nonContentUrls,
+    '#description' => t('Enter individual URL per line to be included in the translation.com XML file; These pages will be translated into all languages.'),
+  );
+  $form = system_settings_form($form);
+  return $form;
+}
+
+/**
+ * translations views hook
+ */
+function translations_views_api() {
+  return array(
+    'api' => 2,
+  );
+}
+
+/**
+ * setup translation view data to be available as content type
+ */
+function translations_views_data() {
+  $data = array();
+  $data['language_region']['table']['group'] = t('Node');
+  $data['language_region']['table']['base'] = array(
+    'field' => 'nid',
+    'title' => t('Content Node Id'),
+    'help' => t("LanguageRegion table contains a node's language region translation status."),
+    'weight' => -10,
+  );
+  $data['language_region']['table']['join'] = array(
+    'node' => array(
+      'left_field' => 'nid',
+      'field' => 'nid',
+    ),
+  );
+
+  $data['language_region']['nid'] = array(
+    'title' => t('translations language-region nodes'),
+    'help' => t('translations language-region status for a node.'),
+    'relationship' => array(
+      'base' => 'node',
+      'field' => 'nid',
+      'handler' => 'views_handler_relationship',
+      'label' => t('translations nid'),
+    ),
+  );
+
+  $data['language_region']['langreg'] = array(
+    'title' => t('translations Language-Region'),
+    'help' => t('translations Language-Region'),
+    'field' => array(
+      'handler' => 'views_handler_field',
+      'click sortable' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+  );
+
+  $data['language_region']['status'] = array(
+    'title' => t('translations language-region status'),
+    'help' => t('translations language-region status'),
+    'field' => array(
+      'handler' => 'views_handler_field_boolean',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_boolean_operator',
+      'label' => t('translations language-region status'),
+      'type' => 'yes-no',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
+  return $data;
+}
+
+/**
+ * setup translation output file
+ */
+function translations_output() {
+  $translations_cache_file = file_build_uri('translations.xml')  ;
+  drupal_add_http_header('Content-Type', 'text/xml');
+  file_transfer($translations_cache_file, array());
+}
+
+/**
+ * setup cron job for translation output file
+ */
+function translations_cron() {
+  translations_write_xml_file();
+}
+
+/**
+ * reset cache and rebuild translation xml file
+ */
+function translations_rebuild_cache_form($form, &$form_state) {
+  $form = array();
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Rebuild Cache'),
+  );
+  return $form;
+}
+
+/**
+ * rewrite translation xml file
+ */
+function translations_rebuild_cache_form_submit($form, &$form_state) {
+  translations_write_xml_file();
+  drupal_set_message('Cache file rebuilt.');
+}
+
+/**
+ * translation node field validation
+ */
+function translations_node_form_validate($form, &$form_state) {
+  $language_selected = false;
+  $dnt_selected = false;
+  foreach ($form_state['values']['translated_languages_checkboxes'] as $language => $selected) {
+    if ($selected !== 0 ) {
+      $language_selected = true;
+    }
+  }
+  if (isset($form_state['values']['dnt_checkbox']) && $form_state['values']['dnt_checkbox'] == 1) {
+    $dnt_selected = true;
+  }
+  if ($dnt_selected && $language_selected) {
+    form_set_error('dnt_checkbox', "Error: When \"Do Not Translate\" is selected, you cannot select any \"Translated Languages\".  Please make the appropriate changes below.");
+  }
+
+}
+
+/*
+*
+* Function to copy values from translation language_region table to node field values
+*/
+function translations_update_field_langreg() {
+
+  watchdog('translations', 'Updating Field Langreg Values');
+
+  $tables = array();
+
+  // field value names
+  $tables['field_data_field_award_langreg']['fieldname'] = 'field_award_langreg_value';
+  $tables['field_data_field_event_langreg']['fieldname'] = 'field_event_langreg_value';
+  $tables['field_data_field_evnt_occ_langreg']['fieldname'] = 'field_evnt_occ_langreg_value';
+  $tables['field_data_field_exp_ind_region']['fieldname'] = 'field_exp_ind_region_value';
+  $tables['field_data_field_exp_rle_region']['fieldname'] = 'field_exp_rle_region_value';
+  $tables['field_data_field_exp_tpc_region']['fieldname'] = 'field_exp_tpc_region_value';
+  $tables['field_data_field_news_langreg']['fieldname'] = 'field_news_langreg_value';
+  $tables['field_data_field_promo_langreg']['fieldname'] = 'field_promo_langreg_value';
+
+  // node table types
+  $tables['field_data_field_award_langreg']['type'] = 'award';
+  $tables['field_data_field_event_langreg']['type'] = 'event';
+  $tables['field_data_field_evnt_occ_langreg']['type'] = 'event_occurrence';
+  $tables['field_data_field_exp_ind_region']['type'] = 'exp_ind';
+  $tables['field_data_field_exp_rle_region']['type'] = 'exp_rle';
+  $tables['field_data_field_exp_tpc_region']['type'] = 'exp_tpc';
+  $tables['field_data_field_news_langreg']['type'] = 'pressrelease';
+  $tables['field_data_field_promo_langreg']['type'] = 'promotion';
+
+  // Loop over field tables, each has distinct node type and field value name
+  foreach (array_keys($tables) as $tablename) {
+
+      $fieldname = $tables[$tablename]['fieldname'];
+      $type = $tables[$tablename]['type'];
+
+      // remove current entries to re-create deltas
+      $delete = db_truncate($tablename)->execute();
+
+      // get active langreg values per node 
+      $query = db_query("select n.type, n.nid, n.vid, n.language, lang.langreg  from node n left join language_region lang on n.nid = lang.nid where n.type=:type and lang.status=1 order by n.nid",array(':type' => $type));
+
+      $last_nid=0;
+      $delta = 0;
+
+      // loop over all node results.
+      foreach ($query as $result) {
+
+          // reset delta when new nid
+          if ($result->nid != $last_nid) {
+            $delta = 0;
+            $last_nid = $result->nid;
+          }
+
+          $merge = db_merge( $tablename)
+         ->key(array('entity_id' => $result->nid,
+                     'delta' => $delta,
+                    $fieldname => $result->langreg,)
+              )
+        ->fields(array(
+            'entity_type' => 'node',
+            'bundle' => $result->type,
+            'revision_id' => $result->nid,
+            'language' => $result->language,
+          ))
+        ->execute();
+
+        $delta++;
+
+      } // end foreach delta
+
+} // end foreach table
+
+}
+
+
+function translations_create_field() {
+
+dpm('translations_create_field');
+  $field_name = 'field_display_region';
+
+  // Make sure the field doesn't already exist.
+  if (!field_info_field($field_name)) {
+
+    $field = array(
+      'active' => 1,
+      'cardinality' => -1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_display_region',
+      'label' => 'Display Region',
+      'field_permissions' => array(
+        'type' => 0,
+      ),
+      'indexes' => array('value' => array(0 => 'value') ),
+      'locked' => 0,
+      'module' => 'translations',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => '_translations_display_regions',
+        'allowed_values_php' => '',
+       ),
+      'translatable' => 0,
+      'type' => 'list_text',
+    );
+
+    field_create_field($field);
+    dpm('created field');
+  }
+
+} 
+
+function translations_create_field_instance() {
+
+$field_name = 'field_display_region';
+  $bundles = array('promotion', 'product', 'pressrelease', 'event', 'award', 'exp_tpc', 'exp_rle', 'exp_ind', 'event_occurrence', 'microsite_story') ;
+
+  foreach ($bundles as $bundle) {
+
+    $info = field_info_instances('node', $bundle);
+
+    if (! isset($info[$field_name]) ) {
+
+          $field_instance = array(
+            'bundle' => $bundle,
+            'default_value' => NULL,
+            'deleted' => 0,
+            'description' => '',
+            'display' => array(
+              'default' => array(
+                'label' => 'hidden',
+                'settings' => array(),
+                'type' => 'hidden',
+                'weight' => 2,
+              ),
+              'teaser' => array(
+                'label' => 'hidden',
+                'settings' => array(),
+                'type' => 'hidden',
+                'weight' => 0,
+              ),
+            ),
+            'entity_type' => 'node',
+            'field_name' => $field_name,
+            'label' => 'Display Region',
+            'required' => 0,
+            'settings' => array(
+              'user_register_form' => FALSE,
+            ),
+            'widget' => array(
+              'active' => 1,
+              'module' => 'options',
+              'settings' => array(),
+              'type' => 'options_buttons',
+              'weight' => 38,
+            ),
+          );
+
+          field_create_instance($field_instance);
+     
+
+    } // end if instance
+
+
+
+
+  } // end foreach bundle
+
+
+
+
+
+
+
+
+
+
+
+}

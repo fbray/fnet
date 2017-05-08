@@ -1,0 +1,500 @@
+<?php
+/**
+ * $Id$
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function localized_email_menu() {
+  $items = array();
+  $items['localized_email/db_init'] = array(
+    'title' => 'Add some user email to the database',
+    'page callback' => 'localized_email_db_init',
+    'page arguments' => array(),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer localized email'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/fnet/localized_email'] = array(
+    'title' => 'Localized email settings',
+    'description' => "Settings for localized email.",
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('localized_email_admin_form'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer localized email'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/fnet/localized_email/template'] = array(
+    'title' => 'Email Template',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -1,
+  );
+  $items['admin/fnet/localized_email/test'] = array(
+    'title' => 'Test',
+    'description' => "Send test emails.",
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('localized_email_test'),
+    'access arguments' => array('administer localized email'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_permission
+ */
+function localized_email_permission() {
+  return array(
+    'administer localized email' => array(
+      'title' => t('administer localized email'),
+      'description' => t('Administer localized email'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_form_alter.  Make some tweaks to the localized_email node form and add a validation function().
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ */
+function localized_email_form_alter(&$form, &$form_state, $form_id) {
+  switch ($form_id) {
+    case 'localized_email_node_form':
+      $form['#validate'][] = 'localized_email_node_form_validate';
+      $form['title']['#description'] = 'Only lowercase letters, numbers and underscores are allowed, no spaces';
+      $form['body_field']['body']['#description'] = 'Body of email message, enter tokens in the form !token';
+      $form['search_exclude']['#default_value'] = 1;
+      break;
+  }
+}
+
+/**
+ * Validation function for localized_email node form.  Enforce key uniqueness for title, region/language. Ensure node
+ * for en-us is present before allowing other nodes for that mail id (title) to be created
+ *
+ * @param $form
+ * @param $form_state
+ */
+function localized_email_node_form_validate($form, &$form_state) {
+  if (arg(1) == 'add') {
+    $op = 'add';
+  }
+  elseif (arg(2) == 'edit') {
+    $op = 'edit';
+  }
+  $mail_id = $form_state['values']['title'];
+  $have_en_us_record_form = FALSE;
+  $query_get_nid_by_id_reg_lang = <<< sql
+SELECT DISTINCT n.nid FROM {node} AS n
+INNER JOIN {field_data_field_region_language} AS c ON n.nid = c.entity_id AND n.vid = c.revision_id
+WHERE n.title = :title AND c.field_region_language_value = :reglang
+sql;
+
+  switch ($op) {
+    case 'add':
+      // check for spaces in mail id
+      if (preg_match('/[^\d_a-z]/', $mail_id)) {
+        form_set_error('title', "Only lower case letters, digits and underscores are allowed in Mail Id");
+      }
+
+      // check for duplicates
+      foreach ($form_state['values']['field_region_language'] as $reg_lang) {
+        $reg_lang_value = $reg_lang[0]['value'];
+        if ($reg_lang_value == 'en-us') {
+          $have_en_us_record_form = TRUE;
+        }
+        $nid = db_query($query_get_nid_by_id_reg_lang, array(
+          ':title' => $mail_id,
+          ':reglang' => $reg_lang_value
+        ))->fetchField();
+        if ($nid) {
+          form_set_error('field_email_id', "There is already an entry for {$mail_id} - {$reg_lang_value}");
+        }
+      }
+      //make sure there is an en-us record for this id
+      if (!$have_en_us_record_form) {
+        $nid = db_query($query_get_nid_by_id_reg_lang, array(
+          ':title' => $mail_id,
+          ':reglang' => 'en-us'
+        ))->fetchField();
+        if (!$nid) {
+          form_set_error('field_region_language', "You must add an entry for 'en-us' before add other entries for {$mail_id}");
+        }
+      }
+
+      break;
+    case 'edit':
+      if (preg_match('/[^\d_a-z]/', $mail_id)) {
+        form_set_error('title', "Only lower case letters, digits and underscores are allowed in Mail Id");
+      }
+
+      $form_regions = array();
+      foreach ($form_state['values']['field_region_language'][LANGUAGE_NONE] as $reg_lang) {
+        $reg_lang_value = $reg_lang['value'];
+        $form_regions[] = $reg_lang_value;
+        if ($reg_lang_value == 'en-us') {
+          $have_en_us_record_form = TRUE;
+        }
+      }
+
+      $before_form_regions = array();
+      foreach ($form['field_region_language'][LANGUAGE_NONE]['#default_value'] as $reg_lang) {
+        $reg_lang_value = $reg_lang;
+        $before_form_regions[] = $reg_lang_value;
+      }
+
+      $new_regions = array_diff($form_regions, $before_form_regions);
+      foreach ($new_regions as $region) {
+        $nid = db_query($query_get_nid_by_id_reg_lang, array(
+          ':title' => $mail_id,
+          ':reglang' => $region
+        ))->fetchField();
+        if ($nid) {
+          form_set_error('field_email_id', "There is already an entry for {$mail_id} - {$region}");
+        }
+      }
+
+      $have_en_us_record_db = db_query($query_get_nid_by_id_reg_lang, array(
+        ':title' => $mail_id,
+        ':reglang' => 'en-us'
+      ))->fetchField();
+      //make sure there is an en-us record for this id
+      // if en-us is not on the form and not in the db then its an error
+      if (!$have_en_us_record_form && !$have_en_us_record_db) {
+        form_set_error('field_region_language', "You must add an entry for 'en-us' before add other entries for {$mail_id}");
+      }
+      break;
+  }
+}
+
+/**
+ * Implements hook_mail_alter().
+ * Traps and replaces these message for these message ids:
+ *     'user_register_admin_created': Welcome message for user created by the admin.
+ *   - 'user_register_no_approval_required': Welcome message when user self-registers.
+ *   - 'user_register_pending_approval': Welcome message, user pending admin approval.
+ *   - 'user_password_reset': Password recovery request.
+ *   - 'user_status_activated': Account activated.
+ *   - 'user_status_blocked': Account blocked.
+ *   - 'user_status_deleted': Account deleted.
+ *
+ * @param $message
+ */
+function localized_email_mail_alter(&$message) {
+  global $language;
+  $mail_id = $message['id'];
+  switch ($mail_id) {
+    case 'user_register_admin_created':
+    case 'user_register_no_approval_required':
+    case 'user_register_pending_approval':
+    case 'user_password_reset':
+    case 'user_status_activated':
+    case 'user_status_blocked':
+    case 'user_status_deleted':
+      $account = $message['params']['account'];
+      $tokens = localized_email_tokens($account, $language);
+      $new_message = localized_email_message($mail_id, $tokens);
+      if ($new_message) {
+        $message = array_merge($message, $new_message);
+      }
+      break;
+  }
+  return;
+}
+
+/**
+ * Utility function to add localized_email nodes based on the text stored by the user module in variables
+ *
+ * @return string - Message text to display on completion.
+ */
+function localized_email_db_init() {
+  $email_ids = array(
+    'register_admin_created',
+    'register_no_approval_required',
+    'register_pending_approval',
+    'password_reset',
+    'status_activated',
+    'status_blocked',
+    'status_deleted',
+  );
+  $output = '';
+  foreach ($email_ids as $email_id) {
+    $subject = variable_get('user_mail_' . $email_id . '_subject', '');
+    $body = variable_get('user_mail_' . $email_id . '_body', '');
+    $output .= '<p>' . $subject . '</p>';
+    $node = new stdClass();
+    $node->title = 'user_' . $email_id;
+    $node->body = $body;
+    $node->type = 'localized_email';
+    $node->field_email_subject = array(array('value' => $subject));
+    $node->field_email_from_name = array(array('value' => 'Fluke Networks'));
+    $node->field_region_language = array(array('value' => 'en-us'));
+    $node->field_email_from = array(array('email' => 'FlukeNetworksInfo@flukenetworks.com'));
+    node_save($node);
+  }
+  return $output;
+}
+
+/**
+ * Return a message array with a message in user's preferred language based on regLang cookie
+ *
+ * @param $mail_id - The id of the message to return
+ * @param array $tokens - Values to replace in message subject and bodies.
+ * @return array|bool - Message array or false if no message is found.
+ */
+function localized_email_message($mail_id, $tokens = array(), $language_region = NULL, $html = NULL) {
+  if (!isset($language_region)) {
+    if (isset($_COOKIE['regLang'])) {
+      $language_region = strtolower($_COOKIE['regLang']);
+    }
+    else {
+      $language_region = 'en-us';
+    }
+  }
+  if (!isset($html)) {
+    $html = variable_get('localized_email_html_mail', FALSE);
+  }
+  $query_get_nid_by_id_reg_lang = <<< sql
+SELECT DISTINCT n.nid FROM {node} AS n
+INNER JOIN {field_data_field_region_language} AS c ON n.nid = c.entity_id AND n.vid = c.revision_id
+WHERE n.title = :title AND c.field_region_language_value = :reglang
+sql;
+  $nid = db_query($query_get_nid_by_id_reg_lang, array(
+    ':title' => $mail_id,
+    ':reglang' => $language_region
+  ))->fetchField();
+  if (!$nid) {
+    $nid = db_query($query_get_nid_by_id_reg_lang, array(
+      ':title' => $mail_id,
+      ':reglang' => 'en-us'
+    ))->fetchField();
+    if (!$nid) {
+      watchdog('localized_email', 'Mail message not found for id: !mail_id', array('!mail_id' => $mail_id), WATCHDOG_ERROR);
+      return FALSE;
+    }
+  }
+  $message_node = node_load($nid);
+  if ($message_node->field_email_from[LANGUAGE_NONE][0]['email']) {
+    $from = $message_node->field_email_from_name[LANGUAGE_NONE][0]['value'] . '<' . $message_node->field_email_from[LANGUAGE_NONE][0]['email'] . '>';
+    $from_address = $message_node->field_email_from[LANGUAGE_NONE][0]['email'];
+  }
+  else {
+    $from = variable_get('site_mail', ini_get('sendmail_from'));
+    $from_address = $from;
+  }
+  $message = array();
+  // Build the default headers
+  $headers = array(
+    'MIME-Version' => '1.0',
+    'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+    'Content-Transfer-Encoding' => '8Bit',
+    'X-Mailer' => 'Drupal',
+  );
+  if ($from_address) {
+    // To prevent e-mail from looking like spam, the addresses in the Sender and
+    // Return-Path headers should have a domain authorized to use the originating
+    // SMTP server. Errors-To is redundant, but shouldn't hurt.
+    $headers['From'] = $headers['Sender'] = $headers['Return-Path'] = $headers['Errors-To'] = $from_address;
+  }
+  if ($from) {
+    $headers['From'] = $from;
+  }
+  $message['from'] = $from;
+  $message['headers'] = $headers;
+  $message['id'] = $mail_id;
+  $message['subject'] = strtr($message_node->field_email_subject[LANGUAGE_NONE][0]['value'], $tokens);
+  $body = strtr($message_node->body[LANGUAGE_NONE][0]['value'], $tokens);
+  if ($html) {
+    if ((strpos($body, '<p>') === FALSE) && (strpos($body, '</br>') === FALSE)) {
+      $html_body = str_replace("\n", "<br/>\n", $body);
+    }
+    else {
+      $html_body = $body;
+    }
+    $template = variable_get('localized_email_template', '');
+    if (strpos($template, '%body') !== FALSE) {
+      $html_body = strtr($template, array('%body' => $html_body));
+    }
+    $separator = md5(date(DATE_RFC2822));
+    $message['headers']['Content-Type'] = "multipart/alternative; boundary=\"" . $separator . "\"";
+    $plain_content_type = "Content-Type: " . 'text/plain; charset=UTF-8; format=flowed; delsp=yes';
+    $content_header = "--$separator\r\n" . $plain_content_type . "\r\n\r\n";
+    $message_body = $content_header . drupal_wrap_mail(drupal_html_to_text($body)) . "\r\n";
+    $html_content_type = "Content-Type: " . 'text/html;charset=utf-8';
+    $content_header = "--$separator\r\n" . $html_content_type . "\r\n\r\n";
+    $message_body .= $content_header . $html_body . "\r\n";
+    $message['body'][] = $message_body;
+  }
+  else {
+    $message['body'][] = $body;
+  }
+  return $message;
+}
+
+/**
+ * module administration for,
+ * @param $form
+ * @param $form_state
+ * @return mixed
+ */
+function localized_email_admin_form($form, &$form_state) {
+  $form = array();
+  $form['localized_email_html_mail'] = array(
+    '#type' => 'radios',
+    '#title' => t('Email format'),
+    '#options' => array(
+      t('Plain text'),
+      t('HTML'),
+    ),
+    '#default_value' => variable_get('localized_email_html_mail', FALSE),
+  );
+  $form['localized_email_template'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Localized email HTML template'),
+    '#cols' => 80,
+    '#rows' => 20,
+    '#required' => TRUE,
+    '#description' => 'Enter HTML for email template.  Full HTML is allowed.',
+    '#default_value' => variable_get('localized_email_template', ''),
+  );
+
+  return system_settings_form($form);
+}
+
+/**
+ * Test form
+ * @param $form
+ * @param $form_state
+ * @return array
+ */
+function localized_email_test($form, &$form_state) {
+  global $user;
+  $message_ids = array();
+  $languages = array(
+    'en-us',
+    'en-au',
+    'en-ca',
+    'en-eu',
+    'en-in',
+    'en-su',
+    'fr-eu',
+    'fr-ca',
+    'de-eu',
+    'es-eu',
+    'es-ln',
+    'pt-eu',
+    'pt-br',
+    'cn-zh',
+    'jp-ja',
+    'ko-kr',
+    'ru-ru',
+  );
+  $result = db_query("SELECT DISTINCT n.title FROM {node} AS n WHERE n.type = :type ORDER BY n.title ASC", array(':type' => 'localized_email'));
+  foreach ($result as $record) {
+    $message_ids[] = $record->title;
+  }
+  $form = array();
+  $form['message_id'] = array(
+    '#type' => 'select',
+    '#title' => t('Message ID'),
+    '#required' => TRUE,
+    '#options' => drupal_map_assoc($message_ids),
+  );
+  $mail_to = ($form_state['values']['email_to']) ? $form_state['values']['email_to'] : $user->mail;
+  $form['email_to'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Email To'),
+    '#size' => 60,
+    '#required' => TRUE,
+    '#default_value' => $mail_to,
+  );
+  $form['language'] = array(
+    '#type' => 'select',
+    '#title' => t('Language'),
+    '#required' => TRUE,
+    '#options' => drupal_map_assoc($languages),
+  );
+  $form['html'] = array(
+    '#type' => 'radios',
+    '#title' => t('Email format'),
+    '#options' => array(
+      t('Plain text'),
+      t('HTML'),
+    ),
+    '#default_value' => variable_get('localized_email_html_mail', FALSE),
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Send email'),
+  );
+  return $form;
+}
+
+/**
+ * submit function for test form
+ * @param $form
+ * @param $form_state
+ */
+function localized_email_test_submit($form, &$form_state) {
+  global $user, $language;
+  if ($form_state['values']['html']) {
+    $end_of_line = "<br/> \n ";
+    $format = 'HTML';
+  }
+  else {
+    $end_of_line = "\n ";
+    $format = 'Plain text';
+  }
+  $footer = "\n" . $end_of_line . 'Test message parameters: ' . $end_of_line . "\n";
+  $footer .= 'Message ID: ' . $form_state['values']['message_id'] . $end_of_line;
+  $footer .= 'Language/Region: ' . $form_state['values']['language'] . $end_of_line;
+  $footer .= 'Email format: ' . $format . $end_of_line;
+
+  $tokens = localized_email_tokens($user, $language);
+  $message = localized_email_message($form_state['values']['message_id'], $tokens, $form_state['values']['language'], $form_state['values']['html']);
+  $message['body'][] = $footer;
+  $message['to'] = $form_state['values']['email_to'];
+  // Retrieve the responsible implementation for this message.
+  $system = drupal_mail_system('localized_email', 'test');
+
+  // Format the message body.
+  $message = $system->format($message);
+  $result = $system->mail($message);
+  if ($result) {
+    drupal_set_message(t('Message Sent'));
+  }
+  else {
+    drupal_set_message(t('Message not sent'), 'error');
+  }
+  $form_state['rebuild'] = TRUE;
+}
+
+function localized_email_tokens($account, $language) {
+  global $base_url;
+  if (!is_object($account)) {
+    return array();
+  }
+  $tokens = array(
+    '!username' => $account->name,
+    '!site' => variable_get('site_name', 'Drupal'),
+    '!login_url' => user_pass_reset_url($account),
+    '!uri' => $base_url,
+    '!uri_brief' => preg_replace('!^https?://!', '', $base_url),
+    '!mailto' => $account->mail,
+    '!date' => format_date(time(), 'medium', '', NULL, $language->language),
+    '!login_uri' => url('user', array(
+      'absolute' => TRUE,
+      'language' => $language
+    )),
+    '!edit_uri' => url('user/' . $account->uid . '/edit', array(
+      'absolute' => TRUE,
+      'language' => $language
+    )),
+  );
+  if (!empty($account->password)) {
+    $tokens['!password'] = $account->password;
+  }
+  return $tokens;
+}

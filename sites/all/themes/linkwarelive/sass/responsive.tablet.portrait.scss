@@ -1,0 +1,130 @@
+
+// _base.scss imports _custom.scss and other partials.
+@import "base";
+
+/*
+ *   Important Information about this CSS File
+ *
+ * - Do not delete or rename this file, if you do not use it leave it blank (delete
+ *   everything) and the file will be skipped when you enable Production Mode in
+ *   the Global theme settings.
+ *
+ * - Read the _README file in this directory, it contains useful help and other information.
+ */
+
+/* Increase the body font size on small devices */
+html {
+  font-size: 81.3%; 
+}
+
+#turbocharge #turbocharge-inner div {
+
+  &#turbocharge-left {
+    flex: 1 1 100%;
+    order: 2;
+
+    p {
+      font-size: 1em;
+    }
+    .button-wrapper {
+      text-align: right;
+      padding: 1.25em 1.5em;
+
+      a {
+        display: block;
+        text-align: center;
+      }
+    }
+  }
+
+  &#turbocharge-right {
+    flex: 1 1 100%;
+    order:1;
+    text-align: center;
+
+    img {
+      max-width: 100%;
+    }
+  }
+}
+
+#setup-testers #setup-testers-inner div {
+
+  &#setup-testers-left {
+    flex: 1 1 100%;
+    order:2;
+
+    p {
+      font-size: 1.25em;
+    }
+  }
+
+  &#setup-testers-right {
+    flex: 1 1 100%;
+    order:1;
+
+    img {
+      max-width: 100%;
+    }
+  }
+}
+
+#manage-your-testers #manage-your-testers-inner div {
+  margin: 0 2%;
+
+  &#manage-your-testers-left {
+    flex: 1 1 100%;
+    text-align:center;
+
+    img {
+      max-width: 100%;
+    }
+  }
+
+  &#manage-your-testers-right {
+    flex: 1 1 100%;
+
+    p {
+      font-size: 1.0em;
+    }
+  }
+}
+
+#maximize-the-benefit #maximize-the-benefit-inner {
+
+  div {
+    margin:0 10%;
+    -webkit-flex:1 1 100%;
+    flex:1 1 100%;
+
+    &#maximize-the-benefit-left {
+      text-align:center;
+    }
+
+    h2 {
+      font-size:1.5em;
+    }
+  }
+}
+
+#test-result-management #test-result-management-inner div {
+
+  &#test-result-management-left {
+    flex: 1 1 100%;
+    order: 2;
+
+    p {
+      font-size: 1.25em;
+    }
+  }
+  &#test-result-management-right {
+    flex: 1 1 100%;
+    order: 1;
+    padding: 1em;
+    text-align:center;
+
+    img {
+      max-width: 100%;
+    }
+  }
+}

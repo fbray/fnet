@@ -1,0 +1,24 @@
+body #page-wrapper {
+    background: #56575b;
+/*    background: url(images/fnet_site_background.png) 0 0 repeat-x transparent; */
+}
+
+body #page-wrapper #page {
+    background: #56575b;
+/*    background: url(images/header_bg_hompage.jpg) center 0 no-repeat transparent; */
+}
+
+body #footer-wrapper {
+/*    background-color: #eee; */
+    background: #eee;
+    border-top: 1px solid #ddd;
+}
+
+body div.region-page-bottom {
+    background-color: #eee;
+}
+
+body #utility_nav a:hover {
+    color: #d4d4d4;
+    text-decoration: none;
+}

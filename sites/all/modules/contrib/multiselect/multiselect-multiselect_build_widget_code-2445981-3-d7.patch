@@ -1,0 +1,18 @@
+diff --git a/multiselect.module b/multiselect.module
+index 81ac021..0485115 100644
+--- a/multiselect.module
++++ b/multiselect.module
+@@ -269,7 +269,12 @@ function _multiselect_build_widget_code($options, $items, $element, $required =
+         $selected_options[$value['target_id']['target_id']] = $value['target_id']['target_id'];
+       }
+       elseif (isset($value['target_id'])) { // Handle Entity Reference.
+-        $selected_options[$value['target_id']] = $value['target_id'];
++        if (is_array($value['target_id']) && array_key_exists('target_id', $value['target_id'])) {
++          $selected_options[$value['target_id']['target_id']] = $value['target_id'];
++        }
++        else {
++          $selected_options[$value['target_id']] = $value['target_id'];
++        }
+       }
+       elseif (isset($options[$value])) { // With FAPI, it's not.
+         $selected_options[$value] = $options[$value];

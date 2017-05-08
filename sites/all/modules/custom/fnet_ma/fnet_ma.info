@@ -1,0 +1,22 @@
+;$Id$
+name = My Account
+description = This module associates the Drupal user on Fluke Networks website with the legacy My Acocunt of .NET and it uses many webservices to allow users with specific roles to access Gold Contract related information and submit and view support incidents.
+package = Fluke Networks
+core = 7.x
+dependencies[] = fnet_helper
+dependencies[] = fnet_sfdc
+
+files[] = includes/fnet_ma.common_functions.inc
+files[] = includes/fnet_ma.admin.inc
+files[] = includes/fnet_ma.common_functions.inc
+files[] = includes/fnet_ma.downloads_updates.inc
+files[] = includes/fnet_ma.register_products.inc
+files[] = includes/fnet_ma.support_incident.inc
+
+stylesheets[all][] = css/fnet_ma.css
+
+scripts[] = js/fnet_ma.js
+scripts[] = js/fnet_ma_downloads_updates.js
+;scripts[] = js/fnet_ma_helper.js
+
+configure = admin/fnet/my_account

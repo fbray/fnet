@@ -1,0 +1,356 @@
+<?php
+// $Id$
+require DRUPAL_ROOT . '/' . drupal_get_path('module', 'ascii_profile') . '/includes/DatabaseRecord.php';
+require DRUPAL_ROOT . '/' . drupal_get_path('module', 'ascii_profile') . '/includes/AsciiProfile.php';
+require DRUPAL_ROOT . '/' . drupal_get_path('module', 'ascii_profile') . '/includes/UserProfile.php';
+/**
+ * @file
+ * Ascii_profile.module handles the maintenance or the ascii_profile database table.  Ascii profile
+ * is required to perform export compliance checks.
+ *
+ */
+
+/**
+ * Implements hook_menu
+ * ().
+ * @return array
+ */
+function ascii_profile_menu() {
+  $items = array();
+
+  $items['myaccount/%/edit/ascii_profile'] = array(
+    'title' => 'Edit ASCII profile',
+    'description' => 'Edit ASCII profile',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ascii_profile_edit_form', 1),
+    'access callback' => 'ascii_profile_edit_access',
+    'access arguments' => array(1),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Access callback for ascii_profile menu
+ *
+ * @param $uid
+ * @return bool
+ */
+function ascii_profile_edit_access($uid) {
+  global $user;
+  if (user_access('edit any user profile')) {
+    return TRUE;
+  }
+  if (($uid == $user->uid) && user_access('edit own user profile')) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Data entry form for ascii_profile
+ *
+ * @param $form_state
+ * @param $uid
+ * @return array
+ */
+function ascii_profile_edit_form($form, $form_state, $uid) {
+  drupal_add_css(drupal_get_path('module', 'ascii_profile') . '/css/ascii_profile.css', array('preprocess' => FALSE));
+  $ascii_profile = new AsciiProfile($uid);
+  $profile = new UserProfile($uid);
+  $form = array();
+  $form['profile'] = array(
+    '#type' => 'value',
+    '#value' => $ascii_profile,
+  );
+  $form['uid'] = array(
+    '#type' => 'value',
+    '#value' => $uid,
+  );
+  $form['email'] = array(
+    '#type' => 'value',
+    '#value' => $profile->email,
+  );
+  $form['country'] = array(
+    '#type' => 'value',
+    '#value' => $profile->country,
+  );
+  $form['province'] = array(
+    '#type' => 'value',
+    '#value' => $profile->province,
+  );
+  $form['postal_code'] = array(
+    '#type' => 'value',
+    '#value' => $profile->postal_code,
+  );
+  $header_text = '<p>Fluke Networks policy for downloads requires that we also collect your name, ';
+  $header_text .= 'address, and company name in plain English characters. Before downloading, ';
+  $header_text .= 'please provide information in English by updating your profile below. </p>';
+  $form['header_text'] = array(
+    '#type' => 'markup',
+    '#markup' => $header_text,
+  );
+  $form['markup1'] = array(
+    '#type' => 'markup',
+    '#markup' => '<div><div id="ascii-profile-left-column">',
+  );
+  $form['first_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('First Name'),
+    '#description' => t('Enter your first name using only ENGLISH characters.'),
+    '#default_value' => ascii_profile_form_defaults('first_name', $profile, $ascii_profile),
+    '#maxlength' => 50,
+    '#size' => 50,
+    '#required' => TRUE,
+  );
+  $form['last_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Last Name'),
+    '#description' => t('Enter your last name using only ENGLISH characters.'),
+    '#default_value' => ascii_profile_form_defaults('last_name', $profile, $ascii_profile),
+    '#maxlength' => 50,
+    '#size' => 50,
+    '#required' => TRUE,
+  );
+  $form['company'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Company'),
+    '#description' => t('Enter your company name using only ENGLISH characters.'),
+    '#default_value' => ascii_profile_form_defaults('company', $profile, $ascii_profile),
+    '#maxlength' => 50,
+    '#size' => 50,
+    '#required' => TRUE,
+  );
+  $form['address1'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Address Line 1'),
+    '#description' => t('Enter your address using only ENGLISH characters.'),
+    '#default_value' => ascii_profile_form_defaults('address1', $profile, $ascii_profile),
+    '#maxlength' => 50,
+    '#size' => 50,
+    '#required' => TRUE,
+  );
+  $form['address2'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Address Line 2'),
+    '#description' => '',
+    '#default_value' => ascii_profile_form_defaults('address2', $profile, $ascii_profile),
+    '#maxlength' => 50,
+    '#size' => 50,
+    '#required' => FALSE,
+  );
+  $form['link'] = array(
+    '#type' => 'markup',
+    '#markup' => l('Switch to primary profile', "myaccount/$uid/edit/profile"),
+  );
+  $form['markup2'] = array(
+    '#type' => 'markup',
+    '#markup' => '</div><div id="ascii-profile-right-column">',
+  );
+  $form['city'] = array(
+    '#type' => 'textfield',
+    '#title' => t('City'),
+    '#description' => t('Enter your city name using only ENGLISH characters.'),
+    '#default_value' => ascii_profile_form_defaults('city', $profile, $ascii_profile),
+    '#maxlength' => 50,
+    '#size' => 50,
+    '#required' => TRUE,
+  );
+  $form['province_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('State/Province'),
+    '#description' => t('State/Province can only be changed in your primary profile'),
+    '#value' => ascii_profile_form_defaults('province_name', $profile, $ascii_profile),
+    '#maxlength' => 50,
+    '#size' => 50,
+    '#required' => FALSE,
+    '#disabled' => TRUE,
+  );
+  $form['country_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Country'),
+    '#description' => t('Country can only be changed in your primary profile'),
+    '#value' => ascii_profile_form_defaults('country_name', $profile, $ascii_profile),
+    '#maxlength' => 50,
+    '#size' => 50,
+    '#required' => FALSE,
+    '#disabled' => TRUE,
+  );
+  $form['markup3'] = array(
+    '#type' => 'markup',
+    '#markup' => '</div></div>',
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save Changes'),
+    '#prefix' => '<div id="profile-submit">',
+    '#suffix' => '</div>',
+  );
+
+  return $form;
+}
+
+/**
+ * Validation function for ascii_profile_edit_form
+ *
+ * @param $form
+ * @param $form_state
+ */
+function ascii_profile_edit_form_validate($form, &$form_state) {
+  $form_fields = array(
+    'first_name',
+    'last_name',
+    'company',
+    'address1',
+    'address2',
+    'city'
+  );
+  foreach ($form_fields as $field) {
+    if (ascii_profile_contains_unicode($form_state['values'][$field])) {
+      form_set_error($field, 'Only English characters allowed.');
+    }
+  }
+}
+
+/**
+ * Submit function for ascii_profile_edit_form
+ *
+ * @param $form
+ * @param $form_state
+ */
+function ascii_profile_edit_form_submit($form, &$form_state) {
+  $ascii_profile = $form_state['values']['profile'];
+  foreach ($ascii_profile as $field => $value) {
+    $ascii_profile->$field = $form_state['values'][$field];
+  }
+  try {
+    $ascii_profile->write();
+    drupal_set_message('Profile changes saved.');
+  } catch (Exception $e) {
+    watchdog('ascii_profile', 'Error writing to ascii_profile table: %message', array('%message' => $e->getMessage()), WATCHDOG_ERROR);
+  }
+}
+
+/**
+ * Return default values for ascii profile form. If there is already an ascii profile, return that value,
+ * otherwise, if primary profile field contains no unicode, return that value, otherwise return empty string.
+ *
+ * @param $field
+ * @param UserProfile $profile
+ * @param AsciiProfile $ascii_profile
+ * @return string
+ */
+function ascii_profile_form_defaults($field, UserProfile $profile, AsciiProfile $ascii_profile) {
+  switch ($field) {
+    case 'province_name':
+      $ascii_profile->province = NULL;
+      $profile_value = $profile->province;
+      $provinces = addresses_province_get($profile->country);
+      $profile_value = $provinces[$profile_value];
+      break;
+    case 'country_name':
+      $ascii_profile->country = NULL;
+      $profile_value = strtolower($profile->country);
+      $countries = addresses_country_get($available = array(), $top_countries = array(), $upper = FALSE);
+      $profile_value = $countries[$profile_value];
+      break;
+    default:
+      $profile_value = $profile->$field;
+      break;
+  }
+  if (empty($ascii_profile->$field)) {
+    if (!ascii_profile_contains_unicode($profile_value)) {
+      return $profile_value;
+    }
+  }
+  else {
+    return $ascii_profile->$field;
+  }
+  return '';
+}
+
+/**
+ * If primary profile has unicode characters. add link to ascii profile
+ *
+ * @param $form
+ * @param $form_state
+ */
+function ascii_profile_form_fnet_profile_profile_edit_form_alter(&$form, &$form_state) {
+  $uid = $form_state['#user']->uid;
+  if (!empty($uid)) {
+    $profile = new UserProfile($uid);
+    if ($profile->has_unicode_characters()) {
+      $form['ascii_profile_link'] = array(
+        '#type' => 'markup',
+        '#markup' => l('Switch to English only profile', "myaccount/$uid/edit/ascii_profile"),
+      );
+    }
+  }
+}
+
+/**
+ * Return the decimal value of a character in a UTF-8 string.
+ *
+ * @param $string
+ * @param $offset
+ * @return int
+ */
+function _ascii_profile_ordutf8($string, &$offset) {
+  $code = ord(substr($string, $offset, 1));
+  if ($code >= 128) { //otherwise 0xxxxxxx
+    if ($code < 224) {
+      $bytesnumber = 2;
+    } //110xxxxx
+    else {
+      if ($code < 240) {
+        $bytesnumber = 3;
+      } //1110xxxx
+      else {
+        if ($code < 248) {
+          $bytesnumber = 4;
+        }
+      }
+    } //11110xxx
+    $codetemp = $code - 192 - ($bytesnumber > 2 ? 32 : 0) - ($bytesnumber > 3 ? 16 : 0);
+    for ($i = 2; $i <= $bytesnumber; $i++) {
+      $offset++;
+      $code2 = ord(substr($string, $offset, 1)) - 128; //10xxxxxx
+      $codetemp = $codetemp * 64 + $code2;
+    }
+    $code = $codetemp;
+  }
+  $offset += 1;
+  if ($offset >= strlen($string)) {
+    $offset = -1;
+  }
+  return $code;
+}
+
+/**
+ * Check UTF-8 string for unicode values
+ *
+ * @param $string
+ * @return bool
+ */
+function ascii_profile_contains_unicode($string) {
+  if (empty($string)) {
+    return FALSE;
+  }
+  $offset = 0;
+  while ($offset >= 0) {
+    if (_ascii_profile_ordutf8($string, $offset) > 128) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_user_cancel().
+ */
+function ascii_profile_user_cancel($edit, $account, $method) {
+  if ($method == 'user_cancel_delete') {
+    db_delete('ascii_profile')->condition('uid', $account->uid)->execute();
+  }
+}

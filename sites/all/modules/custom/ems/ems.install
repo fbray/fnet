@@ -1,0 +1,177 @@
+<?php
+// $Id$
+/**
+ * @file
+ * EMS module's install and uninstall code.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function ems_install() {
+
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function ems_uninstall() {
+  variable_del('ems_default_thank_you_message_text');
+  variable_del('ems_event_full_message_text');
+  variable_del('ems_marketo_campaign_name');
+}
+
+/**
+ * Implements hook_schema().
+ */
+function ems_schema() {
+  $schema['ems_registrant'] = array(
+    'description' => 'Registrants for an event',
+    'fields' => array(
+      'rid' => array(
+        'description' => 'Registrant ID',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'first_name' => array(
+        'description' => 'Registrant first name',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'last_name' => array(
+        'description' => 'Registrant last name',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'email' => array(
+        'description' => 'Registrant email address',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'job_title' => array(
+        'description' => 'Registrant title',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'job_role' => array(
+        'description' => 'Registrant job role',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'company' => array(
+        'description' => 'Registrant company',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'address' => array(
+        'description' => 'Registrant address',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'phone' => array(
+        'description' => 'Registrant phone number',
+        'type' => 'varchar',
+        'length' => '20',
+        'not null' => FALSE,
+      ),
+      'city' => array(
+        'description' => 'Registrant city',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'state' => array(
+        'description' => 'Registrant state or province',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'postal_code' => array(
+        'description' => 'Registrant zip or postal code',
+        'type' => 'varchar',
+        'length' => '20',
+        'not null' => FALSE,
+      ),
+      'country' => array(
+        'description' => 'Registrant country',
+        'type' => 'varchar',
+        'length' => '20',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('rid'),
+    'unique keys' => array(
+      'email' => array('email'),
+    ),
+  );
+
+  $schema['ems_registration'] = array(
+    'description' => 'Registration for an event_occurrence',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'node id of event_occurrence',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'rid' => array(
+        'description' => 'registrant id',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'gold_number' => array(
+        'description' => 'Gold Number',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'payment_status' => array(
+        'description' => 'payment status',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'region' => array(
+        'description' => 'two character region code',
+        'type' => 'char',
+        'length' => '2',
+        'not null' => FALSE,
+      ),
+      'language' => array(
+        'description' => 'two character language code',
+        'type' => 'char',
+        'length' => '2',
+        'not null' => FALSE,
+      ),
+      'registration_status' => array(
+        'description' => 'registered, canceled, waitlist',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'registration_sequence' => array(
+        'description' => 'order of registration for this event, used for waitlist',
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'cancellation_token' => array(
+        'description' => 'unique cancellation token for cancellation url',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('nid', 'rid'),
+  );
+
+  return $schema;
+}

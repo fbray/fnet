@@ -1,0 +1,10 @@
+core = 7.x
+dependencies[] = "link"
+dependencies[] = "number"
+; dependencies[] = "optionwidgets"
+dependencies[] = "text"
+description = "A node primarily for capturing user data and redirecting the user to a target asset"
+name = "Asset Gateway"
+package = "Fluke Networks"
+project = "asset_gateway"
+version = "7.x-1.0-20150430"

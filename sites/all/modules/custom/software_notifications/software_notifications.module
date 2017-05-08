@@ -1,0 +1,67 @@
+<?php
+/**
+ * @file
+ * Code for the Software Notifications feature.
+ */
+
+include_once 'software_notifications.features.inc';
+
+/**
+ * Implements hook_menu().
+ */
+function software_notifications_menu() {
+  $items = array();
+  $items['notifications/%'] = array(
+    'title' => 'Software version notice',
+    'description' => 'Software version notice',
+    'page callback' => 'software_notifications_page',
+    'page arguments' => array(1),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function software_notifications_get_node($alias) {
+  $alias = 'notification/' . $alias;
+  $path = drupal_lookup_path('source', $alias);
+  $parts = explode('/', $path);
+  $nid = $parts[1];
+  return $nid;
+}
+
+function software_notifications_page($alias) {
+  $nid = software_notifications_get_node($alias);
+  $node = node_load($nid);
+  print theme('software_notification', array('node' => $node));
+  exit;
+}
+
+function theme_software_notification($variables) {
+  $node = $variables['node'];
+  $output = "<!DOCTYPE html>\n";
+  $output .= "<html>\n";
+  $output .= "<head>\n";
+  $output .= "<title>$node->title</title>\n";
+  $output .= "<meta name=\"latest-version\" content=\"{$node->field_latest_version[LANGUAGE_NONE][0]['value']}\">\n";
+  $output .= "<meta name=\"version-location\" content=\"{$node->field_version_location[LANGUAGE_NONE][0]['url']}\">\n";
+  $output .= "</head>\n";
+  $output .= "<body>\n";
+  $output .= "<div id=\"release-notes\">\n";
+  $output .= $node->field_release_notes[LANGUAGE_NONE][0]["value"] . "\n";
+  $output .= "</div>\n";
+  $output .= "</body>\n";
+  $output .= "</html>\n";
+  return $output;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function software_notifications_theme($existing, $type, $theme, $path) {
+  $hooks = array();
+  $hooks['software_notification'] = array(
+    'variables' => array(),
+  );
+  return $hooks;
+}

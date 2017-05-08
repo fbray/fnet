@@ -1,0 +1,667 @@
+<?php
+/**
+ * @file
+ * Code for the Products feature.
+ */
+
+include_once 'products.features.inc';
+
+/**
+ * Implements hook_theme().
+ */
+function products_theme($existing, $type, $theme, $path) {
+  $theme = array();
+  $theme['node__product'] = array(
+    'render element' => 'content',
+    'base hook' => 'node',
+    'template' => 'node--product',
+    'path' => drupal_get_path('module', 'products') . '/theme',
+  );
+  return $theme;
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function products_preprocess_page(&$variables) {
+  // Add Accordion UI library for the Product pages.
+  if (isset($variables['node']) && ($variables['node']->type == 'product')) {
+
+    // Adds the Accordion UI library for this content type.
+    drupal_add_library('system', 'ui.accordion');
+
+    // Enable product features accordion
+    drupal_add_js(drupal_get_path('module', 'products') . '/javascript/enable-ui-elements.js');
+
+    // Enable product page section menu
+    drupal_add_js(drupal_get_path('module', 'products') . '/javascript/toc/sticky/jquery.sticky.js');
+    drupal_add_css(drupal_get_path('module', 'products') . '/javascript/toc/styles.css');
+    drupal_add_css(drupal_get_path('module', 'products') . '/css/products.css');
+    drupal_add_js(drupal_get_path('module', 'products') . '/javascript/toc/table-of-contents.js');
+
+    // Hide title for this content type.
+    $variables['title'] = '';
+
+  }
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function products_node_view($node, $view_mode) {
+
+  if (($view_mode == 'search_index') || ($view_mode == 'search_result')) {
+    return;
+  }
+
+  // Substitute language/region content if necessary
+  if ($node->type == 'product') {
+
+    products_language_override($node);
+
+    // Get product features information.
+    $product_features = views_get_view_result('product_feature', NULL, $node->nid);
+    $node->content['product_features'] = $product_features;
+
+    // Get product models and accessories information.
+    if(isset( $node->field_prod_hide_models_accessory[LANGUAGE_NONE][0]['value'] ) && $node->field_prod_hide_models_accessory[LANGUAGE_NONE][0]['value']) {
+      $product_moa = array();
+    } else {
+      $product_moa = views_get_view_result('product_moa', NULL, $node->nid);
+    }
+    $node->content['product_moa'] = $product_moa;
+
+    $tempArray = array();
+    for($i=0; $i<count($product_moa); $i++){
+      $tempArray[$product_moa[$i]->taxonomy_term_data_node_name][] = $product_moa[$i];
+    }
+    foreach (array("Models", "Suites", "Bundles", "Kits", "Options", "Accessories", "Upgrades", "Professional Services") as $modType) {
+      if ( isset($tempArray[$modType]) && (count($tempArray[$modType]) > 0) ) {
+        $node->content['product_moa_'.$modType] = $tempArray[$modType];
+      }
+    }
+
+    /*
+      // Get array of just "models".
+    for($i=0; $i<count($product_moa); $i++){
+      if($product_moa[$i]->taxonomy_term_data_node_name == "Models"){
+        $tempArray[] = $product_moa[$i];
+      }
+    }
+    $node->content['product_models'] = $tempArray;
+
+    // Get array of just "accessories".
+    $tempArray = array();
+    for($i=0; $i<count($product_moa); $i++){
+      if($product_moa[$i]->taxonomy_term_data_node_name == "Accessories"){
+        $tempArray[] = $product_moa[$i];
+      }
+    }
+    $node->content['product_accessories'] = $tempArray;
+*/
+    // Get documents/demos.
+    $product_assets = products_get_assets($node);
+    $node->content['product_documents'] = $product_assets['documents'];
+    $node->content['product_demos'] = $product_assets['demos'];
+    $node->content['product_downloads'] = $product_assets['downloads'];
+
+    // Get Case Studies
+    $prodExpertise = views_get_view_result('product_expertise', NULL, $node->nid);
+    $product_case_studies = array();
+
+    if (count($prodExpertise) > 0) {
+
+      foreach ($prodExpertise as $expertise) {
+        if ($expertise->taxonomy_term_data_node_name == "Case Study") {
+
+          $product_case_studies[] = $expertise;
+        }
+      }
+    }
+    $node->content['product_case_studies'] = $product_case_studies;
+
+  }
+}
+
+function products_get_assets(&$node) {
+  global $theme_path;
+  $siteReg = module_invoke('fnet_helper', 'site_region');
+  $langReg = $siteReg["langReg"];
+
+  $pCatId = $node->field_pcatid[LANGUAGE_NONE][0]["value"];
+  $myDemo = "";
+  $myDownload = "";
+  $myDoc = array();
+  if ($pCatId) {
+    if (function_exists('digital_asset_list_by_product')) {
+      $assets = digital_asset_list_by_product($pCatId, $language = substr($langReg, 0, 2), $asset_type = NULL);
+      $amsAsset = array();
+      $i = count($assets->Asset);
+      foreach ($assets->Asset as $asset) {
+        $amsAsset[] = array(
+          'ASSETID' => $asset->AssetID,
+          'ASSETTYPEID' => $asset->asset_type,
+          'ASSETTYPEDESCRIPTION' => $asset->asset_type,
+          'ASSETTITLE' => $asset->AssetTitle,
+          'ASSETDESCRIPTION' => $asset->AssetDescription,
+          'ASSETSECURITYLEVEL' => $asset->AssetSecurityLevel,
+          'LOCKED' => $asset->Locked,
+          'FILESIZE' => $asset->FileSize,
+        );
+      }
+    }
+    $demoRowCount = 0;
+    $downloadRowCount = 0;
+    $docRowCount = array();
+    for ($j = 0; $j < $i; $j++) {
+      $myLockStatus = "";
+      if ($amsAsset[$j]['FILESIZE'] > 0) {
+        $myFileSize = format_size($amsAsset[$j]['FILESIZE']);
+      }
+      else {
+        $myFileSize = '';
+      }
+      if ($amsAsset[$j]["LOCKED"]) {
+        if ($amsAsset[$j]["LOCKED"] == "True") {
+          $myLockStatus = " <img src='" . $theme_path . "/images/lock.gif' border='0'>";
+        }
+        else {
+          if ($amsAsset[$j]["LOCKED"] == "Unlocked") {
+            $myLockStatus = " <img src='/" . $theme_path . "/images/unlock.gif' border='0'>";
+          }
+        }
+      }
+      switch (strtolower($amsAsset[$j]["ASSETTYPEDESCRIPTION"])) {
+        case "virtual demo":
+        case 'virtual demos':
+          $myDemo .= "<tr class='row" . ($demoRowCount % 2) . "'><td><div class='OneLinkNoTx'><strong>" . $amsAsset[$j]["ASSETTITLE"] . "</strong></div></td>";
+          $myDemo .= "<td><a href='/findit/" . $langReg . "/" . $amsAsset[$j]["ASSETID"] . "'>View Demo</a></td>";
+          $myDemo .= "<td valign='top'>" . $myLockStatus . "</td></tr>";
+          $demoRowCount++;
+          break;
+        case "software":
+        case 'product software':
+          $myDownload .= "<tr class='row" . ($downloadRowCount % 2) . "'><td><div class='OneLinkNoTx'><strong>" . $amsAsset[$j]["ASSETTITLE"] . "</strong><br>" . $amsAsset[$j]["ASSETDESCRIPTION"] . "</div></td>";
+          $myDownload .= "<td><a href='/findit/" . $langReg . "/" . $amsAsset[$j]["ASSETID"] . "'>Download</a><br>" . $myFileSize . "</td>";
+          $myDownload .= "<td valign='top'>" . $myLockStatus . "</td></tr>";
+          $downloadRowCount++;
+          break;
+        case 'application notes':
+        case "application note":
+        case "white paper":
+        case 'white papers':
+        case "datasheet":
+        case 'data sheets':
+        case "brochure":
+        case "brochures":
+        case "catalog":
+        case 'catalogs':
+        case "flyer":
+        case 'flyers':
+        if (!isset($docRowCount[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]])) {
+            $docRowCount[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] = 0;
+          }
+        if (!isset($myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]])) {
+          $myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] = '';
+        }
+          $myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] .= "<tr class='row" . ($docRowCount[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] % 2) . "'><td>";
+          $myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] .= "<div class='OneLinkNoTx'>\n";
+          $myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] .= "<strong>" . $amsAsset[$j]["ASSETTITLE"] . "</strong><br>" . $amsAsset[$j]["ASSETDESCRIPTION"];
+          $myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] .= "</div>\n";
+          $myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] .= "</td>";
+          $myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] .= "<td><a href='/findit/" . $langReg . "/" . $amsAsset[$j]["ASSETID"] . "'>Download PDF</a><br>" . $myFileSize . "</td>";
+          $myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] .= "<td valign='top'>" . $myLockStatus . "</td></tr>";
+          $docRowCount[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]]++;
+          break;
+        default:
+      }
+    }
+  }
+
+  return array('documents'=>$myDoc, 'demos'=>$myDemo, 'downloads'=>$myDownload);
+}
+
+/**
+ * Custom function which performs language override content substitution on a given node.
+ */
+function products_language_override(&$node) {
+  // Fetch the current user's region/language.
+  $siteReg = module_invoke('fnet_helper', 'site_region');
+  $regLang = $siteReg["regLang"];
+
+  // Get all the selected language override nodes associated with the default node through the node reference field.
+  $language_override_field_values = fnet_common_get_field_values('product', $node, 'field_prod_language');
+
+  $override_nids = array();
+  foreach ($language_override_field_values as $value) {
+    if (!empty($value['nid'])) {
+      $override_nids[] = $value['nid'];
+    }
+  }
+
+  if (!empty($override_nids)) {
+    $override_nodes = node_load_multiple($override_nids);
+  }
+  else {
+    $override_nodes = array();
+  }
+
+  // Create a variable to hold the language override node id that is
+  // associated with the default node AND matches the user's reglang.
+  $qualified_language_override_node = null;
+
+  // Loop thru all the selected language override nodes to determine if their reglang matches user's reglang.
+  foreach ($override_nodes as $language_override_field_item) {
+
+    $language_override_field_item_reglang = fnet_common_get_field_value('productlanguage', $language_override_field_item, 'field_prodlang_language');
+
+    // Compare lang node's reglang value with user's reglang value.
+    if (strpos($language_override_field_item_reglang, $regLang) !== false) {
+
+      // We have a reglang match so do assign it to the $qualified_language_override_node_id variable.
+      $qualified_language_override_node = $language_override_field_item;
+      break;
+    }
+
+  }
+
+  // Perform language override node field substitutions if necessary.
+  if (!is_null($qualified_language_override_node)) {
+    // Fetch override content.
+    /*
+     * Call to Action Buttons
+     */
+    // Clear the contents of the four call to action buttons if the override asks us to hide them.
+    if (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btnact_disable', 'value') == "Yes") {
+
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["title"] = "";
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["display_url"] = "";
+
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["title"] = "";
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["display_url"] = "";
+
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["title"] = "";
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["display_url"] = "";
+
+
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["title"] = "";
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["display_url"] = "";
+
+      // Otherwise, if there is any available override button content, go ahead and perform content substitution.
+    } else if (
+      (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title') && fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url'))
+      || (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 1) && fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 1))
+      || (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 2) && fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 2))
+      || (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 3) && fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 3))
+    ) {
+
+      // Substitutions for button one.
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["title"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title');
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["display_url"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url');
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["attributes"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'attributes');
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["translate"] = false;
+      $node->cta_btn_translate[0] = FALSE;
+
+      // Substitutions for button two.
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["title"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 1);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["display_url"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 1);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["attributes"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'attributes', 1);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["translate"] = false;
+
+      // Substitutions for button three.
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["title"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 2);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["display_url"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 2);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["attributes"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'attributes', 2);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["translate"] = false;
+
+      // Substitutions for button four.
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["title"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 3);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["display_url"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 3);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["attributes"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'attributes', 3);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["translate"] = false;
+
+    }
+
+    /*
+     * Product Video and Video Thumbnail
+     */
+    if (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_img_t_1', 'filename')) {
+
+      $node->field_prod_video_img_t_1[0]['filename'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_img_t_1', 'filename');
+      $node->field_prod_video_img_t_1[0]['uri'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_img_t_1', 'uri');
+      $node->field_prod_video_img_t_1[0]['alt'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_img_t_1', 'alt');
+
+//      $node->field_prod_video_img_t_1[LANGUAGE_NONE][0]['filepath'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_img_t_1', 'filepath');
+      $node->field_prod_video_youtube_url[0]['url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_youtube_url', 'url');
+      $node->field_prod_video_youtube_url[0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_youtube_url', 'url');
+//      $node->field_prod_video_youtube_url[LANGUAGE_NONE][0]['query'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_youtube_url', 'query');
+
+//      $node->field_prod_video_lg_1[LANGUAGE_NONE][0]['filepath'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_lg_1', 'filepath');
+      $node->field_prod_video_lg_1[0]['filename'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_lg_1', 'filename');
+      $node->field_prod_video_lg_1[0]['uri'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_lg_1', 'uri');
+      $node->field_prod_video_lg_1[0]['filemime'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_lg_1', 'filemime');
+//      $thumb = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_img_t_1', 'data');
+//      if ( is_array($thumb) && isset($thumb['alt']) ) $node->field_prod_video_img_t_1[LANGUAGE_NONE][0]['data']['alt'] = $thumb['alt'];
+    }
+
+    /*
+     * Product Solutions
+     */
+    // Clear all solutions content if override node is set to have it disabled.
+    if (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_disable', 'value') == "Yes") {
+
+      $node->field_prod_sol_link_1[LANGUAGE_NONE][0]["title"] = "";
+      $node->field_prod_sol_link_1[LANGUAGE_NONE][0]["display_url"] = "";
+
+      $node->field_prod_sol_link_2[LANGUAGE_NONE][0]["title"] = "";
+      $node->field_prod_sol_link_2[LANGUAGE_NONE][0]["display_url"] = "";
+
+      $node->field_prod_sol_link_3[LANGUAGE_NONE][0]["title"] = "";
+      $node->field_prod_sol_link_3[LANGUAGE_NONE][0]["display_url"] = "";
+
+      $node->field_prod_sol_link_4[LANGUAGE_NONE][0]["title"] = "";
+      $node->field_prod_sol_link_4[LANGUAGE_NONE][0]["display_url"] = "";
+
+      // Otherwise, if there is any available override solutions content, go ahead and perform content substitution.
+    } else if (
+      fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_1', 'title')
+      || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_2', 'title')
+      || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_3', 'title')
+      || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_4', 'title')
+    ) {
+
+      $node->field_prod_sol_title[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_title', 'value');
+      $noTranslation["field_prod_solutions"] = true;
+
+      $node->field_prod_sol_link_1[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_1', 'title');
+      $node->field_prod_sol_link_1[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_1', 'display_url');
+      $node->field_prod_sol_link_1[LANGUAGE_NONE][0]['attributes'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_1', 'attributes');
+      $node->field_prod_sol_desc_1[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_desc_1', 'value');
+      $node->field_prod_sol_desc_1[LANGUAGE_NONE][0]['translate'] = false;
+
+      $node->field_prod_sol_link_2[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_2', 'title');
+      $node->field_prod_sol_link_2[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_2', 'display_url');
+      $node->field_prod_sol_link_2[LANGUAGE_NONE][0]['attributes'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_2', 'attributes');
+      $node->field_prod_sol_desc_2[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_desc_2', 'value');
+      $node->field_prod_sol_desc_2[LANGUAGE_NONE][0]['translate'] = false;
+
+      $node->field_prod_sol_link_3[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_3', 'title');
+      $node->field_prod_sol_link_3[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_3', 'display_url');
+      $node->field_prod_sol_link_3[LANGUAGE_NONE][0]['attributes'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_3', 'attributes');
+      $node->field_prod_sol_desc_3[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_desc_3', 'value');
+      $node->field_prod_sol_desc_3[LANGUAGE_NONE][0]['translate'] = false;
+
+      $node->field_prod_sol_link_4[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_4', 'title');
+      $node->field_prod_sol_link_4[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_4', 'display_url');
+      $node->field_prod_sol_link_4[LANGUAGE_NONE][0]['attributes'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_4', 'attributes');
+      $node->field_prod_sol_desc_4[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_desc_4', 'value');
+      $node->field_prod_sol_desc_4[LANGUAGE_NONE][0]['translate'] = false;
+
+    }
+
+    /*
+     * Where to Buy Buttons
+     */
+
+    if (
+      fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'title')
+      || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'title', 1)
+      || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'title', 2)
+    ) {
+
+      $node->field_prod_wtb_online[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'title');
+      $node->field_prod_wtb_online[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'url');
+      $node->field_prod_wtb_online[LANGUAGE_NONE][0]['translate'] = false;
+
+      $node->field_prod_wtb_online[LANGUAGE_NONE][1]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'title', 1);
+      $node->field_prod_wtb_online[LANGUAGE_NONE][1]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'url', 1);
+      $node->field_prod_wtb_online[LANGUAGE_NONE][1]['translate'] = false;
+
+      $node->field_prod_wtb_online[LANGUAGE_NONE][2]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'title', 2);
+      $node->field_prod_wtb_online[LANGUAGE_NONE][2]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'url', 2);
+      $node->field_prod_wtb_online[LANGUAGE_NONE][2]['translate'] = false;
+    }
+  }
+}
+
+
+define('NODE_PRODUCT_SUB_TYPE_SUPPORT_TID', 56);
+define('NODE_PRODUCT_SUB_TYPE_MODEL_TID', 4);
+define('NODE_PRODUCT_SUB_TYPE_GENERAL_CACHE_EXPIRE', 12 * 60 * 60);
+
+/**
+ * Find support contracts that apply to specific product moas.
+ *
+ * "moa" refers to "models and/or accessories". These are things like models,
+ * bundles, kits and so on.
+ *
+ * This code compensates for the fact that there is no real relationship
+ * between product moa and the support contracts available for those moa.
+ * We have to make this relationship by finding all moas and support items
+ * that apply to the same product NID and then doing some guesswork based on
+ * the string IDs for them. This is some convoluted code. ¡Cuidado!
+ *
+ * @param (string) $moa_nid - Specific model/accessory NID of a given sub-product
+ *
+ * @return (array) A formatted list of support contracts that correspond to a
+ *   given product moa.
+ */
+function products_support_by_moa($moa_nid) {
+  $drupal_cache_enabled = variable_get('cache', 0);
+  $cache_moa_list_id = 'products:support_by_product:moas';
+  $cache_support_list_id = 'products:support_by_product:support';
+  $cache_id = 'products:support_by_product:' . $moa_nid;
+
+  // contains list of available support plans per each moa nid
+  $moa_plans_list_cache = cache_get($cache_moa_list_id);
+  if (!empty($moa_plans_list_cache)) {
+    $moa_plans_list_cache = $moa_plans_list_cache->data;
+  }
+  // contains the title and description of each support plan
+  $support_details_list_cache = cache_get($cache_support_list_id);
+  if (!empty($support_details_list_cache)) {
+    $support_details_list_cache = $support_details_list_cache->data;
+  }
+  // contains the formatted markup displayed per product then moa
+  $product_cache = cache_get($cache_id);
+  if (isset($product_cache->data)) {
+    $product_cache = $product_cache->data;
+  }
+
+  if (!$drupal_cache_enabled || !$moa_plans_list_cache) {
+    $moa_plans_list_cache = array();
+
+    // A list of all support options available for each moa
+    $sql = "
+      SELECT n.nid AS moa_nid, n.title AS moa_name, so.field_support_options_nid AS support_option
+      FROM {node} n
+      LEFT JOIN {node_revisions} nr
+        ON n.vid = nr.vid
+      INNER JOIN {content_field_support_options} so
+        ON n.vid = so.vid
+      LEFT JOIN {term_node} tn
+        ON n.vid = tn.vid
+      WHERE tn.tid != %s
+        AND n.status > 0
+        AND so.field_support_options_nid IS NOT NULL
+      ORDER BY moa_nid ASC, delta ASC
+    ";
+    $query = db_select('node', 'n');
+    $query->fields('n', array('nid'));
+    $query->addJoin('LEFT', 'node_revision', 'nr', 'n.vid = nr.vid');
+    $query->fields('nr', array('title'));
+    $query->addJoin('INNER', 'field_data_field_support_options', 'so', 'n.vid = so.revision_id');
+    $query->fields('so', array('field_support_options_nid'));
+    $query->addJoin('LEFT', 'taxonomy_index', 't', 'n.nid = t.nid');
+    $query->condition('t.tid', NODE_PRODUCT_SUB_TYPE_SUPPORT_TID, '!=');
+    $query->condition('n.status', 0, '!=');
+    $query->condition('so.field_support_options_nid', NULL, 'IS NOT NULL');
+    $query->orderBy('n.nid');
+    $query->orderBy('so.delta');
+    $result = $query->execute();
+
+    foreach ($result as $row) {
+      $nid = $row->nid;
+      $moa_name = $row->title;
+      $support_option = $row->field_support_options_nid;
+      $moa_plans_list_cache[$nid]['moa_name'] = $moa_name;
+      $moa_plans_list_cache[$nid]['support_options'][$support_option] = TRUE;
+    }
+
+    cache_set($cache_moa_list_id, $moa_plans_list_cache, 'cache', REQUEST_TIME + NODE_PRODUCT_SUB_TYPE_GENERAL_CACHE_EXPIRE);
+  }
+
+  if (!$drupal_cache_enabled || !$support_details_list_cache) {
+    $support_details_list_cache = array();
+
+    $sql = "
+      SELECT n.nid, n.title AS support_name, nr.body support_desc
+      FROM {node} n
+      LEFT JOIN {node_revisions} nr
+        ON n.vid = nr.vid
+      LEFT JOIN {term_node} tn
+        ON n.vid = tn.vid
+      WHERE tn.tid = %s
+      AND n.status > 0
+    ";
+    $query = db_select('node', 'n');
+    $query->fields('n', array('nid', 'title'));
+    $query->addJoin('INNER', 'field_data_body', 'b', 'n.vid = b.revision_id');
+    $query->fields('b', array('body_value'));
+    $query->addJoin('LEFT', 'taxonomy_index', 't', 'n.nid = t.nid');
+    $query->condition('t.tid', NODE_PRODUCT_SUB_TYPE_SUPPORT_TID);
+    $query->condition('n.status', 0, '!=');
+    $result = $query->execute();
+    foreach ($result as $row) {
+      $nid = $row->nid;
+      $name = $row->title;
+      $description = $row->body_value;
+      $support_details_list_cache[$nid]['name'] = $name;
+      $support_details_list_cache[$nid]['description'] = $description;
+    }
+    cache_set($cache_support_list_id, $support_details_list_cache, 'cache', REQUEST_TIME + NODE_PRODUCT_SUB_TYPE_GENERAL_CACHE_EXPIRE);
+  }
+
+  if (!$drupal_cache_enabled || !$product_cache) {
+    $rows = array();
+    $moa_plans = array();
+
+    if (!is_array($moa_plans_list_cache)) {
+      watchdog('node_product_sub_type', 'Got empty cache values. Are models/support configured properly?', array(), WATCHDOG_WARNING);
+      return;
+    }
+
+    if (isset($moa_plans_list_cache[$moa_nid])) {
+      $moa_plans = $moa_plans_list_cache[$moa_nid]['support_options'];
+      $moa_name = $moa_plans_list_cache[$moa_nid]['moa_name'];
+    }
+    // There may be no plans configured for this moa
+    if (!is_array($moa_plans) || empty($moa_name)) {
+      return;
+    }
+
+    foreach (array_keys($moa_plans) as $plan) {
+      $product_cache = FALSE;
+      $row = array();
+      $row[] = array(
+        'data' => $support_details_list_cache[$plan]['name'],
+        'class' => 'plan'
+      );
+      $row[] = array(
+        'data' => $support_details_list_cache[$plan]['description'],
+        'class' => 'description'
+      );
+      $rows[] = $row;
+    }
+
+    $plans_label = '<div class="plan_label">' . $moa_name . ' ' . t('Gold Support') . ': </div>';
+
+    if (count($rows) > 0) {
+      $table_attributes = array(
+        'class' => 'gold-support-plans',
+      );
+      $product_cache = $plans_label . theme('table', array(
+          'rows' => $rows,
+          'attributes' => $table_attributes
+        ));
+    }
+    cache_set($cache_id, $product_cache, 'cache', REQUEST_TIME + NODE_PRODUCT_SUB_TYPE_GENERAL_CACHE_EXPIRE);
+  }
+
+  return $product_cache;
+}
+
+/**
+ * Implementation of hook_cron()
+ */
+//function products_cron() {
+//  // Clear cache if any sub-product moa nodes have been updated
+//  $cache_timestamp = variable_get('products_support_by_product_updated', 0);
+//
+//  $sql = "
+//    SELECT MAX(n.changed)
+//    FROM {node} n
+//    LEFT JOIN term_node tn ON n.vid = tn.vid
+//    WHERE tn.tid = %s
+//  ";
+//  $query = db_select('node', 'n');
+//  $query->addExpression('MAX(n.changed)');
+//  $query->addJoin('taxonomy_index', 't', 'n.nid = t.nid');
+//  $query->condition('t.tid', NODE_PRODUCT_SUB_TYPE_MODEL_TID);
+//  $updated_timestamp = $query->execute()->fetchField();
+//
+//  if ($updated_timestamp > $cache_timestamp) {
+//    cache_clear_all('products:support_by_product:', 'cache', TRUE);
+//    variable_set('products_support_by_product_updated', $updated_timestamp);
+//    watchdog('node_product_sub_type', 'Cleared product moa & support cache', array(), WATCHDOG_INFO);
+//  }
+//}
+/**
+ * Return unicode char by its code
+ *
+ * @param int $u
+ * @return char
+ */
+function products_unichr($u) {
+  return mb_convert_encoding('&#' . intval($u) . ';', 'UTF-8', 'HTML-ENTITIES');
+}
+
+function products_clean_string($string) {
+  $string = str_replace('<sup>', '', $string);
+  $string = str_replace('</sup>', '', $string);
+  $string = str_replace(products_unichr(0xAE), '', $string); //registered symbol
+  $string = str_replace(products_unichr(0x26), '', $string); //comma
+  $string = str_replace(products_unichr(0x2c), '', $string); //ampersand
+  $string = str_replace(products_unichr(0x3a), '', $string); //colon
+  $string = str_replace(products_unichr(0x28), '', $string); //left paren
+  $string = str_replace(products_unichr(0x29), '', $string); //right paren
+  $string = str_replace(products_unichr(0x2122), '', $string); //TradeMark symbol
+  $string = str_replace(' ', '', $string);
+  return $string;
+}
+
+
+function products_form_alter(&$form, &$form_state, $form_id){
+	if($form_id == 'product_node_form'){
+		$form['#after_build']=array('language_options');		
+	}
+	return $form;
+}
+function language_options(&$form, &$form_state){
+	$nid = $form['nid']['#value'];
+	$lang_arr = array();
+	$lang_override_query = db_select('node','n')
+          ->fields('n',array('nid','title'))          
+					->fields('fpg', array('entity_id'))
+					->fields('flr', array('field_prodlang_language_value'))
+					->condition('n.type', 'product', '=')
+					->condition('n.nid', $nid, '=');
+	$lang_override_query->innerJoin('field_data_field_prodlang_product', 'fpg', 'fpg.field_prodlang_product_nid = n.nid');
+	$lang_override_query->innerJoin('field_data_field_prodlang_language', 'flr', 'flr.entity_id = fpg.entity_id');
+	$result = $lang_override_query->execute();
+	foreach($result as $item) {
+		$lang_arr[$item->entity_id]= '<span class="views-field views-field-field-language-region"> <span class="field-content">'.$item->field_prodlang_language_value .'</span> </span> - <span class="views-field views-field-nid"> <span class="field-content"><a href="/node/'.$item->entity_id .'/edit">(Right Click to Edit in New Window)</a></span> </span> - <span class="views-field views-field-title"> <span class="field-content"><a href="/node/'.$item->entity_id .'">'.$item->title .'</a></span> </span>';
+	}
+	$form['field_prod_language']['und']['#options']=$lang_arr;	
+	return $form;	
+}

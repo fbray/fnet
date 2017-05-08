@@ -1,0 +1,6 @@
+; $Id: homepage.info 1016 2015-06-02 21:44:36Z jcaratoz $
+name = homepage
+package = Fluke Networks
+description = Handles all of the language overrides for the homepage content type
+version = 7.x.1.0-20150602
+core = 7.x

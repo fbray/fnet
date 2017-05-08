@@ -1,0 +1,2293 @@
+<?php
+/**
+ * @file
+ * Module for Fluke Extranet / Sales Insider
+ */
+
+
+// Cheat, to call .install functions via drush.  remove after dev.
+include_once('fextranet.install');
+
+/**
+ * Implements hook_views_api()
+ */
+function fextranet_views_api() {
+  return array(
+    'api' => 3.0,
+    'path' => drupal_get_path('module', 'fextranet') . '/views',
+  );
+}
+
+/**
+ * Implements hook_menu()
+ */
+function fextranet_menu() {
+  $items = array();
+
+  // Public facing paths start with 'extranet'
+
+  $items['extranet'] = array(
+    'menu_name' => 'extranet',
+    'title' => t('Sales Insider'),
+    'page callback' => 'fextranet_initial_content',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['extranet/request-received'] = array(
+    'title' => t('Sales Insider Access Request Received'),
+    'description' => t('Thank you page for Access Requests'),
+    'page callback' => '_fextranet_access_request_received',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['extranet-access-denied'] = array (
+    'title' => t('Access Denied'),
+    'description' => t('Access Denied page'),
+    'page callback' => '_fextranet_access_denied',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['extranet/tools'] = array(
+    'title' => t('Sales Tools'),
+    'description' => t('Extranet Sales Tools'),
+    'page callback' => '_fextranet_sales_tool_page',
+    'access arguments' => array('access extranet'),
+    'type' => MENU_NORMAL_ITEM,
+    'menu_name' => 'extranet',
+  );
+
+  $items['extranet/services'] = array(
+    'title' => t('Services & Support'),
+    'description' => t('Extranet Services & Support'),
+    'page callback' => '_fextranet_services_page',
+    'access arguments' => array('access extranet'),
+    'type' => MENU_NORMAL_ITEM,
+    'menu_name' => 'extranet',
+  );
+
+  // box item download.  get box, then item url
+  // send back as redirect location
+  $items['extranet/download/%/%'] = array(
+    'menu_name' => 'extranet',
+    'title' => 'Photo Download',
+    'page callback' => 'fextranet_download_gallery_asset',
+    'page arguments' => array(2, 3),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  // Deal Registration form
+  $items['extranet/deal'] = array(
+    'menu_name' => 'extranet',
+    'page callback' => '_fextranet_deal_reg',
+    'title' => 'Deal Registration',
+    'access arguments' => array('access extranet'),
+    'type' => MENU_CALLBACK,
+  );
+
+  // Deal Registration form
+  $items['extranet/tools/products/%'] = array(
+    'menu_name' => 'extranet',
+    'page arguments' => array(3),
+    'page callback' => '_fextranet_product_asset_page',
+    'title' => 'Product Information',
+    'access arguments' => array('access extranet'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['extranet/node/%'] = array(
+    'menu_name' => 'extranet',
+    'page callback' => '_fextranet_node_page',
+    'page arguments' => array(2),
+    'title callback' => '_fextranet_node_title',
+    'title arguments' => array(2),
+    'access callback' => '_fextranet_node_access',
+    'access arguments' => array(2),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['productname/autocomplete'] = array(
+    'page callback' => '_fex_products_autocomplete',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+
+  $admin_groups = _fex_get_extranet_groups();
+
+  $items['node/%/audit'] = array(
+    'menu_name' => t('management'),
+    'title' => t('Audit'),
+    'description' => t('Shows audit report of Extranet user access for node'),
+    'page callback' => 'fextranet_audit',
+    'page arguments' => array(1),
+    'access callback' => 'fextranet_audit_access',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 20,
+    'file' => 'fextranet.admin.inc',
+    'access arguments' => array(1, 'administer extranet'),
+  );
+
+  $items['admin/fnet/extranet'] = array(
+    'title' => t('Extranet'),
+    'description' => t('Adminstrative functions for managing the Extranet'),
+    'access arguments' => array('administer extranet'),
+    'page callback' => 'system_admin_menu_block_page',
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+  );
+
+  $items['admin/fnet/extranet/instructions'] = array(
+    'title' => t('Instruction Text'),
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fextranet_admin_instructions_form'),
+    'access arguments' => array('administer extranet'),
+    'file' => 'fextranet.admin.inc'
+  );
+
+  $items['admin/fnet/extranet/notifications'] = array(
+    'title' => t('Email Notifications'),
+    'description' => t('Settings for email notifications used by the Extranet.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fextranet_admin_notifications_form'),
+    'access arguments' => array('administer extranet'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'fextranet.admin.inc'
+  );
+
+  if ($admin_groups) {
+    $items['admin/fnet/extranet/region'] = array(
+      'title' => t('Regions'),
+      'description' => t('Administer Extranet content based on region.'),
+      'access arguments' => array('administer extranet'),
+      'type' => MENU_NORMAL_ITEM,
+    );
+
+    foreach ($admin_groups as $group) {
+      $title = $group->title;
+      $gid = $group->gid;
+
+      if (!isset($gid)) {
+        continue;
+      }
+
+      $items['admin/fnet/extranet/region/' . $gid] = array(
+        'title' => $title,
+        'type' => MENU_LOCAL_TASK,
+        'page callback' => 'fextranet_group_content_page',
+        'page arguments' => array(2),
+        'access arguments' => array('administer extranet'),
+      );
+      $plid = _fex_get_mlid('admin/fnet/extranet/region/' . $gid);
+
+      // Deals
+      $items['admin/fnet/extranet/region/' . $gid . '/deals'] = array(
+        'title' => $title . ' ' . t('Deals'),
+        'type' => MENU_LOCAL_TASK,
+        'page callback' => 'fextranet_group_deal_page',
+        'page arguments' => array(2),
+        'access arguments' => array('administer extranet'),
+      );
+      if ($plid) {
+        $items['admin/fnet/extranet/region/' . $gid . '/deals']['plid'] = $plid;
+      }
+
+      // Content
+      $items['admin/fnet/extranet/region/' . $gid . '/content'] = array(
+        'title' => $title . ' ' . t('Content'),
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'page callback' => 'fextranet_group_content_page',
+        'page arguments' => array(2),
+        'access arguments' => array('administer extranet'),
+      );
+      if ($plid) {
+        $items['admin/fnet/extranet/region/' . $gid . '/content']['plid'] = $plid;
+      }
+
+      // Members
+      $items['admin/fnet/extranet/region/' . $gid . '/members'] = array(
+        'title' => $title . ' ' . t('Members'),
+        'page callback' => 'fex_group_member_overview_form',
+        'page arguments' => array(2),
+        'access arguments' => array('administer extranet'),
+        'type' => MENU_LOCAL_TASK,
+      );
+      if ($plid) {
+        $items['admin/fnet/extranet/region/' . $gid . '/members']['plid'] = $plid;
+      }
+    } // end foreach group
+  } // end if for Group
+
+  $items['admin/fnet/extranet/%/deals/%/edit'] = array(
+    'title' => 'Edit/Approve Deal',
+    'file' => 'fextranet.admin.inc',
+    'page callback' => '_fex_approve_deal_form',
+    'page arguments' => array(2, 4),
+    'access arguments' => array('administer extranet'),
+    'type' => MENU_CALLBACK,
+  );
+
+  /* Web service config page */
+  $items['admin/fnet/extranet/salesforce'] = array(
+    'title' => t('Configure Salesforce Connection'),
+    'description' => t('Settings for connection Salesforce to the Extranet.'),
+    'file' => 'fextranet.admin.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fextranet_admin_salesforce_config'),
+    'access arguments' => array('administer extranet'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  /* Web service callback for new Salesforce-enabled processing */
+  $items['insider/v1/post'] = array(
+    'page callback' => '_fextranet_insider_processing',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Webservice to listen to Salesforce.
+ * TODO: Add admin config for uploading the Salesforce Public Key file.
+ *
+ */
+function _fextranet_insider_processing() {
+  // Get the Salesforce Public Key.
+  // It's going to be a PEM file.
+  $public_key_file = variable_get('salesforce_public_key', '');
+
+  // Validate the request is a post and return proper response code on failure.
+  if ($_SERVER['REQUEST_METHOD'] != 'POST'){
+    header('HTTP/1.1 405 Not Post');
+  }
+  /* Authenticate the key and return proper response code on failure. */
+  elseif ($_SERVER['PHP_AUTH_USER'] != 'trusted user') {
+    header('HTTP/1.1 401 Not Authorized');
+  }
+
+/* When data type and field validation fails return a 204.
+  elseif ($validation == FALSE) {
+    header('HTTP/1.1 204 Incorrect Data');
+  } */
+
+  // Set header to indicate the item was saved.
+  else {
+    header('HTTP/1.1 201 Created');
+    // print "FNORD";
+  }
+
+}
+
+/**
+ * Implements hook_variable_group_info().
+ *
+ * @return array
+ */
+function fextranet_variable_group_info() {
+  $groups = array();
+  $groups['fextranet'] = array(
+    'title' => t('Sales Insider Extranet'),
+    'description' => t('Extranet variables'),
+    'access' => 'administer extranet',
+  );
+
+  return $groups;
+}
+
+/**
+ * Implements hook_variable_info().
+ *
+ * @param $options
+ * @return array
+ */
+function fextranet_variable_info($options) {
+  $variable = array();
+
+  $variable['extranet_instructions_main'] = array(
+    'type' => 'string',
+    'title' => t('Extranet Main Instructions', array(), $options),
+    'description' => t('Instructions given to users on the main Sales Insider page.'),
+    'group' => 'fextranet',
+    'default' => '',
+  );
+
+  $variable['extranet_instructions_sales_tools'] = array(
+    'type' => 'string',
+    'title' => t('Extranet Sales Tools Instructions', array(), $options),
+    'description' => t('Instructions given to users on the Sales Insider Extranet Sales Tools page.'),
+    'group' => 'fextranet',
+    'default' => '',
+  );
+
+  $variable['extranet_instructions_services'] = array(
+    'type' => 'string',
+    'title' => t('Extranet Services Instructions', array(), $options),
+    'description' => t('Instructions given to users on the Sales Insider Services page.'),
+    'group' => 'fextranet',
+    'default' => '',
+  );
+
+  $variable['extranet_instructions_access_denied'] = array(
+    'type' => 'string',
+    'title' => t('Extranet Access Denied', array(), $options),
+    'description' => t('Message given when user is denied access to the Sales Insider section.'),
+    'group' => 'fextranet',
+    'default' => '',
+  );
+
+  $variable['extranet_instructions_request_access'] = array(
+    'type' => 'string',
+    'title' => t('Extranet Request Access', array(), $options),
+    'description' => t('Message given when user needs to request access to the Sales Insider section.'),
+    'group' => 'fextranet',
+    'default' => '',
+  );
+
+  return $variable;
+}
+
+
+/**
+ * wrappers to Group functions
+ */
+/**
+ * @param $gid
+ * @return bool
+ */
+function fex_group_access($gid) {
+  $group = group_load($gid);
+  if ($group) {
+    return group_access('access member overview', $group);
+  }
+  return FALSE;
+}
+
+/**
+ * @param $gid
+ * @param $node_type
+ * @return array|bool
+ */
+function fex_gnode_node_add($gid, $node_type) {
+  $group = group_load($gid);
+  if ($group) {
+    return gnode_node_add($group, $node_type);
+  }
+  return FALSE;
+}
+
+/**
+ * @param $gid
+ * @param $node_type
+ * @return bool
+ */
+function fex_gnode_add_node_access($gid, $node_type) {
+  $group = group_load($gid);
+  if ($group) {
+    return gnode_add_node_access($group, $node_type);
+  }
+  return FALSE;
+}
+
+
+/**
+ * wrappers to Group function
+ *
+ * TODO: This is currently garbage. WTF?.
+ */
+/**
+ * @param int $gid
+ * @param int $option
+ * @return bool
+ */
+function fextranet_admin_access($gid = 0, $option = 0) {
+  global $user;
+  module_load_include('inc', 'fextranet', 'fextranet.admin');
+  // $view_info = _gnode_node_access_info($user, 'view');
+  // $edit_info = _gnode_node_access_info($user, 'edit');
+  $roles = get_admin_groups($user->uid);  // This function is in the fextranet.admin.inc
+  if ($roles && in_array($gid, array_keys($roles))) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * @return array
+ */
+function fextranet_theme() {
+  $base = array(
+    'path' => drupal_get_path('module', 'fextranet') . '/theme',
+  );
+  return array(
+    'product_assets' => $base + array(
+      'template' => 'product_assets',
+      'variables' => array('elements' => NULL),
+    ),
+    'fextranet_default_page_menu_item' => $base + array(
+      'template' => 'fextranet_default_page_menu_item',
+      'variables' => array('items' => NULL),
+    ),
+    'fextranet_request_thanks_message' => $base + array(
+      'template' => 'fextranet_request_thanks_message',
+      'variables' => array(),
+    ),
+  );
+}
+
+
+/**
+ * Menu callback
+ *
+ * Gets Box asset URL, sends Header to redirect user
+ * Dev wasn't honoring HTTPS directive in drupal_goto, so couldn't use
+ *
+ * @param $file_id
+ * @param string $filename
+ * @return null|string
+ */
+function fextranet_download_gallery_asset($file_id, $filename = 'not used') {
+
+  // Filename is only appended to URL so the URL ends with the extension of the file (jpg png etcc)
+  module_load_include('module', 'box_connect', 'box_connect');
+  $box = get_box();
+
+  if ($box) {
+    watchdog('extranet', 'Attempting to download Box File ' . $file_id);
+    $options = array(
+      'method' => 'GET',
+      'headers' => array('Authorization' => 'Bearer ' . $box->access_token),
+    );
+    $params = array();
+    $url = url('https://api.box.com/2.0/files/' . $file_id . '/content', array('query' => $params));
+    $response = drupal_http_request($url, $options);
+    if (($response->code == 200) && ($response->redirect_code == 302)) {
+      $redirect_url = $response->redirect_url;
+      watchdog('extranet', 'Redirect URL from Box:  ' . $redirect_url);
+      // valid for a while.  Cache?
+      header('Location: ' . $redirect_url);
+      drupal_exit();
+      //		    	drupal_goto($redirect_url);
+    }
+
+  }
+  else {
+    return t('Could not connect');
+  }
+
+  return t('Item not available');
+
+}
+
+/**
+ * Implements hook_permission()
+ */
+function fextranet_permission() {
+  return array(
+    'administer extranet' => array(
+      'title' => t('Administer Extranet'),
+      'description' => t('Access Extranet Administration pages.'),
+    ),
+    'access extranet' => array(
+      'title' => t('Access Extranet'),
+      'description' => t('Allow most basic Extranet access. Other restriction types will also usually be used.'),
+    ),
+  );
+}
+
+/**
+ * Helper function to autocomplete product names, to use with Deal Registration fields.
+ * Returns JSON
+ *
+ * @param $term
+ */
+function _fex_products_autocomplete($term) {
+
+  $return = array();
+  $term = check_plain($term);
+
+  if (strlen($term) > 3) {
+
+    $query = db_select('node', 'n');
+    $types = array('product',);
+    $titles_return = $query
+      ->fields('n', array('title'))
+      ->condition('n.status', 1)
+      ->condition('n.type', $types, 'IN')
+      ->condition('n.title', '%' . db_like($term) . '%', 'LIKE')
+      ->range(0, 8)
+      ->execute()
+      ->fetchAll();
+
+    foreach ($titles_return as $title) {
+      $return[$title->title] = _fnet_content_remove_sup($title->title);
+    }
+  }
+  drupal_json_output($return);
+}
+
+
+/*
+*   Menu callbacks, accepting int NID or obj NODE
+*/
+function _fextranet_node_page($arg = NULL) {
+  // arg may be passed by node obj or nid
+  $node = NULL;
+  if (!is_object($arg)) {
+    if (is_numeric($arg)) {
+      $node = node_load($arg);
+    }
+    else {
+      // find node from path ?
+      // needed?
+      $path = current_path();
+    }
+  }
+  else {
+    if ($arg->nid) {
+      $node = $arg;
+    }
+  }
+  if ($node) {
+    $node_page = node_page_view($node);
+    // other stuff?
+    return $node_page;
+  }
+  return '';
+}
+
+/**
+ * Helper function to return the node title.
+ *
+ * @param null $arg
+ * @return string
+ */
+function _fextranet_node_title($arg = NULL) {
+  // arg may be passed by node obj or nid
+  $node = NULL;
+  if (!is_object($arg)) {
+    if (is_numeric($arg)) {
+      $node = node_load($arg);
+    }
+    else {
+      // find node from path ?
+      // needed?
+      $path = current_path();
+    }
+  }
+  else {
+    if ($arg->nid) {
+      $node = $arg;
+    }
+  }
+
+  if ($node) {
+    return $node->title;
+  }
+  return '';
+}
+
+
+/**
+ * Menu callback, produces Product info page
+ * Digital Assets, & other items with this $nid in their 'related product' field
+ *
+ * @param $nid
+ * @return string
+ */
+function _fextranet_product_asset_page($nid) {
+  $product = node_load($nid);
+  if (!$product) {
+    return 'Nothing found';
+  }
+
+  global $user;
+
+  $languages = array('en');
+
+  if ($user->language != 'en') {
+    $languages[] = $user->language;
+  }
+
+  $title = $product->title;
+  $nodes = array(); // DA
+  $fex_nodes = array();
+  $boxes = array();
+
+  // TODO: queries don't necessarily restrict access to these items. Check/add.
+
+  // get list of DA nodes
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node');
+  $query->propertyCondition('type', 'digital_asset');
+  $query->propertyCondition('status', NODE_PUBLISHED);
+//	->fieldCondition('field_dam_asset_type', 'value', $asset_type , '=')
+  $query->fieldCondition('field_dam_related_product', 'nid', $nid, '=');
+  $query->fieldCondition('field_dam_language', 'value', $languages, 'IN');
+  $query->fieldOrderBy('field_dam_asset_type', 'value', 'ASC');
+  $entity_array = $query->execute();
+
+  if ($entity_array) {
+    $nids = array_keys($entity_array['node']);
+
+    foreach (node_load_multiple($nids) as $node) {
+
+      if (!fex_view_user_nid_access($node->nid)) {
+        continue;
+      }
+
+      $item = array();
+      $title = $node->title;
+
+      $lang = fnet_common_get_field_value('node', $node, 'field_dam_language');
+      $type = fnet_common_get_field_value('node', $node, 'field_dam_asset_type');
+      $doc_id = fnet_common_get_field_value('node', $node, 'field_dam_document_id');
+
+      $url = 'vftf/' . $doc_id;
+
+      $link = l($title, $url);
+
+      $item['link'] = $link;
+      $item['lang'] = $lang;
+      $item['type'] = $type;
+
+      $nodes[] = $item;
+    }
+  }
+
+  $bundles = array(
+    'box_gallery',
+    'extranet_news',
+    'extranet_promotion',
+    'media_gallery'
+  );
+
+  // Get Extranet node content.  EFQ limited to 1 entity_type, so box_gallery separate
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node');
+  $query->entityCondition('bundle', $bundles, 'IN');
+  $query->propertyCondition('status', NODE_PUBLISHED);
+  $query->fieldCondition('field_dam_related_product', 'nid', $nid, '=');
+  $entity_array = $query->execute();
+
+  if ($entity_array) {
+    $nids = array_keys($entity_array['node']);
+    foreach (node_load_multiple($nids) as $node) {
+      $title = $node->title;
+      $url = drupal_get_path_alias('node/' . $node->nid);
+      $link = l($title, $url);
+      $fex_nodes[] = $link;
+    }
+  }
+
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'box_gallery');
+  $query->fieldCondition('field_dam_related_product', 'nid', $nid, '=');
+
+  $entity_array = $query->execute();
+
+  if ($entity_array) {
+    $gids = array_keys($entity_array['box_gallery']);
+
+    foreach (entity_load('box_gallery', $gids) as $box_gallery) {
+      $title = $box_gallery->box_title;
+      $url = 'extranet/tools/galleries/' . $box_gallery->gid;
+      $link = l($title, $url);
+      $boxes[] = $link;
+    }
+  }
+
+  $elements = array(
+    'title' => $title,
+    'assets' => $nodes,
+    'fex_assets' => $fex_nodes,
+    'boxes' => $boxes,
+    'content' => NULL,
+  );
+
+  $page = theme('product_assets', $elements);
+  return $page;
+}
+
+/**
+ * Helper function for Sales Tools page content.
+ *
+ * @return null|string
+ */
+function _fextranet_sales_tool_page() {
+  $content = variable_get('extranet_instructions_sales_tools', '');
+  $items = array('items' => _fextranet_submenu_page_items('extranet/tools'));
+  $content .= theme('fextranet_default_page_menu_item', $items);
+  return $content;
+}
+
+/**
+ * Helper function for Services page content.
+ *
+ * @return null|string
+ */
+function _fextranet_services_page() {
+  $content = variable_get('extranet_instructions_services', '');
+  $items = array('items' => _fextranet_submenu_page_items('extranet/services'));
+  $content .= theme('fextranet_default_page_menu_item', $items);
+  return $content;
+}
+
+/**
+ * Gets the menu items in the hierarchy below and returns them in a themed manner.
+ *
+ * @param $path
+ * @return array
+ */
+function _fextranet_submenu_page_items($path) {
+  //Stop and return an empty array if node path is empty
+  if(empty($path)) {
+    return array();
+  }
+
+  //Init empty array to hold the results
+  $pages = array();
+
+  //Init parent keys. Check 'foreach' loop on parent keys for more info.
+  $parent_keys = array('plid', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9');
+
+  //Collect menu item corresponding to this path to begin updates.
+  //Reference: http://stackoverflow.com/a/11615338/136696
+  //Note: we couldn't find a way to get the sub-tree starting from this item
+  //only and hence we had to get the whole menu tree built and then loop on
+  //the current item part only. Not so bad considering that Drupal will
+  //most probably have the whole menu cached anyway.
+  $parent_menu_item = menu_link_get_preferred($path);
+
+  //Stop and return empty array if a proper current menu item couldn't be found
+  if(empty($parent_menu_item['menu_name']) || empty($parent_menu_item['mlid'])) {
+    return array();
+  }
+
+  //Init parent item mlid for easier usage since now we know it's not empty
+  $parent_menu_item_mlid = $parent_menu_item['mlid'];
+
+  //Build whole menu based on the preferred menu_name gotten from this item
+  $menu = menu_build_tree($parent_menu_item['menu_name']);
+
+  //Reset menu cache since 'menu_build_tree' will cause trouble later on after
+  //you call pathauto to update paths as it can only be called once.
+  //Check: https://www.drupal.org/node/1697570
+  menu_reset_static_cache();
+
+  //Init processing array. This will hold menu items as we process them.
+  $menu_items_to_process = array();
+
+  //First run to fill up the processing array with the top level items
+  foreach($menu as $top_level_menu_item) {
+    $menu_items_to_process[] = $top_level_menu_item;
+  }
+
+  //While the processing array is not empty, keep looping into lower
+  //menu items levels until all are processed.
+  while(count($menu_items_to_process) > 0) {
+    //Pop the top item from the processing array
+    $mi = array_pop($menu_items_to_process);
+
+    //Get its node id and add it to $nids if it's a current item child
+    //Note that $parent_keys contains all keys that drupal uses to
+    //set a menu item inside a tree up to 9 levels.
+    foreach($parent_keys as $parent_key) {
+      //First, ensure the current parent key is set and also mlid is set
+      if(!empty($mi['link']['mlid']) && !empty($mi['link'][$parent_key])) {
+        //If the link we're at is the parent one, don't add it to $nids
+        //We need this check cause Drupal sets p1 to p9 in a way you
+        //can easily use to generate breadcrumbs which means we will
+        //also match the current parent, but here we only want children
+        if($mi['link']['mlid'] != $parent_menu_item_mlid) {
+          //Try to match the link to the parent menu item
+          if($mi['link'][$parent_key] == $parent_menu_item_mlid) {
+            //It's a child, add it to $pages and stop foreach loop.
+            //Link_path has the path to the node. Example: node/63.
+            if(!empty($mi['link']['link_path'])) {
+              $pages[] = array(
+                'path' => $mi['link']['link_path'],
+                'title' => $mi['link']['link_title'],
+                'description' => $mi['link']['description'],
+              );
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    //Add its child items, if any, to the processing array
+
+    if(!empty($mi['below']) && is_array($mi['below'])) {
+      foreach($mi['below'] as $child_menu_item) {
+        //Add child item at the beginning of the array so that when
+        //we get the list of node ids it's sorted by level with
+        //the top level elements first; which is easy to attain
+        //and also useful for some applications; why not do it.
+        array_unshift($menu_items_to_process, $child_menu_item);
+      }
+    }
+
+  }
+/*
+  if (module_exists('devel')) {
+    dpm($pages);
+  } */
+  return $pages;
+  // return theme(
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ */
+function fextranet_form_alter(&$form, &$form_state, $form_id) {
+  // edit group form
+  if (substr($form_id, 0, 11) == 'group_edit_') {
+    // remove Delete
+    if (isset($form['actions']['delete'])) {
+      unset($form['actions']['delete']);
+    }
+  }
+
+  $extranet_forms = array(
+    'extranet_news_node_form',
+    'extranet_promotion_node_form',
+    'deal_register_node_form',
+  );
+
+  if (!in_array($form_id, $extranet_forms)) {
+    return;
+  }
+
+  // open fieldgroup if option there.
+  $node = $form['#node'];
+  if ((fnet_common_get_field_values('node', $node, 'field_extranet_permissions')) || (fnet_common_get_field_values('node', $node, 'field_extranet_countries'))) {
+    $form['#groups']['group_access_restrictions']->format_settings['formatter'] = 'open';
+  }
+}
+
+
+/**
+ * Implements hook_form form_id alter().
+ * fnet_profile_profile_edit_form:  adds language step to profile save
+ *
+ * @param $form
+ * @param $form_state
+ */
+function fextranet_form_fnet_profile_profile_edit_form_alter(&$form, &$form_state) {
+  // add extra function to myaccount profile submit
+  $form['#submit'][] = 'fextranet_form_fnet_profile_profile_edit_form_submit';
+}
+
+
+/**
+ * Copies the value from user profile 'preferred language' to user->language
+ *
+ * @param $form
+ * @param $form_state
+ */
+function fextranet_form_fnet_profile_profile_edit_form_submit(&$form, &$form_state) {
+
+  $user = $form_state['#user'];
+
+  // sometimes $user has uid 1, because ... ?
+  // workaround to make sure we get correct uid
+  $mail = $user->mail;
+  $user = user_load_by_mail($mail);
+  $lang = $form_state['values']['preferred_language'];
+
+  if ($user) {
+    $edit = array('language' => $lang,);
+    user_save($user, $edit);
+  }
+
+}
+
+
+/**
+ *
+ *   Permission check.  Would create relationships between:
+ *   user and distributor_group, via field on group_profile field
+ *
+ *   Extranet node and product
+ *
+ *   Then use existing distributor to product relationship
+ *
+ *   If product added to content, do a complicated check to see if the user's distributor has that product
+ */
+
+/* phase 2
+function fextranet_form_group_membership_form_alter(&$form, &$form_state) {
+
+    $count = 0;
+    $options =  array();
+
+    if ( isset($form['field_extranet_distributor_group']['und']['#default_value'][0] ) ) {
+
+        $dist_nid = $form['field_extranet_distributor_group']['und']['#default_value'][0];
+
+        $node = node_load($dist_nid);
+
+        $query = db_select('field_data_field_products', 'p');
+        $query->join('node', 'n', 'n.nid=p.field_products_nid');
+        $query->condition('p.entity_id', $dist_nid, '=');
+        $query->fields('n', array('nid', 'title'));
+
+        $results = $query->execute()->fetchAllKeyed($key_index = 0, $value_index = 1);
+
+        foreach ($results as $nid => $title) {
+            $options[$nid] = $title . ' (nid ' . $nid . ')';
+        }
+
+        $count = count($options);
+
+    }
+
+    if ( count($options) ) {
+
+        $form['product_list'] = array(
+            '#type'	=> 'select',
+            '#title' => 'Distributor Product List (' . $count . ' total)',
+            '#size'	=>	15,
+            '#options' =>$options,
+            );
+    }
+
+}
+*/
+
+
+/**
+ * Callbacks for field allowed values
+ */
+function fextranet_get_country_distributors($field = FALSE, $instance = FALSE,
+                                            $type = FALSE, $entity = FALSE) {
+
+  $return = array();
+
+  if ($entity) {
+
+    $countries = array();
+    $distributors = array();
+
+    $gid = $entity->gid;
+
+    $groups = entity_load('group', array($gid));
+
+    $country_values = fnet_common_get_field_values('group', $groups[$gid], 'field_extranet_group_countries');
+    foreach ($country_values as $count => $v) {
+      $countries[$count] = $v['value'];
+    }
+
+    $query = db_select('node', 'n');
+    $query->join('location_instance', 'li', 'li.nid=n.nid');
+    $query->join('location', 'l', 'l.lid=li.lid');
+    $query->condition('l.country', $countries, 'IN');
+    $query->condition('n.type', 'product_distributor_group', '=');
+
+    $query->fields('n', array('nid', 'title'));
+    $query->fields('l', array('country'));
+
+    $results = $query->execute()->fetchAll();
+
+    if ($results) {
+      foreach ($results as $result) {
+        $return[$result->nid] = $result->title . '  (nid: ' . $result->nid . ')';
+      }
+    }
+
+
+  } // end if entity
+
+
+  return $return;
+
+}
+
+
+// Get all countries for various field settings.
+// Wrapped about system call if we need to edit this list before display
+// IE, remove embargoed countries.
+function fextranet_get_countries() {
+  $countries = addresses_country_get();
+  return $countries;
+}
+
+function _fextranet_get_nid_groups($nid = 0) {
+
+  $groups = array();
+
+  $query = db_select('group_entity', 'ge');
+  $query->condition('entity_id', $nid, '=');
+  $query->fields('ge', array('gid',));
+  $results = $query->execute();
+  if ($results) {
+    $groups = $results->fetchCol();
+  }
+  return $groups;
+
+}
+
+function fextranet_get_region_countries($field = FALSE, $instance = FALSE,
+                                        $type = FALSE, $entity = FALSE) {
+
+  $all_countries = addresses_country_get();
+  // if a group, return all countries for selection
+  if (isset($entity->gid)) {
+    return $all_countries;
+  }
+
+  $group_ids = array();
+  if (isset($entity->group)) {  // This is an array now. -
+    $group_ids = $entity->group;
+  }
+
+  // find group IDs which have this node
+  if (empty($group_ids) && ($type == 'node')) {
+    if (!isset($entity->nid)) {
+      return array();
+    }
+
+    $nid = intval($entity->nid);
+    $query = "SELECT gid FROM group_entity WHERE entity_id = :nid";
+    $results = db_query($query, array(':nid' => $nid))->fetchCol();
+    $group_ids = $results;
+  }
+  $region_countries = array();
+  if(!empty($group_ids)) {
+    // Gets list of 2 letter country names in use
+    $countries = db_query("SELECT entity_id, field_extranet_group_countries_value
+FROM {field_data_field_extranet_group_countries}
+WHERE entity_id IN (:group_ids)", array(':group_ids' => $group_ids));
+    if (isset($countries)) {
+      foreach ($countries as $country) {
+        $ct = $country->field_extranet_group_countries_value;
+        if (isset($all_countries[$ct])) {
+          $region_countries[$ct] = $all_countries[$ct];
+        }
+      }
+    }
+  }
+  return $region_countries;
+}
+
+
+function fextranet_get_content_roles($field = FALSE, $instance = FALSE, $type = FALSE, $entity = FALSE) {
+  $group_ids = array();
+
+  if (isset($entity->group)) {
+    $group_ids = $entity->group;
+  }
+
+  // find group IDs that have this node
+  if (empty($group_ids) && ($type == 'node')) {
+    if (!isset($entity->nid)) {
+      return array();
+    }
+
+    $nid = intval($entity->nid);
+    $query = "SELECT gid FROM group_entity WHERE entity_id = :nid";
+    $results = db_query($query, array(':nid' => $nid))->fetchCol();
+    $group_ids = $results;
+  }
+
+  $content_roles = array(1 => 'Member',);
+  if(!empty($group_ids)) {
+    $roles = db_query("SELECT gr.rid, gr.label
+FROM {group_role} gr
+JOIN {groups} g ON g.type = gr.type
+WHERE g.gid IN (:group_ids);", array(':group_ids' => $group_ids));
+    foreach ($roles as $role) {
+      $content_roles[$role->rid] = $role->label;
+    }
+  }
+  return $content_roles;
+}
+
+
+/**
+ * Implements hook_entity_view($entity, $type, $view_mode, $langcode)
+ */
+function fextranet_entity_view($entity, $type, $view_mode, $langcode) {
+
+  $types = _fex_node_types();
+
+  if (($type == 'node') && (in_array($entity->type, array_keys($types)))) {
+
+    $display_title = fnet_common_get_field_value('node', $entity, 'field_display_title');
+    if ($display_title) {
+      if ($display_title == "<none>") {
+        $entity->title = '';
+        $entity->content['field_display_title'] = array();
+      }
+      else {
+        $entity->title = $display_title;
+        $entity->content['field_display_title']['#view_mode'] = 'hidden';
+        unset($entity->content['field_display_title']);
+      }
+    }
+
+  }
+
+}
+
+
+
+
+
+/*
+*   Before Group, was going to manage access with something like this.
+*   
+*   It was meant to do an initial check of user rights which could be accessed at any point during page generate process
+*   Also potentially stored and re-used on other requests.
+*   Went through many, many revisions as requirements defined.  Lots of room for streamlining
+ *
+*/
+function fextranet_session() {
+  global $user;
+
+  $session = new stdClass();
+  $session->region_group = '';
+  $session->region_group_title = FALSE;
+  $session->user_groups = array();
+  $session->admin_groups = array();
+  $session->pending_groups = array();
+  $session->access_extranet = FALSE;
+  $session->user_role = FALSE;
+  $session->admin_role = FALSE;
+
+  if (user_is_logged_in()) {
+    $user = user_load($user->uid);
+    // No USER 1!
+    if ($user->uid < 2) {
+      return $session;
+    }
+    // Set the Session object variables.
+    $session->user_role = user_access('access extranet'); // TRUE/FALSE
+    $session->admin_role = user_access('administer extranet'); // TRUE/FALSE
+    // Get the User's country. This is so we can set the default region group.
+    $country = fnet_common_get_field_value('user', $user, 'field_user_country');
+    // Base on their self-identified country, note what group that is.
+    $group = _fextranet_get_users_country_group($country);
+    /* Debugging for Group ID
+    if (module_exists('devel')) {
+      dpm('Country: ' . $country);
+      dpm($group);
+    }
+    */
+
+    if ($group) {
+      $session->region_group = $group->gid;  // Int
+      $session->region_group_title = $group->title; // String
+    }
+  }
+  else {
+    return $session;
+  }
+
+  // Now, check to see if
+
+
+/*
+SELECT gm.mid, gm.gid, gm.status, gmr.role, g.title
+  FROM groupmembership gm
+  LEFT JOIN groups g ON g.gid = gm.gid
+    LEFT JOIN group_membership_role gmr ON gmr.mid = gm.mid
+    LEFT JOIN group_role gr ON gr.name = gmr.role
+    WHERE gm.uid = 194829
+    AND gmr.role IS NOT NULL
+  AND gmr.role != 'user'
+  AND gm.status NOT IN ('blocked', 'requested');
+*/
+
+
+  $query = db_select('group_membership', 'gm');
+  $query->leftJoin('groups', 'g', 'g.gid = gm.gid');
+  $query->leftJoin('group_membership_role', 'gmr', 'gm.mid=gmr.mid');
+  $query->leftJoin('group_role', 'gr', 'gmr.role = gr.name');
+
+  $query->fields('gm', array('mid', 'gid', 'status'));
+  $query->fields('gmr', array('role'));
+  $query->fields('g', array('title'));
+
+  $query->condition('gm.uid', $user->uid, '=');
+  $query->condition('gmr.role', NULL, 'IS NOT');
+  $query->condition('gmr.role', 'user', '!=');
+  $query->condition('gm.status', array('blocked', 'requested'), 'NOT IN');
+  $results = $query->execute()->fetchAllAssoc('gid');
+
+  if ($results) {  // Empty Set means no access yet.
+    $session->access_extranet = TRUE;
+    $session->admin_groups = $results;
+
+  }
+  else {
+ /*
+    SELECT gm.mid, gm.gid, gm.status, g.status
+    FROM group_membership gm
+    LEFT JOIN groups g ON g.gid = gm.gid
+      WHERE gm.uid = 194829
+      */
+    $query = db_select('group_membership', 'gm');
+    $query->leftJoin('groups', 'g', 'g.gid = gm.gid');
+
+    $query->fields('gm', array('mid', 'gid', 'status'));
+    $query->fields('g', array('title'));
+
+    $query->condition('gm.uid', $user->uid, '=');
+    $results = $query->execute()->fetchAllAssoc('gid');
+    if ($results) {
+      foreach ($results as $gid => $info) {
+        if (in_array($info->status, array('blocked', 'requested'))) {
+          $session->pending_groups[$gid] = $info;
+        }
+        else {
+          $session->access_extranet = TRUE;
+          $session->user_groups[$gid] = $info;
+        }
+      }
+    }
+  }
+
+  $user->extranet = $session; // This doesn't do anything.
+
+  return $session;
+}
+
+
+/*
+*
+*    Not sure what final 'home' page  (/extranet)   will look like with content. 
+*    When that's established, can create page template which handles things better than this.
+*
+*/
+// Placeholder.  Will be updated.
+/**
+ * @return array|mixed
+ * @throws \Exception
+ */
+function fextranet_initial_content() {
+  $localized_message = '';
+  // Is the User logged in?
+  if (user_is_logged_in()) {
+    global $user;  // Get the current user.
+
+    // get the user's group membership
+    // The big thing we want is the user's region.
+    $session = fextranet_session(); // So far, this is returning FALSE.
+
+    if (!$session->access_extranet) {  // If the user doesn't have access to the Extranet...
+
+      // ...because their request is pending
+      if (count($session->pending_groups) > 0) { // They have a pending access request
+        $access_requests = db_query("SELECT requested_on, blocked_on, status, added_on FROM group_membership WHERE uid = :uid", array(':uid' => $user->uid))->fetchAssoc();
+        // If the status is empty
+        if ($access_requests) {
+          if (module_exists('devel')) {
+            dpm($access_requests);
+          }
+
+          $requested_on = !empty($access_requests['requested_on']) ? format_date($access_requests['requested_on'], 'medium', ''): NULL;
+          $blocked_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['blocked_on'], 'medium', ''): NULL;
+          $added_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['added_on'], 'medium', ''): NULL;
+          $status = $access_requests['status'];
+          // TODO: Move this to an admin field using tokens. Also, language.
+          // Display the 'You requested access on X, but it
+          if (!empty($requested_on)) {
+            $message = 'You requested access to Sales Insider on @request_date';
+            if ($status == 'blocked') { // has been denied.
+              // Re-request Access/Resend Request option
+              $message .= t(' but unfortunately your request was denied by an administrator on @blocked_date.');
+            }
+            else {
+              // has not yet been approved.'
+              $message .= ' but your request has not yet been approved.';
+            }
+            $localized_message = t($message, array(
+              '@request_date' => $requested_on,
+              '@blocked_date' => $blocked_on
+            ));
+          }
+          elseif (!empty($added_on)) {
+            // if there is nothing in the requested_on field, the user was added manually.
+            $message = 'You were granted access to Sales Insider on @added_date';
+            if ($status == 'blocked') { // has been denied.
+              // Re-request Access/Resend Request option
+              $message .= t(' but unfortunately your access was blocked by an administrator on @blocked_date.');
+            }
+            else {
+              // has not yet been approved.'
+              $message .= ' but something has gone wrong.';
+            }
+            $localized_message = t($message, array(
+              '@added_date' => $added_on,
+              '@blocked_date' => $blocked_on
+            ));
+          }
+
+        }
+        else {
+          // The default Thank You message.
+          $localized_message = theme('fextranet_request_thanks_message');
+        }
+        return $localized_message;
+      }
+      // ...or they just haven't requested access yet.
+      else {
+        // Load the Request Access Form
+        module_load_include('inc', 'fextranet', 'forms/access_request.form');
+        $group_id = $session->region_group;
+        $apply_form = drupal_get_form('fextranet_custom_request_form', $group_id);
+        // $apply_form['#submit'] = 'fextranet_custom_request_form_submit';  // Redundant?
+        return $apply_form;
+      }
+    }
+    else {  // They have access!
+      $content = variable_get('extranet_instructions_main', '');
+      return $content;
+    }
+  }
+  else {
+    $login_form = drupal_get_form('user_login');
+    $url = urldecode($login_form['#action']);
+    // If there is an existing query string, extract those values.
+    $query_string_values = array();
+    parse_str( parse_url($url, PHP_URL_QUERY), $query_string_values );
+    $query_string_values['destination'] = 'extranet';
+    // Trim the query off the URL to be able to rebuild.
+    $url = preg_replace('/\?.*/', '', $url);
+    // This puts in the '?destination=extranet'.
+    $action = url($url, array('query' => $query_string_values));
+    $login_form['#action'] = $action; // URL Decoding to clean up some weirdness.
+
+    $login_form['#redirect'] = 'extranet';
+    // $login_form['#submit'] = array('user_login_submit', 'fex_goto_extranet'); // This doesn't fucking work.
+    $login_form['#after_build'] = array();
+    /* TESTING
+    if (module_exists('devel')) {
+      dpm($login_form);
+    }
+    */
+    return $login_form;
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Redirect
+ */
+function fextranet_form_user_login_alter($form, $form_state) {
+
+  if ($form['#action'] == '/extranet') {
+
+    $form_state['redirect'] = 'extranet';
+    $form['#submit'] = array('user_login_submit', 'fex_goto_extranet');
+
+  }
+
+}
+
+function fex_goto_extranet() {  // Odd. This is not ready working.
+  drupal_goto('extranet');
+}
+
+
+/**
+ * Implements hook_node_view($node, $view_mode, $langcode)
+ *
+ * Adds Group id (gid) to node
+ */
+function fextranet_node_view($node, $view_mode, $langcode) {
+
+  $types = _fex_node_types();
+
+  if (($view_mode == 'full') && in_array($node->type, array_keys($types))) {
+    $gid = fextranet_get_nodes_extranet_gid($node->nid);
+    $node->extranet_gid = $gid;
+  }
+
+}
+
+/**
+ *
+ *    Accepts node id (nid), returns the group id (gid) of Group/Region to which it belongs.
+ */
+function fextranet_get_nodes_extranet_gid($nid) {
+
+  $gid = FALSE;
+  $query = db_select('group_entity', 'ge');
+  $query->condition('ge.entity_id', $nid, '=');
+  $query->fields('ge', array('gid', 'entity_id'));
+  $results = $query->execute()->fetchAllKeyed(0, 1);
+  if ($results) {
+    $gid = key($results);
+    return $gid;
+  }
+
+  return $gid;
+
+}
+
+
+/**
+ * Implements hook_preprocess_page(&$vars)
+ *
+ */
+function fextranet_preprocess_page(&$vars) {
+  global $user;  // Get the current user.
+  if (in_array('page__extranet', $vars['theme_hook_suggestions'])) {
+
+    $subhead = 'Marketing Tools and Information';
+
+    $vars['page']['#access_extranet'] = FALSE;
+    $vars['page']['#node_edit_link'] = FALSE;
+    $vars_uid = 0;
+    $user_uid = 0;
+
+    if (user_is_logged_in()) {
+      if ($vars['user']->uid > 2) {
+        $vars_uid = $vars['user']->uid;
+      }
+      if ($user->uid > 2) {
+        $vars_uid = $user->uid;
+      }
+
+      $user = user_load($user->uid);
+
+      // fix
+      if (0 && isset($vars['user']->extranet)) {
+        $session = $vars['user']->extranet;
+      }
+      else {
+        $session = fextranet_session($user->uid);
+        // $session = fextranet_session();
+      }
+
+      $vars['page']['#access_extranet'] = $session->access_extranet;
+
+      if (isset($session->region_group_title)) {
+        $subhead = $session->region_group_title;
+      }
+
+    } // end if logged in
+
+    $vars['page']['extranet_region'] = $subhead;
+    $view = views_page('admin_extranet_groups', 'default');
+    $vars['page']['admin_extranet_groups'] = $view;
+
+    return;
+
+  }
+
+}
+
+function _fextranet_access_denied() {
+  $content = variable_get('extranet_instructions_access_denied', '');
+  return $content;
+}
+
+function _fextranet_get_region_admins($gid = NULL) {
+  if ($gid) {
+    $group = entity_load_unchanged('group', $gid);
+  }
+}
+
+// Assumes a country is only in 1 group.
+// Returns the newest/highest gid if multiple
+// This can cause issues.
+// Best to remove any overlapping country entries
+
+function _fextranet_get_users_country_group($country) {
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'group')
+    ->fieldCondition('field_extranet_group_countries', 'value', $country , '=');
+  $query->propertyOrderBy('gid', 'DESC');
+  $query->range(0,1);
+  $entity_array = $query->execute();
+
+  if ($entity_array) {
+    $group_num = key( $entity_array['group']);
+    $group = group_load($group_num);
+    return $group;
+  } else {
+    return FALSE;
+  }
+}
+
+
+/*
+*  Rules function. Takes a new Group Membership, and emails the region admin owner.
+*  user->country => find the gid/Group for that user
+*  Look in Group roles for 'Region Owner' role(s).  Find admins for 
+*  submitting user's Group.  
+*/
+function _fex_gm_to_email($gm) {
+
+  $owner_role = array('region_owner');
+
+  // user applid to group gid
+  $gid = $gm->gid;
+
+  $emails = array();
+
+  $query = db_select('group_membership_role', 'gmr');
+  $query->join('group_membership', 'gm', 'gmr.mid = gm.mid');
+  $query->fields('gmr', array('mid', 'role'));
+  $query->fields('gm', array('uid', 'gid',));
+  $query->condition('role', $owner_role, '=');
+  $query->condition('gid', $gid, '=');
+  $results = $query->execute()->fetchAllAssoc('uid');
+
+  if ($results) {
+    $users = user_load_multiple(array_keys($results));
+
+    foreach ($users as $user) {
+      $emails[$user->uid] = $user->mail;
+    }
+
+    return implode(',', $emails);
+
+  }
+
+
+  return '';
+
+}
+
+
+/**
+*  Menu access callback. Returns true only for group nodes, and correct role
+*
+ * @param $nid
+ * @param $permission
+ * @return bool
+ */
+function fextranet_audit_access($nid, $permission) {
+  $groups = _fextranet_get_nid_groups($nid);
+  if ($groups && is_array($groups) && (count($groups) > 0)) {
+    if (user_is_logged_in() && user_access($permission)) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+
+/**
+*  Menu access callback. Can record access failures in Watchdog or return message
+*
+ * @param bool $nid
+ * @return bool
+ */
+function _fextranet_node_access($nid = FALSE) {
+
+  // Shouldn't happen
+  if (!$nid) {
+    watchdog('extranet', 'No access to Extranet, no NID ');
+    return FALSE;
+  }
+
+  if (user_is_logged_in()) {
+
+    global $user;
+    if (!_fextranet_user_node_access($user->uid, $nid)) {
+      watchdog('extranet', 'No access to Extranet nid ' . $nid);
+      return FALSE;
+    }
+
+  }
+  else {
+    watchdog('extranet', 'No access for anonymous user to Extranet nid ' . $nid);
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+
+/**
+ *  Same as _fextranet_node_access(), without watchdog msgs
+ *
+ * @param $nid
+ * @return bool
+ */
+function fex_view_user_nid_access($nid) {
+  global $user;
+  return _fextranet_user_node_access($user->uid, $nid);
+}
+
+
+/*
+*  Broken out so UID can be passed in from another function
+*  IE, node audit can loop over all group users to return report
+*/
+function _fextranet_user_node_access($uid, $nid, $gid = FALSE) {
+  global $user; // Get the current user.
+  $node_groups = _fextranet_get_nid_groups($nid); // Groups containing this nid
+  $user_groups = array(); // Groups/Group memberships for this user
+
+  // scott: get group gid/gids
+  $session = fextranet_session($uid);
+
+  // stop processing if not member
+  if (!$session->user_role) {
+    return FALSE;
+  }
+
+
+  $node = node_load($nid);
+
+  $node_countries = fnet_common_get_field_values('node', $node, 'field_extranet_group_countries');
+
+  // Country access check
+  if ($node_countries) {
+    $user = user_load($user->uid);
+
+    $user_country = fnet_common_get_field_value('user', $user, 'field_user_country');
+    $countries = array();
+    foreach ($node_countries as $value) {
+      $countries[] = $value['value'];
+    }
+
+    if (!in_array($user_country, $countries)) {
+      return FALSE;
+    }
+
+  }
+
+  $node_permissions = fnet_common_get_field_values('node', $node, 'field_extranet_permissions');
+
+  // Role access check
+  if ($node_permissions) {
+
+    // Groups containing this nid
+    $node_groups = group_get_entities_group_ids('node', array(0 => $nid));
+
+    if (!isset($node_groups[$nid])) {
+      return FALSE;
+    }
+
+    $nid_groups = $node_groups[$nid];
+
+    $test_groups = entity_load('group', $nid_groups);
+
+    $passes = FALSE;
+    foreach ($nid_groups as $gid) {
+      if (in_array($gid, $user_groups)) {
+        $passes = TRUE;
+      }
+    }
+    if (!$passes) {
+      return FALSE;
+    }
+  }
+
+// phase 2
+  /*
+      $restricted_product_nid = fnet_common_get_field_value('node', $node, 'field_extranet_product_link', 'nid' );
+
+      if ($restricted_product_nid) {
+
+          $return_value = FALSE;
+
+          // probably only 1, but...
+
+          $groups = array();
+          if ($gid) {
+              $groups = array( $gid);
+          } else {
+              $groups_array = $session->get_groups($uid);
+              $groups = array_keys($groups_array);
+          }
+
+
+          $groups = $session->get_groups($uid);
+
+          // in case we need another check
+          if (! $return_value) return FALSE;
+
+      }
+  */
+
+  return TRUE;
+
+}
+
+
+/*
+*	Check to see if user is in a country allowed to access a node
+*	Allowed countries are in a field attached to node   
+*   If no field value, it will pass.
+*   Will fail if field value set, and user is not in that country
+*/
+function _fextranet_check_countries($user, $node, $group) {
+
+  $node_countries = fnet_common_get_field_values('node', $node, 'field_extranet_group_countries');
+
+  if (!$node_countries) {
+    return TRUE;
+  }
+
+  $user_country = fnet_common_get_field_value('user', $user, 'field_user_country');
+
+  $countries = array();
+  foreach ($node_countries as $value) {
+    $countries[] = $value['value'];
+  }
+
+  if (!in_array($user_country, $countries)) {
+    return FALSE;
+  }
+
+  return TRUE;
+
+}
+
+
+/*
+*	Check to see if user has a role
+*	Role would be in a field attached to node   
+*   If no field value, it will pass.
+*   Will fail if field value set, and user does not have that role
+*/
+function _fextranet_check_roles($user, $node, $group) {
+
+  $nid = $node->nid;
+  $uid = $user->uid;
+
+  $node_permissions = fnet_common_get_field_values('node', $node, 'field_extranet_permissions');
+
+  if (!$node_permissions) {
+    return TRUE;
+  }
+
+  $node_roles = array();
+
+  foreach ($node_permissions as $np) {
+    $node_roles[] = $np['value'];
+  }
+
+  $roles = $group->userRoles($uid);
+
+  foreach ($roles as $name => $role) {
+    if (in_array($role->rid, $node_roles)) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+
+}
+
+
+/*
+*	Check to see if user is part of a distributor group
+*	Association would be on user's group profile, field value   
+*   Distributor restriction would be in node field value
+*   If no field value, it will pass.
+*   Will fail if field value set, and user does not have that distributor  in their profile field
+*/
+function _fextranet_check_distributor($user, $node, $group) {
+
+  //phase 2
+  return TRUE;
+
+  $restricted_product_nid = fnet_common_get_field_value('node', $node, 'field_extranet_product_link', 'nid');
+
+  $return_value = FALSE;
+  $nid = $node->nid;
+  $uid = $user->uid;
+
+  $mem = $group->getMember($uid);
+
+  $dist_nid = fnet_common_get_field_value('group_membership', $mem, 'field_extranet_distributor_group');
+
+  if (!$dist_nid) {
+    return FALSE;
+  }
+
+  $dist = node_load($dist_nid);
+
+  $prod_nids = array();
+  $prod_nid_array = fnet_common_get_field_values('node', $dist, 'field_products', 'nid');
+
+  foreach ($prod_nid_array as $prod_nid) {
+    if ($prod_nid['nid'] == $restricted_product_nid) {
+      return TRUE;
+      break;
+    }
+  }
+
+  return FALSE;
+
+
+}
+
+
+function fex_group_member_overview_form($gid) {
+
+  $group = group_load($gid);
+
+  $form_state = array(
+    'args' => array(3 => $group)
+  );
+
+  module_load_include('inc', 'group', 'admin/group_membership');
+
+  return drupal_get_form('group_member_overview_form', $group);
+
+}
+
+
+function _fex_node_types() {
+
+  return array(
+    'extranet_news' => 'Extranet News',
+    'extranet_promotion' => 'Extranet Promotion',
+    'media_gallery' => 'Media Gallery',
+  );
+
+}
+
+/**
+ * Implements hook_entity_info().
+ *
+ * @return array
+ */
+function fextranet_entity_info() {
+
+  $return = array(
+
+    'register_deal' => array(
+      'label' => t('Deal Registration'),
+      'base table' => 'register_deal',
+      'fieldable' => TRUE,
+      'entity keys' => array(
+        'id' => 'did',
+        'label' => 'email',
+        'bundle' => 'type',
+      ),
+      'bundle keys' => array(
+        'bundle' => 'type',
+      ),
+      'bundles' => array(
+        'register_deal' => array('label' => t('Deal Registration')),
+      ),
+      'base table field types' => array(
+        'did' => 'int',
+        'email' => 'varchar',
+        'gid' => 'group',
+        'submitter_uid' => 'user',
+        'approver_uid' => 'user',
+      ),
+      'configuration' => TRUE,
+      'exportable' => FALSE,
+      'metatags' => TRUE,
+      'entity class' => 'Entity',
+      'label callback' => 'entity_class_label',
+      'module' => 'fextranet',
+      'admin ui' => array('path' => 'extranet/deal_registration',),
+      'default path' => 'admin/content/deal_registration/%',
+      'controller class' => 'EntityAPIController',
+      'views controller class' => 'EntityDefaultViewsController',
+      'access callback' => 'user_access',
+      'access arguments' => array('administer site configuration'),
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Full'),
+          'custom settings' => FALSE,
+        ),
+      ),
+    ),
+
+
+  );
+
+  return $return;
+
+}
+
+
+/**
+ * Implements hook_entity_property_info().
+ *
+ * @return array
+ */
+function fextranet_entity_property_info() {
+
+  $info = array();
+
+  $info['register_deal']['properties'] = array(
+
+    'did' => array(
+      'label' => 'Deal ID',
+      'help' => 'Deal ID (DID)',
+      'schema field' => 'did',
+      'type' => 'integer',
+      'description' => 'Unique ID for Deal',
+    ),
+
+    'status' => array(
+      'label' => 'Status',
+      'help' => 'Status flag',
+      'schema field' => 'status',
+      'type' => 'integer',
+      'description' => 'Status flag',
+    ),
+
+    'created' => array(
+      'label' => 'Date Created',
+      'help' => 'Date Created',
+      'type' => 'date',
+      'schema field' => 'created',
+      'description' => 'When Deal was created',
+    ),
+
+    'submitter_uid' => array(
+      'label' => 'Submitter',
+      'help' => 'Submitter',
+      'schema field' => 'submitter_uid',
+      'type' => 'user',
+      'description' => 'User who submitted Deal',
+    ),
+
+    'approver_uid' => array(
+      'label' => 'Approver',
+      'help' => 'Approver',
+      'schema field' => 'approver_uid',
+      'type' => 'user',
+      'description' => 'User who approved Deal',
+    ),
+
+
+    'gid' => array(
+      'label' => 'Extranet Region',
+      'help' => '',
+      'schema field' => 'gid',
+      'type' => 'group',
+      'description' => 'Extranet Group',
+    ),
+
+  );
+
+  return $info;
+
+
+}
+
+/*
+*  Deal Registration page/form callbacks, submit handling
+*/
+function _fextranet_deal_reg() {
+  global $user; // Get the current user.
+
+  $gid = 0;
+  $info = NULL;
+
+  $uid = $user->uid;
+  $email = $user->mail;
+
+  if ($user->uid > 1) {
+    $info = fextranet_session($user->uid);
+    if (isset($info->region_group)) {
+      $gid = $info->region_group;
+    }
+  }
+
+  $values = array(
+    'submitter_uid' => $uid,
+    'uid' => $uid,
+    'type' => 'register_deal',
+    'gid' => $gid,
+    'email' => $email,
+  );
+
+  $register_deal = entity_create('register_deal', $values);
+
+  $form_state = array();
+  $form_state['redirect'] = 'extranet/deals';
+  $form_state['values']['status'] = 1;
+  $form_state['values']['approval_id'] = '';
+
+  $register_deal_add = entity_ui_get_form('register_deal', $register_deal, 'add', $form_state);
+
+  for ($i = 0; $i < 5; $i++) {
+    unset($register_deal_add['field_product_name']['und'][$i]['_weight']);
+    unset($register_deal_add['field_quantity']['und'][$i]['_weight']);
+
+    $count = 1 + $i;
+
+    $register_deal_add['field_product_name']['und']['#theme'] = 'theme_fieldset';
+    $register_deal_add['field_quantity']['und']['#theme'] = 'theme_fieldset';
+
+    $register_deal_add['field_product_name']['und'][$i]['#title'] = 'Product ' . $count;
+    $register_deal_add['field_quantity']['und'][$i]['#title'] = 'Quantity for Product ' . $count;
+
+    $register_deal_add['field_product_name']['und'][$i]['#theme'] = 'theme_field';
+    $register_deal_add['field_quantity']['und'][$i]['#theme'] = 'theme_field';
+
+    $register_deal_add['field_product_name']['und'][$i]['#attributes'] = array('placeholder' => 'Product ' . $count);
+    $register_deal_add['field_quantity']['und'][$i]['#attributes'] = array('placeholder' => 'Quantity for Product ' . $count);
+
+  }
+
+  return $register_deal_add;
+
+}
+
+function register_deal_form($form, &$form_state) {
+
+  $entity = $form_state['build_info']['args'][0];
+//	$uid = $entity->uid;
+  $gid = $entity->gid;
+
+  $lang = NULL;
+  $options = array();
+
+  $form['#title'] = t('Create a deal for ') . $entity->email;
+
+  if (isset($form_state['#approve_deal'])) {
+    $form['admin'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Administration'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+    );
+
+    $input_options = array('Denied', 'Pending', 'Approved',);
+
+    $form['admin']['status'] = array(
+      '#type' => 'radios',
+      '#options' => $input_options,
+      '#description' => 'Update the status',
+      '#title' => 'Status',
+      '#title_display' => 'before',
+      '#default_value' => $form_state['register_deal']->status,
+    );
+
+    $form['admin']['approval_id'] = array(
+      '#type' => 'textfield',
+      '#size' => 20,
+      '#title' => 'Registration Number',
+      '#default_value' => $form_state['register_deal']->approval_id,
+      '#description' => 'This number must appear on the purchase order with the correct model numbers or the order will not be processed.',
+    );
+
+    $form['admin']['save'] = array(
+      '#type' => 'submit',
+      '#value' => 'Save',
+    );
+
+  }
+
+  field_attach_form('register_deal', $entity, $form, $form_state, $lang, $options);
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#action' => 'register_deal_form_submit',
+    '#value' => 'Register Your Deal',
+    '#weight' => 100,
+  );
+
+  /*
+      $form['notes'] = array(
+          '#type'	=>	'textfield',
+          '#title' =>  'Comments/Notes:',
+          '#size' =>  '50',
+          );	*/
+
+  return $form;
+
+}
+
+function register_deal_form_submit($form, $form_state) {
+
+  $now = new DateTime();
+  $timestamp = $now->getTimeStamp();
+
+  $register_deal = $form_state['build_info']['args'][0];
+
+  $register_deal->created = $timestamp;
+  $fields = array_keys($form_state['field']);
+
+  foreach ($fields as $field) {
+    foreach (array_keys($form_state['values'][$field]['und']) as $delta) {
+      $value = $form_state['values'][$field]['und'][$delta]['value'];
+      if ($value) {
+        fnet_common_set_field_value($value, 'register_deal', $register_deal, $field, 'value', $delta);
+      }
+    }
+  }
+  $register_deal->status = isset($form_state['values']['status']) ? $form_state['values']['status'] : 1;
+  $register_deal->approval_id = isset($form_state['values']['approval_id']) ? $form_state['values']['approval_id'] : 1;
+
+  $register_deal->save();
+
+  return;
+
+}
+
+function fextranet_group_content_page($gid) {
+  return views_page('extranet_group_content', 'page_1', $gid);
+}
+
+function fextranet_group_deal_page($gid) {
+  return views_page('deals', 'page', $gid);
+}
+
+function _fex_get_extranet_groups() {
+
+  $groups = array();
+  $types = array(
+    'extranet_north_america',
+    'extranet_europe',
+    'extranet_asia',
+    'extranet_latam'
+  );
+  $names = array(
+    'extranet_north_america',
+    'extranet_europe',
+    'extranet_asia',
+    'extranet_latam'
+  );
+
+  foreach ($names as $name) {
+    $region_groups = group_load_by_type($name);
+
+    if (is_array($region_groups)) {
+      foreach ($region_groups as $region_group) {
+        if ($region_group->gid && $region_group->title) {
+          $groups[$region_group->gid] = $region_group;
+          continue;
+        }
+      }
+    }
+  }
+
+  return $groups;
+}
+
+function _fex_get_mlid($path) {
+
+  $mlids = array();
+
+  $query = db_select('menu_links', 'ml');
+  $query->condition('ml.link_path', $path);
+  $query->fields('ml', array('mlid', 'plid'));
+  $results = $query->execute()->fetchAll();
+
+  foreach ($results as $key => $value) {
+    return $results[$key]->mlid;
+    //$mlids[] = $results[$key]->mlid;
+  }
+
+  return FALSE;
+
+//  return $mlids;
+}
+
+function _fextranet_access_request_received() {
+  // TODO: Put the text into a variable?
+  return theme('fextranet_request_thanks_message');
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Alter views exposed forms for collapsible filters.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function fextranet_form_views_exposed_form_alter(&$form, &$form_state) {
+  if (empty($form_state['view']) || !in_array($form_state['view']->name, array('sales_insider_products', 'product_page'))) {
+    // We alter the exposed form of a single views display, so return if this is
+    // not the expected view.
+    return;
+  }
+  if (isset($form['field_dam_asset_type_value'])) {
+    // Add option to select all items (equals to resetting the filter).
+    $options = array(
+      'All' => variable_get('views_exposed_filter_any_label', 'new_any') == 'old_any' ? t('<Any>') : t('- Any -'),
+    );
+    $options += $form['field_dam_asset_type_value']['#options'];
+    // Change size of field based on number of options (max: 5 items).
+    $form['field_dam_asset_type_value']['#size'] = min(array(count($options), 5));
+    if (count($options) <= 2) {
+      // Hide filter if there is only one option available (additional
+      // to "All").
+      $form['field_dam_asset_type_value']['#access'] = FALSE;
+    }
+    $form['field_dam_asset_type_value']['#options'] = $options;
+  }
+
+  // Alter multi-value dropdowns.
+  $form_multiple_selects = array();
+  foreach (element_children($form) as $element_name) {
+    if (isset($form[$element_name]['#type']) && $form[$element_name]['#type'] == 'select' && !empty($form[$element_name]['#multiple'])) {
+      $form_multiple_selects[$element_name] = array(
+        'size' => isset($form[$element_name]['#size']) ? $form[$element_name]['#size'] : 5,
+      );
+    }
+  }
+  if (count($form_multiple_selects)) {
+    if (isset($form['#attached'])) {
+      $form['#attached'] += array(
+        'js' => array(),
+        'css' => array(),
+      );
+    }
+    else {
+      $form['#attached'] = array(
+        'js' => array(),
+        'css' => array(),
+      );
+    }
+
+    // Attach custom javascript to the form.
+    $form['#attached']['js'][] = drupal_get_path('module', 'fextranet') . '/js/fextranet.admin.js';
+    $form['#attached']['js'][] = array(
+      'data' => array(
+        'fextranet' => array(
+          'multiple_selects' => $form_multiple_selects,
+        ),
+      ),
+      'type' => 'setting',
+    );
+  }
+}
+
+/**
+ * Implements hook_views_pre_view().
+ *
+ * @param $view
+ * @param $display_id
+ * @param $args
+ */
+function fextranet_views_pre_view(&$view, &$display_id, &$args) {
+  if (!in_array($view->name, array('sales_insider_products', 'product_page'))) {
+    return;
+  }
+  foreach (array('field_dam_asset_type_value') as $filter) {
+    if (!empty($_GET[$filter]) && (is_array($_GET[$filter])) && reset($_GET[$filter]) == 'All') {
+      // Remove the filter value because it is manually added and thus
+      // unknown to Views.
+      unset($_GET[$filter]);
+    }
+  }
+}
+
+

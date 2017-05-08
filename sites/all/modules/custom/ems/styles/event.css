@@ -1,0 +1,24 @@
+/* $Id$*/
+#event {
+    margin: 0 50px 0 50px;
+}
+
+#event .event-occ-table {
+    width: 600px;
+}
+
+#event .event-occ-row {
+    height: 20px;
+}
+
+#event .event-occ-cell {
+    padding-left: 10px;
+}
+
+#event .event-occ-all-regions {
+    padding: 10px 0px 0px 10px;
+}
+
+#event-occurrence .sub_title {
+    padding-bottom: 10px;
+}

@@ -1,0 +1,220 @@
+
+
+#box-gallery {
+    display: block;
+    width: 900px
+}
+
+.box-carousel {
+    height: 250px;
+}
+
+.box-carousel-rows, .box-carousel-rows #box-gallery-thumbs, .box-carousel-rows .rs-carousel-runner {
+    height: 540px;
+    overflow:hidden;
+}
+
+
+
+
+#box-gallery-carousel-rows {
+}
+
+#box-gallery ul {
+	margin:0px;
+	padding:0px;
+}
+
+.rs-carousel-mask .box-carousel {
+	height:230px;
+}
+
+.rs-carousel-runner .box-carousel {
+	height:250px;
+}
+
+.rs-carousel-item {
+	display:inline-block;
+}
+
+#box-gallery-thumbs  {
+	width: 900px;
+	border: 0px ;
+	overflow:hidden;
+}
+
+/* 
+box_thumbnails.tpl
+*/
+
+#box-gallery-thumbnails {
+	background-color:#FFF;
+}
+
+.thumbnail-list {
+	background-color:#EEE;
+	padding-left:15px;
+}
+
+.box-thumbnail-entry {
+
+}
+
+#box-gallery-thumbnails  .box-thumbnail-entry {
+	display:inline-block;
+	width:auto;
+	min-width:220px;
+	background-color:#FFF;
+	margin:2px;
+	padding:2px;
+
+}
+
+#box-gallery-thumbnails .thumb-text {
+	display:inline-block;
+	float:right;
+	padding-right:5px;
+
+}
+
+#box-gallery-thumbnails .box-thumbnail {
+	width:auto;
+	height:auto;
+	display:inline-block;
+
+}
+
+
+/* 
+box carousel.tpl
+*/
+
+#box-gallery .box-carousel #box-gallery-thumbs {
+	height:225px;
+}
+
+
+#box-gallery .box-carousel-rows #box-gallery-thumbs {
+	height:725px;
+}
+
+.box-carousel .box-thumbnail-entry {
+	display:inline-block;
+	height:225px;
+}
+
+.box-carousel-rows .box-thumbnail-entry {
+	display:block;
+	height:150px
+}
+
+.box-carousel div.box-thumbnail-entry {
+	border: 1px dotted black;
+	padding:2px;
+	margin:2px;
+	width:150px;
+}
+
+
+
+
+.box-carousel li.box-thumbnail-entry {
+	border: 0px ;
+	padding:0px;
+	margin:0px;
+	width:130px;
+}
+
+.thumb-gallery-row-class {
+	display:inline;
+}
+
+.box-thumbnail-entry ul {
+	padding:1px;
+}
+.box-title {
+	font-size:10px;
+	overflow:hidden;
+	font-weight:bold;
+	word-wrap:normal;
+}
+
+.box-carousel .box-thumbnail {
+	width:128px;
+	height:128px;
+}
+
+.box-image-sizes {
+
+	font-size:11px;
+	overflow:hidden;
+	font-weight:bold;
+	min-height:90px;
+
+}
+
+.box-carousel-rows .box-image-sizes  {
+	opacity: 0.5;
+    position: relative;
+    top: -80px;
+}
+
+.box-carousel-rows .box-image-sizes:hover  {
+	opacity: 1.0;
+	background-color:white;
+}
+
+
+.rs-carousel-mask {
+	background-color: orange;
+	border: 0px ;
+	padding:0px;
+	overflow:hidden;
+	display:inline-block;
+	width:850px;
+}
+
+.rs-carousel-runner {
+	height:250px;
+	position:relative;
+	background-color: white;
+	margin:0px;
+	padding:0px;
+}
+
+.rs-carousel-pagination li {
+	display:inline-block;
+
+}
+
+.box-carousel .rs-carousel-action  {
+	height:250px;
+}
+
+.box-carousel-rows .rs-carousel-action  {
+	height:500px;
+}
+
+.rs-carousel-action {
+    background-color: #EEE;
+    color: black;
+    display: inline-block;
+    font-size: 48px;
+    line-height: 450px;
+    width: 25px;
+}
+
+.rs-carousel-action:hover {
+	background-color:#DDD;
+	color:#DDD;
+}
+
+
+.rs-carousel-action-prev  {
+	float:left;
+}
+.rs-carousel-action-next  {
+	float:right;
+}
+
+

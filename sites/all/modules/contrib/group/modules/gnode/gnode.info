@@ -1,0 +1,17 @@
+name = Group Node
+description = Enables Group functionality for the Node module
+core = 7.x
+package = Group
+
+files[] = tests/gnode.test
+files[] = tests/gnode.multiple.test
+
+dependencies[] = group
+dependencies[] = node
+
+; Information added by Drupal.org packaging script on 2016-03-08
+version = "7.x-1.0-beta6+9-dev"
+core = "7.x"
+project = "group"
+datestamp = "1457441809"
+

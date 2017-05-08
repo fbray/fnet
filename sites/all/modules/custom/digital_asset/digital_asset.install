@@ -1,0 +1,271 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Install file ofr Digital Asset module
+ *
+ */
+
+/**
+ * implements hook_install
+ */
+function digital_asset_install() {
+}
+
+/**
+ * implements hook_uninstall
+ */
+function digital_asset_uninstall() {
+  //remove system variables
+  variable_del('digital_asset_asset_types');
+  variable_del('digital_asset_ccs_cost_centers');
+  variable_del('digital_asset_ccs_email_cc');
+  variable_del('digital_asset_ccs_email_subject');
+  variable_del('digital_asset_ccs_email_to');
+  variable_del('digital_asset_ccs_unit_of_measure');
+  variable_del('digital_asset_cdn_download_folder');
+  variable_del('digital_asset_cdn_download_folder_pod');
+  variable_del('digital_asset_cdn_download_server');
+  variable_del('digital_asset_cdn_enable_cron');
+  variable_del('digital_asset_cdn_ftp_retries');
+  variable_del('digital_asset_cdn_password');
+  variable_del('digital_asset_cdn_upload_folder');
+  variable_del('digital_asset_cdn_upload_folder_pod');
+  variable_del('digital_asset_cdn_upload_server');
+  variable_del('digital_asset_cdn_username');
+  variable_del('digital_asset_next_document_id');
+}
+
+/**
+ * implements hook_schema
+ */
+function digital_asset_schema() {
+  $schema['digital_asset_ccs'] = array(
+    'fields' => array(
+      'dacid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'document_id' => array(
+        'type' => 'varchar',
+        'length' => '12',
+        'not null' => FALSE,
+      ),
+      'version' => array(
+        'type' => 'varchar',
+        'length' => '3',
+        'not null' => FALSE,
+      ),
+      'status' => array(
+        'type' => 'varchar',
+        'length' => '12',
+        'not null' => FALSE,
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'cost_center' => array(
+        'type' => 'varchar',
+        'length' => '6',
+        'not null' => FALSE,
+      ),
+      'owner' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'language' => array(
+        'type' => 'varchar',
+        'length' => '15',
+        'not null' => FALSE,
+      ),
+      'print_on_demand' => array(
+        'type' => 'varchar',
+        'length' => '3',
+        'not null' => FALSE,
+      ),
+      'unit_of_measure' => array(
+        'type' => 'varchar',
+        'length' => '10',
+        'not null' => FALSE,
+      ),
+      'uom_quantity' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'order_qty_max' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'level_1_entity' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'level_2_catalog' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'level_3_group' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'level_4_sub_group' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'level_5_end_group' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'ccs_action_code' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'updated' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'exported' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('dacid'),
+    'indexes' => array(
+      'document_id_version' => array('document_id', 'version'),
+    ),
+  );
+
+  $schema['digital_asset_ccs_categories'] = array(
+    'fields' => array(
+      'level_1_entity' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'level_2_catalog' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'level_3_group' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'level_4_sub_group' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'level_5_end_group' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+    ),
+  );
+
+  $schema['digital_asset_ftp'] = array(
+    'fields' => array(
+      'ftpid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ),
+      'pod' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'local_file_path' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'local_file_size' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ),
+      'remote_file_folder' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'remote_file_name' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'remote_file_size' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ),
+      'ftp_operation' => array(
+        'type' => 'varchar',
+        'length' => '10',
+        'not null' => FALSE,
+      ),
+      'operation_status' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'retries' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'created' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'updated' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('ftpid'),
+  );
+
+  $schema['digital_asset_owners'] = array(
+    'fields' => array(
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'first_name' => array(
+        'type' => 'varchar',
+        'length' => '35',
+        'not null' => FALSE,
+      ),
+      'last_name' => array(
+        'type' => 'varchar',
+        'length' => '35',
+        'not null' => FALSE,
+      ),
+      'full_name' => array(
+        'type' => 'varchar',
+        'length' => '70',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('uid'),
+  );
+
+  return $schema;
+}

@@ -1,0 +1,39 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Install, update and uninstall functions for the fnet_helper module.
+ *
+ */
+
+/**
+ * Implements hook_enable().
+ */
+function fnet_helper_enable() {
+
+}
+
+/**
+ * Implements hook_disable().
+ */
+function fnet_helper_disable() {
+
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function fnet_helper_uninstall() {
+  db_delete('variable')->condition('name', 'fnet_helper_%', 'LIKE')->execute();
+}
+
+/**
+ * Implements hook_install().
+ */
+function fnet_helper_install() {
+  db_update('system')->fields(array(
+      'weight' => 2,
+    ))->condition('name', 'fnet_helper')->execute();
+}
+

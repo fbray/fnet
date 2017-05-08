@@ -1,0 +1,19 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: mositis
+ * Date: 12/1/2016
+ * Time: 11:09 AM
+ */
+
+/**
+ * Implements hook_clode_node_alter().
+ *
+ * This is purely to prevent a cloned node from being published by default.
+ *
+ * @param $node
+ * @param $context
+ */
+function clonefix_clone_node_alter(&$node, $context) {
+  $node->status = 0;
+}

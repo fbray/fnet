@@ -1,0 +1,1520 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * This module associates the Drupal user on Fluke Networks website with the legacy My Account of .NET
+ * and it uses many web services to allow users with specific roles to access Gold Contract related information
+ * and submit and view support incidents.
+ */
+define('FILTER_FORMAT_DEFAULT', 2);
+
+/**
+ * Display help and module information
+ * @param section which section of the site we're displaying help
+ * @return help text for section
+ */
+function fnet_ma_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case "admin/help#fnet_ma":
+      $output = "This module associates the Drupal user on Fluke Networks website and uses many web services to ";
+      $output .= "allow users with specific roles to access Gold Contract related information and submit and view ";
+      $output .= "support incidents.";
+      break;
+  }
+  return $output;
+}
+
+/**
+ * Implements hook_init().
+ */
+function fnet_ma_init() {
+  module_load_include('inc', 'fnet_ma', 'includes/fnet_ma.common_functions');
+  // drupal_add_css(drupal_get_path('module', 'fnet_ma') . '/css/fnet_ma.css');
+  // drupal_add_js(drupal_get_path('module', 'fnet_ma') . '/js/fnet_ma.js');
+  drupal_add_library('system', 'ui.datepicker');  // TODO: Replace with Date picker from Date module?
+  $script = '(function($) {$( "input.datepicker" ).datepicker({dateFormat: \'mm/dd/yy\'});})(jQuery);';
+  drupal_add_js($script, array('type' => 'inline', 'scope' => 'footer'));
+  // drupal_add_js(drupal_get_path('module', 'fnet_ma') . '/js/fnet_ma_downloads_updates.js');
+}
+
+/**
+ * Implements hook_permission().
+ */
+function fnet_ma_permission() {
+  return array(
+    'Fluke Networks My Account Access' => array(
+      'title' => t('Fluke Networks My Account Access'),
+      'description' => t('Fluke Networks My Account Access'),
+    ),
+    'Fluke Networks My Account Gold Access' => array(
+      'title' => t('Fluke Networks My Account Gold Access'),
+      'description' => t('Fluke Networks My Account Gold Access'),
+    ),
+    'Fluke Networks My Account Administer' => array(
+      'title' => t('Fluke Networks My Account Administer'),
+      'description' => t('Fluke Networks My Account Administer'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_theme().
+ */
+function fnet_ma_theme() {
+  return array(
+    'all_contracts_display' => array(
+      'template' => 'theme/all-contracts-display',
+      'variables' => array(
+        'all_gold_contracts' => array(),
+        'user_info' => array()
+      ),
+    ),
+    'my_account_navigation_links_block' => array(
+      'template' => 'theme/my-account-navigation-links-block',
+      'variables' => array(),
+    ),
+    'all_support_incident_display' => array(
+      'template' => 'theme/all-support-incident-display',
+      'variables' => array(
+        'support_incidents' => array(),
+        'search_form' => ''
+      ),
+    ),
+    'all_download_and_updates_display' => array(
+      'template' => 'theme/all-download-and-updates-display',
+      'variables' => array('download_and_updates_array' => array()),
+    ),
+    'tabular_support_incident_display' => array(
+      'template' => 'theme/tabular-support-incident-display',
+      'variables' => array('support_incidents' => array()),
+    ),
+    'all_contracts_tabular_display' => array(
+      'template' => 'theme/all-contracts-tabular-display',
+      'variables' => array(
+        'all_gold_contracts' => array(),
+        'user_info' => array()
+      ),
+    ),
+    'fnet_ma_product_registration_form_two' => array(
+      'template' => 'theme/product-registration-submit-form',
+      'render element' => 'form',
+    ),
+    'registered_products_listing' => array(
+      'template' => 'theme/registered-products-listing',
+      'variables' => array('registered_product_list' => array()),
+    ),
+    'tabular_registered_products_listing' => array(
+      'template' => 'theme/tabular-registered-products-listing',
+      'variables' => array('registered_product_list' => array()),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu_alter().
+ *
+ * @param $items
+ */
+function fnet_ma_menu_alter(&$items) {
+
+  $items['user/login']['title'] = t('Log In');
+  $items['user/register']['title'] = t('Create Account');
+  $items['user/password']['title'] = t('Forgot Password?');
+  $items['user/password']['weight'] = 10;
+  $items['user/register']['weight'] = 9;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function fnet_ma_menu() {
+  $items = array();
+  $items['admin/fnet/my_account'] = array(
+    'title' => 'FNET My Account',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fnet_ma_admin_settings'),
+    'access arguments' => array('Fluke Networks My Account Administer'),
+    'file' => 'includes/fnet_ma.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/fnet/my_account/settings'] = array(
+    'title' => 'My Account Settings',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+
+  // TODO: Assess if this is still relevant
+  $items['admin/fnet/my_account/t2w_redirect'] = array(
+    'title' => 'T2W Redirects',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fnet_ma_t2w_redirect_settings_form'),
+    'access arguments' => array('Fluke Networks My Account Administer'),
+    'file' => 'includes/fnet_ma.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['myaccount/thank_you'] = array(
+    'title' => 'Check your email to complete registration and activate your user account ',
+    'page callback' => 'fnet_ma_display_myaccount_thankyou_page',
+    'access callback' => TRUE,
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount/product-register-success/%/%'] = array(
+    'title' => 'Product Registration completed successfully',
+    'page callback' => 'fnet_ma_display_product_registration_thanks_message',
+    'page arguments' => array(2, 3),
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'file' => 'includes/fnet_ma.register_products.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount'] = array(
+    'title' => 'My Account',
+    'page callback' => 'fnet_ma_myaccount_home',
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount/registered-products'] = array(
+    'title' => 'Registered Products',
+    'page callback' => 'fnet_ma_display_registered_products',
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount/view-registered-product/%'] = array(
+    'title' => 'View Registered Products',
+    'page callback' => 'fnet_ma_view_registered_product_details',
+    'page arguments' => array(2),
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'file' => 'includes/fnet_ma.register_products.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount/gold-contracts'] = array(
+    'title' => 'Gold Contracts',
+    'page callback' => 'fnet_ma_display_all_gold_contracts',
+    'access arguments' => array('Fluke Networks My Account Gold Access'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount/register-products-step-one'] = array(
+    'title' => 'Register Products',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fnet_ma_product_registration_form'),
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'file' => 'includes/fnet_ma.register_products.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount/register-products-step-two/%/%'] = array(
+    'title' => 'Register Products',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fnet_ma_product_registration_form_two', 2, 3),
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'file' => 'includes/fnet_ma.register_products.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount/activate-product'] = array(
+    'title' => 'Activate a Purchased Option',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fnet_ma_product_activation_form'),
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'file' => 'includes/fnet_ma.activate_an_option.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['myaccount/activate-product-message'] = array(
+    'title' => 'Activate a Purchased Option',
+    'page callback' => 'flukenetworks_myaccount_activate_option_page',
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'file' => 'includes/fnet_ma.activate_an_option.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  // Newly added menu for Duplicate Serial Number error while Activating an option.
+  $items['myaccount/activate-product-duplicate-serial-number'] = array(
+    'title' => 'Activate a Purchased Option',
+    'page callback' => 'fnet_ma_activate_product_with_duplicate_serial_number',
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'file' => 'includes/fnet_ma.activate_an_option.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount/activate-product-gold-type'] = array(
+    'title' => 'Activate a Purchased Option - Product/Gold Bundle Contract Activation',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fnet_ma_gold_type_product_activation_form'),
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'file' => 'includes/fnet_ma.activate_an_option.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount/print-keycode'] = array(
+    'title' => 'Activate a Purchased Option - Print key code',
+    'page callback' => 'fnet_ma_print_keycodes',
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'file' => 'includes/fnet_ma.activate_an_option.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount/report-support-incidents'] = array(
+    'title' => 'Create Support Incidents',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fnet_ma_support_incident_form'),
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'file' => 'includes/fnet_ma.support_incident.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount/support-incident-success'] = array(
+    'title' => 'Thank you',
+    'page callback' => 'fnet_ma_display_support_incident_thanks_message',
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'file' => 'includes/fnet_ma.support_incident.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount/all-support-incidents'] = array(
+    'title' => 'Support Incidents',
+    'page callback' => 'fnet_ma_display_all_support_incidents',
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'file' => 'includes/fnet_ma.support_incident.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount/all-support-incidents/%/%'] = array(
+    'title' => 'Support Incidents',
+    'page callback' => 'fnet_ma_display_all_support_incidents',
+    'page arguments' => array(2, 3),
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'file' => 'includes/fnet_ma.support_incident.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount/product-support-incidents/%'] = array(
+    'title' => 'Create Support Incidents',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fnet_ma_product_support_incident_form', 2),
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'file' => 'includes/fnet_ma.support_incident.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount/view-support-incidents/%'] = array(
+    'title' => 'Support Incident',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fnet_ma_view_support_incident_form', 2),
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'file' => 'includes/fnet_ma.support_incident.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  // Accessing your Gold Benefits page logic.
+  $items['myaccount/accessing-your-gold-benefits'] = array(
+    'title' => 'Accessing your Gold Benefits',
+    'page callback' => 'fnet_ma_display_accessing_your_gold_benefits_page',
+    'access arguments' => array('Fluke Networks My Account Gold Access'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  // Analysis Service Element (ASE) page logic.
+  $items['myaccount/analysis-service-element'] = array(
+    'title' => 'Analysis Service Element (ASE)',
+    'page callback' => 'fnet_ma_display_analysis_service_element_page',
+    'access arguments' => array('Fluke Networks My Account Gold Access'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  // Gold Support Contact Numbers page logic.
+  $items['myaccount/gold-support-contact-numbers'] = array(
+    'title' => 'Gold Support Contact Numbers',
+    'page callback' => 'fnet_ma_display_gold_support_contact_numbers_page',
+    'access arguments' => array('Fluke Networks My Account Gold Access'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['myaccount/all-downloads-updates'] = array(
+    'title' => 'Downloads and Updates',
+    'page callback' => 'fnet_ma_display_all_user_download_and_updates',
+    'access arguments' => array('Fluke Networks My Account Access'),
+    'file' => 'includes/fnet_ma.downloads_updates.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  /**
+   * This menu is called when user clicks on 'Go' button on the Fluke Network's Download and Updates page.
+   */
+  $items['myaccount/get_downloads_ajax/%'] = array(
+    'title' => 'Downloads and Updates',
+    'page callback' => 'fnet_ma_get_downloads_ajax',
+    'page arguments' => array(2),
+    'access callback' => TRUE,
+    'file' => 'includes/fnet_ma.downloads_updates.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Give user gold role if gold_number and gold_pin are valid
+ * @param $gold_pin
+ * @param $gold_number
+ * @throws \Exception
+ */
+function fnet_ma_set_user_gold_role($gold_number, $gold_pin) {
+  global $user;
+  // Gold Member Role fetched from My Account configuration page.
+  $gold_customer_role_id = variable_get('fluke_networks_gold_member_role', '');
+  // Fetch all the roles on Fluke Networks website.
+  $site_roles = user_roles($members_only = TRUE, $permission = NULL);
+  $gold_role_name = $site_roles[$gold_customer_role_id];
+  $user_roles = $user->roles;
+  $user_has_gold_role = in_array($gold_role_name, $user_roles);
+
+  $gold_credential_status = fnet_ma_validate_gold_credentials($gold_number, $gold_pin);
+  if ($gold_credential_status) {
+    // user has valid gold info
+    if (!$user_has_gold_role) {
+      // user doesn't have the Gold customer role, so assign it
+      $user_roles = $user_roles + array($gold_customer_role_id => $gold_role_name);
+      user_save($user, array('roles' => $user_roles));
+    }
+  }
+  else {
+    // user has invalid gold info
+    if ($user_has_gold_role) {
+      // user has the Gold customer role, so deassign it
+      $user_roles = array_diff($user_roles, array($gold_customer_role_id => $gold_role_name));
+      user_save($user, array('roles' => $user_roles));
+    }
+  }
+}
+
+/**
+ * Implements hook_user_login().
+ *
+ * @param $edit
+ * @param $account
+ */
+function fnet_ma_user_login(&$edit, &$account) {
+  // If this is a one-time login for resetting the password, $edit is empty. Check that.
+  if ((!empty($edit)) || ($_POST['form_id'] == 'user_pass_reset')) {
+    // Not empty? Shoot them over to myaccount.
+    $edit['redirect'] = 'myaccount';
+    $gold_pin = check_plain(trim(fnet_common_get_field_value('user', $account, 'field_user_gold_pin')));
+    $gold_number = check_plain(trim(fnet_common_get_field_value('user', $account, 'field_user_gold_number')));
+    fnet_ma_set_user_gold_role($gold_number, $gold_pin);
+    if (!fnet_sfdc_contact_exists($account->mail)) {
+      $contact = fnet_sfdc_create_contact_from_profile($account->mail, $account);
+      $response = fnet_sfdc_insert_contact($contact);
+      if (!$response->status) {
+        watchdog('fnet_sfdc via MyAccount', $response->message, array(), WATCHDOG_ERROR);
+      }
+    }
+  }
+
+}
+
+/**
+ * This section is related to - "User's My Account Page" which is his landing page after log-in.
+ * Section starts from here and this code set is triggered on the URL - "'myaccount'"
+ */
+
+/**
+ * Function that displays the Gold contract details,
+ * Support incidents etc for Gold user in summary view.
+ */
+function fnet_ma_myaccount_home() {
+  global $user;
+  fnet_ma_check_profile();
+  $gold_member_greeting = '';
+  $field_gold_number = '';
+
+  $users_first_name = trim(fnet_common_get_field_value('user', $user, 'field_user_first_name') );
+  if (trim(fnet_common_get_field_value('user', $user, 'field_user_gold_number')) != '') {
+    $field_gold_number = " - " . str_replace("-", "", trim(fnet_common_get_field_value('user', $user, 'field_user_gold_number')));
+  }
+
+  if (fnet_ma_user_has_gold_role()) {
+    $gold_member_greeting = ', ' . t('Gold Member');
+  } 
+
+  /**
+   * Code to display the top section on My Account main page.
+   */
+  $html = '';
+  $html .= '<div class="my-account-user-pages">';
+  $html .= '<div class="my-account-headlines header-border_bottom">' . t('Welcome  @users_firstname@gold_role_name @field_gold_number', array(
+      '@users_firstname' => $users_first_name,
+      '@gold_role_name' => $gold_member_greeting,
+      '@field_gold_number' => $field_gold_number,
+    )) . '</div>';
+  $html .= check_markup(variable_get('users_myaccount_page_static_content', t('Welcome to Fluke Networks!!!')), FILTER_FORMAT_DEFAULT, $langcode = '' /* TODO Set this variable. */, TRUE);
+  $html .= '</div>';
+
+  /**
+   * Code to display the Gold Contracts section on My Account main page.
+   */
+  $html .= '';
+  $user_info = array();
+  //Fetch the current user's profile content information.
+  $gold_pin = check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_gold_pin')));
+  $gold_number = check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_gold_number')));
+  $user_info['fullname'] = check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_first_name'))) . " " . check_plain(trim( fnet_common_get_field_value('user', $user, 'field_user_first_name') ));
+  $displayed_on = 'users_my_account_page';
+  $html .= '<br />';
+  $html .= fnet_ma_display_tabular_all_gold_contracts_details($gold_pin, $gold_number, $user_info, $displayed_on);
+
+  $html .= '<br />';
+
+  $html .= "<div class = 'full-available-width'>
+                <div id = 'downloads-and-updates-summary-section-expanding-master-key-div' Onclick=\"return toggle_sections('downloads-and-updates-summary-section');\" class='my-account-headlines my-account-header-minus-background'>" . t('Downloads and Updates') . "</div>
+  </div>";
+  $html .= "<div id = 'downloads-and-updates-summary-section'>" . check_markup(variable_get('fnet_ma_download_and_updates_text', t('Click on the "Download & Updates link to view all the Assets that you can download."')), FILTER_FORMAT_DEFAULT, $langcode = '' /* TODO Set this variable. */, TRUE) . "</div>";
+
+  $html .= '<br />';
+  $html .= "<div class = 'full-available-width'>
+              <div id = 'support-incident-summary-section-expanding-master-key-div' Onclick=\"return toggle_sections('support-incident-summary-section');\" class='my-account-headlines my-account-header-minus-background'>" . t('Support Incidents') . "</div>
+            </div>";
+
+  $support_incidents = fnet_ma_fetch_support_incidents(365, NULL, TRUE);
+  $support_incidents_html = theme("tabular_support_incident_display", array('support_incidents' => $support_incidents));
+  $html .= "<div id = 'support-incident-summary-section'>" . $support_incidents_html . "</div>";
+
+  $html .= '<br />';
+  $html .= "<div class = 'full-available-width'>
+                <div id = 'registered-products-summary-section-expanding-master-key-div' Onclick=\"return toggle_sections('registered-products-summary-section');\" class='my-account-headlines my-account-header-minus-background'>" . t('Registered Products') . "</div>
+  </div>";
+  $html .= "<div id = 'registered-products-summary-section'>" . fnet_ma_display_registered_products('my_account_summary_page') . "</div>";
+
+  $html .= '<br />';
+
+  return $html;
+}
+
+/**
+ * Function is called inside another function that is -
+ * function fnet_ma_display_all_gold_contracts() that's above.
+ *
+ * @param $gold_pin
+ * @param $gold_number
+ * @param $user_info
+ * @param $displayed_on
+ * @return string
+ */
+function fnet_ma_display_tabular_all_gold_contracts_details($gold_pin, $gold_number, $user_info, $displayed_on) {
+  $html = '';
+  $doc = fnet_sfdc_get_gold_contracts_for_display($gold_number, $gold_pin);
+  $content_array = array();
+  $total_gold_contracts = 0;
+  if ( ($doc) && ( isset($doc->NewDataSet) ) && ($doc->NewDataSet->Table) )   $total_gold_contracts = count($doc->NewDataSet->Table);
+  if ($total_gold_contracts) {
+    foreach ($doc->NewDataSet->Table as $key => $values) {
+      $iProductId = check_plain(trim($values->iProductId));
+      $vchModelNumber = check_plain(trim($values->vchModelNumber));
+      $vchSerialNumber = check_plain(trim($values->vchSerialNumber));
+      $dtExpirationDate = explode("T", trim($values->dtExpirationDate));
+      $dtExpirationDate_new = explode("-", trim($dtExpirationDate[0]));
+      $content_array[$iProductId]['vchModelNumber'] = $vchModelNumber;
+      $content_array[$iProductId]['dtExpirationDate'] = check_plain($dtExpirationDate_new[2] . '-' . $dtExpirationDate_new[1] . '-' . $dtExpirationDate_new[0]);
+      $content_array[$iProductId]['vchSerialNumber'] = $vchSerialNumber;
+    }
+  }
+  if ($displayed_on == 'gold_contract_full_listing_page') {
+    $html = theme("all_contracts_display", array(
+      'all_gold_contracts' => $content_array,
+      'user_info' => $user_info
+    ));
+  }
+  elseif ($displayed_on == 'users_my_account_page') {
+    $html = theme("all_contracts_tabular_display", array(
+      'all_gold_contracts' => $content_array,
+      'user_info' => $user_info
+    ));
+  }
+  return $html;
+}
+
+/**
+ * Definition of function that displays the Gold contract details of the
+ * user who has the a valid Gold Credential associated  with their Account Profile.
+ *
+ * @return string
+ */
+function fnet_ma_display_all_gold_contracts() {
+  global $user;
+  $user_info = array();
+  //Fetch the current user's profile content information.
+  $gold_pin = check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_gold_pin')));
+  $gold_number = check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_gold_number')));
+  $user_info['fullname'] = check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_first_name'))) . " " . check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_last_name')));
+  $displayed_on = 'gold_contract_full_listing_page';
+  $output = fnet_ma_display_tabular_all_gold_contracts_details($gold_pin, $gold_number, $user_info, $displayed_on);
+  return $output;
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function fnet_ma_form_alter(&$form, &$form_state, $form_id) {
+  global $user;
+  switch ($form_id) {
+    case 'user_login':
+      $form['#after_build'] = array('fnet_ma_change_user_login_form');
+      break;
+    case 'user_login_block':
+      $form['#submit'][] = 'fnet_ma_user_login_submit';
+      drupal_set_title(t('Registered Users Log In'));
+      break;
+    case 'user_register_form':
+      if (!user_access('administer users')) {
+        $form_state['redirect'] = 'myaccount/thank_you';
+        drupal_set_title(t('New Users, Register'));
+      }
+      break;
+    case 'user_profile_form':
+      $form_state['redirect'] = 'myaccount';
+      $account = isset($form['_account']['#value']) ? $form['_account']['#value'] : NULL;
+      $form['page_header'] = array(
+        '#value' => '<div class="my-account-headlines">' . t('Edit My Password') . '</div>',
+        '#weight' => '-50',
+      );
+      if ((isset($form['account']['mail']) && (!(in_array('administrator', $user->roles)))) && ($user->uid != 1)) {
+        if (isset($account->mail)) {
+          $form['account']['mail']['#disabled'] = TRUE;
+          $form['account']['mail']['#value'] = $account->mail;
+        }
+      }
+      drupal_add_css(drupal_get_path('module', 'fnet_ma') . '/css/fnet_ma_user_profile.css');
+	  if(arg(0) == 'user' && arg(2)== 'edit'){
+		$form['#submit'][] = 'fnet_ma_myaccount_user_submit';				
+	  }
+      break;
+    case 'user_pass':
+      $form['#after_build'] = array('fnet_ma_change_user_forgot_password_form');
+      drupal_set_title(t('Forgot Password?'));
+      break;
+  }
+}
+
+/* Redirect user to my account page after resetting password (Forgot password) or 
+ * updating profile (when user logs in for first time)
+ */
+function fnet_ma_myaccount_user_submit($form, &$form_state) {
+	$form_state['redirect'] = 'myaccount';
+}
+
+function fnet_ma_user_login_submit($form, &$form_state) {
+  if ( substr($form['#action'], 0, 9)  != '/extranet')  $form_state['redirect'] = 'myaccount';
+}
+
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function fnet_ma_display_myaccount_thankyou_page() {
+  return check_markup(variable_get('user_registration_thankyou_page_content', t('Thank you for registering on Fluke Networks website.')), FILTER_FORMAT_DEFAULT);
+}
+
+/**
+ * Function for checking the Gold credential supplied by the user
+ * using the web services from Onyx.
+ *
+ * @param $gold_number
+ * @param $gold_pin
+ * @return bool
+ */
+function fnet_ma_validate_gold_credentials($gold_number, $gold_pin) {
+  global $user;
+
+  // If the Gold Credentials are NOT supplied as arguments.
+  if (empty($gold_pin) || empty($gold_number)) {
+    return FALSE;
+  }
+  //$has_valid_gold_contract = fnet_sfdc_has_valid_gold_contract($gold_number, $gold_pin);
+  return fnet_sfdc_validate_gold($gold_number, $gold_pin);
+}
+
+/**
+ * This function adds extra contents on the log-in form.
+ *
+ * @param $form
+ * @param $form_state
+ * @return mixed
+ */
+function fnet_ma_change_user_login_form($form, &$form_state) {  
+  $form['name']['#description'] = '';
+  $form['name']['#title'] = t(' Email Address');
+  $form['pass']['#description'] = '';
+  $form['pass']['#suffix'] = '<div class = "forgot-password-link">' . l('Forgot Password?', 'user/password') . '</div>';
+  $form['actions']['submit']['#value'] = t('Log In');
+  $form['actions']['submit']['#suffix'] = fnet_ma_display_helper_text_on_pages('user_login');
+  return $form;
+}
+
+
+/**
+ * This function adds extra contents on the forgot password form.
+ */
+function fnet_ma_change_user_forgot_password_form($form, &$form_state) {
+  $form['name']['#description'] = t('Enter the email address you registered with to reset your password.');
+  $form['name']['#title'] = t('Email Address');
+  $form['submit']['#value'] = t('Submit');
+  return $form;
+}
+
+/**
+ * This is the common function that generates the content for different forms.
+ */
+function fnet_ma_display_helper_text_on_pages($page_name = '') {
+  $html = '';
+  if ($page_name == 'user_login') {
+    $html .= '<br />';
+    $html .= t('Log in with your email address and password. To create an account select the Create Account tab.');
+    $html .= '<br /><br />';
+    $html .= '<h2 class="with-tabs">' . t('Not Registered?') . '</h2><br />';
+    $html .= '<b>' . t('BENEFITS OF CREATING AN ACCOUNT ARE:') . '</b>';
+    $html .= '<br />';
+    $html .= t('Want to see content specific to your areas of interest? !register_link to see information tailored just for you.', array('!register_link' => l('Create an Account', 'user/register')));
+    $html .= '<br />';
+    $html .= '<ul id = "vns-myaccount-helper-text">';
+    $html .= '<li>';
+    $html .= l('Learn more about the benefits of creating an account.', 'node/' . variable_get('fn_myaccount_learn_more_about_the_benefits_of_creating_an_account', ''), array(
+      'html' => TRUE,
+      'attributes' => array('target' => '_blank'),
+    ));
+    $html .= '</li>';
+    $html .= '<li>';
+    $html .= l('Learn more about the benefits of Gold Support.', 'node/' . variable_get('fn_myaccount_learn_more_about_the_benefits_of_gold_Support', ''), array(
+      'html' => TRUE,
+      'attributes' => array('target' => '_blank'),
+    ));
+    $html .= '</li>';
+    $html .= '</ul>';
+  }
+
+  return $html;
+}
+
+/**
+ * Gets the Product Categories from Salesforce.
+ *
+ * @return array
+ */
+function fnet_ma_load_product_category() {
+  $product_families = array();
+  $categories = array();
+  $products = fnet_sfdc_get_web_products()->data;  // TODO: Check this function.
+  foreach ($products as $key => $value) {
+    if (!empty($key)) {
+      $categories[] = $key;
+    }
+  }
+  asort($categories);
+  $product_families[0] = t('-- Select --');
+  $product_families += drupal_map_assoc($categories);
+  return $product_families;
+}
+
+/**
+ * @param $form
+ * @param $form_state
+ * @return mixed
+ */
+function fnet_ma_product_model_callback($form, &$form_state) {
+  return $form['product_models'];
+}
+
+/**
+ * @param $form
+ * @param $form_state
+ * @return mixed
+ */
+function fnet_ma_country_state_callback($form, &$form_state) {
+  return $form['strRegionCode'];
+}
+
+/**
+ * Evaluates a given date for validity.
+ * 
+ * @param string $product_purchase_date
+ * @param int $text_box_number
+ * @return int
+ */
+function fnet_ma_evaluate_valid_dates($product_purchase_date = '', $text_box_number = -1) {
+  $error_status = 0;
+  $todays_date = $_SERVER['REQUEST_TIME'];
+  $product_purchase_date = strtotime($product_purchase_date);
+  if ($todays_date < $product_purchase_date) {
+    $error_status = $text_box_number;
+  }
+  return $error_status;
+}
+
+
+/**
+ * Function for displaying registered products
+ *
+ * @param string $listing_displayed_on
+ * @return array|string
+ */
+function fnet_ma_display_registered_products($listing_displayed_on = '') {
+  global $user;
+  drupal_add_js(drupal_get_path('module', 'fnet_ma') . '/js/fnet_ma_helper.js');
+
+  $registered_product_list_display_page = $listing_displayed_on;
+  $doc = fnet_sfdc_get_registered_products($user->mail);
+  $total_registered_product = count($doc->NewDataSet->Table);
+  $registered_product_list = array();
+  // Debugging
+  if (module_exists('devel')) {
+    dpm($doc);
+    dpm($total_registered_product);
+  }
+  if ($total_registered_product) {
+    fnet_sfdc_insert_contact_on_product_registration($user->mail, $user);
+    // Get the list of all products configured in LMS.
+    $lms_product_ID_array = fnet_ma_fetch_LMS_product_ids();
+    $count = 1;
+    foreach ($doc->NewDataSet->Table as $key => $values) {
+      $registered_product_list[trim($values->iProductId)]['iProductId'] = check_plain(trim($values->iProductId));
+      $registered_product_list[trim($values->iProductId)]['chProductNumber'] = check_plain(trim($values->chProductNumber));
+      $registered_product_list[trim($values->iProductId)]['vchSerialNumber'] = check_plain(trim($values->vchSerialNumber));
+      $date = explode('T', check_plain(trim($values->dtPurchaseDate)));
+      $date_new = explode('-', check_plain(trim($date[0])));
+
+      $registered_product_list[trim($values->iProductId)]['dtPurchaseDate'] = $date_new[2] . '-' . $date_new[1] . '-' . $date_new[0];
+      if (count($lms_product_ID_array) != 0) {
+        if (in_array($values->chProductNumber, $lms_product_ID_array)) {
+          $query = array(
+            'step' => 'four',
+            'POPcode' => '',
+            'ocp' => $values->iProductId,
+            'serialNumber' => $values->vchSerialNumber,
+            'model-number' => $values->chProductNumber,
+          );
+          $actual_link = "myaccount/activate-product";
+          $activate_an_option_link = l('Options', $actual_link, $options = array('query' => $query));
+          $registered_product_list[trim($values->iProductId)]['product_purchase_options_links'] = $activate_an_option_link;
+        }
+      }
+      if (!isset($registered_product_list[trim($values->iProductId)]['product_purchase_options_links'])) {
+        $registered_product_list[trim($values->iProductId)]['product_purchase_options_links'] = '';
+      }
+      $one_touch_product_numbers = array(
+        'wb1TAT001',
+        'wb1TAT002',
+        'wb1TAT003',
+        'wb1TAT004',
+        'wb1TAT005',
+        'wb1TAT006',
+        'wb1TS001',
+      );
+      $special_registration_code = '';
+      if (check_plain(trim($values->chProductNumber)) == 'wbES001') {
+        $special_registration_code = '<br /><span class = "red-text">' . t("Registration Code: 965w35") . "</span>";
+      }
+      elseif (in_array(check_plain(trim($values->chProductNumber)), $one_touch_product_numbers)) {
+        $special_registration_code = '<br /><span class = "red-text">' . t("Registration Code: 4487302238822187") . "</span>";
+      }
+      elseif (check_plain(trim($values->chProductNumber)) == 'wbOPV-Options008') {
+        $special_registration_code = '<br /><span class = "red-text">' . t("Registration Code: 4487302238822187") . "</span>";
+      }
+      $registered_product_list[trim($values->iProductId)]['vchDescription'] = l(trim($values->vchDescription), "myaccount/view-registered-product/" . check_plain(trim($values->iProductId))) . $special_registration_code;
+      $registered_product_list[trim($values->iProductId)]['iHierarchyId'] = check_plain(trim($values->iHierarchyId));
+      $registered_product_list[trim($values->iProductId)]['vchHierarchyDesc'] = check_plain(trim($values->vchHierarchyDesc));
+      $registered_product_list[trim($values->iProductId)]['iIncidentCount'] = check_plain(trim($values->iIncidentCount));
+      $support_incident_url = 'myaccount/product-support-incidents/' . $values->iProductId;
+      $registered_product_list[trim($values->iProductId)]['product_support_incident_url'] = l('Submit a support incident.', $support_incident_url);
+      $values->iIncidentCount = count(fnet_sfdc_get_support_incidents($user->mail, 120, $values->iProductId, $open_only = TRUE));
+      $registered_product_list[trim($values->iProductId)]['product_support_incident_count_url'] = l(trim($values->iIncidentCount) . ' Active Support Incidents ', 'myaccount/all-support-incidents/365/' . $values->iProductId);
+      if ($registered_product_list_display_page == 'my_account_summary_page' && $count == 5) {
+        break;
+      }
+      $count++;
+    }
+  }
+  if ($registered_product_list_display_page == 'gold_type_popcode_flow') {
+    return $registered_product_list;
+  }
+  elseif ($registered_product_list_display_page == 'my_account_summary_page') {
+    $html = theme("tabular_registered_products_listing", array('registered_product_list' => $registered_product_list));
+  }
+  else {
+    $html = theme("registered_products_listing", array('registered_product_list' => $registered_product_list));
+  }
+  return $html;
+}
+
+/**
+ * The section related to - "Register a Product" ends here.
+ */
+
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function fnet_ma_display_accessing_your_gold_benefits_page() {
+  $html_content = '';
+  // Fetch the title and the content of the page that displays the information about - "Accessing your Gold Benefits"
+  $node_id = variable_get('fn_myaccount_accessing_your_gold_benefits', '');
+  if (trim($node_id) != '') {
+    $node = node_load($node_id);
+    $html_content .= '<div class="my-account-headlines">' . $node->title . '</div>';
+    $html_content .= check_markup($node->body[LANGUAGE_NONE][0]['value'], $node->body[LANGUAGE_NONE][0]['format']);
+  }
+  return $html_content;
+}
+
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function fnet_ma_display_analysis_service_element_page() {
+  $html_content = '';
+  // Fetch the title and the content of the page that displays the information about - "Analysis Service Element (ASE)"
+  $node_id = variable_get('fn_myaccount_analysis_service_element', '');
+  if (trim($node_id) != '') {
+    $node = node_load($node_id);
+    $html_content .= '<div class="my-account-headlines">' . $node->title . '</div>';
+    $html_content .= check_markup($node->body[LANGUAGE_NONE][0]['value'], $node->body[LANGUAGE_NONE][0]['format']);
+  }
+  return $html_content;
+}
+
+/**
+ * Returns the Gold Contact Numbers page
+ * 
+ * @return string
+ */
+function fnet_ma_display_gold_support_contact_numbers_page() {
+  $html_content = '';
+  // Fetch the title and the content of the page that displays the information about - "Gold Support Contact Numbers"
+  $node_id = variable_get('fn_myaccount_gold_support_contact_numbers', '');
+  if (trim($node_id) != '') {
+    $node = node_load($node_id);
+    $html_content .= '<div class="my-account-headlines">' . $node->title . '</div>';
+    $html_content .= check_markup($node->body[LANGUAGE_NONE][0]['value'], $node->body[LANGUAGE_NONE][0]['format']);
+  }
+  return $html_content;
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function fnet_ma_block_info() {
+  $block['navigation']['info'] = t('My Account Navigation Links Block.');
+  return $block;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function fnet_ma_block_view($delta) {
+  switch ($delta) {
+    case 'navigation':
+      $block['subject'] = t('');
+      $block['content'] = theme("my_account_navigation_links_block");
+      break;
+  }
+  return $block;
+}
+
+/**
+ * This section is related to - "Support Incidents" on Fluke Networks.
+ * Section starts from here and this code set is triggered on the URL - "'myaccount/all-support-incidents'"
+ */
+
+/**
+ * Function to load registered product data.
+ *
+ * @param string $flag
+ * @return array
+ */
+function fnet_ma_load_registered_products($flag = '') {
+  $fetch_flag = $flag;
+  global $user;
+  $doc = fnet_sfdc_get_registered_products($user->mail);
+  $total_registered_product = count($doc->NewDataSet->Table);
+
+  if ($total_registered_product) {
+    $registered_product_list = array();
+    foreach ($doc->NewDataSet->Table as $key => $values) {
+      $purchaseDate = trim($values->dtPurchaseDate);
+      $purchaseDate = explode('T', $purchaseDate);
+      if ($fetch_flag != 'name only') {
+        $registered_product_list[trim($values->iProductId)] = htmlspecialchars_decode(check_plain(trim($values->vchDescription)) . t(' with Product Serial No: ') . '#' . trim($values->vchSerialNumber) . t(', Purchase Date: ') . $purchaseDate[0]);
+      }
+      else {
+        $registered_product_list[trim($values->iProductId)] = check_plain(trim($values->vchDescription));
+      }
+
+    }
+  }
+  else {
+    $registered_product_list = array();
+  }
+
+  return $registered_product_list;
+}
+
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function fnet_ma_support_incident_search_form($form, &$form_state) {
+  $days = $_REQUEST['days'];
+  $form['number_days_passed'] = array(
+    '#title' => t('Search past days'),
+    '#type' => 'select',
+    '#options' => array(
+      30 => 30,
+      60 => 60,
+      90 => 90,
+      120 => 120,
+      1000 => 'ALL',
+    ),
+    '#required' => TRUE,
+    '#default_value' => ($days) ? $days : 30,
+    '#ajax' => array('trigger_as' => array('name' => 'submit')),
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#weight' => 50,
+    '#value' => t('Search'),
+    '#access' => TRUE,
+    '#attributes' => array('class' => array('customfn-buttons')),
+  );
+  return $form;
+}
+
+/**
+ * @param $form
+ * @param $form_state
+ */
+function fnet_ma_support_incident_search_form_submit($form, &$form_state) {
+  $days = $form_state['values']['number_days_passed'];
+  $path = $_GET['q'];
+  $form_state['rebuild'] = TRUE;
+  drupal_goto($path, array('query' => array('days' => $days)));
+}
+
+/**
+ * @return array
+ */
+function fnet_ma_fetch_support_incidents($days_history = 30, $asset_id = NULL, $open_only = FALSE) {
+  global $user;
+  $support_incidents = fnet_sfdc_get_support_incidents($user->mail, $days_history, $asset_id, $open_only);
+  // this is a hack until I get a better asset description from sfdc
+  foreach ($support_incidents as $case_number => &$support_incident) {
+    $product_details = fnet_ma_load_product_details($support_incident['asset_id']);
+    $support_incident['vchProductDesc'] = $product_details['vchDescription'];
+  }
+  return $support_incidents;
+}
+
+/**
+ * @param array $form_state
+ * @param string $operation
+ */
+function fnet_ma_report_product_incidents($form_state = array(), $operation = '') {
+  $form_values = $form_state['values'];
+  global $user;
+  if ($operation == 'insert') {
+    $result = fnet_sfdc_insert_support_incident($form_values);
+    if ($result) {
+      drupal_set_message(t("Support incident posted successfully for the product - '@product_name'. (Support Incident ID - @support_incident_id ).", array(
+        '@support_incident_id' => $result,
+        '@product_name' => htmlspecialchars_decode($form_values['complete_product_array'][$form_values['product_numbers']]),
+      )));
+      drupal_goto('myaccount/support-incident-success', array(), 301);
+    }
+  }
+  elseif ($operation == 'update') {
+    $result = fnet_sfdc_update_support_incident($form_values['support_incident_ID'], $form_values);
+    if ($result) {
+      drupal_set_message(t('Support incident updated successfully.'));
+      drupal_goto('myaccount/support-incident-success', array(), 301);
+    }
+  }
+  drupal_set_message('There was an error updating this support incident. Please try again later.', 'error');
+  return;
+}
+
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ * @param string $asset_id
+ * @return array
+ */
+function fnet_ma_load_product_details($asset_id = '') {
+  global $user;
+
+  $gold_number = fnet_common_get_field_value('user', $user, 'field_user_gold_number');
+  $gold_pin = fnet_common_get_field_value('user', $user, 'field_user_gold_pin');
+  $doc = fnet_sfdc_get_registered_product_detail($user->mail, $asset_id, $gold_number, $gold_pin);
+
+  $product_detail_array = array();
+  $product_detail_array['chProductNumber'] = trim($doc->NewDataSet->Table->chProductNumber);
+  $product_detail_array['vchSerialNumber'] = trim($doc->NewDataSet->Table->vchSerialNumber);
+  $product_detail_array['vchSecondaryId'] = trim($doc->NewDataSet->Table->vchSecondaryId);
+  $product_detail_array['vchDescription'] = trim($doc->NewDataSet->Table->vchDescription);
+  $product_detail_array['isGoldProduct'] = trim($doc->NewDataSet->Table->isGoldProduct);
+
+  return $product_detail_array;
+}
+
+/**
+ * This section is related to - "Activate a Product/Option" on Fluke Networks.
+ * Section starts from here and this code set is triggered on the URL - "'myaccount/activate-product'"
+ */
+
+/**
+ * @param $asset_id
+ * @return array
+ */
+function fnet_ma_get_asset_details($asset_id) {
+  $status_with_results = array();
+  global $user;
+
+  $gold_number = fnet_common_get_field_value('user', $user, 'field_user_gold_number');
+  $gold_pin = fnet_common_get_field_value('user', $user, 'field_user_gold_pin');
+  $doc = fnet_sfdc_get_registered_product_detail($user->mail, $asset_id, $gold_number, $gold_pin);
+  if (check_plain($doc->NewDataSet->Table->chProductNumber) != '') {
+    $status_with_results['status'] = 'success';
+    $status_with_results['message'] = $doc->NewDataSet->Table;
+    return $status_with_results;
+  }
+  else {
+    $status_with_results['status'] = 'error';
+    $status_with_results['message'] = variable_get('myaccount_webservices_failure_notification_message', t('Our apologies. Your request is not currently available. A notification has been delivered to our web team to correct. If you need immediate assistance please call us at +1 425 446-4519.'));
+    return $status_with_results;
+  }
+}
+
+/**
+ * This function sends the Product Registration email to the user.
+ */
+function fnet_ma_send_product_registration_email_to_user() {
+  global $user;
+  //The Mail ID for this email is - fnet_ma_product_registration_success_email
+  $mail_id = 'flukenetworks_myaccount_product_registration_success_email';
+  $mail_to_address = check_plain($user->mail);
+  $localized_message = localized_email_message($mail_id, $tokens = array());
+  if ($localized_message) {
+    $message = array(
+      'to' => $mail_to_address,
+      'from' => $localized_message['Sender'],
+      'subject' => $localized_message['subject'],
+      'body' => $localized_message['body'],
+      'headers' => $localized_message['headers'],
+    );
+    fnet_helper_mail_send($message);
+  }
+}
+
+/**
+ * @param array $form_values
+ * @return bool
+ */
+function fnet_ma_send_pop_code_emails($form_values = array()) {
+  global $user;
+  $user_submitted_form_values = $form_values;
+  if (count($user_submitted_form_values) == 0) {
+    return FALSE;
+  }
+
+  $ProductCode = check_plain(trim($user_submitted_form_values['hidden_gold_type_product_group_code']));
+
+  if ($ProductCode == trim(check_plain(variable_get('fnet_ma_dtx_product_code', '0003')))) {
+    $product_group_type = '_related_to_dtx_products';
+  }
+  elseif ($ProductCode == trim(check_plain(variable_get('fnet_ma_dsx_product_code', '0004')))) {
+    $product_group_type = '_related_to_dsx_products';
+  }
+  else {
+    $product_group_type = '0';
+  }
+
+  if ($product_group_type) {
+    // If the Country selected by the user is United States
+    if ($user_submitted_form_values['strCountryCode'] == 'us') {
+      /**
+       * The Mail ID for this email is either -
+       *
+       *  "promotional_email_for_us_user_related_to_dtx_products"
+       *                                   OR
+       *  "promotional_email_for_us_user_related_to_dsx_products".
+       */
+      $mail_id = "promotional_email_for_us_user" . $product_group_type;
+      $mail_to_address = check_plain($user_submitted_form_values['strOrigEmail']);
+      //fnet_ma_send_localized_email_message($mail_id, $mail_to_address);
+    }
+    // If the Country selected by the user is NOT United States but any other country in that drop down and off course NOT Japan.
+    elseif ($user_submitted_form_values['strCountryCode'] != 'jp') {
+      /**
+       * The Mail ID for this email is either -
+       *
+       *  "promotional_email_for_non_us_user_related_to_dtx_products"
+       *                                   OR
+       *  "promotional_email_for_non_us_user_related_to_dsx_products".
+       */
+      $mail_id = "promotional_email_for_non_us_user" . $product_group_type;
+      $mail_to_address = check_plain($user_submitted_form_values['strOrigEmail']);
+      //fnet_ma_send_localized_email_message($mail_id, $mail_to_address);
+    }
+  }
+
+  if ($user_submitted_form_values['strCountryCode'] == 'jp') {
+    // If the user has selected Japan as the country then send the notification email to the same NON US admin but NO emails send to that user.
+    $email_ID_gold_contract_admin = variable_get('fnet_ma_gold_contract_admin_in_JAPAN', '');
+  }
+  elseif ($user_submitted_form_values['strCountryCode'] == 'us') {
+    $email_ID_gold_contract_admin = variable_get('fnet_ma_gold_contract_admin_in_US', '');
+  }
+  else {
+    $email_ID_gold_contract_admin = variable_get('fnet_ma_gold_contract_admin_in_INT', '');
+  }
+
+  // Email Content Add up to Gold Contract Admin's Notification Email -
+  $user_details_string = "";
+  $user_details_string .= "<br />";
+  $user_details_string .= '<u><b>' . t("CONTACT INFORMATION FROM GOLD FORM") . "</b></u><br />";
+  $user_details_string .= '<b>' . t("Purchased Date: ") . '</b>' . check_plain($user_submitted_form_values['strPurchaseDate']) . "<br />";
+  $user_details_string .= '<b>' . t("Name: ") . '</b>' . check_plain($user_submitted_form_values['strFirstName']) . ' ' . check_plain($user_submitted_form_values['strLastName']) . "<br />";
+  $user_details_string .= '<b>' . t("Email: ") . '</b>' . check_plain($user_submitted_form_values['strOrigEmail']) . "<br />";
+  $user_details_string .= '<b>' . t("Phone: ") . '</b>' . check_plain($user_submitted_form_values['strPhone']) . "<br />";
+
+  // Include the main module file of Addresses module.
+  module_load_include('inc', 'addresses');
+  $country_array = _addresses_country_get($available = array(), $top_countries = array(), $upper = FALSE);
+  $country_name = '';
+  if ($country_array[check_plain($user_submitted_form_values['strCountryCode'])] != '') {
+    $country_name = $country_array[trim(check_plain($user_submitted_form_values['strCountryCode']))];
+  }
+  $user_details_string .= '<b>' . t("Country: ") . '</b>' . $country_name . "<br />";
+
+  $states_within_a_country_array = _addresses_province_get(trim(check_plain($user_submitted_form_values['strCountryCode'])));
+  $state_name = '';
+  if ($states_within_a_country_array[trim(check_plain($user_submitted_form_values['strRegionCode']))]) {
+    $state_name = $states_within_a_country_array[trim(check_plain($user_submitted_form_values['strRegionCode']))];
+  }
+  $user_details_string .= '<b>' . t("State: ") . '</b>' . $state_name . "<br />";
+  $user_details_string .= '<b>' . t("Company Name: ") . '</b>' . check_plain($user_submitted_form_values['strCompanyName']) . "<br />";
+  $user_details_string .= '<b>' . t("Address: ") . '</b>' . check_plain($user_submitted_form_values['strAdd1']) . "<br />";
+  $user_details_string .= '<b>' . t("City: ") . '</b>' . check_plain($user_submitted_form_values['strCityName']) . "<br />";
+  $user_details_string .= '<b>' . t("Zip: ") . '</b>' . check_plain($user_submitted_form_values['strPostalCode']) . "<br /><br /><br />";
+  $user_details_string .= '<b>' . t("Keycode: ") . '</b>' . check_plain($user_submitted_form_values['hidden_gold_type_proof_of_purchase_code']) . "<br /><br /><br />";
+
+  $user_details_string .= '<u><b>' . t("CONTACT INFORMATION FROM USER'S PROFILE") . "</b></u><br />";
+  $user_details_string .= '<b>' . t("Requested By:") . "</b><br />";
+  $user_details_string .= '<b>' . t("Name: ") . '</b>' . trim(check_plain($user->field_user_first_name[0]['value'])) . ' ' . trim(check_plain($user->field_user_last_name[0]['value'])) . "<br />";
+  $user_details_string .= '<b>' . t("Email: ") . '</b>' . trim(check_plain($user->mail)) . "<br />";
+
+  $subject_of_email_sent_to_gold_contract_admin = variable_get('fnet_ma_gold_type_pop_code_email_subject_for_admin', 'Fluke Networks: Gold Contract Activation Request - Country:') . $country_name;
+  $content_of_email_sent_to_gold_contract_admin = variable_get('fnet_ma_gold_type_pop_code_email_content_for_admin', t('A Gold Pop Code request has been received from the web. Please process this request from the LMS System.')) . $user_details_string;
+  // Build the default headers
+  $headers = array(
+    'MIME-Version' => '1.0',
+    'Content-Type' => 'text/html;charset=utf-8',
+    'Content-Transfer-Encoding' => '8Bit',
+    'X-Mailer' => 'Drupal',
+  );
+  $default_from = variable_get('fc_contract_alter_from_emailid', variable_get('site_mail', ini_get('sendmail_from')));
+  $headers['From'] = $headers['Sender'] = $headers['Return-Path'] = $headers['Errors-To'] = $default_from;
+  $message_admin = array(
+    'to' => $email_ID_gold_contract_admin,
+    'from' => $default_from,
+    'subject' => $subject_of_email_sent_to_gold_contract_admin,
+    'body' => $content_of_email_sent_to_gold_contract_admin,
+    'headers' => $headers,
+  );
+  fnet_helper_mail_send($message_admin);
+  return TRUE;
+}
+
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function fnet_ma_fetch_previously_enabled_options($product_name = '', $serial_number = '', $page_to_display = '', $model_no = '') {
+  global $user;
+  $profile_content_type = variable_get('profile_content_type', 'profile');
+  $individual_id = check_plain(fnet_common_get_field_value('user', $user, 'field_user_onyx_id'));
+
+  if (check_plain(trim($model_no)) != '') {
+    $model_number = check_plain(trim($model_no));
+  }
+  else {
+    $model_number = check_plain(trim($_GET['model-number']));
+  }
+
+  if (check_plain(trim($serial_number)) != '') {
+    $serialNumber = check_plain(trim($serial_number));
+  }
+  else {
+    $serialNumber = check_plain(trim($_GET['serialNumber']));
+  }
+
+  $html = '';
+  if ($page_to_display != 'product_detail_page') {
+    $html .= '<br /><b>' . t("Previously Enabled Options") . '</b><br /><hr>';
+    $activation_date_column_header = t('Activation <br />Date');
+  }
+  else {
+    $activation_date_column_header = t('Activation Date');
+  }
+
+  $html .= "<table class='all_contracts_listing_table full-available-width' border='0' cellspacing='0' cellpadding='5'>
+              <tr class='border-bottom-1px'>
+                <td class='tableHead-only-border-bottom'  valign='top' width = '30%'>" . t('Options Enabled') . "
+                </td>
+                <td class='tableHead-only-border-bottom'  valign='top' width = '40%'>" . t('Key Code') . "
+                </td>
+                <td class='tableHead-only-border-bottom'  valign='top' width = '20%'>" . $activation_date_column_header . "
+                </td>
+                <td class='tableHead-only-border-bottom'  valign='top' width = '10%'>" . t('Print') . "
+                </td>
+              </tr>
+            </table>";
+  if ($individual_id != '' && $model_number != '' && $serialNumber != '') {
+    $fetch_already_enabled_options = fnet_ma_get_enabled_options_for_product($individual_id, $model_number, $serialNumber, 'generic');
+    if ($fetch_already_enabled_options['-1'] == 'webservice_exception_error') {
+      $html .= '<span class = "red-text">' . variable_get('myaccount_webservices_failure_notification_message', t('Our apologies. Your request is not currently available. A notification has been delivered to our web team to correct. If you need immediate assistance please call us at +1 425 446-4519.')) . "</span>";
+    }
+    elseif (count($fetch_already_enabled_options) && ($fetch_already_enabled_options['-1'] != 'webservice_exception_error')) {
+      if ($fetch_already_enabled_options['status'] == 'fetched_valid_enabled_options') {
+        $html .= "<table class = 'all_contracts_listing_table' class = 'full-available-width' border='0' cellspacing='0' cellpadding='5''>";
+        $key_code_printing_URL = 'myaccount/print-keycode';
+        $array_element_count = 1;
+        foreach ($fetch_already_enabled_options['EnabledOptions_array'] as $keys => $values) {
+          if ($array_element_count % 2 == 0) {
+            $class = 'class="trAlternate"';
+          }
+          else {
+            $class = '';
+          }
+          $html .= "<tr " . $class . ">
+                      <td valign='top' width = '30%' class='actual_values'>" . $values['OptionCodeName'] . "
+                      </td>
+                      <td valign='top' width = '40%' class='actual_values'>" . $values['keycode'] . "
+                      </td>
+                      <td valign='top' width = '20%' class='actual_values'>" . $values['dtInsertDateTime'] . "
+                      </td>
+                      <td valign='top' width = '10%' class='actual_values'>" . l('<div class = "myaccount-print-button">&nbsp;</div>', $key_code_printing_URL, array(
+              'attributes' => array("target" => "_blank"),
+              'html' => TRUE,
+              'query' => 'enabled-options=' . urlencode($values['OptionCodeName']) . '&activation-date=' . urlencode($values['dtInsertDateTime']) . '&key-code=' . urlencode($values['keycode']) . '&product-name=' . urlencode(check_plain($product_name)) . '&serialnumber=' . urlencode(check_plain($serial_number)),
+            )) . "
+                      </td>
+                    </tr>";
+          $array_element_count++;
+        }
+        $html .= "</table>";
+      }
+    }
+    else {
+      $html .= '<table class = "all_contracts_listing_table" width="100%" border="0" cellspacing="0" cellpadding="5">
+                  <tr>
+                    <td valign="top" colspan="3">' . t('No records found.') . '
+                    </td>
+                  </tr>
+                </table>';
+    }
+  }
+  else {
+    $html .= '<table class = "all_contracts_listing_table" width="100%" border="0" cellspacing="0" cellpadding="5">
+              <tr>
+                <td valign="top" colspan="3">' . t('No records found.') . '
+                </td>
+              </tr>
+            </table>';
+  }
+  return $html;
+}
+
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function fnet_ma_get_enabled_options_for_product($individualid = '', $model_number = '', $serialNumber = '', $flag = '') {
+  $current_form_array = $_REQUEST;
+  if ($individualid == '' || $model_number == '' || $serialNumber == '') {
+    return array();
+  }
+  else {
+    $domain_url = trim(variable_get("myaccount_webservices_domain_name", 'http://services.test.intranet.danahertm.com'));
+    $url = $domain_url . "/ActivateOptions/ActivateOptions.svc?wsdl";
+    try {
+      $soap_options = array('connection_timeout' => variable_get('myaccount_soap_connection_timeout', 20));
+      $client = @new soapclient($url, $soap_options);
+      $my_result = $client->GetEnabledOptionsForProduct(array(
+        'individualId' => $individualid,
+        'productNumber' => $model_number,
+        'serialNumber' => $serialNumber,
+      ));
+      $tidy_options = array(
+        'input-xml' => TRUE,
+        'output-xml' => TRUE,
+        'indent' => TRUE,
+        'wrap' => TRUE,
+        "char-encoding" => TRUE,
+        "wrap" => 0,
+      );
+      $tidy = new tidy();
+      $tidy->parseString($my_result->GetEnabledOptionsForProductResult->any, $tidy_options);
+      $tidy->cleanRepair();
+      $xml_string = $tidy;
+      $doc = simplexml_load_string($xml_string->value);
+      if (check_plain(trim($doc->EnabledOptions->EnabledOptions->keycode)) != '') {
+        $status_with_results['status'] = 'fetched_valid_enabled_options';
+        $count_flag = 0;
+        foreach ($doc->EnabledOptions->EnabledOptions as $keys => $values) {
+          if ($flag == 'generic') {
+            $status_with_results['EnabledOptions_array'][$count_flag]['keycode'] = check_plain(trim($values->keycode));
+            $status_with_results['EnabledOptions_array'][$count_flag]['OptionCodeName'] = check_plain(trim($values->OptionCodeName));
+            $insert_date_time = check_plain(trim($values->dtInsertDateTime));
+            $insert_date_time = explode("T", $insert_date_time);
+            $insert_date_time = explode("-", $insert_date_time[0]);
+            $final_insert_date_time_value = $insert_date_time[1] . '/' . $insert_date_time[2] . '/' . $insert_date_time[0];
+            $status_with_results['EnabledOptions_array'][$count_flag]['dtInsertDateTime'] = $final_insert_date_time_value;
+            $count_flag++;
+          }
+          elseif ($flag == 'specific') {
+            $keycode_one = check_plain(trim($values->keycode));
+            $keycode_two = str_replace("-", "", trim(check_plain($current_form_array['CDKey'])));
+            if ($keycode_one == $keycode_two) {
+              $status_with_results['OptionCodeName'] = check_plain(trim($values->OptionCodeName));
+              $insert_date_time = check_plain(trim($values->dtInsertDateTime));
+              $insert_date_time = explode("T", $insert_date_time);
+              $insert_date_time = explode("-", $insert_date_time[0]);
+              $final_insert_date_time_value = $insert_date_time[1] . '/' . $insert_date_time[2] . '/' . $insert_date_time[0];
+              $status_with_results['dtInsertDateTime'] = $final_insert_date_time_value;
+              return $status_with_results;
+            }
+          }
+        }
+        return $status_with_results;
+      }
+      else {
+        return array();
+      }
+    } catch (Exception $e) {
+      fnet_ma_save_errors_to_watch_dog_and_email_to_admin($url, 'The issue occurred when the web service was trying to fetch already enabled Options/Keycodes for a logged in user and the reason is as follows: ' . $e->getMessage());
+      return array('-1' => 'webservice_exception_error');
+    }
+  }
+}
+
+/**
+ * Function to generate "chProductnumber" based upon the Onyx ID of the user and the OCP id of product that was just registered.
+ * @param string $asset_id
+ * @return array
+ */
+function fnet_ma_get_product_number_for_asset($asset_id = '') {
+  global $user;
+  $gold_number = fnet_common_get_field_value('user', $user, 'field_user_gold_number');
+  $gold_pin = fnet_common_get_field_value('user', $user, 'field_user_gold_pin');
+  $doc = fnet_sfdc_get_registered_product_detail($user->mail, $asset_id, $gold_number, $gold_pin);
+  if (!empty($doc->NewDataSet->Table->chProductNumber)) {
+    return $doc->NewDataSet->Table->chProductNumber;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * This function will fetch the Product Models based on parameters supplied.
+ */
+function fnet_ma_fetch_product_model($productCodeField = '', $proof_of_purchase_code = '') {
+  $status_with_results = array();
+  $POP_code = trim(str_replace('-', '', $proof_of_purchase_code));
+  if ($productCodeField == '' || $proof_of_purchase_code == '') {
+    $status_with_results['status'] = 'required_parameters_not_supplied';
+    return $status_with_results;
+  }
+
+  $domain_url = trim(variable_get("myaccount_webservices_domain_name", 'http://services.test.intranet.danahertm.com'));
+  $url = $domain_url . "/ActivateOptions/ActivateOptions.svc?wsdl";
+
+  try {
+    $soap_options = array('connection_timeout' => variable_get('myaccount_soap_connection_timeout', 20));
+    $client = @new soapclient($url, $soap_options);
+    //$client->__setLocation($domain_url ."/ActivateOptions/ActivateOptions.svc/MyAccountSoap");
+    $my_result = $client->getModels(array(
+      'productcode' => $productCodeField,
+      'popcode' => $POP_code
+    ));
+    $tidy_options = array(
+      'input-xml' => TRUE,
+      'output-xml' => TRUE,
+      'indent' => TRUE,
+      'wrap' => TRUE,
+      "char-encoding" => TRUE,
+      "wrap" => 0,
+    );
+    $tidy = new tidy();
+    $tidy->parseString($my_result->getModelsResult->any, $tidy_options);
+    $tidy->cleanRepair();
+    $xml_string = $tidy;
+    $doc = simplexml_load_string($xml_string->value);
+    $product_model_array = array();
+    if (count($doc->modDetails->OnyxInfo)) {
+      foreach ($doc->modDetails->OnyxInfo as $keys => $values) {
+        $product_model_array[trim($values->chproductnumber)] = trim($values->vchDescription);
+      }
+      return $product_model_array;
+    }
+    else {
+      return array();
+    }
+  } catch (Exception $e) {
+    fnet_ma_save_errors_to_watch_dog_and_email_to_admin($url, 'The issue occurred when the web service was trying to fetch Product Models for a logged in user and the reason is as follows: ' . $e->getMessage());
+    $product_model_array['-1'] = 'webservice_exception_error';
+    return $product_model_array;
+  }
+
+}
+
+/**
+ * This section related to - Activate a Product/Option" on Fluke Networks ends here.
+ */
+
+function fnet_ma_check_profile() {
+  global $user;
+  $needs_update = FALSE;
+  $fields = array(
+    'field_user_first_name',
+    'field_user_last_name',
+    'field_user_company',
+    'field_user_phone',
+    'field_user_address_line_1',
+    'field_user_city',
+    'field_user_province',
+    'field_user_country',
+    'field_user_postal_code',
+    'field_user_job_role',
+  );
+  foreach ($fields as $field) {
+    $value = fnet_common_get_field_value('user', $user, $field);
+    if (($field == 'field_user_job_role') && (($value == 'none') || ($value == 'Not Applicable'))) {
+      $value = '';
+      $user->field_user_job_role[LANGUAGE_NONE][0]['value'] = $value;
+      user_save($user);
+    }
+    if (empty($value)) {
+      $needs_update = TRUE;
+    }
+  }
+  if ($needs_update) {
+    drupal_set_message('New fields have been added. Please update your ' . l('profile.', "/myaccount/$user->uid/edit/profile"));
+  }
+}

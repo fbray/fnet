@@ -1,0 +1,7 @@
+; $Id$
+core = 7.x
+description = "Create email templates for system emails in multiple languages."
+name = "Localized email"
+package = "Fluke Networks"
+project = "localized_email"
+version = "7.x-1.0"

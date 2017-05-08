@@ -1,0 +1,6 @@
+name = FNET Common
+description = A collection of common/utility functions (getting/setting Field values, etc)
+core = 7.x
+version = 7.x
+package = "Fluke Networks"
+

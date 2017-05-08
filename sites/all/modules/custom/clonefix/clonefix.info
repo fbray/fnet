@@ -1,0 +1,5 @@
+; $Id $
+name = Clonefix
+package = Fluke Networks
+description = "A quick fix to prevent cloned nodes from being published by default"
+core = 7.x

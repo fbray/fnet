@@ -1,0 +1,105 @@
+<?php
+/**
+ * @file
+ * Drupal install file for fnet_header_footer.module
+ *
+ */
+
+/**
+ * Implements hook_enable().
+().
+ */
+function fnet_header_footer_enable() {
+
+}
+
+/**
+ * Implements hook_disable().
+().
+ */
+function fnet_header_footer_disable() {
+
+}
+
+/**
+ * Implements hook_uninstall().
+().
+ */
+function fnet_header_footer_uninstall() {
+  // drupal_uninstall_schema('fnet_header_footer')
+  variable_del('fnet_header_footer_branded_display_node_types');
+}
+
+/**
+ * Implements hook_install().
+().
+ */
+function fnet_header_footer_install() {
+
+}
+
+/**
+ * Implements hook_schema
+().
+ */
+function fnet_header_footer_schema() {
+  $schema['fnet_header_footer'] = array(
+    'description' => 'Node Header and Footer Branded Display',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'node id',
+        'type' => 'int',
+        'unsigned' => true,
+        'not null' => true,
+      ),
+      'branded_display' => array(
+        'description' => 'branded display name',
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => true,
+      )
+    ),
+    'primary key' => array('nid'),
+  );
+  return $schema;
+}
+
+
+/**
+ * Create fnet_header_footer table
+ */
+function fnet_header_footer_update_7000() {
+  $schema['fnet_header_footer'] = array(
+    'description' => 'Node Header and Footer Branded Display',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'node id',
+        'type' => 'int',
+        'unsigned' => true,
+        'not null' => true,
+      ),
+      'branded_display' => array(
+        'description' => 'branded display name',
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => true,
+      )
+    ),
+    'primary key' => array('nid'),
+  );
+  db_create_table('fnet_header_footer', $schema['fnet_header_footer']);
+}
+
+/**
+ * Migrate data from field_data_field_removenav to fnet_header_footer
+ */
+function fnet_header_footer_update_7200() {
+  $results = db_query('SELECT bundle, entity_id FROM {field_data_field_removenav} WHERE field_removenav_value = 1', array());
+  $record = new stdClass();
+  foreach ($results as $row) {
+    $record->nid = $row->entity_id;
+    $record->branded_display = 'blank';
+    if ($row->bundle == 'marketo_form') $record->branded_display = 'fnet_no_navi';
+    drupal_write_record('fnet_header_footer', $record);
+  }
+}

@@ -1,0 +1,9 @@
+; $Id$
+name = FNET REST Service
+package = Fluke Networks
+description = Provides REST web service fnet data
+dependencies[] = fnet_bedrock
+version = 7.x.1.0
+core = 7.x
+
+files[] = fnet_rest_service.module

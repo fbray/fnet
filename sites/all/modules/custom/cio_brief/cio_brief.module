@@ -1,0 +1,111 @@
+<?php
+// $Id$
+/**
+ * @file
+ * Code for the CIO Brief feature.
+ */
+
+include_once 'cio_brief.features.inc';
+
+/**
+ * Implements hook_theme().
+ */
+function cio_brief_theme($existing, $type, $theme, $path) {
+  $hooks = array();
+  $hooks['cio_brief_resources'] = array(
+    'template' => 'theme/resources',
+    'variables' => array(),
+  );
+  $hooks['cio_brief_subscribe'] = array(
+    'template' => 'theme/subscribe',
+    'variables' => array(),
+  );
+  $hooks['cio_brief_subscribe_landscape'] = array(
+    'template' => 'theme/subscribe_landscape',
+    'variables' => array(),
+  );
+  $hooks['cio_brief_logo'] = array(
+    'template' => 'theme/logo',
+    'variables' => array(),
+  );
+  return $hooks;
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function cio_brief_block_info() {
+  $blocks = array();
+  $blocks['cio_brief_resources'] = array(
+    'info' => t('CIO Brief Resources'),
+  );
+  $blocks['cio_brief_subscribe'] = array(
+    'info' => t('CIO Brief Subscribe'),
+  );
+  $blocks['cio_brief_subscribe_landscape'] = array(
+    'info' => t('CIO Brief Subscribe (landscape)'),
+  );
+  $blocks['cio_brief_logo'] = array(
+    'info' => t('CIO Brief Logo'),
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function cio_brief_block_view($delta = '') {
+  $block = array();
+  switch ($delta) {
+    case 'cio_brief_resources':
+      $block['subject'] = t('Resources');
+      $block['content'] = theme('cio_brief_resources');
+      break;
+    case 'cio_brief_subscribe':
+      $block['subject'] = t('Subscribe');
+      $block['content'] = theme('cio_brief_subscribe');
+      break;
+    case 'cio_brief_subscribe_landscape':
+      $block['subject'] = t('CIO Brief Subscribe (landscape)');
+      $block['content'] = theme('cio_brief_subscribe_landscape');
+      break;
+    case 'cio_brief_logo':
+      $block['subject'] = t('CIO Brief');
+      $block['content'] = theme('cio_brief_logo');
+      break;
+  }
+  return $block;
+}
+
+/**
+ * Implements hook_preprocess_html().
+ */
+function cio_brief_preprocess_html(&$variables) {
+  // Add necessary JavaScript and CSS
+  drupal_add_js(drupal_get_path('module', 'cio_brief') . '/javascript/cio_brief.js');
+  drupal_add_css(drupal_get_path('module', 'cio_brief') . '/css/cio_brief.css');
+}
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function cio_brief_preprocess_node(&$variables) {
+  if (isset($variables['node']) && $variables['node']->type == 'cio_brief') {
+    $alias = url($variables['node_url'], array(
+      'alias' => TRUE,
+      'absolute' => TRUE
+    ));
+    $variables['fb_data_href'] = $alias;
+    $variables['twitter_encoded_url'] = urlencode($alias);
+    $variables['twitter_encoded_title'] = rawurlencode($variables['title']);
+  }
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function cio_brief_preprocess_page(&$variables) {
+  if (isset($variables['node']) && $variables['node']->type == 'cio_brief') {
+    $variables['title'] = $variables['node']->title;
+  }
+}

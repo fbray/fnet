@@ -1,0 +1,958 @@
+#tabs-wrapper ul.primary li a.active {
+    color: #000000;
+}
+
+ul.primary {
+    border-bottom: 1px solid #bdbdbd;
+    padding-bottom: 10px;
+}
+
+#tabs-wrapper ul.primary li a {
+    padding: 10px 50px 10px 50px;
+    display: inline;
+}
+
+ul.primary li a {
+    background-color: #dadada;
+    border-color: #bdbdbd;
+    border-style: solid solid none;
+    border-width: 1px;
+    height: auto;
+    margin-right: 10px;
+    padding: 0 1em;
+    text-decoration: none;
+    color: #737373;
+    display: block;
+    width: inherit;
+}
+
+ul.primary li.active a {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background-color: #FFFFFF;
+    border-color: #bdbdbd #bdbdbd #FFFFFF;
+    border-image: none;
+    border-style: solid;
+    border-width: 1px;
+}
+
+ul.primary li a:hover {
+    background-color: #FFFFFF;
+    border-color: #CCCCCC #CCCCCC #EEEEEE;
+}
+
+#user-login #edit-submit, #user-register #edit-submit, #user-pass #edit-submit, #user-pass-reset #edit-submit {
+    width: 145px;
+    height: 30px;
+}
+
+#user-login #edit-submit, #user-register #edit-submit, #user-pass #edit-submit, #user-pass-reset #edit-submit {
+    display: block;
+    height: 30px;
+    line-height: 28px;
+    color: #000000;
+    text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    text-decoration: none;
+    background-image: url("../images/btn_143w_yellow.gif");
+    background-position: top left;
+    background-repeat: no-repeat;
+    border: 0 !important;
+}
+
+#user-login #edit-submit:hover, #user-register #edit-submit:hover, #user-pass #edit-submit:hover, #user-pass-reset #edit-submit:hover {
+    color: #000000;
+    text-decoration: none;
+    background-image: url("../images/btn_143w_gray.gif");
+    background-position: top left;
+    background-repeat: no-repeat;
+    border: 0 !important;
+}
+
+#user-register input, #user-register select {
+    width: 320px;
+}
+
+.headline3 {
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 16px;
+    margin-bottom: 5px;
+}
+
+#edit-field-email-comm-preferences-value-1 {
+    width: 10px !important;
+}
+
+#registration_form_right_column .form-checkboxes {
+    margin: 0;
+}
+
+.forgot-password-link {
+    padding-left: 288px;
+}
+
+#txtSearch {
+    width: 160px !important;
+}
+
+.clearBoth {
+    clear: both;
+}
+
+body.my-account-user-not-logged-in #content_main #content_wrapper #content_inner_full #tabs-wrapper ul.primary {
+    display: block;
+}
+
+body.my-account-user-logged-in #content_main #content_wrapper #content_inner_full #tabs-wrapper ul.primary {
+    display: none;
+}
+
+body.myaccount-user-pages #content_main #content_wrapper #content_inner_full #tabs-wrapper {
+    display: none;
+}
+
+body.myaccount-user-pages #content_main #content_wrapper #content_inner_full {
+    display: table;
+    padding-left: 0 !important;
+    width: 970px;
+}
+
+body.myaccount-user-pages #content_inner_left_nav {
+    padding-top: 0px !important;
+}
+
+body.myaccount-user-pages #content_main #content_wrapper #footer_main {
+    clear: both;
+    margin-top: 35px;
+}
+
+body.myaccount-user-pages #content_main #content_wrapper #content_inner_full ul.tabs {
+    display: none;
+}
+
+.to-do-list {
+    border: 3px solid #BDBDBD;
+    color: #676767;
+    font-size: 15px;
+    font-weight: bold;
+    min-height: 30px;
+    padding-top: 10px;
+    text-align: center;
+    width: 100%;
+}
+
+.content-with-left-sidebar {
+    width: 630px;
+    float: left;
+    padding-left: 10px;
+}
+
+.fn-left-sidebar {
+    width: 290px;
+    float: left;
+}
+
+.my-account-headlines {
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: -1px;
+    line-height: 18px;
+    color: #000000;
+    margin-bottom: 10px;
+}
+
+/* Added for Title of ""*/
+.activate-a-purchased-option {
+    font-size: 26px !important;
+    line-height: 24px;
+
+}
+
+.header-border_bottom {
+    border-bottom: #6181a0 2px solid;
+    padding-bottom: 4px;
+}
+
+#content_inner_full div.error, #content_inner_full tr.error {
+    margin: 10px;
+    padding: 10px 10px 10px 25px;
+    width: 910px;
+}
+
+#gold-support-credentials-section {
+    clear: both;
+    background-color: #ffe3a7;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-top: 1px solid #666666;
+    border-bottom: 1px solid #666666;
+}
+
+#my-account-user-profile-form-wrapper {
+    float: left;
+    width: 720px;
+}
+
+#user-profile-form-left-column {
+    float: left;
+    width: 46%;
+    padding: 10px;
+    padding-top: 0;
+}
+
+#user-register-form-left-column {
+    float: left;
+    width: 46%;
+    padding: 10px;
+}
+
+#user-register-form-right-column {
+    float: right;
+    width: 46%;
+    padding: 10px;
+}
+
+#user-profile-form-right-column {
+    float: right;
+    width: 46%;
+    padding: 10px;
+    padding-top: 0;
+}
+
+#my-account-user-profile-form-gold-credentials {
+    margin-left: 10px;
+    width: 690px;
+}
+
+#user-register-form-wrapper {
+    float: left;
+    margin-left: 10px;
+    width: 800px;
+}
+
+.user-register-form-gold-credentials {
+    margin-left: 20px;
+    width: 750px;
+}
+
+.myaccount-button-bottom-margin {
+    padding-bottom: 40px;
+}
+
+.tableHead {
+    font-size: 12px;
+}
+
+.actual_values {
+    font-size: 11px;
+    margin-bottom: 5px;
+    /* padding: 5px; */
+}
+
+.all_contracts_listing_table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    empty-cells: show;
+}
+
+.page_number {
+    float: right;
+    margin-right: 5px;
+}
+
+#add-new-products-link {
+    display: block;
+    height: 30px;
+    background-image: url("../images/links-button.gif");
+    background-position: top left;
+    background-repeat: no-repeat;
+    border: 0 !important;
+    text-align: center;
+}
+
+#download-and-updates-search-form {
+    float: none;
+    width: 100%;
+    display: block;
+}
+
+#add-new-products-link a, #add-new-products-link a:hover {
+    color: #000000 !important;
+    text-decoration: none;
+    line-height: 30px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+#add-new-products-link:hover {
+    background-image: url("../images/links-button-hover.gif");
+    background-position: top left;
+    background-repeat: no-repeat;
+    border: 0 !important;
+    text-align: center;
+}
+
+.see_more_link_with_pager {
+    font-size: 11px;
+    margin: 10px;
+    width: 610px;
+}
+
+.left_nav_item a.active {
+    font-weight: bold;
+    font-style: italic;
+}
+
+.all_contracts_listing_table tbody tr.trAlternate {
+    background-color: #E5E5E5;
+}
+
+.my-account-header-minus-background {
+    background-color: #CCCCCC;
+    background-image: url("../images/Minus.gif");
+    background-position: left center;
+    background-repeat: no-repeat;
+    border: 0 none !important;
+    padding: 5px 0 5px 24px;
+}
+
+.my-account-header-plus-background {
+    background-color: #CCCCCC;
+    background-image: url("../images/Plus.gif");
+    background-position: left center;
+    background-repeat: no-repeat;
+    border: 0 none !important;
+    padding: 5px 0 5px 24px;
+}
+
+.myaccount-gold-contract-header {
+    font-weight: bold;
+    font-size: 11px;
+    margin-bottom: 5px;
+    padding: 5px;
+    width: 250px;
+}
+
+.see-more-link {
+    margin-left: 10px;
+}
+
+.no-gold-contracts {
+    width: 620px;
+}
+
+#product_registration_form, #product_registration_form_additional {
+    font-size: 12px;
+}
+
+#product_registration_form .form-item, #product_registration_form_additional .form-item {
+    margin-top: 0;
+}
+
+#product_registration_form table, #product_registration_form_additional table {
+    width: 70%;
+}
+
+#product_registration_form_additional {
+    display: none;
+}
+
+.customfn-buttons,
+#fnet-ma-support-incident-search-form #edit-submit,
+#support-incident-form #edit-submit,
+#product-support-incident-form #edit-submit,
+#view-support-incident-form #edit-submit,
+#flukenetworks-myaccount-support-incident-form #edit-submit,
+#flukenetworks-myaccount-view-support-incident-form #edit-submit,
+#flukenetworks-myaccount-product-support-incident-form #edit-submit {
+    background: url(images/button-gradient-yellow.gif) 0 0 repeat-x #dbac21;
+    background-image: linear-gradient(180deg, #fec727, #dbac21 75%);
+    padding: 5px 3px;
+    border: 1px solid #333;
+    border-radius: 2px;
+    display: block;
+    width: 143px;
+    line-height: normal;
+    text-align: center;
+    text-decoration: none;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    color: #000000;
+}
+
+.customfn-buttons:hover,
+#fnet-ma-support-incident-search-form #edit-submit:hover,
+#support-incident-form #edit-submit:hover,
+#product-support-incident-form #edit-submit:hover,
+#view-support-incident-form #edit-submit:hover,
+#flukenetworks-myaccount-support-incident-form #edit-submit:hover,
+#flukenetworks-myaccount-view-support-incident-form #edit-submit:hover,
+#flukenetworks-myaccount-product-support-incident-form #edit-submit:hover {
+    background: url(images/button-gradient-grey.gif) 0 0 repeat-x #a2a2a2;
+    background-image: linear-gradient(180deg, #c3c3c3, #a2a2a2 75%);
+}
+
+#edit-product-purchase-date, #edit-product-purchase-date-1, #edit-product-purchase-date-2, #edit-product-purchase-date-3,
+#edit-product-purchase-date-4, #edit-product-purchase-date-5, #edit-product-purchase-date-6,
+#edit-product-purchase-date-7, #edit-product-purchase-date-8, #edit-product-purchase-date-9,
+#edit-product-purchase-date-10, #edit-strPurchaseDate {
+    background-image: url("../images/datePick.gif");
+    background-position: right center;
+    background-repeat: no-repeat;
+    text-decoration: none;
+}
+
+.status {
+    background-color: #E0F8E0;
+    background-image: url("../images/green_tick_mark.png");
+    background-position: 5px 10px;
+    background-repeat: no-repeat;
+    border: 1px solid #347C2C;
+    color: #347C2C;
+    margin: 10px;
+    padding: 10px 10px 10px 25px;
+    text-decoration: none;
+    width: 960px;
+}
+
+#edit-field-gold-pin-0-delete-wrapper {
+    display: none !important;
+}
+
+.tableHead-only-border-bottom {
+    color: #000000;
+    font-weight: bold;
+    padding: 5px;
+    /*border-bottom:2px solid #BDBDBD;*/
+}
+
+#support-incident-form #edit-product-numbers, #support-incident-form #edit-support-incident-subject,
+#product-support-incident-form #edit-product-numbers, #product-support-incident-form #edit-support-incident-subject {
+    width: 600px !important;
+}
+
+.listing-page-helper-section {
+    border: 1px solid #CCCCCC;
+    margin-bottom: 10px;
+    padding: 0 15px 0 15px;
+}
+
+.top-margin-20px {
+    margin-top: 20px;
+}
+
+.ruler-bar {
+    border-bottom: 2px solid #6181A0;
+}
+
+.support-incident-details-history-section {
+    border: 1px solid #CCCCCC;
+    margin-bottom: 5px;
+    padding: 10px 15px 10px 15px;
+}
+
+#view-support-incident-form #edit-support-incident-description {
+    width: 628px !important;
+}
+
+.dvValid {
+    display: none;
+    float: left;
+    font-weight: bold;
+    margin-top: 0;
+    position: absolute;
+    text-align: center;
+    width: 294px;
+    z-index: 999;
+}
+
+.dvValid .cnt {
+    background-color: #FFFFFF;
+    border: 2px solid #293F6A;
+    box-shadow: 0 0 10px #000000;
+    font-size: 12px;
+    height: 16px;
+    padding: 10px;
+    text-align: left;
+    width: 190px;
+    color: #293F6A;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+}
+
+.border-bottom-1px {
+    border-bottom: 1px solid #CCCCCC;
+}
+
+.posRel {
+    left: 0px;
+    position: relative;
+    top: -45px;
+}
+
+#helping-instruction-registered-product-listing-page, #helping-instruction-support-incidents-listing-page {
+    left: 0px;
+}
+
+#helping-instruction-support-incidents-listing-page .cnt {
+    width: 190px;
+}
+
+.full-available-width {
+    width: 100%;
+}
+
+.customfn-buttons-margin {
+    margin-right: 30px;
+}
+
+div.OneLinkNoTx #regionCountry {
+    width: auto !important;
+}
+
+select#language {
+    width: auto !important;
+}
+
+#add-gold-contracts-navigation-link a.active {
+    color: #666666 !important;
+    text-decoration: none !important;
+    font-size: 14px !important;
+    font-style: normal !important;
+    font-weight: normal !important;
+}
+
+#add-gold-contracts-navigation-link a.active:hover {
+    color: #293F6A !important;
+}
+
+#product-activation-form #edit-proof-of-purchase-code-wrapper {
+    float: left;
+}
+
+#product-activation-form .fn-myaccount-pro-act-form-one {
+    width: 25%;
+    margin-left: 10px;
+    margin-top: 22px;
+}
+
+#fn-myaccount-pro-act-form-three {
+    margin-left: 50px;
+    margin-top: 22px;
+    float: left;
+}
+
+#edit-product-model {
+    width: 380px !important;
+}
+
+#edit-product-serial-number-wrapper, #edit-product-purchase-date-wrapper {
+    float: left;
+    width: 205px;
+}
+
+#edit-product-serial-number-one-wrapper, #edit-popcode-one-wrapper {
+    float: left;
+    width: 300px;
+}
+
+#edit-popcode-two-wrapper {
+    padding-top: 12px;
+}
+
+.myaccount-print-button {
+    background-image: url("../images/print.gif");
+    background-position: left center;
+    background-repeat: no-repeat;
+    text-decoration: none;
+}
+
+.keycode-text {
+    font-size: 25px;
+    font-weight: bold;
+    letter-spacing: 0px;
+    line-height: 25px;
+}
+
+.key-code-print-page-logo {
+    background-image: url("../images/FNET_logo.jpg");
+    background-position: center center;
+    background-repeat: no-repeat;
+    float: none;
+    height: 69px;
+    margin: 10px 10px 20px 250px;
+    text-decoration: none;
+    width: 305px;
+}
+
+.key-code-print-page-header {
+    color: #000000;
+    float: none;
+    font-size: 38px;
+    font-style: italic;
+    font-weight: bold;
+    height: 69px;
+    letter-spacing: 0;
+    line-height: 30px;
+    margin: 10px 10px 20px 110px;
+    text-decoration: none;
+    width: 415px;
+}
+
+#flukenetworks-myaccount-gold-type-product-activation-form #edit-strCountryCode, #flukenetworks-myaccount-gold-type-product-activation-form #edit-strRegionCode {
+    width: 240px;
+}
+
+.red-text {
+    color: #EE5555;
+}
+
+.margin-left-50px {
+    margin-left: 50px;
+}
+
+.front-page-message-box {
+    float: left;
+    margin-left: 170px;
+    text-align: left;
+}
+
+#flukenetworks-myaccount-support-incident-form #edit-product-numbers,
+#flukenetworks-myaccount-support-incident-form #edit-support-incident-description,
+#flukenetworks-myaccount-support-incident-form #edit-support-incident-subject,
+#flukenetworks-myaccount-product-support-incident-form #edit-product-numbers,
+#flukenetworks-myaccount-product-support-incident-form #edit-support-incident-description,
+#flukenetworks-myaccount-product-support-incident-form #edit-support-incident-subject {
+    width: 700px;
+}
+
+#edit-proof-of-purchase-code-wrapper {
+    margin-bottom: 5px;
+}
+
+#flukenetworks-myaccount-gold-type-product-activation-form .customfn-buttons-class {
+    padding-left: 190px;
+    padding-top: 30px;
+    display: block;
+}
+
+#flukenetworks-myaccount-generate-download-updates-form #edit-download-and-updates-product-list {
+    float: left;
+    height: 25px;
+    /*width: 435px;*/
+    width: 365px;
+    margin-right: 15px;
+    padding: 3px;
+    font-size: 12px;
+}
+
+#flukenetworks-myaccount-generate-download-updates-form #edit-download-and-updates-product-list-wrapper {
+    margin: 0;
+}
+
+.fn_myaccount_lock {
+    background-image: url("../images/lock.gif");
+    background-repeat: no-repeat;
+    display: block;
+    height: 16px;
+    text-decoration: none;
+    width: 25px;
+}
+
+.fn_myaccount_unlock {
+    background-image: url("../images/unlock.gif");
+    background-repeat: no-repeat;
+    display: block;
+    height: 16px;
+    text-decoration: none;
+    width: 25px;
+}
+
+#flukenetworks-myaccount-product-registration-form select {
+    width: 350px;
+}
+
+.fn-myaccount-product-details-section {
+    width: 210px;
+    float: left;
+}
+
+.fn-myaccount-previously-enabled-options-section {
+    min-height: 150px;
+    float: right;
+    width: 410px;
+}
+
+#fn-myaccount-static-ruler-one {
+    width: 100%;
+    float: left;
+    margin-bottom: 20px;
+}
+
+#fn-myaccount-static-ruler-two {
+    width: 100%;
+    float: left;
+}
+
+#fn-myaccount-activate-option-submit-button {
+    text-align: center;
+    margin-top: 10px;
+    margin-left: 210px;
+}
+
+.fn-myaccount-activate-options-header-text {
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 16px;
+    float: left;
+    width: 100%;
+}
+
+#gold-type-pop-code-profile-form-left-section {
+    float: left;
+    height: 370px;
+    width: 50%;
+}
+
+#gold-type-pop-code-profile-form-right-section {
+    float: right;
+    height: 370px;
+    width: 50%;
+}
+
+#fn-myaccount-print-keycode-page-wrapper-div {
+    text-align: center;
+    padding: 50px;
+    border: 2px solid #6181A0;
+    float: none;
+}
+
+#keycode-print-page-header-one {
+    float: left;
+    margin-left: 160px;
+}
+
+#keycode-print-page-header-two {
+    float: right;
+    margin-left: 210px;
+    color: #FFB200;
+}
+
+#keycode-print-page-header-three {
+    font-size: 12px;
+    padding-left: 3px
+}
+
+#keycode-print-button {
+    margin-top: 10px;
+}
+
+.activate-error-800-links-table-class {
+    border-collapse: separate;
+    width: 630px !important;
+    padding: 15px 0 15px 0;
+}
+
+#fn-myaccount-aao-print-cdkey {
+    text-align: center;
+    float: left;
+    width: 100%;
+}
+
+#fn-myaccount-aao-print-static-links {
+    text-align: center;
+    float: left;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.fn-myaccount-float-left {
+    float: left;
+}
+
+.fn-myaccount-float-right {
+    float: right;
+}
+
+#edit-field-migrated-user-value {
+    width: 15px !important;
+}
+
+#edit-field-migrated-user-value-wrapper label {
+    font-weight: bold !important;
+}
+
+#edit-number-days-passed-wrapper {
+    margin: 0 0 10px 0;
+}
+#gold-contract-summary-section tbody {
+    display: block;
+    width: 100%;
+}
+
+#block-fnet-ma-navigation .left_nav_item a,
+#block-fnet-ma-navigation .left_nav_item_on a,
+#block-fnet-ma-navigation .left_nav_item_1st a,
+#block-fnet-ma-navigation .left_nav_item_1st_on a {
+    padding-left: 0 !important;
+}
+
+#block-fnet-ma-navigation #content_inner_left_nav {
+    width: 225px;
+}
+
+#content_inner_left_nav {
+    float: left;
+    padding-top: 10px;
+}
+
+#content_inner_left_nav ul {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+
+.left_nav_top {
+    height: 20px;
+    text-align: left;
+    background-image: url(images/left_nav_top.gif);
+    background-position: bottom left;
+    background-repeat: no-repeat;
+}
+
+.left_nav_bottom {
+    height: 110px;
+    text-align: left;
+    background-image: url(images/left_nav_bottom.gif);
+    background-position: bottom left;
+    background-repeat: no-repeat;
+    line-height: 33px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.left_nav_item_1st {
+    height: 40px;
+    text-align: left;
+    background-image: url(images/left_nav_1st.gif);
+    background-position: bottom left;
+    background-repeat: no-repeat;
+    line-height: 38px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+}
+
+.left_nav_item_1st a {
+    height: 40px;
+    display: block;
+    color: #666666;
+    text-decoration: none;
+}
+
+.left_nav_item_1st a:hover {
+    color: #293f6a;
+    background-image: url(images/left_nav_1st_over.gif);
+    background-position: bottom left;
+    background-repeat: no-repeat;
+}
+
+.left_nav_item_1st_on {
+    height: 40px;
+    text-align: left;
+    background-image: url(images/left_nav_1st_over.gif);
+    background-position: bottom left;
+    background-repeat: no-repeat;
+    line-height: 38px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.left_nav_item_1st_on a {
+    height: 40px;
+    display: block;
+    color: #293f6a;
+    text-decoration: none;
+}
+
+.left_nav_item_1st_on a:hover {
+    color: #293f6a;
+    background-image: url(images/left_nav_1st_over.gif);
+    background-position: bottom left;
+    background-repeat: no-repeat;
+}
+
+.left_nav_item {
+    height: 40px;
+    text-align: left;
+    background-image: url(images/left_nav.gif);
+    background-position: bottom left;
+    background-repeat: no-repeat;
+    line-height: 38px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+}
+
+.left_nav_item a {
+    height: 40px;
+    display: block;
+    color: #666666;
+    text-decoration: none;
+}
+
+.left_nav_item a:hover {
+    color: #293f6a;
+    background-image: url(images/left_nav_over.gif);
+    background-position: bottom left;
+    background-repeat: no-repeat;
+}
+
+.left_nav_item_on {
+    height: 40px;
+    text-align: left;
+    background-image: url(images/left_nav_over.gif);
+    background-position: bottom left;
+    background-repeat: no-repeat;
+    line-height: 38px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.left_nav_item_on a {
+    height: 40px;
+    display: block;
+    color: #293f6a;
+    text-decoration: none;
+}
+
+.left_nav_item_on a:hover {
+    color: #293f6a;
+    background-image: url(images/left_nav_over.gif);
+    background-position: bottom left;
+    background-repeat: no-repeat;
+}
+
+#create-support-incident {
+    float: left;
+    margin: 52px 0 0 30px;
+}
+
+#search-past-days-form {
+    float: left;
+    margin: 0 0 10px 10px;
+}
+
+#edit-static-ruler-one {
+    display: table;
+    width: 970px;
+}

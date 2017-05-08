@@ -1,0 +1,929 @@
+diff --git a/helpers/group.entity.inc b/helpers/group.entity.inc
+index fe89916..eb4045b 100644
+--- a/helpers/group.entity.inc
++++ b/helpers/group.entity.inc
+@@ -93,7 +93,7 @@ function group_load_by_type($type) {
+  * @param string $type
+  *   (optional) Filters the results by a group type.
+  *
+- * @return array
++ * @return Group[]
+  *   An array of Group entities, keyed by their group ids.
+  */
+ function group_load_by_member($uid, $type = NULL) {
+diff --git a/helpers/group.inc b/helpers/group.inc
+index 25777a4..9bb3ba6 100644
+--- a/helpers/group.inc
++++ b/helpers/group.inc
+@@ -95,19 +95,19 @@ function group_get_entity_group_ids($entity_type, $entity_id) {
+ }
+ 
+ /**
+- * Retrieves the group id from an autocomplete result.
++ * Retrieves the group ids from an autocomplete result.
+  *
+  * @param string $result
+  *   The result returned by a group autocomplete field.
+  *
+- * @return int|false
+- *   The group id (gid) of the result or FALSE on failure.
++ * @return int[]|FALSE
++ *   The group ids of the result or FALSE on failure.
+  *
+  * @see group_autocomplete()
+  * @see group_autocomplete_by_type()
+  */
+ function group_autocomplete_result_gid($result) {
+-  if (preg_match('/(\d+)\)$/', $result, $matches)) {
++  if (preg_match_all('/\(GID\: (\d+)\)/', $result, $matches)) {
+     return $matches[1];
+   }
+ 
+diff --git a/modules/gnode/gnode.admin.inc b/modules/gnode/gnode.admin.inc
+index 1387628..d9fc595 100644
+--- a/modules/gnode/gnode.admin.inc
++++ b/modules/gnode/gnode.admin.inc
+@@ -11,6 +11,42 @@
+  * @see gnode_menu().
+  */
+ function gnode_settings($form, &$form_state) {
++
++  $form['gnode_group_choice_admin_element'] = array(
++    '#type' => 'radios',
++    '#title' => t('Admin group selection mode'),
++    '#default_value' => variable_get('gnode_group_choice_admin_element', 'auto_complete'),
++    '#description' => t('Choose the type of form element administrators use to select which groups a node should be in.'),
++    '#options' => array(
++      'select' => t('Select dropdown  '),
++      'auto_complete' => t('Auto complete'),
++      'checkbox' => t('Checkboxes or radios'),
++    ),
++  );
++
++  $form['gnode_group_choice_standard_element'] = array(
++    '#type' => 'radios',
++    '#title' => t('Standard user group selection mode'),
++    '#default_value' => variable_get('gnode_group_choice_standard_element', 'select'),
++    '#description' => t('Choose the type of form element standard users use to select which groups a node should be in.'),
++    '#options' => array(
++      'select' => t('Select dropdown'),
++      'auto_complete' => t('Auto complete'),
++      'checkbox' => t('Checkboxes or radios'),
++    ),
++  );
++
++  $form['group_node_multiple_groups'] = array(
++    '#type' => 'radios',
++    '#title' => t('Nodes in multiple groups'),
++    '#default_value' => variable_get('group_node_multiple_groups', GROUP_NODE_SINGLE_GROUPS_MODE),
++    '#description' => t('Choose if a node can only be in one group or can be in multiple groups. Nodes in multiple groups can be updated and deleted by users with the necessary permissions in any of the groups it is in. After changing this session you must clear the site cache. It is not recommended that you go from multiple to single on a site which has nodes in multiple groups without testing.'),
++    '#options' => array(
++      GROUP_NODE_SINGLE_GROUPS_MODE => t('A node can only be in a single group.'),
++      GROUP_NODE_MULTIPLE_GROUPS_MODE => t('A node can be placed into multiple groups.'),
++    ),
++  );
++
+   $form['group_node_mode'] = array(
+     '#type' => 'radios',
+     '#title' => t('Group node access mode'),
+@@ -39,4 +75,13 @@ function gnode_settings_form_submit(&$form, &$form_submit) {
+   if ($selected_group_mode !== _gnode_get_mode()) {
+     node_access_needs_rebuild(TRUE);
+   }
++
++  $selected_multiple_mode = $form_submit['values']['group_node_multiple_groups'];
++
++  if ($selected_multiple_mode !== variable_get('group_node_multiple_groups', GROUP_NODE_SINGLE_GROUPS_MODE)) {
++    drupal_set_message(t('The site cache should be cleared now because the nodes in multiple groups setting has changed. !link', array(
++      '!link' => l(t('Go to performance settings'), 'admin/config/development/performance'),
++      )), 'warning');
++  }
+ }
++
+diff --git a/modules/gnode/gnode.info b/modules/gnode/gnode.info
+index d4862a2..2cc8b3a 100644
+--- a/modules/gnode/gnode.info
++++ b/modules/gnode/gnode.info
+@@ -4,6 +4,7 @@ core = 7.x
+ package = Group
+ 
+ files[] = tests/gnode.test
++files[] = tests/gnode.multiple.test
+ 
+ dependencies[] = group
+ dependencies[] = node
+diff --git a/modules/gnode/gnode.module b/modules/gnode/gnode.module
+index 1491fd1..037d776 100644
+--- a/modules/gnode/gnode.module
++++ b/modules/gnode/gnode.module
+@@ -21,6 +21,16 @@ define('GROUP_NODE_SAFE_MODE', 'GROUP_NODE_SAFE_MODE');
+ define('GROUP_NODE_COMPLIANCE_MODE', 'GROUP_NODE_COMPLIANCE_MODE');
+ 
+ /**
++ * Mode which only allows a node to be in one group.
++ */
++define('GROUP_NODE_SINGLE_GROUPS_MODE', 'GROUP_NODE_SINGLE_GROUPS_MODE');
++
++/**
++ * Mode which allows a node to be in multiple group.
++ */
++define('GROUP_NODE_MULTIPLE_GROUPS_MODE', 'GROUP_NODE_MULTIPLE_GROUPS_MODE');
++
++/**
+  * Load our router functions without polluting the .module file.
+  */
+ require_once 'gnode.router.inc';
+@@ -42,11 +52,22 @@ function _gnode_get_mode() {
+ }
+ 
+ /**
++ * Determine if gnode is in multiple mode.
++ *
++ * @return bool
++ *   TRUE if a node can be placed within multiple groups.
++ *   FALSE if a node can only be placed in a single group.
++ */
++function _gnode_is_multiple() {
++  $multiple_mode = variable_get('group_node_multiple_groups', GROUP_NODE_SINGLE_GROUPS_MODE);
++  return $multiple_mode === GROUP_NODE_MULTIPLE_GROUPS_MODE;
++}
++
++/**
+  * Implements hook_entity_info_alter().
+  */
+ function gnode_entity_info_alter(&$entity_info) {
+-  // Nodes can only have one group parent.
+-  $entity_info['node']['group entity'] = 'single';
++  $entity_info['node']['group entity'] = _gnode_is_multiple() ? 'multiple' : 'single';
+ }
+ 
+ /**
+@@ -269,6 +290,36 @@ function gnode_global_node_create_access($type, $account = NULL) {
+ }
+ 
+ /**
++ * Get a list of all the group ids a node is within.
++ *
++ * This normalises the group parameter on a node as this can be either a single
++ * value if gnode module is configured so that nodes can have only one parent or
++ * an array of values if a node can have multiple parents.
++ *
++ * @param $node
++ *
++ * @return int[]
++ */
++function gnode_node_group_ids($node) {
++  if (empty($node->group)) {
++    return array();
++  }
++
++  return is_array($node->group) ? $node->group : array($node->group);
++}
++
++/**
++ * Get a list of all group entities a node is within.
++ *
++ * @param $node
++ *
++ * @return Group[]
++ */
++function gnode_node_groups($node) {
++  return group_load_multiple(gnode_node_group_ids($node));
++}
++
++/**
+  * Implements hook_node_access().
+  *
+  * Because the grant system for node access can quickly become very taxing on
+@@ -294,36 +345,43 @@ function gnode_node_access($node, $op, $account) {
+   }
+ 
+   // Make sure we are dealing with a group node.
+-  elseif (!empty($node->group)) {
+-    $group = group_load($node->group);
++  if (empty($node->group)) {
++    return NODE_ACCESS_IGNORE;
++  }
++
++  // If the user can bypass group access, he is allowed access.
++  if (user_access('bypass group access', $account)) {
++    return NODE_ACCESS_ALLOW;
++  }
+ 
+-    // If the user can bypass group access, he is allowed access.
+-    if (user_access('bypass group access', $account)) {
++  foreach (gnode_node_groups($node) as $group) {
++
++    if (group_access('administer group', $group, $account)) {
+       return NODE_ACCESS_ALLOW;
+     }
+ 
+-    $has_access = group_access('administer group', $group, $account);
+-
+     switch ($op) {
+       case "view":
+-        $has_access = $has_access || group_access("view $node->type node", $group, $account);
++        if (group_access("view $node->type node", $group, $account)) {
++          return NODE_ACCESS_ALLOW;
++        }
+         break;
+ 
+       case "update":
+       case "delete":
+-        $has_access = $has_access || group_access("$op any $node->type node", $group, $account);
++        if (group_access("$op any $node->type node", $group, $account)) {
++          return NODE_ACCESS_ALLOW;
++        }
+ 
+-        if ($account->uid == $node->uid) {
+-          $has_access = $has_access || group_access("$op own $node->type node", $group, $account);
++        if ($account->uid == $node->uid && group_access("$op own $node->type node", $group, $account)) {
++          return NODE_ACCESS_ALLOW;
+         }
+ 
+         break;
+     }
+-
+-    return $has_access ? NODE_ACCESS_ALLOW : NODE_ACCESS_DENY;
+   }
+ 
+-  return NODE_ACCESS_IGNORE;
++  return NODE_ACCESS_DENY;
+ }
+ 
+ /**
+@@ -388,34 +446,22 @@ function gnode_node_add(Group $group, $node_type) {
+  * @see gnode_node_submit()
+  */
+ function gnode_form_node_form_alter(&$form, $form_state) {
++  global $user;
++
+   $node = $form_state['node'];
+-  $gid = !empty($node->group) ? $node->group : 0;
++
++  $groups = gnode_node_groups($node);
++  $gids = array_keys($groups);
+ 
+   $can_bypass_access = user_access('bypass group access');
+ 
+-  // If the user can't bypass group access and we already have a nid or gid, we
+-  // are either on a node edit form or a Group Node add form. In such a case,
+-  // we do not show anything.
+-  if (!$can_bypass_access) {
+-    // Fix the group if the node was already set to one.
+-    if (!empty($gid)) {
+-      $form['gid'] = array(
+-        '#type' => 'value',
+-        '#value' => $gid,
+-        '#parents' => array('group_settings', 'gid'),
+-      );
+-
+-      return;
+-    }
+-    // Do nothing if we are on an ungrouped node's edit form.
+-    elseif (!empty($node->nid)) {
+-      return;
+-    }
++  // If the user can't bypass group access, have a nid, and no gids, we
++  // are on either on an ungrouped node edit form. In such a case we do not show
++  // anything.
++  if (!$can_bypass_access && empty($node->group) && !empty($node->nid)) {
++    return;
+   }
+ 
+-  $global_node_create_access = gnode_global_node_create_access($node->type);
+-  $group_access_warning = t("<strong>By selecting a group, the node will inherit the group's access control</strong>.");
+-
+   // Otherwise add a vertical tab for group selection.
+   $form['group_settings'] = array(
+     '#type' => 'fieldset',
+@@ -433,59 +479,181 @@ function gnode_form_node_form_alter(&$form, $form_state) {
+     '#weight' => -50,
+   );
+ 
+-  // Show a select of all the groups the author can create the node in.
+-  if (!$can_bypass_access) {
+-    $options = array();
+-    foreach (group_load_multiple(gnode_group_node_create_gids($node->type)) as $group) {
+-      $options[$group->gid] = $group->label() . " (GID: $group->gid)";
++  $form['group_settings']['existing_gids'] = array(
++    '#type' => 'value',
++    '#value' => $gids,
++    '#parent' => array('group_settings'),
++  );
++
++  // Find out which form API element we should be using.
++  $element_type = $can_bypass_access
++    ? variable_get('gnode_group_choice_admin_element', 'auto_complete')
++    : variable_get('gnode_group_choice_standard_element', 'select');
++
++  // Use a helper function to generate the form element.
++  $element_function = "_gnode_generate_node_form_group_{$element_type}_element";
++  $element = function_exists($element_function) ? $element_function($node) : array();
++
++  if (empty($element) || !is_array($element)) {
++    // The user is not able to change the group for this node so don't show
++    // the form controls.
++    $form['group_settings']['#access'] = FALSE;
++    return;
++  }
++
++  // Add the group select form element to the form.
++  $form['group_settings'] += $element;
++}
++
++/**
++ * Helper function to generate a form node element for selecting the group.
++ *
++ * @param $node
++ *   The node whose edit form is being generated
++ *
++ * @return array
++ *   Form API select element.
++ */
++function _gnode_generate_node_form_group_select_element($node) {
++  $options = array();
++
++  foreach (group_load_multiple(gnode_group_node_create_gids($node->type)) as $group) {
++    if (empty($node->nid) || group_access('administer group', $group)) {
++      // We only give the user the option to add or remove a node from a
++      // group if they are a group administrator unless its a new node.
++      $options[$group->gid] = $group->label();
+     }
++  }
+ 
+-    $description = $global_node_create_access
+-      ? t('Optionally select the group to attach this node to.')
+-      : t('Because you are not allowed to create this content outside of a group, you are required to select one here.');
++  if (empty($options)) {
++    return array();
++  }
+ 
+-    $form['group_settings']['gid'] = array(
++  $global_node_create_access = gnode_global_node_create_access($node->type);
++
++  // If there is only one option and the user cannot create content outside the
++  // group then the group control should be selected and disabled.
++  $disabled = (count($options) === 1 && !$global_node_create_access);
++
++  $default_gids = gnode_node_group_ids($node);
++
++  if (!$global_node_create_access && empty($default_gids) && count($options) === 1) {
++    $gids = array_keys($options);
++    $default_gids = array(reset($gids));
++  }
++
++  $description = $global_node_create_access
++    ? t('Optionally select the group to attach this node to.')
++    : t('Because you are not allowed to create this content outside of a group, you are required to select one here.');
++
++  return array(
++    'gid' => array(
+       '#type' => 'select',
+       '#title' => t('Parent group'),
+-      '#description' => $description . '<br />' . $group_access_warning,
++      '#description' => $description . '<br />' . _gnode_get_group_access_warning(),
+       '#options' => $options,
+       '#required' => !$global_node_create_access,
++      '#multiple' => _gnode_is_multiple(),
++      '#default_value' => $default_gids,
+       '#empty_value' => '',
+-    );
++      '#disabled' => $disabled,
++    ),
++  );
++}
++
++/**
++ * Function to generate a form node element for checkbox selection of the group.
++ *
++ * @param $node
++ *   The node whose edit form is being generated
++ *
++ * @return array
++ *   Form API select element.
++ */
++function _gnode_generate_node_form_group_checkbox_element($node) {
++  $element = _gnode_generate_node_form_group_select_element($node);
++
++  if (empty($element)) {
++    return $element;
+   }
+ 
+-  // Show an autocomplete field to select the group with.
++  if (_gnode_is_multiple()) {
++    // If nodes can be in many groups then use checkboxes.
++    $element['gid']['#type'] = 'checkboxes';
++  }
+   else {
+-    $group_name = '';
+-
+-    if ($gid) {
+-      // Retrieve the default value for the autocomplete field.
+-      $title = group_load($gid)->title;
+-      $group_name = "$title (GID: $gid)";
++    // If nodes can be in only one group then use radio buttons.
++    $element['gid']['#type'] = 'radios';
++
++    if (empty($element['gid']['#required'])) {
++      // If not required add a none option.
++      $element['gid']['#options'] = array(0 => t('None')) + $element['gid']['#options'];
++      if (empty($element['gid']['#default_value'])) {
++        $element['gid']['#default_value'] = array('0');
++      }
+     }
+ 
+-    $description = $global_node_create_access
+-      ? t('Enter the name of the group to attach this node to. Leave blank for no group.')
+-      : t('Because you are not allowed to create this content outside of a group, you are required to enter the name of one here.');
+-
+-    // There is a special use case where a user may edit global nodes, but
+-    // not create them and also may bypass group access. In such a case, he
+-    // could move an ungrouped node to a group, or leave it ungrouped.
+-    if (!empty($node->nid) && empty($gid) && !$global_node_create_access) {
+-      $description = t('This node is not attached to a group. In order to keep it that way, leave this field blank. Alternatively, you may enter the name of the group to attach this node to.');
+-      $description .= '<br />' . t('<strong>Warning:</strong> Because you are not allowed to create this content outside of a group, you will not be able to move it back to the sitewide scope.');
+-      $global_node_create_access = TRUE;
+-    }
++    // Set the default value to be a single value.
++    $element['gid']['#default_value'] = reset($element['gid']['#default_value']);
++  }
++
++  return $element;
++}
++
++/**
++ * Helper function to generate a form node auto complete element.
++ *
++ * @param $node
++ *   The node whose edit form is being generated
++ *
++ * @return array
++ *   Form API select element.
++ */
++function _gnode_generate_node_form_group_auto_complete_element($node) {
++  $global_node_create_access = gnode_global_node_create_access($node->type);
++  $groups = gnode_node_groups($node);
+ 
+-    $form['group_settings']['group'] = array(
++  $group_names = array();
++
++  foreach ($groups as $gid => $group) {
++    // Retrieve the default value for the auto complete field.
++    $title = $group->label();
++    $group_names[] = "$title (GID: $gid)";
++  }
++
++  $group_name = implode(', ', $group_names);
++
++  $description = $global_node_create_access
++    ? t('Enter the name of the group to attach this node to. Leave blank for no group.')
++    : t('Because you are not allowed to create this content outside of a group, you are required to enter the name of one here.');
++
++  // There is a special use case where a user may edit global nodes, but
++  // not create them and also may bypass group access. In such a case, he
++  // could move an ungrouped node to a group, or leave it ungrouped.
++  if (!empty($node->nid) && empty($gids) && !$global_node_create_access) {
++    $description = t('This node is not attached to a group. In order to keep it that way, leave this field blank. Alternatively, you may enter the name of the group to attach this node to.');
++    $description .= '<br /><strong>' . t('Warning') .  '</strong>: ' . t('Because you are not allowed to create this content outside of a group, you will not be able to move it back to the site wide scope.');
++    $global_node_create_access = TRUE;
++  }
++
++  return array(
++    'group_auto_complete' => array(
+       '#type' => 'textfield',
+       '#title' => t('Parent group'),
+       '#autocomplete_path' => 'group/autocomplete',
+       '#default_value' => $group_name,
+-      '#description' => $description . '<br />' . $group_access_warning,
++      '#description' => $description . '<br />' . _gnode_get_group_access_warning(),
+       '#required' => !$global_node_create_access,
+-    );
+-  }
++      '#multiple' => _gnode_is_multiple(),
++    ),
++  );
++}
++
++/**
++ * Retrieve the warning about node inheriting access control of the group.
++ */
++function _gnode_get_group_access_warning() {
++  return '<strong>' . t("By selecting a group, the node will inherit the group's access control.") . '</strong>';
+ }
+ 
+ /**
+@@ -500,13 +668,16 @@ function gnode_node_validate($node, $form, &$form_state) {
+   // group name to a group id in the form state so the submit handler can rely
+   // on it being set.
+   if (!empty($form_state['values']['group_settings']['group'])) {
+-    // Retrieve the group id from the name suffix.
+-    if ($gid = group_autocomplete_result_gid($form_state['values']['group_settings']['group'])) {
+-      $form_state['values']['group_settings']['gid'] = $gid;
+-    }
+-    // Throw an error if the gid could not be retrieved.
+-    else {
+-      form_set_error('group_settings][group', t('Group name not found'));
++
++    if (!empty($values['group_auto_complete'])) {
++      // Retrieve the group id from the name suffix.
++      if ($specified_gids = group_autocomplete_result_gid($form_state['values']['group_settings']['group_auto_complete'])) {
++        $form_state['values']['group_settings']['gid'] = $specified_gids;
++      }
++      // Throw an error if the gid could not be retrieved.
++      else {
++        form_set_error('group_settings][group_auto_complete', t('Group name not found'));
++      }
+     }
+   }
+ }
+@@ -514,13 +685,52 @@ function gnode_node_validate($node, $form, &$form_state) {
+ /**
+  * Implements hook_node_submit().
+  *
++ * 1. Bypass group access users can set any groups for this node.
++ * 2. If it is a new node, the user can add the node to any group they have
++ *    create access to.
++ * 3. If it is an existing node, the user can change the groups a node is in
++ *    only for groups they are an administrator of.
++ * 4. If the user cannot globally create nodes of this type then they must
++ *    select at least one node.
++ *
+  * @see gnode_form_node_form_alter()
+  */
+ function gnode_node_submit($node, $form, &$form_state) {
+-  if (!empty($form_state['values']['group_settings']['gid'])) {
+-    $node->group = $form_state['values']['group_settings']['gid'];
++  if (!empty($form_state['values']['group_settings'])) {
++    $has_bypass = user_access('bypass group access');
++    $specified_gids = empty($form_state['values']['group_settings']['gid']) ? array() : $form_state['values']['group_settings']['gid'];
++
++    $specified_gids = is_array($specified_gids) ? $specified_gids : array($specified_gids);
++    $specified_gids = array_filter($specified_gids, '_gnode_specified_groups_result_clean');
++
++    if (!$has_bypass && !empty($node->nid)) {
++      // If the user is missing has_bypass then they cannot change the group
++      // is in for groups they are not the administrator of.
++      // The previous groups for this node are stored on the form.
++      $existing_gids = $form_state['values']['group_settings']['existing_gids'];
++
++      foreach ($existing_gids as $existing_gid) {
++        if (!isset($specified_gids[$existing_gid])) {
++          // This node is in a group the user is not an administrator of.
++          $specified_gids[] = $existing_gid;
++        }
++      }
++    }
++
++    $node->group = _gnode_is_multiple() ? $specified_gids : reset($specified_gids);
+   }
+   elseif (isset($node->group)) {
+     unset($node->group);
+   }
+ }
++
++/**
++ * Array filter for results of the node form submission.
++ *
++ * We only want real group ids in the result.
++ *
++ * @see gnode_node_submit().
++ */
++function _gnode_specified_groups_result_clean($value) {
++  return !empty($value) && is_numeric($value);
++}
+diff --git a/modules/gnode/gnode.router.inc b/modules/gnode/gnode.router.inc
+index f3e3efe..6f61aab 100644
+--- a/modules/gnode/gnode.router.inc
++++ b/modules/gnode/gnode.router.inc
+@@ -8,6 +8,8 @@
+  * Implements hook_menu().
+  */
+ function gnode_menu() {
++  $items = array();
++
+   $items['group/%group/node/add/%'] = array(
+     'title' => 'Add node',
+     'title callback' => 'gnode_add_node_title',
+diff --git a/modules/gnode/modes/gnode.compliance.inc b/modules/gnode/modes/gnode.compliance.inc
+index 9a4eb78..9435059 100644
+--- a/modules/gnode/modes/gnode.compliance.inc
++++ b/modules/gnode/modes/gnode.compliance.inc
+@@ -62,7 +62,7 @@ function gnode_node_grants($account, $op) {
+             }
+           }
+ 
+-          if (!$group_administrator) {
++         if (!$group_administrator) {
+             // Allow the user to update their own content of this type.
+             if ($op === 'update' && in_array("update own $node_type node", $permissions)) {
+               foreach ($all_gids as $gid) {
+@@ -201,10 +201,10 @@ function gnode_node_access_records($node) {
+     return $grants;
+   }
+ 
+-  if (!empty($node->group)) {
++  foreach (gnode_node_group_ids($node) as $gid) {
+     if ($node->status) {
+       $grants[] = array(
+-        'gid' => $node->group,
++        'gid' => $gid,
+         'grant_view' => 1,
+         'grant_update' => 1,
+         'grant_delete' => 1,
+@@ -220,9 +220,11 @@ function gnode_node_access_records($node) {
+       'grant_update' => 1,
+       'grant_delete' => 1,
+       'priority' => 0,
+-      'realm' => "gnode_author:{$node->group}:{$node->type}",
++      'realm' => "gnode_author:{$gid}:{$node->type}",
+     );
+   }
+ 
+   return $grants;
+ }
++
++
+diff --git a/modules/gnode/tests/gnode.multiple.test b/modules/gnode/tests/gnode.multiple.test
+new file mode 100644
+index 0000000..e43a936
+--- /dev/null
++++ b/modules/gnode/tests/gnode.multiple.test
+@@ -0,0 +1,103 @@
++<?php
++
++/**
++ * @file
++ * Tests for the gnode module in nodes in multiple group mode.
++ */
++
++/**
++ * Test Group node access behaviour when a node is in multiple groups.
++ */
++abstract class GNodeMultipleViewAccessTests extends GNodeViewAccessTests {
++
++  /**
++   * Test anonymous user's view access to nodes in multiple groups.
++   */
++  public function testAnonymousViewAccessMultipleGroups() {
++    // Create two group types.
++    $group_type1 = $this->createGroupType('example1');
++    $group_type2 = $this->createGroupType('example2');
++
++    // Create two groups, one of each type.
++    $group1 = $this->createGroup('example1', 'example1');
++    $group2 = $this->createGroup('example2', 'example2');
++
++    // Make a node and put it into both groups.
++    $node = $this->createNodeInGroup($group1->internalIdentifier());
++    $this->setNodeGroups($node, array($group1->internalIdentifier(), $group2->internalIdentifier()));
++
++    // Sanity check that with no special permissions the anonymous user cannot
++    // view the node.
++    $this->assertNodeOperationAccess($node->nid, 'view', 403, 'Group node is not accessible by anonymous without view permissions');
++    $this->assertNodesOnListingPage(array(), 'Group node is not visible on listing pages to anonymous without view permissions.');
++
++    // Set anonymous permissions on just one of the two group types.
++    $group_type2->anonymous_permissions = array('view page node');
++    $group_type2->save();
++
++    // Check that the node is now accessible.
++    $this->assertNodeOperationAccess($node->nid, 'view', 200, 'Group node is accessible by anonymous with view permissions');
++    $this->assertNodesOnListingPage(array($node->nid), 'Group node is visible on listing pages to anonymous with view permissions.');
++
++    // Now remove the node from the group for which anonymous has access.
++    $this->setNodeGroups($node, array($group1->internalIdentifier()));
++
++    // We no longer expect this node to be accessible.
++    $this->assertNodeOperationAccess($node->nid, 'view', 403, 'Group node is not accessible by anonymous without view permissions');
++    $this->assertNodesOnListingPage(array(), 'Group node is not visible on listing pages to anonymous without view permissions.');
++  }
++}
++
++/**
++ * This class runs all the tests in Compliance mode.
++ */
++class GNodeComplianceModeMultipleNodeTests extends GNodeMultipleViewAccessTests {
++
++  /**
++   * Drupal SimpleTest method: return metadata about the test.
++   */
++  public static function getInfo() {
++    return array(
++      'name' => t('Group gnode compliance mode view tests with multiple groups'),
++      'description' => t('Executes node access test suite for gnode module in compliance mode when a node is in multiple groups.'),
++      'group' => t('Group'),
++    );
++  }
++
++  /**
++   * Test setup instructions.
++   */
++  public function setUp() {
++    parent::setUp('node', 'entity', 'group', 'gnode');
++    variable_set('group_node_mode', GROUP_NODE_COMPLIANCE_MODE);
++    variable_set('group_node_multiple_groups', GROUP_NODE_MULTIPLE_GROUPS_MODE);
++    node_access_rebuild();
++  }
++}
++
++/**
++ * This class runs all the tests in Safe mode.
++ */
++class GNodeSafeModeMultipleNodeTests extends GNodeMultipleViewAccessTests {
++
++  /**
++   * Drupal SimpleTest method: return metadata about the test.
++   */
++  public static function getInfo() {
++    return array(
++      'name' => t('Group gnode safe mode view tests with multiple groups'),
++      'description' => t('Executes node access test suite for gnode module in safe mode when a node is in multiple groups.'),
++      'group' => t('Group'),
++    );
++  }
++
++  /**
++   * Test setup instructions.
++   */
++  public function setUp() {
++    parent::setUp('node', 'entity', 'group', 'gnode');
++    variable_set('group_node_mode', GROUP_NODE_SAFE_MODE);
++    variable_set('group_node_multiple_groups', GROUP_NODE_MULTIPLE_GROUPS_MODE);
++    node_access_rebuild();
++  }
++}
+diff --git a/modules/gnode/tests/gnode.test b/modules/gnode/tests/gnode.test
+index b47e440..8c783c6 100644
+--- a/modules/gnode/tests/gnode.test
++++ b/modules/gnode/tests/gnode.test
+@@ -179,22 +179,36 @@ abstract class GNodeWebTestBase extends DrupalWebTestCase {
+         'uid' => $uid,
+         'status' => $status,
+         'promote' => 1,
+-        'group' => $gid,
++        'group' => _gnode_is_multiple() ? array($gid) : $gid,
+       )
+     );
+   }
+ 
+   /**
+-   * Remove a node from it's group.
++   * Set the groups a node is in.
+    *
+    * @param $node
++   *   The node object
++   * @pram int[] $gids
++   *   A list of group ids the node should be in.
++   *
+    * @throws \Exception
+    */
+-  public function removeNodeFromGroup($node) {
+-    $node->group = NULL;
++  public function setNodeGroups($node, $gids = array()) {
++    $node->group = _gnode_is_multiple() ? $gids : reset($gids);
+     node_save($node);
+   }
+ 
++  /**
++   * Remove a node from it's groups.
++   *
++   * @param $node
++   * @throws \Exception
++   */
++  public function removeNodeFromGroup($node) {
++    $this->setNodeGroups($node, array());
++  }
++
+ }
+ 
+ /**
+@@ -986,6 +1000,7 @@ class GNodeSafeModeViewTests extends GNodeViewAccessTests {
+   public function setUp() {
+     parent::setUp('node', 'entity', 'group', 'gnode');
+     variable_set('group_node_mode', 'GROUP_NODE_SAFE_MODE');
++    variable_set('group_node_multiple_groups', GROUP_NODE_SINGLE_GROUPS_MODE);
+     node_access_rebuild();
+   }
+ 
+@@ -1013,6 +1028,7 @@ class GNodeSafeModeEditTests extends GNodeEditAccessTests {
+   public function setUp() {
+     parent::setUp('node', 'entity', 'group', 'gnode');
+     variable_set('group_node_mode', 'GROUP_NODE_SAFE_MODE');
++    variable_set('group_node_multiple_groups', GROUP_NODE_SINGLE_GROUPS_MODE);
+     node_access_rebuild();
+   }
+ 
+@@ -1040,6 +1056,7 @@ class GNodeSafeModeDeleteTests extends GNodeDeleteAccessTests {
+   public function setUp() {
+     parent::setUp('node', 'entity', 'group', 'gnode');
+     variable_set('group_node_mode', 'GROUP_NODE_SAFE_MODE');
++    variable_set('group_node_multiple_groups', GROUP_NODE_SINGLE_GROUPS_MODE);
+     node_access_rebuild();
+   }
+ 
+@@ -1067,6 +1084,7 @@ class GNodeSafeModeCreateTests extends GNodeCreateAccessTests {
+   public function setUp() {
+     parent::setUp('node', 'entity', 'group', 'gnode');
+     variable_set('group_node_mode', 'GROUP_NODE_SAFE_MODE');
++    variable_set('group_node_multiple_groups', GROUP_NODE_SINGLE_GROUPS_MODE);
+     node_access_rebuild();
+   }
+ 
+@@ -1094,6 +1112,7 @@ class GNodeSafeModeBypassTests extends GNodeBypassAccessTests {
+   public function setUp() {
+     parent::setUp('node', 'entity', 'group', 'gnode');
+     variable_set('group_node_mode', 'GROUP_NODE_SAFE_MODE');
++    variable_set('group_node_multiple_groups', GROUP_NODE_SINGLE_GROUPS_MODE);
+     node_access_rebuild();
+   }
+ 
+@@ -1121,6 +1140,7 @@ class GNodeComplianceModeViewTests extends GNodeViewAccessTests {
+   public function setUp() {
+     parent::setUp('node', 'entity', 'group', 'gnode');
+     variable_set('group_node_mode', 'GROUP_NODE_COMPLIANCE_MODE');
++    variable_set('group_node_multiple_groups', GROUP_NODE_SINGLE_GROUPS_MODE);
+     node_access_rebuild();
+     $this->assert(count(module_implements('node_grants')) > 0, 'The number of modules which implement hook_node_grants is greater than 0.');
+   }
+@@ -1148,6 +1168,7 @@ class GNodeComplianceModeEditTests extends GNodeEditAccessTests {
+   public function setUp() {
+     parent::setUp('node', 'entity', 'group', 'gnode');
+     variable_set('group_node_mode', 'GROUP_NODE_COMPLIANCE_MODE');
++    variable_set('group_node_multiple_groups', GROUP_NODE_SINGLE_GROUPS_MODE);
+     node_access_rebuild();
+     $this->assert(count(module_implements('node_grants')) > 0, 'The number of modules which implement hook_node_grants is greater than 0.');
+   }
+@@ -1175,6 +1196,7 @@ class GNodeComplianceModeDeleteTests extends GNodeDeleteAccessTests {
+   public function setUp() {
+     parent::setUp('node', 'entity', 'group', 'gnode');
+     variable_set('group_node_mode', 'GROUP_NODE_COMPLIANCE_MODE');
++    variable_set('group_node_multiple_groups', GROUP_NODE_SINGLE_GROUPS_MODE);
+     node_access_rebuild();
+     $this->assert(count(module_implements('node_grants')) > 0, 'The number of modules which implement hook_node_grants is greater than 0.');
+   }
+@@ -1202,6 +1224,7 @@ class GNodeComplianceModeCreateTests extends GNodeCreateAccessTests {
+   public function setUp() {
+     parent::setUp('node', 'entity', 'group', 'gnode');
+     variable_set('group_node_mode', 'GROUP_NODE_COMPLIANCE_MODE');
++    variable_set('group_node_multiple_groups', GROUP_NODE_SINGLE_GROUPS_MODE);
+     node_access_rebuild();
+     $this->assert(count(module_implements('node_grants')) > 0, 'The number of modules which implement hook_node_grants is greater than 0.');
+   }
+@@ -1229,6 +1252,7 @@ class GNodeComplianceModeBypassTests extends GNodeBypassAccessTests {
+   public function setUp() {
+     parent::setUp('node', 'entity', 'group', 'gnode');
+     variable_set('group_node_mode', 'GROUP_NODE_COMPLIANCE_MODE');
++    variable_set('group_node_multiple_groups', GROUP_NODE_SINGLE_GROUPS_MODE);
+     node_access_rebuild();
+     $this->assert(count(module_implements('node_grants')) > 0, 'The number of modules which implement hook_node_grants is greater than 0.');
+   }
+@@ -1263,6 +1287,7 @@ class GNodeComplianceModeViewWithAnotherModuleTests extends GNodeWebTestBase {
+   public function setUp() {
+     parent::setUp('node', 'node_access_test', 'entity', 'group', 'gnode');
+     variable_set('group_node_mode', 'GROUP_NODE_COMPLIANCE_MODE');
++    variable_set('group_node_multiple_groups', GROUP_NODE_SINGLE_GROUPS_MODE);
+     node_access_rebuild();
+     $this->assert(count(module_implements('node_grants')) > 0, 'The number of modules which implement hook_node_grants is greater than 0.');
+   }
+@@ -1384,6 +1409,7 @@ class GNodeSafeModeViewWithAnotherModuleTests extends GNodeWebTestBase {
+   public function setUp() {
+     parent::setUp('node', 'node_access_test', 'entity', 'group', 'gnode');
+     variable_set('group_node_mode', 'GROUP_NODE_SAFE_MODE');
++    variable_set('group_node_multiple_groups', GROUP_NODE_SINGLE_GROUPS_MODE);
+     node_access_rebuild();
+   }
+ 
+@@ -1473,4 +1499,5 @@ class GNodeSafeModeViewWithAnotherModuleTests extends GNodeWebTestBase {
+     user_role_revoke_permissions($role->rid, array('node test view'));
+     $this->assertNodeOperationAccess($node->nid, 'view', 403, 'Node not in group is not accessible by member without group view permissions and without other module grant');
+   }
+-}
+\ No newline at end of file
++}
++
+diff --git a/pages/group.inc b/pages/group.inc
+index 84c89c0..5765985 100644
+--- a/pages/group.inc
++++ b/pages/group.inc
+@@ -34,6 +34,9 @@ function group_autocomplete($search = '') {
+ function group_autocomplete_by_type(GroupType $group_type = NULL, $search = '') {
+   $matches = array();
+ 
++  $tags = drupal_explode_tags($search);
++  $search = trim(array_pop($tags));
++
+   if ($search) {
+     $query = db_select('groups', 'g');
+     $query->addField('g', 'gid');
+@@ -45,8 +48,9 @@ function group_autocomplete_by_type(GroupType $group_type = NULL, $search = '')
+       $query->condition('type', $group_type->name);
+     }
+ 
++    $prefix = count($tags) ? implode(', ', $tags) . ', ' : '';
+     foreach ($query->execute()->fetchAllKeyed() as $gid => $title) {
+-      $title = check_plain($title);
++      $title = check_plain($prefix . $title);
+       $match = "$title (GID: $gid)";
+ 
+       $matches[$match] = $match;

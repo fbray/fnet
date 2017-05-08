@@ -1,0 +1,246 @@
+<?php
+/**
+ * @file
+ * Code for the industries_families module.
+ */
+
+function industries_families_preprocess_page(&$variables) {
+
+  if (isset($variables['node']) && ($variables['node']->type == 'industry' || $variables['node']->type == 'family')) {
+
+    // Add necessary JavaScript and CSS for the industry page.
+    drupal_add_js(drupal_get_path('module', 'industries_families') . '/javascript/script.js');
+    drupal_add_css(drupal_get_path('module', 'industries_families') . '/css/styles.css');
+
+    // Adds the jQuery UI Tabs widget library making it available for use.
+    drupal_add_library('system', 'ui.tabs');
+
+    // Hide title for this content type.
+    $variables['title'] = '';
+
+  }
+}
+
+function industries_families_preprocess_node(&$variables) {
+
+  if ($variables['view_mode'] != 'full') return;
+
+  if (isset($variables['node']) && $variables['node']->type == 'industry') {
+
+    // Fetch the current user's region/language.
+    $siteReg = module_invoke('fnet_helper', 'site_region');
+    $regLang = $siteReg["regLang"];
+    if (! isset($regLang)) $regLang = "en-us";
+
+    $query = new EntityFieldQuery();
+    $query->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'Family')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->addTag('draggableviews')
+      ->fieldCondition('field_family_industry', 'nid', $variables['node']->nid , '=')
+      ;
+
+    $result = $query->execute();
+    if (count($result) > 0) {
+      $variables['industry_families'] = node_load_multiple(array_keys($result['node']));
+    }
+    else {
+      $variables['industry_families'] = array();
+    }
+
+    // Get list of products by family related to this industry
+    $products_by_family = array();
+
+    foreach (array_keys($variables['industry_families']) as $family_nid) {
+
+      $family = node_load($family_nid);
+      $product_list = views_get_view('industry_family_products');
+      $product_list->set_items_per_page(0);
+      $product_list->set_arguments(array($family->nid, strtolower($regLang)));
+      $product_list->set_display('page_1');
+      $product_list->execute();
+      $products_by_family[] = array($family->nid, $family->title, $product_list->result);
+    }
+
+    $variables['products_by_family'] = $products_by_family;
+
+    //get whitepapers
+    $variables['whitepapers'] = industries_families_digital_assets($siteReg['lang'], $variables['node']->title, 'whitepapers');
+    //get webcasts
+    $variables['webcasts'] = industries_families_digital_assets($siteReg['lang'], $variables['node']->title, 'webcasts');
+    //get cse studies
+    $variables['case_studies'] = industries_families_case_studies($variables['node']->nid);
+    $industries_links = '';
+    foreach (array('whitepapers', 'webcasts', 'case_studies') as $section) {
+      if ($variables[$section]) {
+        switch ($section) {
+          case 'whitepapers':
+            $industries_links .= '<a href="#white_papers">White Papers</a>';
+            break;
+          case 'webcasts':
+            $industries_links .= '&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="#webcasts">Webcasts</a>';
+            break;
+          case 'case_studies':
+            $industries_links .= '&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="#case_studies">Case Studies</a>';
+            break;
+        }
+      }
+    }
+    $variables['industries_links'] = $industries_links;
+
+    // Language Overrides
+
+    // Hero banner
+    $banners = array();
+    $banners_lng = array();
+
+    for ($i = 1; $i <= 5 ; $i++) {
+      $banner_txt = fnet_common_get_field_value('node', $variables['node'], 'field_industry_banner_txt_' . $i);
+      if ( $banner_txt) $banners[] = $banner_txt;
+    }
+
+    // get industry_lang
+    $nodes_refs = fnet_common_get_field_values('node', $variables['node'], 'field_industry_language');
+
+    $lang_nids = array();
+    foreach($nodes_refs as $nid_list) {
+        $lang_nids[] = $nid_list['nid'];
+    }
+
+    $field_industry_language_nodes = node_load_multiple($lang_nids);
+
+    if ($field_industry_language_nodes) {
+       $sub_fields = _get_field_substitution_array();
+    }
+
+    foreach ($field_industry_language_nodes as $key => $field_industry_language_node) {
+
+        $field_langreg = fnet_common_get_field_value('node', $field_industry_language_node, 'field_indlang_language');
+        //  substring would be 'en-us', 'de-eu', etc..
+        if (substr($field_langreg,0,5) == $regLang) {
+
+            // build hero banner array
+            for ($i = 1; $i <= 5 ; $i++) {
+                $fieldname='field_indlang_banner_txt_' . $i;
+                $bannerval = fnet_common_get_field_value('node', $field_industry_language_node, $fieldname);
+                if ($bannerval)  $banners_lng[] = $bannerval;
+            }
+
+            // Loop over fields, either copy value from lang, or erase
+            foreach ($sub_fields as $original => $translated) {
+
+                      //if original field is set
+                      if (  fnet_common_get_field_values('node', $variables['node'], $original) ) {
+                        if ( fnet_common_get_field_values('node', $field_industry_language_node, $translated) ) {
+                                $variables['node']->$original = $field_industry_language_node->{$translated};
+                              } else {
+                                  // Erase
+                                  fnet_common_set_field_values(NULL, 'node', $variables['node'], $original);
+                                  //unset($variables[$original]);
+                        } // end if translated set
+                      } // end if original set
+
+            } // end foreach field
+
+         } // end if langreg match
+
+    } // end foreach lang node
+
+    $variables['banners'] = $banners_lng ? $banners_lng : $banners ;
+
+  } // end type = industry
+
+  if (isset($variables['node']) && $variables['node']->type == 'family') {
+
+    // Fetch the current user's region/language.
+    $siteReg = module_invoke('fnet_helper', 'site_region');
+    $regLang = $siteReg["regLang"];
+    if (!isset($regLang)) $regLang = "en-us";
+
+    // Get list of products by family
+    $product_list = views_get_view('industry_family_products');
+    $product_list->set_items_per_page(0);
+    $product_list->set_arguments(array($variables['node']->nid, strtolower($regLang)));
+    $product_list->set_display('page_1');
+    $product_list->execute();
+    $products_by_family = array($variables['node']->nid, $variables['node']->title, $product_list->result);
+
+    $variables['products_by_family'] = $products_by_family;
+    $node = $variables['node'];
+    if (!empty($node->field_family_expert_boxdesc_1) || !empty($node->field_family_expert_boxdesc_2) || !empty($node->field_family_expert_boxdesc_3)) {
+      $variables['expertise_column_1_class'] = 'col-2-3';
+      $variables['expertise_column_2_class'] = 'col-1-3';
+    }
+    else {
+      $variables['expertise_column_1_class'] = 'col-3-3';
+      $variables['expertise_column_2_class'] = 'col-0-3';
+    }
+
+  }
+
+}
+
+
+/*
+*
+*  Returns array mapping industry field names to industry_lang's
+*/
+function _get_field_substitution_array($type = 'industry') {
+
+    $return = array();
+
+    if ($type=='industry') {
+      $all_field_names = array('field_industry_banner_srt_1', 'field_industry_banner_srt_2', 'field_industry_banner_srt_3', 'field_industry_banner_srt_4', 'field_industry_banner_srt_5', 'field_industry_banner_txt_1', 'field_industry_banner_txt_2', 'field_industry_banner_txt_3', 'field_industry_banner_txt_4', 'field_industry_banner_txt_5', 'field_industry_box_desc_1', 'field_industry_box_desc_2', 'field_industry_box_desc_3', 'field_industry_box_img_1', 'field_industry_box_img_2', 'field_industry_box_img_3', 'field_industry_box_title_1', 'field_industry_box_title_2', 'field_industry_box_title_3', 'field_industry_box_url_1', 'field_industry_box_url_2', 'field_industry_box_url_3', 'field_industry_demo_1', 'field_industry_demo_2', 'field_industry_demo_3', 'field_industry_demo_type_1', 'field_industry_demo_type_2', 'field_industry_demo_type_3', 'field_industry_expertise_box', 'field_industry_fea_top_1', 'field_industry_fea_top_2', 'field_industry_fea_top_3', 'field_industry_image', 'field_industry_language', 'field_industry_learn_abt_1', 'field_industry_learn_abt_2', 'field_industry_learn_abt_3', 'field_industry_overview_intro', 'field_industry_pop_res_1', 'field_industry_pop_res_2', 'field_industry_pop_res_3', 'field_industry_product_box', 'field_industry_promo_1', 'field_industry_promo_2', 'field_industry_promo_3', 'field_industry_shortdesc', 'field_industry_trial_1', 'field_industry_trial_2', 'field_industry_trial_3', 'field_industry_trial_type_1', 'field_industry_trial_type_2', 'field_industry_trial_type_3', 'field_ind_background_img', );
+
+      foreach ($all_field_names as $original_field) {
+        $translated_field = str_replace('field_industry_', 'field_indlang_', $original_field);
+        $return[$original_field] = $translated_field;
+      }
+    }
+
+    return $return;
+
+}
+
+
+function industries_families_digital_assets($language, $industry, $type) {
+  // The $type variable is going to be either 'whitepapers' or 'webcasts'.
+  $industries = array(
+    'Datacom Cabling' => 'Datacom Cabling',
+    'IT Networking' => 'IT Networking',
+    'Telecom' => 'Telecommunications Providers',
+    'Cabling Certification' => 'Cabling Certification',
+    'Installation and Test' => 'Installation and Test',
+    'Telecom Test' => 'Telecom Test',
+  );
+
+  $assets = views_get_view('industry_assets', FALSE);
+  $assets->set_display($type); // Machine Name of the display.
+  $assets->set_arguments(array($language, $industries[$industry]));
+  $assets->pre_execute();
+  $assets->execute();
+
+  if (count($assets->result) > 0) {
+    $table = $assets->render();
+  }
+  else {
+    $table = NULL;
+  }
+  return $table;
+}
+
+function industries_families_case_studies($industry_nid) {
+  $case_studies = views_get_view('industry_case_studies');
+  $case_studies->set_display('case_studies');
+  $case_studies->set_arguments($industry_nid);
+  $case_studies->pre_execute();
+  $case_studies->execute();
+  if (count($case_studies->result) > 0) {
+    $output = $case_studies->render();
+  }
+  else {
+    $output = NULL;
+  }
+  return $output;
+}
+

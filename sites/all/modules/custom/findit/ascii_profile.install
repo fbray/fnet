@@ -1,0 +1,96 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Install file for ascii_profile module.
+ *
+ */
+
+/**
+ * Implements hook_install
+ */
+function ascii_profile_install() {
+}
+
+/**
+ * Implements hook_uninstall
+ */
+function ascii_profile_uninstall() {
+}
+
+/**
+ * Implements hook_schema
+ */
+function ascii_profile_schema() {
+  $schema = array();
+  $schema['ascii_profile'] = array(
+    'description' => 'Ascii only user profile',
+    'fields' => array(
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'email' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'first_name' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'last_name' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'company' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'address1' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'address2' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'city' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => FALSE,
+      ),
+      'province' => array(
+        'type' => 'varchar',
+        'length' => '16',
+        'not null' => FALSE,
+      ),
+      'country' => array(
+        'type' => 'varchar',
+        'length' => '2',
+        'not null' => FALSE,
+      ),
+      'postal_code' => array(
+        'type' => 'varchar',
+        'length' => '16',
+        'not null' => FALSE,
+      ),
+      'changed' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('uid'),
+    'indexes' => array(
+      'ascii_profile_email' => array('email'),
+    ),
+  );
+  return $schema;
+}

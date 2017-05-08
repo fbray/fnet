@@ -1,0 +1,881 @@
+<?php
+//include DRUPAL_ROOT . '/' . ("includes/License.php");
+//if (!class_exists("License"))
+//  include drupal_get_path('module', 'am_license')."/includes/License.php";
+
+/**
+ * Implements hook_help().
+ */
+function am_license_help($path, $arg) {
+  //Help
+}
+
+/**
+ * Implements hook_menu().
+ *
+ *"type": A bitmask of flags describing properties of the menu item. Many shortcut bitmasks are provided as constants in menu.inc:
+ * MENU_NORMAL_ITEM: Normal menu items show up in the menu tree and can be moved/hidden by the administrator.
+ * MENU_CALLBACK: Callbacks simply register a path so that the correct function is fired when the URL is accessed.
+ * MENU_SUGGESTED_ITEM: Modules may "suggest" menu items that the administrator may enable.
+ * MENU_LOCAL_TASK: Local tasks are rendered as tabs by default.
+ * MENU_DEFAULT_LOCAL_TASK: Every set of local tasks should provide one "default" task, that links to the same path as its parent when clicked.
+ * If the "type" key is omitted, MENU_NORMAL_ITEM is assumed. *
+ */
+function am_license_menu() {
+
+  $items['am_licenses/build_lic'] = array(
+    'title' => 'Build Product License File',
+    'page callback' => 'am_license_build_lic_file',
+    //'page arguments' => array(2),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['am_licenses/get_serial_info'] = array(
+    'title' => 'Get Serial Infomation',
+    'page callback' => 'am_license_get_serial_info',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['am_licenses/get_serial_release_info'] = array(
+    'title' => 'Get Serial Release Infomation',
+    'page callback' => 'am_license_get_serial_release_info',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['am_licenses/get_sku_array'] = array(
+    'title' => 'Get Sku License Type Infomation',
+    'page callback' => 'am_license_get_sku_array',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/settings/am_license/sku_config/%'] = array(
+    'title' => 'Product SKU Configuration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('am_license_sku_config_form', 4),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer am_license'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/settings/am_license/list_family_release/%'] = array(
+    'title' => 'AirMagnet License Family Build Release',
+    'page callback' => 'am_license_list_family_release',
+    'page arguments' => array(4),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer am_license'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/settings/am_license/family_release/%/%'] = array(
+    'title' => 'Product Family Build Release',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('am_license_family_release_form', 4, 5),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer am_license'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/settings/am_license/list_minor_release/%'] = array(
+    'title' => 'AirMagnet License Minor Build Release',
+    'page callback' => 'am_license_list_minor_release',
+    'page arguments' => array(4),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer am_license'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/settings/am_license/minor_release/%/%'] = array(
+    'title' => 'Product Minor Build Release',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('am_license_minor_release_form', 4, 5),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer am_license'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/settings/am_license/list_lic_file_config/%'] = array(
+    'title' => 'AirMagnet License File Configuration',
+    'page callback' => 'am_license_list_lic_file_config',
+    'page arguments' => array(4),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer am_license'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/settings/am_license/lic_file_config/%/%'] = array(
+    'title' => 'Product License File Part/Element/Component Configuration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('am_license_lic_file_config_form', 4, 5),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer am_license'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/settings/am_license/lic_file_config/delete/%/%'] = array(
+    'title' => 'Delete Product License File Part/Element/Component Configuration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('am_license_lic_file_config_delete_form', 5, 6),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer am_license'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/config/am_license'] = array(
+    'title' => 'AirMagnet License',
+    'description' => 'Configure AirMagnet License',
+    'page callback' => 'am_license_list_sku',
+    'access arguments' => array('administer am_license'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/config/am_license/list_prod_sku'] = array(
+    'title' => 'Display AirMagnet Product SKUs',
+    'description' => 'Configure AirMagnet License',
+    'page callback' => 'am_license_list_sku',
+    'access arguments' => array('administer am_license'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -1,
+  );
+
+  $items['admin/config/am_license/import'] = array(
+    'title' => 'Import legacy license configuration',
+    'description' => 'Import license configuration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('am_license_admin_import_form'),
+    'access arguments' => array('import am_license config'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'am_license.admin.inc',
+    'weight' => 4,
+  );
+  return $items;
+}
+
+/**
+ * Get Sku License Type Infomation
+ */
+function am_license_get_sku_array() {
+  $sn = new SerialNumber();
+  $sn->getSkuLicenseTypeArray();
+
+  print http_build_query($sn->skuLicenseTypeArray);
+  exit;
+}
+
+/**
+ * Get Serial Infomation
+ */
+function am_license_get_serial_info() {
+  $serialNumber = $_POST["serialNumber"];
+  $req = $_POST["req"];
+
+  $sn = new SerialNumber($serialNumber);
+  $sn->getSerialInfo();
+
+  if (! $req) {
+    $result = array(
+      "familyName" => $sn->familyName,
+      "licType" => $sn->licType,
+      "language" => $sn->language,
+      "companyId" => $sn->companyId,
+      "familyMinor" => $sn->familyMinor,
+      "serialPrefixType" => $sn->serialPrefixType,
+    );
+    print http_build_query($result);
+  }
+  else {
+    print $sn->{$req};
+  }
+  exit;
+}
+
+/**
+ * Get Serial Release Infomation
+ */
+function am_license_get_serial_release_info() {
+  $serialNumber = $_POST["serialNumber"];
+  $req = $_POST["req"];
+
+  $lic = new License($serialNumber);
+
+  if ($lic->serialPrefixType == "resAndDev" || $lic->serialPrefixType == "beta" ) {
+    $lic->buildNumber = $lic->rdBuildNumber;
+  }
+  elseif ((strpos($lic->licType, "AirMedic") > -1 || strpos($lic->sku, "B") > -1 || $lic->serialPrefixType == "prodNoSupport" ||
+      $lic->serialPrefixType == "INABundle" || $lic->serialPrefixType == "RuckusOEM" || $lic->serialPrefixType == "DlinkOEM" ||
+      $lic->serialPrefixType == "CiscoOEM" || $lic->serialPrefixType == "SonicOEM" ) && $lic->serviceEndDate == $lic->serviceStartDate) { //Express or AirMedic
+    if (! is_null($lic->familyMinor)) {
+      $lic->minorReleaseLookup($lic->familyMinor, $lic->serviceStartDate, $lic->serviceEndDate);
+    }
+  }
+
+  if (! $req) {
+    print http_build_query($lic);
+  }
+  else {
+    print $lic->{$req};
+  }
+  exit;
+}
+
+/**
+ * Construct and Build Product License File
+ */
+function am_license_build_lic_file() {
+//  $buildNumber = "1111";
+  $userName = $_POST["email"];
+  $productType = $_POST["productType"];
+
+  if ($productType == "Mobile") {
+    $lic = new MobileLicense($_POST);
+  }
+  else if ("Distributed") {
+    $lic = new EnterpriseLicense($_POST);
+  }
+  else {
+    $lic = new License($_POST);
+  }
+
+  //print "Test Return: ". $serial ;
+  /*  print "Test Return: Serial is ". $lic->serialNumber ."<br>";
+   print "MAC is ". $lic->macAddress ."<br>";
+   print "Prefix Type is ". $lic->serialPrefix ." ~~ ". $lic->serialPrefixType ."<br>";
+   print "SUPPORT Start is ". $lic->serviceStartDate ."<br>";
+   print "SUPPORT End is ". $lic->serviceEndDate ."<br>";
+   print "Prod Type is ". $lic->productType ."<br>";
+   print "License Code is ". $lic->productLicenseCode ."<br>";
+
+
+   print "TimeStamp is ". $lic->timeStamp ."<br>";
+   print "SKU is ". $lic->sku ."<br>";
+   print "isEval is ". $lic->isEval ."<br><hr>";
+   print "Family: ". $lic->familyName ."<br>";
+   print "Lic type: ".$lic->licType ."<br>";
+   print "LAnague: ".$lic->language  ."<br>";
+   print "Company ID: ".$lic->companyId  ."<br>";
+   print "80 Bit: ".$lic->lic80bit ."<br>";
+   print "Digi Ver: ".$lic->digiSkuVer ."<br>";
+   print "Family Minor: ".$lic->familyMinor  ."<br>";
+   print "RD Buid: ".$lic->rdBuildNumber  ."<br>";
+
+   print "Build number: ". $lic->buildNumber ."<br>";
+   */
+//  print "<pre>TEST";
+//  print_r ($lic->productComponent);
+//  print "</pre>";
+  $lic->generateLicense($lic->buildNumber, $userName);
+
+//  $lic->addSignature();
+//  $lic->addSignature_80bits($lic->buildNumber);
+//  print "<hr>";
+
+  if ($lic->lic80bit == "2") { //has version control build number RA
+    if (strlen($lic->buildNumber) > 3) {
+      $lic->addSignature_80bits($lic->currentBuildNumber);
+    }
+    else {
+      $lic->addSignature();
+    }
+  }
+  else if ($lic->lic80bit == "3" ) {
+    $lic->addSignature_80bits($lic->currentBuildNumber);
+  }
+  else {
+    $lic->addSignature();
+  }
+//  print str_ireplace("\n", "<br>", $lic->license);
+  print $lic->license;
+  exit;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function am_license_permission() {
+  return array(
+    'administer am_license' => array(
+      'title' => t('administer am_license'),
+      'description' => t('Administer AirMagnet License Configuration'),
+    ),
+    'import am_license config' => array(
+      'title' => t('import am_license config'),
+      'description' => t('Special permission to rebuild AirMagnet License Configuration data'),
+    ),
+  );
+}
+
+/**
+ * AirMagnet Licenses list all SKUs
+ */
+function am_license_list_sku() {
+  $result = db_query('SELECT sku, family_name, family_minor FROM {am_lic_config} ORDER BY family_name, sku; ');
+  $header = array('Action', 'SKU', 'Family Name', 'Family Minor');
+  $rows = array();
+  foreach ($result as $record) {
+    $row = array();
+    $row[] = l('Edit', 'admin/settings/am_license/sku_config/' . $record->sku);
+    $row[] = l($record->sku, 'admin/settings/am_license/list_lic_file_config/' . $record->sku);
+    $row[] = l((isset($record->family_name)?$record->family_name:"NA"), 'admin/settings/am_license/list_family_release/' . (isset($record->family_name)?$record->family_name:""));
+    $row[] = l((isset($record->family_minor)?$record->family_minor:"NA"), 'admin/settings/am_license/list_minor_release/' . (isset($record->family_minor)?$record->family_minor:""));
+    $rows[] = $row;
+  }
+  $output = "<h2>AirMagnet License List</h2>";
+  $output .= theme('table', array('header' => $header, 'rows' => $rows));
+  $output .= l('Add New Product SKU','admin/settings/am_license/sku_config/new');
+  return $output;
+}
+
+/**
+ * AirMagnet License family list all build release
+ */
+function am_license_list_family_release($familyName) {
+  $result = db_query("SELECT build_number, DATE(build_date) as build_date FROM {am_lic_family_release} WHERE family_name = :family_name ORDER BY build_date, build_number ; ", array(':family_name' => $familyName));
+  $header = array('Action', 'Build Number', 'Build Date');
+  $rows = array();
+  foreach ($result as $record) {
+    $row = array();
+    $row[] = l('Edit', 'admin/settings/am_license/family_release/'.$familyName.'/' . $record->build_number);
+    $row[] = $record->build_number;
+    $row[] = $record->build_date;
+    $rows[] = $row;
+  }
+  $output = "<h2>Build Release for $familyName:</h2>";
+  $output .= theme('table', array('header' => $header, 'rows' => $rows));
+  $output .= l('Add New Major Release','admin/settings/am_license/family_release/'.$familyName.'/new');
+  return $output;
+}
+
+/**
+ * AirMagnet License family minor list all build release
+ */
+function am_license_list_minor_release($familyMinor) {
+  $result = db_query("SELECT minor_build, minor_version, DATE(build_date) as build_date, minor_filename FROM {am_lic_minor_release} WHERE family_minor = :family_minor ORDER BY build_date, minor_build; ", array(':family_minor' => $familyMinor));
+  $header = array('Action', 'Minor Build #', 'Minor Version', 'Build Date', 'Minor File Name');
+  $rows = array();
+  foreach ($result as $record) {
+    $row = array();
+    $row[] = l('Edit', 'admin/settings/am_license/minor_release/'.$familyMinor.'/'. $record->minor_build);
+    $row[] = $record->minor_build;
+    $row[] = $record->minor_version;
+    $row[] = $record->build_date;
+    $row[] = $record->minor_filename;
+    $rows[] = $row;
+  }
+  $output = "<h2>Minor Build Release for $familyMinor:</h2>";
+  $output .= theme('table', array('header' => $header, 'rows' => $rows));
+  $output .= l('Add New Minor Release','admin/settings/am_license/minor_release/'.$familyMinor.'/new');
+  return $output;
+}
+
+/**
+ * AirMagnet License file Configuration listing all params by SKU
+ */
+function am_license_list_lic_file_config($sku) {
+  $result = db_query("SELECT sku, param, value, sort_order FROM {am_lic_file_config} WHERE sku = :sku ORDER BY sort_order asc; ", array(':sku' => $sku));
+  $header = array('Action', 'Part/Element/Component Name', 'Value', 'Display Order #', '');
+  $rows = array();
+  foreach ($result as $record) {
+    $row = array();
+    $row[] = l('Edit', 'admin/settings/am_license/lic_file_config/'.$sku.'/' . $record->param);
+    $row[] = $record->param;
+    $row[] = $record->value;
+    $row[] = $record->sort_order;
+    $row[] = l('Delete', 'admin/settings/am_license/lic_file_config/delete/'.$sku.'/' . $record->param);
+    $rows[] = $row;
+  }
+
+  $output =  "<h2>License File Configuration for $sku:</h2>";
+  $output .= theme('table', array('header' => $header, 'rows' => $rows));
+  $output .= l('Add New License Element/Part to License File','admin/settings/am_license/lic_file_config/'.$sku.'/new');
+  return $output;
+}
+
+/*
+ * AirMagnet License SKU configuration form
+ * construct SKU configuration form for administrator
+ */
+function am_license_sku_config_form($form, $form_state, $prodSku = 'new') {
+  $sku = check_plain($prodSku);
+  $row = array();
+  if ($sku != 'new') {
+    $sql = "SELECT sku, family_name, lic_type, language, company_id, lic_80bit, digi_sku_ver, family_minor, rd_build_number ";
+    $sql .= "FROM {am_lic_config} ";
+    $sql .= "WHERE sku = :sku LIMIT 1; ";
+    $row = (object)db_query($sql, array(':sku' => $sku))->fetchObject();
+  }
+  $form = array();
+  $form['sku'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Product SKU'),
+    '#size' => 10,
+    '#required' => true,
+    '#default_value' => $row->sku,
+  );
+  $form['family_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Product Family Name'),
+    '#size' => 50,
+    '#required' => false,
+    '#default_value' => $row->family_name,
+  );
+  $form['lic_type'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Product License Type'),
+    '#size' => 30,
+    '#required' => false,
+    '#default_value' => $row->lic_type,
+  );
+  $form['language'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Product Language Code'),
+    '#size' => 5,
+    '#required' => false,
+    '#default_value' => $row->language,
+  );
+  $form['company_id'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Product Company Id'),
+    '#size' => 5,
+    '#required' => false,
+    '#default_value' => $row->company_id,
+  );
+  $form['lic_80bit'] = array(
+    '#type' => 'textfield',
+    '#title' => t('80bit License Signature'),
+    '#size' => 5,
+    '#required' => false,
+    '#default_value' => $row->lic_80bit,
+  );
+  $form['digi_sku_ver'] = array(
+    '#type' => 'textfield',
+    '#title' => t('SKU Version for Digi License Server'),
+    '#size' => 10,
+    '#required' => false,
+    '#default_value' => $row->digi_sku_ver,
+  );
+  $form['family_minor'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Product Minor Family Name'),
+    '#size' => 50,
+    '#required' => false,
+    '#default_value' => $row->family_minor,
+  );
+  $form['rd_build_number'] = array(
+    '#type' => 'textfield',
+    '#title' => t('R&D Qualify Build Number'),
+    '#size' => 20,
+    '#required' => false,
+    '#default_value' => $row->rd_build_number,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  );
+  return $form;
+}
+
+/**
+ * Submit function for am_license_sku_config_form
+ *
+ * @param $form
+ * @param $form_state
+ */
+function am_license_sku_config_form_submit($form, &$form_state) {
+  $values = $form_state['values'];
+  $record = new stdClass();
+  $record->sku = $values['sku'];
+  $record->family_name = $values['family_name'];
+  $record->lic_type = $values['lic_type'];
+  $record->language = $values['language'];
+  $record->company_id = $values['company_id'];
+  $record->lic_80bit = $values['lic_80bit'];
+  $record->digi_sku_ver = $values['digi_sku_ver'];
+  $record->family_minor = $values['family_minor'];
+  $record->rd_build_number = $values['rd_build_number'];
+
+  $row = (object)db_query("SELECT sku FROM {am_lic_config} WHERE sku = :sku ; ", array(':sku' => $values['sku']))->fetchObject();
+  if (isset($row->sku)) {
+    $result = drupal_write_record('am_lic_config', $record, 'sku');
+  }
+  else {
+    $result = drupal_write_record('am_lic_config', $record);
+  }
+  if ($result == SAVED_NEW) {
+    $form_state['redirect'] = "admin/setting/am_license/sku_config/" . $record->sku;
+    drupal_set_message('AirMagnet Lic Config values inserted to database');
+  }
+  else if ($result == SAVED_UPDATED) {
+    drupal_set_message('AirMagnet Lic Config values updated to database');
+  }
+  else {
+    watchdog('am_lic_config', 'Database update failed', array(), WATCHDOG_ERROR);
+    drupal_set_message('Unable to save data!', 'error');
+  }
+}
+
+/**
+ * AirMagnet License Family Product release configuration form
+ */
+function am_license_family_release_form($form, $form_state, $family_name, $build_num = 'new') {
+  $familyName = check_plain($family_name);
+  $buildNumber = check_plain($build_num);
+  $row = array();
+  $form = array();
+
+  if ($buildNumber != 'new') {
+    $sql = "SELECT family_name, build_number, build_date ";
+    $sql .= "FROM {am_lic_family_release} ";
+    $sql .= "WHERE family_name = :familyName AND build_number = :buildNumber ; ";
+    $row = (object)db_query($sql, array(':familyName' => $familyName, ':buildNumber'=>$buildNumber))->fetchObject();
+
+    if ($row->family_name && $row->build_number) {
+      $form['family_name_orig'] = array(
+        '#value' => $row->family_name,
+        '#type' => 'hidden',
+      );
+      $form['build_number_orig'] = array(
+        '#value' => $row->build_number,
+        '#type' => 'hidden',
+      );
+    }
+  }
+  $form['family_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Product Family Name'),
+    '#size' => 50,
+    '#required' => true,
+    '#default_value' => $family_name,
+  );
+  $form['build_number'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Build Number'),
+    '#size' => 20,
+    '#required' => true,
+    '#default_value' => isset($row->build_number)?$row->build_number:"",
+  );
+
+  $form['build_date'] = array(
+    '#type' => 'date_popup',
+    '#date_timezone' => date_default_timezone(),
+    '#date_format' => "Y-m-d",
+    '#date_year_range' => '-10:+3',
+    '#title' => "Build Date",
+    '#default_value' => isset($row->build_date)?$row->build_date:"",
+    '#required' => false,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  );
+  return $form;
+}
+
+/**
+ * Submit function for am_license_family_release_form
+ *
+ * @param $form
+ * @param $form_state
+ */
+function am_license_family_release_form_submit($form, &$form_state) {
+  $values = $form_state['values'];
+  $record = new stdClass();
+  $record->family_name = $values['family_name'];
+  $record->build_number = $values['build_number'];
+  $record->build_date = $values['build_date'];
+
+  if (isset($values['family_name_orig']) && isset($values['build_number_orig'])) {
+    db_update('am_lic_family_release')->fields(array(
+      'family_name' => $record->family_name,
+      'build_number' => $record->build_number,
+      'build_date' => $record->build_date,
+    ))
+  ->condition('family_name', $values['family_name_orig'])
+  ->condition('build_number', $values['build_number_orig'])
+  ->execute();
+    $result = SAVED_UPDATED;
+  }
+  else {
+    $result = drupal_write_record('am_lic_family_release', $record);
+  }
+  $form_state['redirect'] = "/admin/settings/am_license/list_family_release/" . $record->family_name;
+  if ($result == SAVED_NEW) {
+    drupal_set_message('AirMagnet Product Family Build Release date inserted to database');
+  }
+  else if ($result == SAVED_UPDATED) {
+    drupal_set_message('AirMagnet Product Family Build Release date updated to database');
+  }
+  else {
+    watchdog('am_lic_family_release', 'Database update failed', array(), WATCHDOG_ERROR);
+    drupal_set_message('Unable to save data!', 'error');
+  }
+}
+
+/**
+ * AirMagnet License Family minor release configuration form
+*/
+function am_license_minor_release_form($form, $form_state, $family_minor, $build_num = 'new') {
+  $familyMinor = check_plain($family_minor);
+  $buildNumber = check_plain($build_num);
+  $row = array();
+  $form = array();
+
+  if ($buildNumber != 'new') {
+    $sql = "SELECT family_minor, minor_build, minor_version, minor_filename, build_date ";
+    $sql .= "FROM {am_lic_minor_release} ";
+    $sql .= "WHERE family_minor = :familyMinor AND minor_build = :buildNumber ; ";
+//    $result = db_query($sql, $familyMinor, $buildNumber);
+//    $row = db_fetch_array($result);
+    $row = (object)db_query($sql, array(':familyMinor'=>$familyMinor, ':buildNumber'=>$buildNumber))->fetchObject();
+    if ($row->family_minor && $row->minor_build) {
+      $form['family_minor_orig'] = array(
+        '#value' => $row->family_minor,
+        '#type' => 'hidden',
+      );
+      $form['minor_build_orig'] = array(
+        '#value' => $row->minor_build,
+        '#type' => 'hidden',
+      );
+    }
+  }
+  $form['family_minor'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Product Minor Family Name'),
+    '#size' => 50,
+    '#required' => true,
+    '#default_value' => $family_minor,
+  );
+  $form['minor_build'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Minor Build Number'),
+    '#size' => 20,
+    '#required' => true,
+    '#default_value' => isset($row->minor_build)?$row->minor_build:"",
+  );
+  $form['minor_version'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Minor Build Version'),
+    '#size' => 20,
+    '#required' => true,
+    '#default_value' => isset($row->minor_version)?$row->minor_version:"",
+  );
+  $form['minor_filename'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Minor File Name'),
+    '#size' => 100,
+    '#required' => true,
+    '#default_value' => isset($row->minor_filename)?$row->minor_filename:"",
+  );
+  $form['build_date'] = array(
+    '#type' => 'date_popup',
+    '#date_timezone' => date_default_timezone(),
+    '#date_format' => "Y-m-d",
+    '#date_year_range' => '-10:+3',
+    '#title' => "Build Date",
+    '#default_value' => isset($row->build_date)?$row->build_date:"",
+    '#required' => false,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  );
+  return $form;
+}
+
+/**
+ * Submit function for am_license_minor_release_form
+ *
+ * @param $form
+ * @param $form_state
+ */
+function am_license_minor_release_form_submit($form, &$form_state) {
+  $values = $form_state['values'];
+  $record = new stdClass();
+  $record->family_minor = $values['family_minor'];
+  $record->minor_build = $values['minor_build'];
+  $record->minor_version = $values['minor_version'];
+  $record->minor_filename = $values['minor_filename'];
+  $record->build_date = $values['build_date'];
+
+  if (isset($values['family_minor_orig']) && isset($values['minor_build_orig'])) {
+    db_update('am_lic_minor_release')
+  ->fields(array(
+      'family_minor' => $record->family_minor,
+      'minor_build' => $record->minor_build,
+      'minor_version' => $record->minor_version,
+      'minor_filename' => $record->minor_filename,
+      'build_date' => $record->build_date,
+    ))
+  ->condition('family_minor', $values['family_minor_orig'])
+  ->condition('minor_build', $values['minor_build_orig'])
+  ->execute();
+    $result = SAVED_UPDATED;
+  }
+  else {
+    $result = drupal_write_record('am_lic_minor_release', $record);
+  }
+  $form_state['redirect'] = "/admin/settings/am_license/list_minor_release/" . $record->family_minor;
+  if ($result == SAVED_NEW) {
+    drupal_set_message('AirMagnet Product Minor Build Release data inserted to database');
+  }
+  else if ($result == SAVED_UPDATED) {
+    drupal_set_message('AirMagnet Product Minor Build Release data updated to database');
+  }
+  else {
+    watchdog('am_lic_minor_release', 'Database update failed', array(), WATCHDOG_ERROR);
+    drupal_set_message('Unable to save data!', 'error');
+  }
+}
+
+/**
+ * AirMagnet License File configuration form
+*/
+function am_license_lic_file_config_form($form, $form_state, $sku, $param = 'new') {
+  $sku = check_plain($sku);
+  $param = check_plain($param);
+  $row = array();
+  $form = array();
+
+
+  if ($param != 'new') {
+    $sql = "SELECT sku, param, value, sort_order ";
+    $sql .= "FROM {am_lic_file_config} ";
+    $sql .= "WHERE sku = :sku AND param = :param ; ";
+    $row = (object)db_query($sql, array(':sku'=>$sku, ':param'=>$param))->fetchObject();
+    if ($row->sku && $row->param) {
+      $form['sku_orig'] = array(
+        '#value' => $row->sku,
+        '#type' => 'hidden',
+      );
+      $form['param_orig'] = array(
+        '#value' => $row->param,
+        '#type' => 'hidden',
+      );
+    }
+  }
+  $form['sku'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Product SKU'),
+    '#size' => 10,
+    '#required' => true,
+    '#default_value' => $sku,
+  );
+  $form['param'] = array(
+    '#type' => 'textfield',
+    '#title' => t('License File Part/Element/Component Name'),
+    '#size' => 50,
+    '#required' => true,
+    '#default_value' => isset($row->param)?$row->param:"",
+  );
+  $form['value'] = array(
+    '#type' => 'textfield',
+    '#title' => t('License File Part/Element/Component Value'),
+    '#size' => 100,
+    '#required' => false,
+    '#default_value' => isset($row->value)?$row->value:"",
+  );
+
+  $sortOptionsArray = array(range(0, 99));
+  if (isset($row->sort_order)) {
+    $sortOrder = $row->sort_order;
+  } else {
+    $sortOrder = 99;
+  }
+
+  $form['sort_order'] = array(
+    '#type' => 'select',
+    '#title' => t('Sort Order'),
+    '#options' => $sortOptionsArray,
+    '#required' => true,
+    '#default_value' => $sortOrder,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  );
+  return $form;
+}
+
+/**
+ * Submit function for am_license_lic_file_config_form
+ *
+ * @param $formsku, param, value, sort_order
+ * @param $form_state
+ */
+function am_license_lic_file_config_form_submit($form, &$form_state) {
+  $values = $form_state['values'];
+  $record = new stdClass();
+  $record->sku = $values['sku'];
+  $record->param = $values['param'];
+  $record->value = $values['value'];
+  $record->sort_order = $values['sort_order'];
+
+  if (isset($values['sku_orig']) && isset($values['param_orig'])) {
+    db_update('am_lic_file_config')
+  ->fields(array(
+      'sku' => $record->sku,
+      'param' => $record->param,
+      'value' => $record->value,
+      'sort_order' => $record->sort_order,
+    ))
+  ->condition('sku', $values['sku_orig'])
+  ->condition('param', $values['param_orig'])
+  ->execute();
+    $result = SAVED_UPDATED;
+  }
+  else {
+    $result = drupal_write_record('am_lic_file_config', $record);
+  }
+  $form_state['redirect'] = "/admin/settings/am_license/list_lic_file_config/" . $record->sku;
+  if ($result == SAVED_NEW) {
+    drupal_set_message('AirMagnet Product License File Configuration data inserted to database');
+  }
+  else if ($result == SAVED_UPDATED) {
+    drupal_set_message('AirMagnet Product License File Configuration data updated to database');
+  }
+  else {
+    watchdog('am_lic_file_config', 'Database update failed', array(), WATCHDOG_ERROR);
+    drupal_set_message('Unable to save data!', 'error');
+  }
+}
+
+/**
+ * delete license file item when needed
+ */
+function am_license_lic_file_config_delete_form($form, $form_state, $sku, $param) {
+  $form = array();
+  $form['param'] = array(
+    '#type' => 'value',
+    '#value' => $param,
+  );
+  $form['sku'] = array(
+    '#type' => 'value',
+    '#value' => $sku,
+  );
+  // redirect path if user cancels
+  $returnpath = "admin/settings/am_license/list_lic_file_config/" . $sku;
+  $description = t('<strong>Delete the License File Configuration Item will remove it from the configuration.</strong><br/> This action cannot be undone.');
+  $confirm_form = confirm_form($form, t("Delete the License File Configuration Item :param from :sku?", array(':param' => t($param), ':sku' => t($sku))), $returnpath, $description, t('Delete'), t('Cancel'));
+  return $confirm_form;
+}
+
+/**
+ * process delete license file item
+ */
+function am_license_lic_file_config_delete_form_submit($form, &$form_state) {
+  if ($form_state['values']['sku'] && $form_state['values']['param']) {
+    db_delete('am_lic_file_config')
+  ->condition('sku', $form_state['values']['sku'])
+  ->condition('param', $form_state['values']['param'])
+  ->execute();
+
+    drupal_set_message(t('The License File Configuration Item/Element :param has been deleted from :sku', array(':param' => $form_state['values']['param'], ':sku' => $form_state['values']['sku'])));
+  }
+  $form_state['redirect'] = '/admin/settings/am_license/list_lic_file_config/' . $form_state['values']['sku'];
+  return;
+}

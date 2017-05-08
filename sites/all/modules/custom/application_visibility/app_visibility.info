@@ -1,0 +1,6 @@
+; $id $
+core = 7.x
+description = "Primarily JavaScript app for TruView Live marketing"
+name = "Application Visibility app"
+package = "Fluke Networks"
+version = "7.x-1.0-20150826"

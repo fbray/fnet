@@ -1,0 +1,215 @@
+<?php
+/**
+ * Implement hook_uninstall()
+ */
+function box_connect_uninstall() {
+
+}
+
+/**
+ * Implement hook_schema()
+ */
+function box_connect_schema() {
+  $schema = array();
+  $schema['box_item'] = array(
+    'description' => 'Box Item',
+    'fields' => array(
+      'box_id'  => array(
+        'type' => 'int',
+        'size' => 'big',
+      ),
+      'box_parent_id'  => array(
+        'type' => 'int',
+        'size' => 'big',
+      ),
+      'box_type' => array(
+        'type' => 'varchar',
+        'length' => 30,
+        'default' => '',
+      ),
+      'box_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'box_description' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'box_top_folder_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'box_top_folder_id' => array(
+        'type' => 'int',
+        'size' => 'big',
+      ),
+      'size_name' => array(
+        'type' => 'varchar',
+        'length' => 10,
+        'default' => '',
+      ),
+      'original_file_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'file_size'  => array(
+        'type' => 'int',
+        'size' => 'big',
+      ),
+      'status'    => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'last_checked' => array(
+        'descripton' => 'last_checked',
+        'type' => 'int',
+        'default' => 0,
+      ),
+    ),
+    'unique keys' => array(
+      'box_id' => array('box_id'),
+    ),
+  );
+
+  $schema['box_item_temporary'] = array(
+    'description' => 'Box Item',
+    'fields' => array(
+      'box_id'  => array(
+        'type' => 'int',
+        'size' => 'big',
+      ),
+      'box_parent_id'  => array(
+        'type' => 'int',
+        'size' => 'big',
+      ),
+      'box_type' => array(
+        'type' => 'varchar',
+        'length' => 30,
+        'default' => '',
+      ),
+      'box_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'box_description' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'box_top_folder_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'box_top_folder_id' => array(
+        'type' => 'int',
+        'size' => 'big',
+      ),
+      'size_name' => array(
+        'type' => 'varchar',
+        'length' => 10,
+        'default' => '',
+      ),
+      'original_file_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'file_size'  => array(
+        'type' => 'int',
+        'size' => 'big',
+      ),
+      'status'    => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'last_checked' => array(
+        'descripton' => 'last_checked',
+        'type' => 'int',
+        'default' => 0,
+      ),
+    ),
+    'unique keys' => array(
+      'box_id' => array('box_id'),
+    ),
+  );
+  return $schema;
+}
+
+function fextranet_update_7001() {
+  $schema['box_item_temporary'] = array(
+    'description' => 'Box Item',
+    'fields' => array(
+      'box_id'  => array(
+        'type' => 'int',
+        'size' => 'big',
+      ),
+      'box_parent_id'  => array(
+        'type' => 'int',
+        'size' => 'big',
+      ),
+      'box_type' => array(
+        'type' => 'varchar',
+        'length' => 30,
+        'default' => '',
+      ),
+      'box_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'box_description' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'box_top_folder_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'box_top_folder_id' => array(
+        'type' => 'int',
+        'size' => 'big',
+      ),
+      'size_name' => array(
+        'type' => 'varchar',
+        'length' => 10,
+        'default' => '',
+      ),
+      'original_file_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'file_size'  => array(
+        'type' => 'int',
+        'size' => 'big',
+      ),
+      'status'    => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'last_checked' => array(
+        'descripton' => 'last_checked',
+        'type' => 'int',
+        'default' => 0,
+      ),
+    ),
+    'unique keys' => array(
+      'box_id' => array('box_id'),
+    ),
+  );
+  db_create_table('box_item_temporary', $schema['box_item_temporary']);
+}

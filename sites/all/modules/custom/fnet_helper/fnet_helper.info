@@ -1,0 +1,7 @@
+; $Id$
+name = FNET Helper
+package = Fluke Networks
+description = Provides miscellaneous bits of custom functionality that do not merit their own module
+dependencies[] = marketo_api
+version = 7.x.1.0
+core = 7.x

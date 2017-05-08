@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Product Fix feature.
+ */
+
+include_once 'product_fix.features.inc';

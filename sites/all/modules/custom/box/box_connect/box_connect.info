@@ -1,0 +1,19 @@
+name = box_connect
+description = Box Connect
+package = box
+core = 7.x
+configure = admin/fnet/box_connect
+
+version = "7.x-2.5"
+
+;files[] = composer.json
+
+files[] = box_connect.admin.inc
+files[] = box_connect.batch.inc
+files[] = BoxPHPAPI/library/BoxAPI.class.php
+files[] = DrupalBoxAPI.class.php
+
+dependencies[] = fnet_common
+dependencies[] = bigint
+dependencies[] = entityreference
+dependencies[] = securepages

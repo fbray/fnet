@@ -1,0 +1,5 @@
+name = FNET Content
+package = FNET
+description = FNET Content Type modules
+version = 7.x.1.0-20150617
+core = 7.x

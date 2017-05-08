@@ -1,0 +1,8 @@
+<?php
+/**
+ * @file
+ * Drupal needs this blank file.
+ */
+
+include_once('edoc_fix.features.field_instance.inc');
+

@@ -1,0 +1,11 @@
+; $Id$
+name = Ascii Profile
+package = Fluke Networks
+description = Ascii profile adds a second profile with only ascii characters for users who have unicode characters in their normal profile.  Required for export compliance checking.
+version = 7.x.0.0
+core = 7.x
+dependencies[] = addresses
+;
+files[] = includes/AsciiProfile.php
+files[] = includes/DatabaseRecord.php
+files[] = includes/UserProfile.php

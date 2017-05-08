@@ -1,0 +1,72 @@
+<?php
+ // $Id:  $
+
+/**
+ * @file
+ * Drupal install file for dnt.module
+ *
+ */
+
+/**
+ * Implements hook_enable().
+().
+ */
+function dnt_enable() {
+
+}
+
+/**
+ * Implements hook_disable().
+().
+ */
+function dnt_disable() {
+
+}
+
+/**
+ * Implements hook_uninstall().
+().
+ */
+function dnt_uninstall() {
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_uninstall_schema('dnt')
+  variable_del('dnt_nodes');
+  variable_del('dnt_settings');
+  variable_del('dnt_node_types');
+  variable_del('dnt_default');
+}
+
+/**
+ * Implements hook_install().
+().
+ */
+function dnt_install() {
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_install_schema('dnt')
+}
+
+/**
+ * Implements hook_schema
+().
+ */
+function dnt_schema() {
+  $schema['do_not_translate'] = array(
+    'description' => 'Node do not translate status',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'node id',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'do_not_translate' => array(
+        'description' => 'DNT status',
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('nid'),
+  );
+  return $schema;
+}
+
