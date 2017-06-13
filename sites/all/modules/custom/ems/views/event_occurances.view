@@ -1,0 +1,163 @@
+<?php
+$view = new view();
+$view->name = 'ems_event_occurrences';
+$view->description = 'Event occurrences for an event';
+$view->tag = '';
+$view->base_table = 'node';
+$view->human_name = '';
+$view->core = 0;
+$view->api_version = '3.0';
+$view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+/* Display: Defaults */
+$handler = $view->new_display('default', 'Defaults', 'default');
+$handler->display->display_options['use_more_always'] = FALSE;
+$handler->display->display_options['access']['type'] = 'none';
+$handler->display->display_options['cache']['type'] = 'none';
+$handler->display->display_options['query']['type'] = 'views_query';
+$handler->display->display_options['exposed_form']['type'] = 'basic';
+$handler->display->display_options['pager']['type'] = 'full';
+$handler->display->display_options['style_plugin'] = 'table';
+$handler->display->display_options['style_options']['columns'] = array(
+  'name' => 'name',
+  'city' => 'city',
+  'province' => 'province',
+  'country' => 'country',
+  'nid' => 'nid',
+);
+$handler->display->display_options['style_options']['default'] = '-1';
+$handler->display->display_options['style_options']['info'] = array(
+  'name' => array(
+    'sortable' => 0,
+    'default_sort_order' => 'asc',
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+  'city' => array(
+    'sortable' => 0,
+    'default_sort_order' => 'asc',
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+  'province' => array(
+    'sortable' => 0,
+    'default_sort_order' => 'asc',
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+  'country' => array(
+    'sortable' => 0,
+    'default_sort_order' => 'asc',
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+  'nid' => array(
+    'sortable' => 0,
+    'default_sort_order' => 'asc',
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+);
+/* Field: Content: Nid */
+$handler->display->display_options['fields']['nid']['id'] = 'nid';
+$handler->display->display_options['fields']['nid']['table'] = 'node';
+$handler->display->display_options['fields']['nid']['field'] = 'nid';
+$handler->display->display_options['fields']['nid']['exclude'] = TRUE;
+/* Field: Content: Date */
+$handler->display->display_options['fields']['field_evnt_occ_date']['id'] = 'field_evnt_occ_date';
+$handler->display->display_options['fields']['field_evnt_occ_date']['table'] = 'field_data_field_evnt_occ_date';
+$handler->display->display_options['fields']['field_evnt_occ_date']['field'] = 'field_evnt_occ_date';
+$handler->display->display_options['fields']['field_evnt_occ_date']['settings'] = array(
+  'format_type' => 'default',
+  'fromto' => 'both',
+  'multiple_number' => '',
+  'multiple_from' => '',
+  'multiple_to' => '',
+);
+/* Field: Content: Time */
+$handler->display->display_options['fields']['field_evnt_occ_time']['id'] = 'field_evnt_occ_time';
+$handler->display->display_options['fields']['field_evnt_occ_time']['table'] = 'field_data_field_evnt_occ_time';
+$handler->display->display_options['fields']['field_evnt_occ_time']['field'] = 'field_evnt_occ_time';
+/* Field: Location: City */
+$handler->display->display_options['fields']['city']['id'] = 'city';
+$handler->display->display_options['fields']['city']['table'] = 'location';
+$handler->display->display_options['fields']['city']['field'] = 'city';
+$handler->display->display_options['fields']['city']['exclude'] = TRUE;
+/* Field: Location: Province */
+$handler->display->display_options['fields']['province']['id'] = 'province';
+$handler->display->display_options['fields']['province']['table'] = 'location';
+$handler->display->display_options['fields']['province']['field'] = 'province';
+$handler->display->display_options['fields']['province']['exclude'] = TRUE;
+$handler->display->display_options['fields']['province']['style'] = 'code';
+/* Field: Global: Custom text */
+$handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
+$handler->display->display_options['fields']['nothing_1']['table'] = 'views';
+$handler->display->display_options['fields']['nothing_1']['field'] = 'nothing';
+$handler->display->display_options['fields']['nothing_1']['label'] = 'City';
+$handler->display->display_options['fields']['nothing_1']['alter']['text'] = '[city], [province]';
+/* Field: Global: Custom text */
+$handler->display->display_options['fields']['nothing']['id'] = 'nothing';
+$handler->display->display_options['fields']['nothing']['table'] = 'views';
+$handler->display->display_options['fields']['nothing']['field'] = 'nothing';
+$handler->display->display_options['fields']['nothing']['label'] = '';
+$handler->display->display_options['fields']['nothing']['alter']['text'] = 'Register';
+$handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
+$handler->display->display_options['fields']['nothing']['alter']['path'] = 'ems/registration/add/[nid]';
+$handler->display->display_options['fields']['nothing']['element_label_colon'] = FALSE;
+/* Sort criterion: Content: Date -  start date (field_evnt_occ_date) */
+$handler->display->display_options['sorts']['field_evnt_occ_date_value']['id'] = 'field_evnt_occ_date_value';
+$handler->display->display_options['sorts']['field_evnt_occ_date_value']['table'] = 'field_data_field_evnt_occ_date';
+$handler->display->display_options['sorts']['field_evnt_occ_date_value']['field'] = 'field_evnt_occ_date_value';
+/* Contextual filter: Content: Language/Region (field_evnt_occ_langreg) */
+$handler->display->display_options['arguments']['field_evnt_occ_langreg_value']['id'] = 'field_evnt_occ_langreg_value';
+$handler->display->display_options['arguments']['field_evnt_occ_langreg_value']['table'] = 'field_data_field_evnt_occ_langreg';
+$handler->display->display_options['arguments']['field_evnt_occ_langreg_value']['field'] = 'field_evnt_occ_langreg_value';
+$handler->display->display_options['arguments']['field_evnt_occ_langreg_value']['default_argument_type'] = 'fixed';
+$handler->display->display_options['arguments']['field_evnt_occ_langreg_value']['summary']['number_of_records'] = '0';
+$handler->display->display_options['arguments']['field_evnt_occ_langreg_value']['summary']['format'] = 'default_summary';
+$handler->display->display_options['arguments']['field_evnt_occ_langreg_value']['summary_options']['items_per_page'] = '25';
+$handler->display->display_options['arguments']['field_evnt_occ_langreg_value']['limit'] = '0';
+/* Contextual filter: Content: Event (field_evnt_occ_parent) */
+$handler->display->display_options['arguments']['field_evnt_occ_parent_nid']['id'] = 'field_evnt_occ_parent_nid';
+$handler->display->display_options['arguments']['field_evnt_occ_parent_nid']['table'] = 'field_data_field_evnt_occ_parent';
+$handler->display->display_options['arguments']['field_evnt_occ_parent_nid']['field'] = 'field_evnt_occ_parent_nid';
+$handler->display->display_options['arguments']['field_evnt_occ_parent_nid']['default_argument_type'] = 'fixed';
+$handler->display->display_options['arguments']['field_evnt_occ_parent_nid']['summary']['number_of_records'] = '0';
+$handler->display->display_options['arguments']['field_evnt_occ_parent_nid']['summary']['format'] = 'default_summary';
+$handler->display->display_options['arguments']['field_evnt_occ_parent_nid']['summary_options']['items_per_page'] = '25';
+/* Filter criterion: Content: Type */
+$handler->display->display_options['filters']['type']['id'] = 'type';
+$handler->display->display_options['filters']['type']['table'] = 'node';
+$handler->display->display_options['filters']['type']['field'] = 'type';
+$handler->display->display_options['filters']['type']['value'] = array(
+  'event_occurrence' => 'event_occurrence',
+);
+$handler->display->display_options['filters']['type']['group'] = '0';
+$handler->display->display_options['filters']['type']['expose']['operator'] = FALSE;
+/* Filter criterion: Content: Date -  start date (field_evnt_occ_date) */
+$handler->display->display_options['filters']['field_evnt_occ_date_value']['id'] = 'field_evnt_occ_date_value';
+$handler->display->display_options['filters']['field_evnt_occ_date_value']['table'] = 'field_data_field_evnt_occ_date';
+$handler->display->display_options['filters']['field_evnt_occ_date_value']['field'] = 'field_evnt_occ_date_value';
+$handler->display->display_options['filters']['field_evnt_occ_date_value']['operator'] = '>=';
+$handler->display->display_options['filters']['field_evnt_occ_date_value']['default_date'] = 'now';
+/* Filter criterion: Content: Published */
+$handler->display->display_options['filters']['status']['id'] = 'status';
+$handler->display->display_options['filters']['status']['table'] = 'node';
+$handler->display->display_options['filters']['status']['field'] = 'status';
+$handler->display->display_options['filters']['status']['value'] = '1';
+
+/* Display: Block */
+$handler = $view->new_display('block', 'Block', 'block_1');
+$handler->display->display_options['defaults']['empty'] = FALSE;
+/* No results behavior: Global: Unfiltered text */
+$handler->display->display_options['empty']['area_text_custom']['id'] = 'area_text_custom';
+$handler->display->display_options['empty']['area_text_custom']['table'] = 'views';
+$handler->display->display_options['empty']['area_text_custom']['field'] = 'area_text_custom';
+$handler->display->display_options['empty']['area_text_custom']['label'] = 'No Results Text';
+$handler->display->display_options['empty']['area_text_custom']['empty'] = TRUE;
+$handler->display->display_options['empty']['area_text_custom']['content'] = 'No Results';
