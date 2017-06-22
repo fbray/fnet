@@ -3,7 +3,7 @@
 /*
  *  Files Migration Class
 */
-class PlayOn6FileMigration extends DrupalFile6Migration {
+class FNETFileMigration extends DrupalFile7Migration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
     // $this->addFieldMapping('destination_file', 'filename');

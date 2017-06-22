@@ -7,9 +7,10 @@
  */
 
 /*
- *  Product Migration Class
+ *  Product Display Migration Class
+ * (Used to be Product content type)
 */
-class FNETProductMigration extends DrupalNode7Migration {
+class FNETProductDisplayMigration extends DrupalNode7Migration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
 

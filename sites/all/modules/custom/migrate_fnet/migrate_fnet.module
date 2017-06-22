@@ -17,16 +17,16 @@ function migrate_fnet_flush_caches() {
 }
 
 function migrate_fnet_register_migrations() {
-  $common_www_arguments = array(
-    'source_connection' => 'drupal7tek',
+  $common_arguments = array(
+    'source_connection' => 'legacy',
     'source_version' => 7,
-    'group_name' => 'FNetTek',
+    'group_name' => 'Pantheon',
   );
   
   /*
    * User Roles
    */
-  $www_role_arguments = $common_www_arguments + array(
+  $www_role_arguments = $common_arguments + array(
     'machine_name' => 'Roles',
     'description' => t('Import Drupal 7 roles'),
     'role_mappings' => array(
@@ -55,12 +55,12 @@ function migrate_fnet_register_migrations() {
       'wtb author' => 'wtb author',
     ),
   );
-  Migration::registerMigration('DrupalRoleTekMigration', $www_role_arguments['machine_name'], $www_role_arguments);
+  Migration::registerMigration('FNETRolesMigration', $www_role_arguments['machine_name'], $www_role_arguments);
   
   /*
   *  User Pictures
   */
-  $picture_arguments = $common_www_arguments + array(
+  $picture_arguments = $common_arguments + array(
     'machine_name' => 'UserPicture',
     'description' => t('User pictures from WWW to be imported to Drupal 7'),
     'default_uid' => 1, // The default owner id if owner is not present
@@ -73,15 +73,15 @@ function migrate_fnet_register_migrations() {
   /*
    * Users
    */
-  $arguments = $common_www_arguments + array(
+  $arguments = $common_arguments + array(
     'description' => t('Migration of users from Drupal 7 to D7 Pantheon'),
-    'machine_name' => 'ExUser',
+    'machine_name' => 'FNETUser',
     'role_migration' => 'Roles',
-    'picture_migration' => 'UserPicture',
+    'picture_migration' => 'UserPicture', // TODO: Check if required.
   );
   
-  // Use the d2d D6 migration module class.
-  Migration::registerMigration('PlayOn6UserMigration', $arguments['machine_name'], $arguments);
+  // Use the d2d D7 migration module class.
+  Migration::registerMigration('FNETUserMigration', $arguments['machine_name'], $arguments);
 
   
   /*
@@ -90,30 +90,161 @@ function migrate_fnet_register_migrations() {
    // For vocabulary migrations, source_vocabulary and destination_vocabulary are
   // required arguments. Note that in Drupal 6 vocabularies did not have machine
   // names, so we use the vocabulary ID to uniquely identify them.
+  // TODO: Is the machine_name necessary?
   $vocabulary_arguments = array(
+    // eDoc Type
     array(
-      'description' => t('Migration of Forums terms from Drupal 6'),
-      'machine_name' => 'Forums',
-      'source_vocabulary' => '1',  // D6 Vocabulary ID
-      'destination_vocabulary' => 'forums',
+      'description' => t('Migration of eDoc Type terms from Drupal'),
+      'machine_name' => 'eDocTypes',
+      'source_vocabulary' => 'vocabulary_13',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'edoc_type',
     ),
+
+    // Brand
     array(
-      'description' => t('Migration of Products terms from Drupal 6'),
-      'machine_name' => 'Products',
-      'source_vocabulary' => '2',  // D6 Vocabulary ID
-      'destination_vocabulary' => 'products',
+      'description' => t('Migration of Brand terms from Drupal'),
+      'machine_name' => 'Brand',
+      'source_vocabulary' => 'vocabulary_12',
+      'destination_vocabulary' => 'brand',
     ),
+
+    // Asset Tags
     array(
-      'description' => t('Migration of Blog Category terms from Drupal 6'),
+      'description' => t('Migration of Asset Tags terms from Drupal'),
+      'machine_name' => 'AssetTags',
+      'source_vocabulary' => 'vocabulary_19',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'asset_tags',
+    ),
+
+    // Blog Categories
+    array(
+      'description' => t('Migration of Blog Category terms from Drupal'),
       'machine_name' => 'BlogCategories',
-      'source_vocabulary' => '3',  // D6 Vocabulary ID
-      'destination_vocabulary' => 'categories',
+      'source_vocabulary' => 'vocabulary_16',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'blog_categories',
     ),
+
+    // Business Entity - DEPRECATED
+
+
+    // Distributor Delivery Type
     array(
-      'description' => t('Migration of Blog Tag terms from Drupal 6'),
+      'description' => t('Migration of Distributor Delivery Type terms from Drupal'),
+      'machine_name' => 'DistributorDeliveryTypes',
+      'source_vocabulary' => 'vocabulary_4',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'distributor_delivery_types',
+    ),
+
+    // Distributor Type
+    array(
+      'description' => t('Migration of Distributor Type terms from Drupal'),
+      'machine_name' => 'DistributorType',
+      'source_vocabulary' => 'vocabulary_3',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'distributor_type',
+    ),
+
+    // Event Types
+    array(
+      'description' => t('Migration of Event Type terms from Drupal'),
+      'machine_name' => 'EventTypes',
+      'source_vocabulary' => 'vocabulary_10',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'event_types',
+    ),
+
+    // Expertise Types
+    array(
+      'description' => t('Migration of Expertise Type terms from Drupal'),
+      'machine_name' => 'ExpertiseTypes',
+      'source_vocabulary' => 'vocabulary_8',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'expertise_types',
+    ),
+
+    // Image Galleries
+    array(
+      'description' => t('Migration of Image Gallery terms from Drupal'),
+      'machine_name' => 'ImageGalleries',
+      'source_vocabulary' => 'vocabulary_7',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'image_galleries',
+    ),
+
+    // Knowledge Base
+    array(
+      'description' => t('Migration of Knowledge Base terms from Drupal'),
+      'machine_name' => 'KnowledgeBase',
+      'source_vocabulary' => 'knowledge_base',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'knowledge_base',
+    ),
+
+    // Media Folders
+    array(
+      'description' => t('Migration of Media Folder terms from Drupal'),
+      'machine_name' => 'MediaFolders',
+      'source_vocabulary' => 'media_folders',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'media_folders',
+    ),
+
+    // Microsites
+    array(
+      'description' => t('Migration of Microsite terms from Drupal'),
+      'machine_name' => 'Microsites',
+      'source_vocabulary' => 'vocabulary_18',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'microsites',
+    ),
+
+    // Product Attributes
+    array(
+      'description' => t('Migration of Product Attribute terms from Drupal'),
+      'machine_name' => 'ProductAttributes',
+      'source_vocabulary' => 'vocabulary_6',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'product_attributes',
+    ),
+
+    // Product Status
+    array(
+      'description' => t('Migration of Product Status terms from Drupal'),
+      'machine_name' => 'ProductStatus',
+      'source_vocabulary' => 'vocabulary_1',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'product_status',
+    ),
+
+    // Product Sub Types
+    array(
+      'description' => t('Migration of Product Sub Type terms from Drupal'),
+      'machine_name' => 'ProductSubtypes',
+      'source_vocabulary' => 'vocabulary_2',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'product_subtypes',
+    ),
+
+    // Promotion product category
+    array(
+      'description' => t('Migration of Promotion Product Category terms from Drupal'),
+      'machine_name' => 'PromotionProductCategory',
+      'source_vocabulary' => 'vocabulary_11',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'promotion_product_category',
+    ),
+
+    // Promotion Type
+    array(
+      'description' => t('Migration of Promotion Type terms from Drupal'),
+      'machine_name' => 'PromotionType',
+      'source_vocabulary' => 'vocabulary_5',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'promotion_type',
+    ),
+
+    // Blog Tags
+    array(
+      'description' => t('Migration of Blog Tag terms from Drupal'),
       'machine_name' => 'BlogTags',
-      'source_vocabulary' => '4',  // D6 Vocabulary ID
+      'source_vocabulary' => 'vocabulary_17',  // D7 Vocabulary ID
       'destination_vocabulary' => 'tags',
+    ),
+
+    // Industries
+    array(
+      'description' => t('Migration of Industry terms from Drupal'),
+      'machine_name' => 'Industries',
+      'source_vocabulary' => 'vocabulary_15',  // D7 Vocabulary ID
+      'destination_vocabulary' => 'industries',
     ),
   );
 
@@ -121,9 +252,9 @@ function migrate_fnet_register_migrations() {
   // The soft dependency says that while we don't have to run the user migration
   // first, we want to make sure it's listed first so the vocubularies are
   // listed right ahead of the node migrations.
-  $common_vocabulary_arguments = $common_www_arguments + array(
-    'class_name' => 'DrupalTerm6Migration',
-    'soft_dependencies' => array('ExUser'),
+  $common_vocabulary_arguments = $common_arguments + array(
+    'class_name' => 'DrupalTerm7Migration',
+    'soft_dependencies' => array('FNETUser'),
   );
   foreach ($vocabulary_arguments as $arguments) {
     $arguments += $common_vocabulary_arguments;
@@ -137,26 +268,22 @@ function migrate_fnet_register_migrations() {
   $node_arguments = array(
     array(
       'class_name' => 'FNETAssetGatewayMigration',
-      'description' => t('Migration of News nodes from Drupal 6 to Drupal 7.'),
-      'machine_name' => 'News',
-      'source_type' => 'news',
-      'destination_type' => 'news',
+      'description' => t('Migration of Asset Gateway nodes from Drupal.'),
+      'machine_name' => 'AssetGateway',
+      'source_type' => 'asset_gateway',
+      'destination_type' => 'asset_gateway',
     ),
-    array(
-      'class_name' => 'FNETPageMigration',
-      'description' => t('Migration of Page nodes from Drupal.'),
-      'machine_name' => 'Page',
-      'source_type' => 'page',
-      'destination_type' => 'page',
-      'dependencies' => array('Products', 'BlogCategories', 'BlogTags'),
-    ),
+
+    // Blog Articles
     array(
       'class_name' => 'FNETBlogArticleMigration',
       'description' => t('Migration of Blog Article nodes from Drupal'),
-      'machine_name' => 'Blog Article',
+      'machine_name' => 'BlogArticle',
       'source_type' => 'blog_article',
       'destination_type' => 'blog_article',
+      'dependencies' => array('BlogCategories', 'BlogTags'),
     ),
+
     /* CIO Briefs are DEPRECATED.
     array(
       'class_name' => 'FNETCIOBriefMigration',
@@ -167,93 +294,311 @@ function migrate_fnet_register_migrations() {
       // 'dependencies' => array('Forums'),
     ),
     */
+
+    // Awards
     array(
       'class_name' => 'FNETAwardMigration',
       'description' => t('Migration of Award nodes from Drupal.'),
       'machine_name' => 'Award',
       'source_type' => 'award',
       'destination_type' => 'award',
-      // 'dependencies' => array('BlogCategories', 'BlogTags'),
+
     ),
+
+    // Digital Assets
     array(
       'class_name' => 'FNETDigitalAssetMigration',
       'description' => t('Migration of Digital Asset nodes from Drupal.'),
-      'machine_name' => 'Digital Asset',
+      'machine_name' => 'DigitalAsset',
       'source_type' => 'digital_asset',
       'destination_type' => 'digital_asset',
       // TODO: dependency on files?
     ),
+
+     // Distributors
      array(
-      'class_name' => 'FNETDistributorMigration',
-      'description' => t('Migration of Distributor nodes from Drupal 6 to Drupal 7'),
-      'machine_name' => 'Product Distributor', // Changed from 'Distributor'.
+      'class_name' => 'FNETProductDistributorMigration',
+      'description' => t('Migration of Distributor nodes from Drupal. Formerly called Distributor.'),
+      'machine_name' => 'ProductDistributor', // Changed from 'Distributor'.
       'source_type' => 'product_distributor_group',
       'destination_type' => 'product_distributor',
+       // TODO: This has a node reference.
+       // 'dependencies' => array('BlogCategories', 'BlogTags'),
     ),
+
+    // eDocs
     array(
       'class_name' => 'FNETeDocMigration',
       'description' => t('Migration of eDoc nodes from Drupal.'),
       'machine_name' => 'eDoc',
       'source_type' => 'edoc',
       'destination_type' => 'edoc',
-      // 'dependencies' => array('Channel'),
-      // TODO: file dependencies?
+      'dependencies' => array('eDocTypes', 'Brand'),
+      // TODO: Node Reference dependencies?
     ),
-     array(
-      'class_name' => 'FNETeDocLanguageMigration',
-      'description' => t('Migration of eDoc Language nodes from Drupal.'),
-      'machine_name' => 'eDoc Language',
-      'source_type' => 'edoclanguage',
-      'destination_type' => 'edoclanguage',
+
+    // eDoc Language
+    array(
+       'class_name' => 'FNETeDocLanguageMigration',
+       'description' => t('Migration of eDoc Language nodes from Drupal.'),
+       'machine_name' => 'eDocLanguage',
+       'source_type' => 'edoclanguage',
+       'destination_type' => 'edoclanguage',
+       'dependencies' => array('eDoc'),
     ),
+
+    // Events
     array(
       'class_name' => 'FNETEventMigration',
       'description' =>  t('Migration of Event nodes from Drupal.'),
       'machine_name' => 'Event',
       'source_type' => 'event',
       'destination_type' => 'event',
+      'dependencies' => array('EventTypes', 'ProductDisplay', 'ProductCategory'),
     ),
-    // Event Occurance
+
+    // Event Occurence
+    array(
+      'class_name' => 'FNETEventOccurrenceMigration',
+      'description' =>  t('Migration of Event Occurrence nodes from Drupal.'),
+      'machine_name' => 'EventOccurrence',
+      'source_type' => 'event_occurrence',
+      'destination_type' => 'event_occurrence',
+      'dependencies' => array('Event'),
+    ),
+
     // Expertise
-    // Expertise Industry
-    // Expertise Industry Language
+    array(
+      'class_name' => 'FNETExpertiseMigration',
+      'description' =>  t('Migration of Expertise nodes from Drupal.'),
+      'machine_name' => 'Expertise',
+      'source_type' => 'expertise',
+      'destination_type' => 'expertise',
+      'dependencies' => array('ExpertiseTypes', 'ProductDisplay', 'Industries', 'Files', 'ProductCategories'),
+    ),
+
     // Expertise Role
+    array(
+      'class_name' => 'FNETExpertiseRoleMigration',
+      'description' =>  t('Migration of Expertise Role nodes from Drupal.'),
+      'machine_name' => 'ExpertiseRole',
+      'source_type' => 'exp_rle',
+      'destination_type' => 'expertise_role',  // more verbose naming improvement
+    ),
+
     // Expertise Role Language
-    // Expertise Topic
-    // Expertise Topic Language
+    array(
+      'class_name' => 'FNETExpertiseRoleLanguageMigration',
+      'description' =>  t('Migration of Expertise Role Language nodes from Drupal.'),
+      'machine_name' => 'ExpertiseRoleLanguage',
+      'source_type' => 'exp_rle_lang',
+      'destination_type' => 'expertise_role_language', // more verbose naming improvement
+      'dependencies' => array('ExpertiseRole'),
+    ),
+
     // Extranet News
+    array(
+      'class_name' => 'FNETExtranetNewsMigration',
+      'description' =>  t('Migration of Extranet News nodes from Drupal.'),
+      'machine_name' => 'ExtranetNews',
+      'source_type' => 'extranet_news',
+      'destination_type' => 'extranet_news',
+    ),
+
     // Extranet Page
+    array(
+      'class_name' => 'FNETExtranetPageMigration',
+      'description' =>  t('Migration of Extranet Page nodes from Drupal.'),
+      'machine_name' => 'ExtranetPage',
+      'source_type' => 'extranet_page',
+      'destination_type' => 'extranet_page',
+    ),
+
     // Extranet Promotion
+    array(
+      'class_name' => 'FNETExtranetPromotionMigration',
+      'description' =>  t('Migration of Extranet Promotion nodes from Drupal.'),
+      'machine_name' => 'ExtranetPromotion',
+      'source_type' => 'extranet_promotion',
+      'destination_type' => 'extranet_promotion',
+    ),
+
     // Family
+    array(
+      'class_name' => 'FNETProductFamilyMigration',
+      'description' =>  t('Migration of Family nodes from Drupal.'),
+      'machine_name' => 'ProductFamily',
+      'source_type' => 'family',
+      'destination_type' => 'product_family', // changed to be more accurate
+    ),
+
     // Feature (Change to Product Feature)
+    array(
+      'class_name' => 'FNETProductFeatureMigration',
+      'description' =>  t('Migration of Product Feature nodes from Drupal.'),
+      'machine_name' => 'ProductFeature',
+      'source_type' => 'feature',
+      'destination_type' => 'product_feature', // changed to be more accurate
+    ),
+
     // Homepage 2013
+    array(
+      'class_name' => 'FNETHomepage2013Migration',
+      'description' =>  t('Migration of the Homepage 2013 nodes from Drupal.'),
+      'machine_name' => 'Homepage2013',
+      'source_type' => 'homepage2013',
+      'destination_type' => 'homepage2013',
+    ),
+
     // Homepage 2013 Language
-    // Industry
-    // Industry Language
+    array(
+      'class_name' => 'FNETHomepage2013LanguageMigration',
+      'description' =>  t('Migration of the Homepage 2013 Language nodes from Drupal.'),
+      'machine_name' => 'Homepage2013Language',
+      'source_type' => 'homepage2013language',
+      'destination_type' => 'homepage2013language',
+    ),
+
+    // Industry (Change to Product Category)
+    array(
+      'class_name' => 'FNETProductCategoryMigration',
+      'description' =>  t('Migration of the Industry nodes from Drupal.'),
+      'machine_name' => 'ProductCategory',
+      'source_type' => 'industry',
+      'destination_type' => 'product_category',
+    ),
+
+    // Industry Language (Change to Product Category Language)
+    array(
+      'class_name' => 'FNETProductCategoryLanguageMigration',
+      'description' =>  t('Migration of the Industry Language nodes from Drupal.'),
+      'machine_name' => 'ProductCategoryLanguage',
+      'source_type' => 'industrylanguage',
+      'destination_type' => 'product_category_language',
+    ),
+
+
     // Knowledge Base Article
-    // Localized Email
-    // Location (Change to Distributor)
+    array(
+      'class_name' => 'FNETKnowledgeBaseArticleMigration',
+      'description' =>  t('Migration of the Knowledge Base Article nodes from Drupal.'),
+      'machine_name' => 'KnowledgeBaseArticle',
+      'source_type' => 'knowledge_base_article',
+      'destination_type' => 'knowledge_base_article',
+    ),
+
+    // Localized Email - DEPRECATED
+
+    // Location (Change to Distributor Location)
+    array(
+      'class_name' => 'FNETDistributorLocationMigration',
+      'description' =>  t('Migration of the Location nodes from Drupal.'),
+      'machine_name' => 'DistributorLocation',
+      'source_type' => 'distributor',
+      'destination_type' => 'distributor_location',
+      'dependencies' => array('ProductDistributor'),
+    ),
+
     // Marketo Form
-    // Media Gallery
+    array(
+      'class_name' => 'FNETMarketoFormMigration',
+      'description' =>  t('Migration of the Marketo Form nodes from Drupal.'),
+      'machine_name' => 'MarketoForm',
+      'source_type' => 'marketo_form',
+      'destination_type' => 'marketo_form',
+    ),
+
     // Microsite Page
-    // Microsite Page Language
+    array(
+      'class_name' => 'FNETMicrositePageMigration',
+      'description' =>  t('Migration of the Microsite Page nodes from Drupal.'),
+      'machine_name' => 'MicrositePage',
+      'source_type' => 'microsite_page',
+      'destination_type' => 'microsite_page',
+    ),
+
     // Microsite Story
-    // Microsite Story Language
+    array(
+      'class_name' => 'FNETMicrositeStoryMigration',
+      'description' =>  t('Migration of the Microsite Story nodes from Drupal.'),
+      'machine_name' => 'MicrositeStory',
+      'source_type' => 'microsite_story',
+      'destination_type' => 'microsite_story',
+    ),
+
     // Page
+    array(
+      'class_name' => 'FNETPageMigration',
+      'description' => t('Migration of Page nodes from Drupal.'),
+      'machine_name' => 'Page',
+      'source_type' => 'page',
+      'destination_type' => 'page',
+      // 'dependencies' => array('Products', 'BlogCategories', 'BlogTags'),
+    ),
+
     // Page Region
+    array(
+      'class_name' => 'FNETPageRegionMigration',
+      'description' =>  t('Migration of the Page Region nodes from Drupal.'),
+      'machine_name' => 'PageRegion',
+      'source_type' => 'page_reg',
+      'destination_type' => 'page_reg',
+    ),
+
     // Press Releases
+    array(
+      'class_name' => 'FNETPressReleaseMigration',
+      'description' =>  t('Migration of the Press Release nodes from Drupal.'),
+      'machine_name' => 'PressRelease',
+      'source_type' => 'pressrelease',
+      'destination_type' => 'press_release',
+    ),
+
     // Product
+    // This one is going to be weird, since Drupal Commerce adds a Product Content Type.
+    array(
+      'class_name' => 'FNETProductDisplayMigration',
+      'description' =>  t('Migration of the Product nodes from Drupal.'),
+      'machine_name' => 'ProductDisplay',
+      'source_type' => 'product',
+      'destination_type' => 'product_display',
+    ),
+
     // Product Language
+    array(
+      'class_name' => 'FNETProductLanguageMigration',
+      'description' =>  t('Migration of the Product Language nodes from Drupal.'),
+      'machine_name' => 'ProductLanguage',
+      'source_type' => 'productlanguagew',
+      'destination_type' => 'productlanguage',
+    ),
+
     // Product Sub Type
-    // Profile (Move to user?)
+    array(
+      'class_name' => 'FNETProductSubTypeMigration',
+      'description' =>  t('Migration of the Product Sub Type Language nodes from Drupal.'),
+      'machine_name' => 'ProductSubType',
+      'source_type' => 'productsubtype',
+      'destination_type' => 'productsubtype',
+    ),
+
+    // Profile - DEPRECATED.
+
     // Promotion
+    array(
+      'class_name' => 'FNETPromotionMigration',
+      'description' =>  t('Migration of the Promotion nodes from Drupal.'),
+      'machine_name' => 'Promotion',
+      'source_type' => 'promotion',
+      'destination_type' => 'promotion',
+    ),
 
 
   );
   // Tell the node migrations where the users are coming from, so they can
   // set up the dependency and resolve D6->D7 uids.
-  $common_node_arguments = $common_www_arguments + array(
-    'user_migration' => 'ExUser',
+  $common_node_arguments = $common_arguments + array(
+    'user_migration' => 'FNETUser',
   );
   foreach ($node_arguments as $arguments) {
     $arguments = array_merge_recursive($arguments, $common_node_arguments);
@@ -263,47 +608,23 @@ function migrate_fnet_register_migrations() {
     /*
    *  File Migration
    */
-   $file_arguments = $common_www_arguments + array(
+   $file_arguments = $common_arguments + array(
     'machine_name' => 'Files',
-    'description' => t('Import Drupal 6 files'),
-    'user_migration' => 'ExUser',
+    'description' => t('Import Drupal files'),
+    'user_migration' => 'FNETUser',
     'default_uid' => 1,
     'destination_dir' => 'public://',  // Maybe comment this out to force default.
     'file_replace' => FILE_EXISTS_REPLACE,
   );
+  // TODO: Set this up for local and Pantheon.
   if (variable_get('environment') == 'local') {
     $file_arguments['source_dir'] = '/webdev/playon.tv/drupal-6.30/sites/default/files/';
   }
   else {
     $file_arguments['source_dir'] = '/home/dev/playon-import-files/';
   }
-  Migration::registerMigration('PlayOn6FileMigration', $file_arguments['machine_name'], $file_arguments);
-  
-  $plugin_file_arguments = $common_plugin_arguments + array(
-    'machine_name' => 'PluginFiles',
-    'description' => t('Import Drupal 6 files'),
-    'user_migration' => 'PluginUser',
-    'default_uid' => 1,
-    'destination_dir' => 'public://',  // Maybe comment this out to force default.
-    'file_replace' => FILE_EXISTS_REPLACE,
-  );
-  if (variable_get('environment') == 'local') {
-      $plugin_file_arguments['source_dir'] = '/webdev/playon.tv/plugin/sites/default/files';
-    } else {
-      $plugin_file_arguments['source_dir'] = '/home/dev/plugin-import-files/';
-    }
-  Migration::registerMigration('PlayOn6FileMigration', $plugin_file_arguments['machine_name'], $plugin_file_arguments);
+  Migration::registerMigration('FNETFileMigration', $file_arguments['machine_name'], $file_arguments);
 
-
-   /*
-   * Download Count Migration
-   */
-  $counts_arguments = $common_plugin_arguments + array(
-    'machine_name' => 'FileCounts',
-    'description' => t('File Download Count'),
-
-  );
-  Migration::registerMigration('PlayOn6PluginDownloadCountMigration', $counts_arguments['machine_name'], $counts_arguments);
 }
 
  

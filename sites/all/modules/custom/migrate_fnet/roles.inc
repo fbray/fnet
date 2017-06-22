@@ -1,8 +1,8 @@
 <?php
 /*
- *  Flex Migration Class
+ *  Roles Migration Class
 */
-class PlayOn6RolesMigration extends DrupalRole6Migration {
+class FNETRolesMigration extends DrupalRole7Migration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
     }
