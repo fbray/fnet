@@ -7,7 +7,6 @@
 include_once 'knowledgebase.features.inc';
 
 function knowledgebase_preprocess_knowledgebase_template(&$vars){
-
   // START: Set up essential variables.
   // ********************************************************************
 
