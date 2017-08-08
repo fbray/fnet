@@ -356,10 +356,7 @@ function media_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
     $form['instance']['settings']['file_extensions']['#required'] = FALSE;
   }
 
-  // On image fields using the media widget we remove the alt/title fields.
   if ($form['#field']['type'] == 'image' && $form['instance']['widget']['type']['#value'] == 'media_generic') {
-    $form['instance']['settings']['alt_field']['#access'] = FALSE;
-    $form['instance']['settings']['title_field']['#access'] = FALSE;
     $form['instance']['settings']['file_extensions']['#title'] = t('Allowed file extensions for uploaded files');
     // Do not increase maxlength of file extensions for image fields, since
     // presumably they will not need a long list of extensions.
@@ -1138,6 +1135,9 @@ function media_get_thumbnail_preview($file, $link = FALSE, $view_mode = 'preview
 function media_file_validate_types($file, $types) {
   $errors = array();
 
+  if (!function_exists('file_entity_get_filetype_candidates')) {
+    module_load_include('inc', 'file_entity', 'file_entity.pages');
+  }
   $file_candidates = array_keys(file_entity_get_filetype_candidates($file));
   if (!array_intersect($file_candidates, $types)) {
     $errors[] = t('Only the following types of files are allowed to be uploaded: %types-allowed', array('%types-allowed' => implode(', ', $types)));
@@ -1217,7 +1217,7 @@ function media_set_browser_params() {
 
     // Filter out everything except a whitelist of known safe options.
     $safe_options = array(
-      'activePlugins',
+      'enabledPlugins',
       'fid',
       'id',
       'multiselect',
