@@ -1,5 +1,0 @@
-; $Id$
-core = "7.x"
-description = "Countries and provinces"
-name = "Addresses"
-package = "Fluke Networks"
