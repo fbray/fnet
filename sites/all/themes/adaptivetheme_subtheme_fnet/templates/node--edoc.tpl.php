@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: node--edoc.tpl.php 2122 2016-09-02 12:40:14Z gkakade $
 
 /**
  * Hide Content and Print it Separately

@@ -365,7 +365,7 @@ hide($content['links']);
           <div class="column-grid">
             <div class="col-1-3">
               <div style="padding:1em;">
-                <img src="<?php print file_create_url($product->field_field_prod_hub_img[0]['raw']['uri']); ?>" style="width:auto; max-width:100%;" />
+                <img src="<?php print file_create_url($product->field_field_prod_hub_img[0]['raw']['uri']); ?>" style="width:auto; max-width:100%;" alt="<?php print $product->field_field_prod_hub_img[0]['raw']['alt']?>" />
               </div>
             </div>
             <div class="col-2-3">

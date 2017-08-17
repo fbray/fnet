@@ -54,6 +54,24 @@ function adaptivetheme_subtheme_fnet_preprocess_html(&$vars) {
 
     $vars['classes_array'][] = 'nested-content-columns-2';
   }
+	 $pskey = array(
+    '#type' => 'html_tag',
+    '#tag' => 'meta',
+    '#attributes' => array('name' => 'ps-key', 'content' => '1805-58b8e43945e86b24009d412a'),
+  );
+	drupal_add_html_head($pskey,'ps-key');
+	$pscountry = array(
+    '#type' => 'html_tag',
+    '#tag' => 'meta',
+    '#attributes' => array('name' => 'ps-country', 'content' => 'US'),
+  );
+	drupal_add_html_head($pscountry,'ps-country');
+	$pslangauge = array(
+    '#type' => 'html_tag',
+    '#tag' => 'meta',
+    '#attributes' => array('name' => 'ps-language', 'content' => 'en'),
+  );
+	drupal_add_html_head($pslangauge,'ps-language'); 
 }
 
 
@@ -81,6 +99,10 @@ function adaptivetheme_subtheme_fnet_preprocess_page(&$vars) {
   if (isset($vars['node'])) {
     $vars['theme_hook_suggestion'] = 'page__type__' . $vars['node']->type;
   }
+  /*if (arg(0) == 'taxonomy' && arg(1) == 'term' && is_numeric(arg(2))) {
+    $vars['term'] = arg(2);
+    $vars['theme_hook_suggestions'][] = 'page__vocabulary__' . $term->vocabulary_machine_name;
+  }*/
 }
 
 /*

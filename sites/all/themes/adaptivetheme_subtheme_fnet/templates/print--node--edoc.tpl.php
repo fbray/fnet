@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: print--node--edoc.tpl.php 2136 2016-09-21 21:08:47Z mositis $
 ?>
 
 <!DOCTYPE html >

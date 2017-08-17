@@ -2906,7 +2906,6 @@ body.node-type-edoc .field-name-body {
 /* Sales Insider 'Logo' area */
 .fextranet .block {
   padding:1em 0;
-  margin:0;
 }
 
 .fextranet h2.block-title {
@@ -3099,7 +3098,7 @@ ul.admin-list li {
   padding:0 1em;
 }
 
-.fextranet .view-filters .views-exposed-form .views-exposed-widgets #edit-dci-related-products-wrapper {
+.fextranet .view-filters .views-exposed-form .views-exposed-widgets #edit-product-wrapper {
   page-break-after: always;
 }
 
@@ -4197,18 +4196,74 @@ ul.admin-list li {
         width:395px;
     }
 }
-#member-profile-details {
-    margin: 5px;
-    padding: 5px;
+div.gr-member-profile th {border: 1px solid #000; background: #CCC;}
+div.gr-member-profile td {border: 1px solid;}
+div.gr-member-profile table {white-space: nowrap;}
+
+.mktoButtonRow {
+    top: -39px;
+    left: 165px;
 }
-#member-profile-label {
-    font-size: 14px;
-    font-weight: bold;
+
+/*Price spider WTB button on Product page and WTB page */
+#wtb-price-spider div{width:100%; border: none;}
+div#ps-widget-btn .ps-widget span, div#ps-widget-btn .ps-widget small{font-weight:normal !important;}
+#wtb-price-spider span, #wtb-price-spider small, .ps-widget span, .ps-widget small{font-size:13px !important;}
+#ps-widget-btn div.ps-widget{border: 1px solid #333;border-radius: 5px;background: linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(246,246,246,1) 47%,rgba(237,237,237,1) 100%) !important;}
+#At_A_Glance_Wrapper table.at-a-glance-buttons td#wtb-price-spider{cursor:default; padding:0px;}
+
+/*Knowledge base*/
+#kb-search {
+    padding:20px;
+    margin:20px 0;
+    background-color:#eee;
+    border:1px solid #ccc;
+    border-radius: 3px;
 }
-#member-profile-content {
-    font-size: 14px;
+
+#article-author {
+      padding:10px 20px;
+      margin:20px 0 0;
+      background-color:#eee;
+      border:1px solid #ccc;
+      border-radius: 3px;
 }
-#member-profile-details h3 {
-    border-bottom: 1px solid #ccc;
-		font-size: 18px;
+#article-author p.info { display:block; float:left; width:33%; margin:0; padding:0; text-align:center; }
+
+#kb-breadcrumbs { margin:0 0 20px; }
+#kb-breadcrumbs #bc-link {
+    display:inline-block;
+    padding:4px 10px;
+    background:#eee;
+    border:1px solid #ccc;
+    border-radius:3px;
+    font-weight:bold;
+}
+
+#back-button {
+    padding-bottom:15px;
+    border-bottom:1px solid #999;
+}
+/*Recent blog block */
+
+.blog-main-content{
+	float: left;
+	width: 680px;
+}
+.node-blog-article a.back-to-blogs, .node-blog-article .blog-title{width: 680px; float:left}
+.recent-blogs-block{
+	background-color: #E0E0E0;
+	float: right;
+	width: 240px;
+	padding: 0px 4px; 
+}
+.recent-blogs-title {
+	padding-left: 27px;
+}
+.recent-blogs-block ul li {
+  line-height: 17px;
+  margin: 11px; 
+}
+.recent-blogs-block ul{
+	padding-left: 15px;
 }

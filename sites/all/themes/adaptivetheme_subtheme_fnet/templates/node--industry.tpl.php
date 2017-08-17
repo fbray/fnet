@@ -217,7 +217,7 @@ hide($content['links']);
               <div class="column-grid">
                 <div class="col-1-3">
                   <div style="padding:1em;">
-                    <img src="<?php print file_create_url(  fnet_common_get_field_value('family', $family, 'field_family_hub_img', 'uri')   ); ?>" style="width:auto; max-width:100%;" />
+                    <img src="<?php print file_create_url(  fnet_common_get_field_value('family', $family, 'field_family_hub_img', 'uri')   ); ?>" style="width:auto; max-width:100%;" alt="<?php print fnet_common_get_field_value('family', $family, 'field_family_hub_img', 'alt') ?>" />
                   </div>
                 </div>
                 <div class="col-2-3">
@@ -244,7 +244,7 @@ hide($content['links']);
               <?php if (fnet_common_safe_get($field_industry_box_img_1, 0, 'uri')) { ?>
                 <p><img
                     src="<?php print file_create_url(fnet_common_safe_get($field_industry_box_img_1, 0, 'uri')); ?>"
-                    style="width:auto; max-width:100%;"/></p>
+                    style="width:auto; max-width:100%;" alt="<?php print fnet_common_safe_get($field_industry_box_img_1, 0, 'alt') ?>" /></p>
               <?php } ?>
               <?php if (fnet_common_safe_get($field_industry_box_desc_1, 0, 'value')) { ?>
                 <p><?php print fnet_common_safe_get($field_industry_box_desc_1, 0, 'value'); ?></p>
@@ -265,7 +265,7 @@ hide($content['links']);
               <?php if (fnet_common_safe_get($field_industry_box_img_2, 0, 'uri')) { ?>
                 <p><img
                     src="<?php print file_create_url(fnet_common_safe_get($field_industry_box_img_2, 0, 'uri')); ?>"
-                    style="width:auto; max-width:100%;"/></p>
+                    style="width:auto; max-width:100%;" alt="<?php print fnet_common_safe_get($field_industry_box_img_2, 0, 'alt') ?>" /></p>
               <?php } ?>
               <?php if (fnet_common_safe_get($field_industry_box_desc_2, 0, 'value')) { ?>
                 <p><?php print fnet_common_safe_get($field_industry_box_desc_2, 0, 'value'); ?></p>
@@ -286,7 +286,7 @@ hide($content['links']);
               <?php if (fnet_common_safe_get($field_industry_box_img_3, 0, 'uri')) { ?>
                 <p><img
                     src="<?php print file_create_url(fnet_common_safe_get($field_industry_box_img_3, 0, 'uri')); ?>"
-                    style="width:auto; max-width:100%;"/></p>
+                    style="width:auto; max-width:100%;" alt="<?php print fnet_common_safe_get($field_industry_box_img_3, 0, 'alt') ?>" /></p>
               <?php } ?>
               <?php if (fnet_common_safe_get($field_industry_box_desc_3, 0, 'value')) { ?>
                 <p><?php print fnet_common_safe_get($field_industry_box_desc_3, 0, 'value'); ?></p>
@@ -420,7 +420,7 @@ hide($content['links']);
                   <div class="col-1-3">
                     <div style="padding:1em;">
                       <?php if(isset($product->field_field_prod_hub_img[0]['raw']['uri'])): ?>
-                        <img src="<?php print file_create_url($product->field_field_prod_hub_img[0]['raw']['uri']); ?>" style="width:auto; max-width:100%;" />
+                        <img src="<?php print file_create_url($product->field_field_prod_hub_img[0]['raw']['uri']); ?>" style="width:auto; max-width:100%;" alt="<?php print $product->field_field_prod_hub_img[0]['raw']['alt']?>" />
                       <?php endif; ?>
                     </div>
                   </div>
