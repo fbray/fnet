@@ -1,0 +1,14 @@
+name = Alternative Language (Pathauto)
+description = Allows Pathauto to benefit from an alternative language
+package = "Multilingual - Internationalization"
+core = 7.x
+
+dependencies[] = alternative_language
+dependencies[] = pathauto
+
+; Information added by Drupal.org packaging script on 2015-02-11
+version = "7.x-1.2"
+core = "7.x"
+project = "alternative_language"
+datestamp = "1423691934"
+

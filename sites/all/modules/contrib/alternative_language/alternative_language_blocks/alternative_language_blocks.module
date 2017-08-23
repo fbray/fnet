@@ -1,0 +1,59 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for the Alternative Language Blocks module.
+ */
+
+/**
+ * Implements hook_block_list_alter().
+ */
+function alternative_language_blocks_block_list_alter(&$blocks) {
+  global $theme_key, $language, $language_url;
+
+  if ($language->use_alternative && !empty($language->alternative)) {
+
+    // Load all blocks from the database.
+    $query = db_select('block', 'b')
+      ->fields('b')
+      ->condition('b.theme', $theme_key)
+      ->condition('b.status', 1)
+      ->orderBy('b.region')
+      ->orderBy('b.weight')
+      ->orderBy('b.module')
+      ->addTag('block_load')
+      ->addTag('translatable');
+    $result = $query->execute();
+    $blocks = $result->fetchAllAssoc('bid');
+
+    // Temporarily override the global $language_url variable so all calls to
+    // drupal_get_path_alias() in block_block_list_alter() will use the correct
+    // language and return the path for the alternative language.
+    $url_language = $language_url;
+    $languages    = language_list();
+    $language_url = $languages[$language->alternative];
+
+    // This function will remove any blocks that don't meet the visibility
+    // requirements set in the block configuration (pages, languages, etc).
+    block_block_list_alter($blocks);
+
+    // Restore the global $language_url value.
+    $language_url = $url_language;
+  }
+}
+
+/**
+ * Implements hook_block_view_alter().
+ */
+function alternative_language_blocks_block_view_alter(&$data, $block) {
+  if (isset($data['content'])) {
+
+    // Render arrays will render links properly, assuming all links are created
+    // using l(), so no need to process them. Only need to worry about blocks
+    // that are strings.
+    if (is_string($data['content'])) {
+      $data['content'] = _alternative_language_alter_links($data['content']);
+      $data['content'] = _alternative_language_alter_actions($data['content']);
+    }
+  }
+}

@@ -1,0 +1,45 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for the Alternative Language Menu Block module.
+ */
+
+/**
+ * Implements hook_menu_block_tree_alter().
+ */
+function alternative_language_menu_blocks_menu_block_tree_alter(&$tree, &$config) {
+  global $language;
+
+  if ($language->use_alternative && !empty($language->alternative)) {
+
+    // Search the tree for the current menu item.
+    _alternative_language_menu_blocks_search_for_path_recursive($tree);
+  }
+}
+
+/**
+ * Recursive tree search function.
+ */
+function _alternative_language_menu_blocks_search_for_path_recursive(&$tree) {
+  foreach ($tree as &$value) {
+
+    // Found the current item, set to active and return success to indicate
+    // to any parent items that they should also be in the active trail.
+    if ($value['link']['link_path'] == $_GET['q']) {
+      $value['link']['in_active_trail'] = TRUE;
+      return TRUE;
+    }
+
+    // Search in this items children.
+    if (isset($value['below'])) {
+
+      // If anything is found in the children, set the parent to be in the
+      // active trail.
+      if (_alternative_language_menu_blocks_search_for_path_recursive($value['below'])) {
+        $value['link']['in_active_trail'] = TRUE;
+        return TRUE;
+      }
+    }
+  }
+}

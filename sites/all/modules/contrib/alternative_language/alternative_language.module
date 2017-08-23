@@ -1,0 +1,373 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for the Alternative Language module.
+ */
+
+/**
+ * Implements hook_init().
+ */
+function alternative_language_init() {
+  global $language;
+
+  // Load the menu item for the current path.
+  $menu_item = menu_get_item($_GET['q']);
+
+  // Menu item does not exist for the current path, so now the check for the
+  // alternative language can be done.
+  if (!$menu_item) {
+
+    // Only proceed if the language has an alternative.
+    if ($language->use_alternative && !empty($language->alternative)) {
+
+      // Load the path of the node for the alternative language. if this
+      // does not exist, do nothing and let Drupal carry on as normal.
+      $system_path = drupal_lookup_path('source', $_GET['q'], $language->alternative);
+
+      // If there is a node with the alternative language, set it.
+      if (!empty($system_path)) {
+
+        // Set the actual request path to the path of the translation. This
+        // code allows Drupal to load the translation instead of the actual
+        // page that was requested without impacting the current language and
+        // it's dependancies.
+        $_GET['q'] = $system_path;
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * This code was originally in the language_fallback module.
+ */
+function alternative_language_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'locale_languages_predefined_form' || $form_id == 'locale_languages_custom_form' || $form_id == 'locale_languages_edit_form') {
+
+    // Store language for edit form or FALSE on create forms.
+    $editing   = isset($form['langcode_view']) ? $form['langcode']['#value'] : FALSE;
+    $default   = language_default();
+    $languages = language_list();
+    $options   = locale_language_list();
+
+    // Default language cannot have an alternative.
+    if ($editing != $default->language) {
+
+      // Add native name to languages.
+      foreach ($options as $code => $name) {
+        if (!empty($languages[$code]->native)) {
+          $options[$code] .= " (" . $languages[$code]->native . ")";
+        }
+      }
+
+      // Set the default language to be first.
+      if (isset($options[$default->language])) {
+        unset($options[$default->language]);
+        $options = array($default->language => t('Default language (@lang)', array('@lang' => $default->name))) + $options;
+      }
+
+      // Add select to create/edit form.
+      $key = ($form_id == 'locale_languages_predefined_form') ? 'language list' : 'custom language';
+      $form[$key]['alternative_language'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Alternative Language'),
+      );
+      $form[$key]['alternative_language']['use_alternative'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Enable an alternative language.'),
+        '#default_value' => 1,
+        '#description' => t('By checking this box, you are enabling the alternative language below for this language.'),
+      );
+      $form[$key]['alternative_language']['alternative'] = array(
+        '#type' => 'select',
+        '#title' => t('Alternative Language'),
+        '#default_value' => '',
+        '#options' => $options,
+        '#description' => t('This language will be used as an alternative in the cases where there is no translation.'),
+        '#states' => array(
+          'invisible' => array(
+            ':input[name="use_alternative"]' => array('checked' => FALSE),
+          ),
+        ),
+      );
+      $form['#submit'][] = 'alternative_language_add_language_submit';
+
+      // Remove current language in edit mode, set default.
+      if ($editing) {
+        unset($form[$key]['alternative_language']['alternative']['#options'][$editing]);
+        $form[$key]['alternative_language']['use_alternative']['#default_value'] = $languages[$editing]->use_alternative;
+        $form[$key]['alternative_language']['alternative']['#default_value']     = $languages[$editing]->alternative;
+      }
+    }
+  }
+}
+
+/**
+ * Form submit callback.
+ *
+ * This code was originally in the language_fallback module.
+ */
+function alternative_language_add_language_submit($form, &$form_state) {
+  db_update('languages')
+    ->fields(
+      array(
+        'alternative'     => $form_state['values']['alternative'],
+        'use_alternative' => $form_state['values']['use_alternative'],
+      )
+    )
+    ->condition('language', $form_state['values']['langcode'])
+    ->execute();
+}
+
+/**
+ * Implements hook_menu_link_alter().
+ */
+function alternative_language_menu_link_alter(&$item) {
+  $item['options']['alter'] = TRUE;
+
+  // Handle suppression flag.
+  if (isset($item['suppress_for_alternative_language']) && $item['suppress_for_alternative_language']) {
+    $item['options']['suppress_for_alternative_language'] = $item['suppress_for_alternative_language'];
+  }
+  elseif (isset($item['suppress_for_alternative_language']) && $item['suppress_for_alternative_language'] == 0) {
+    unset($item['options']['suppress_for_alternative_language']);
+  }
+}
+
+/**
+ * Implements hook_translated_menu_link_alter().
+ */
+function alternative_language_translated_menu_link_alter(&$item) {
+  global $language;
+
+  if ($language->use_alternative && !empty($language->alternative)) {
+
+    // If the language of the item is the alternative language, update the item
+    // so it will show.
+    if ($item['language'] == $language->alternative) {
+
+      // If the item is set to be suppressed, suppress it.
+      if ($item['options']['suppress_for_alternative_language']) {
+        $item['access'] = FALSE;
+        return;
+      }
+
+      $item['access']            = TRUE;
+      $item['language']          = $language->language;
+      $item['title']             = $item['link_title'];
+      $item['localized_options'] = $item['options'];
+
+      // Handle non node/% links as absolute or special, do nothing.
+      if (stripos($item['link_path'], 'node/') === FALSE) {
+        $item['href'] = $item['link_path'];
+      }
+      else {
+        $item['href'] = drupal_lookup_path('alias', $item['link_path'], $language->alternative);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_form_node_alter().
+ */
+function alternative_language_form_node_form_alter(&$form, $form_state, $form_id) {
+  if (!isset($form['menu']) || !user_access('administer menu')) {
+    return;
+  }
+
+  $item = isset($form['menu']['link']['options']['#value']['suppress_for_alternative_language']) ? TRUE : FALSE;
+
+  $form['menu']['link']['suppress_for_alternative_language'] = array(
+    '#type'          => 'checkbox',
+    '#title'         => t('Suppress for languages that fallback to this one.'),
+    '#default_value' => $item ? 1 : 0,
+    '#description'   => t('If this menu item is translated for all language and this is still showing for languages with a fallback, check this box to suppress.'),
+  );
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function alternative_language_form_menu_edit_item_alter(&$form, $form_state, $form_id) {
+  $form['suppress_for_alternative_language'] = array(
+    '#type'          => 'checkbox',
+    '#title'         => t('Suppress for languages that fallback to this one.'),
+    '#default_value' => isset($form['options']['#value']['suppress_for_alternative_language']) ? $form['options']['#value']['suppress_for_alternative_language'] : 0,
+    '#description'   => t('If this menu item is translated for all language and this is still showing for languages with a fallback, check this box to suppress.'),
+    '#weight'        => 10,
+  );
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function alternative_language_preprocess_page(&$variables) {
+  global $language;
+
+  if ($language->use_alternative && !empty($language->alternative)) {
+
+    // Update the front page variable to use the proper path.
+    $variables['front_page'] = '/' . drupal_lookup_path('alias', '<front>', $language->language);
+
+    // Add the language prefix, if required.
+    if ($language->prefix) {
+      $variables['front_page'] = '/' . $language->prefix . $variables['front_page'];
+    }
+  }
+}
+
+/**
+ * Implements hook_node_view_alter().
+ */
+function alternative_language_node_view_alter(&$build) {
+  $build['#post_render'][] = '_alternative_language_alter_links';
+  $build['#post_render'][] = '_alternative_language_alter_actions';
+}
+
+/**
+ * Alters links to be prefixed with the proper language code.
+ */
+function _alternative_language_alter_links($content) {
+  global $language;
+
+  if ($language->prefix) {
+
+    // Find all links within the content and extract the complete <a> tag so we
+    // can do a more accurate replace later.
+    if (preg_match_all('#<a .*?href="?[^" >]*?[^>]*?>.*?</a>#si', $content, $matches)) {
+
+      // This flag controls whether we do any string replacements on $content.
+      $update_content = FALSE;
+
+      // Loop matches and update them with prefixed links.
+      foreach ($matches[0] as $index => $match) {
+
+        // Extract href values from the matched string.
+        $links = _alternative_language_extract_links($match, 'href');
+        if (count($links)) {
+          $update_content = TRUE;
+
+          // Update the matches array with new prefixed links.
+          foreach (array_keys($links) as $link) {
+
+            // Only update links that are not actual files.
+            if (!file_exists(DRUPAL_ROOT . $link)) {
+              $matches[1][$index] = str_replace($link, '/' . $language->prefix . $link, $match);
+            }
+          }
+        }
+      }
+
+      // Update content with new links.
+      if ($update_content) {
+        foreach ($matches[0] as $index => $match) {
+          if (!empty($matches[1][$index])) {
+            $content = str_replace($match, $matches[1][$index], $content);
+          }
+        }
+      }
+    }
+  }
+
+  return $content;
+}
+
+/**
+ * Alters form actions to be prefixed with the proper language code.
+ */
+function _alternative_language_alter_actions($content) {
+  global $language;
+
+  if ($language->prefix) {
+
+    // Find all actions within the content and extract the complete <form> tag
+    // so we can do a more accurate replace later.
+    if (preg_match_all('#<form .*?action="?[^" >]*?[^>]*?/?>.*?</form>#si', $content, $matches)) {
+
+      // This flag controls whether we do any string replacements on $content.
+      $update_content = FALSE;
+
+      // Loop matches and update them with prefixed links.
+      foreach ($matches[0] as $index => $match) {
+
+        // Extract action values from the matched string.
+        $actions = _alternative_language_extract_links($match, 'action');
+        if (count($actions)) {
+          $update_content = TRUE;
+
+          // Update the matches array with new prefixed links.
+          foreach (array_keys($actions) as $action) {
+            $matches[1][$index] = str_replace($action, '/' . $language->prefix . $action, $match);
+          }
+        }
+      }
+
+      // Update content with new links.
+      if ($update_content) {
+        foreach ($matches[0] as $index => $match) {
+          if (!empty($matches[1][$index])) {
+            $content = str_replace($match, $matches[1][$index], $content);
+          }
+        }
+      }
+    }
+  }
+
+  return $content;
+}
+
+/**
+ * Extracts links from content.
+ */
+function _alternative_language_extract_links($content, $attribute) {
+  $langs = language_list();
+  $xml   = @simplexml_load_string($content);
+  $links = array();
+
+  // Only proceed if able to process html.
+  if ($xml) {
+    $list = $xml->xpath("//@" . $attribute);
+    foreach ($list as $item) {
+      $item = (string) $item;
+
+      // Only process non-empty links.
+      if (!empty($item)) {
+
+        // Only process well formed URL's.
+        $item = parse_url($item);
+        if ($item) {
+
+          // Only process relative links. Check to make sure there is no scheme
+          // or host. Check that a path is present and does not start with //
+          // (which denotes a scheme-less URL) and that it does start with /
+          // (any paths that are relative should not be processed).
+          if (!isset($item['scheme']) && !isset($item['host'])) {
+            if (isset($item['path']) && !empty($item['path']) && strpos($item['path'], '//') === FALSE && strpos($item['path'], '/') === 0) {
+
+              // Determine if path is prefixed already with a language code.
+              $prefix = FALSE;
+              foreach ($langs as $lang) {
+                if ($lang->prefix) {
+                  if (stripos($item['path'], '/' . $lang->prefix) === 0) {
+                    $prefix = TRUE;
+                    break;
+                  }
+                }
+              }
+
+              // Only process links that do not have a language prefix already.
+              if (!$prefix) {
+                $links[$item['path']] = TRUE;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return $links;
+}

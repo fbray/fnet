@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for the Alternative Language Redirect module.
+ */
+
+/**
+ * Implements hook_redirect_alter().
+ */
+function alternative_language_redirect_redirect_alter($redirect) {
+  global $language;
+
+  if ($language->prefix) {
+
+    // Set an actual file to no prefix (if possible).
+    if (file_exists(DRUPAL_ROOT . '/' . $redirect->redirect)) {
+      $languages = language_list();
+      foreach ($languages as $lang) {
+        if (!$lang->prefix) {
+          $redirect->redirect_options['language'] = $lang->language;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+name = Alternative Language (Views)
+description = Allows Views to benefit from an alternative language
+package = "Multilingual - Internationalization"
+core = 7.x
+
+dependencies[] = alternative_language
+dependencies[] = views
+
+files[] = alternative_language_views_filter_handler.inc
+
+; Information added by Drupal.org packaging script on 2015-02-11
+version = "7.x-1.2"
+core = "7.x"
+project = "alternative_language"
+datestamp = "1423691934"
+

@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for the Alternative Language Views module.
+ */
+
+/**
+ * Implements hook_views_api().
+ */
+function alternative_language_views_views_api() {
+  return array(
+    'api'  => 3,
+    'path' => drupal_get_path('module', 'alternative_language_views'),
+  );
+}
+
+/**
+ * Implements hook_views_query_substitutions().
+ */
+function alternative_language_views_views_query_substitutions($view) {
+  global $language_content;
+
+  if ($language_content->use_alternative && !empty($language_content->alternative)) {
+    return array(
+      '***ALTERNATIVE_LANGUAGE***' => $language_content->alternative,
+    );
+  }
+  else {
+    return array(
+      '***ALTERNATIVE_LANGUAGE***' => $language_content->language,
+    );
+  }
+}

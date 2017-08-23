@@ -1,0 +1,71 @@
+<?php
+
+/**
+ * @file
+ * Schema, update and install function for Alternative Language.
+ */
+
+/**
+ * Implements hook_schema_alter().
+ */
+function alternative_language_schema_alter(&$schema) {
+  if (isset($schema['languages'])) {
+    $schema['languages']['fields']['alternative'] = array(
+      'type'        => 'varchar',
+      'length'      => 12,
+      'not null'    => TRUE,
+      'default'     => '',
+      'description' => "Language code, e.g. 'de' or 'en-US'.",
+    );
+    $schema['languages']['fields']['use_alternative'] = array(
+      'type'        => 'int',
+      'size'        => 'tiny',
+      'not null'    => TRUE,
+      'default'     => 1,
+      'description' => "A switch to determine if we should set an alternative for this language. 1 = Use alternative. 0 = Do not use alternative.",
+    );
+  }
+}
+
+/**
+ * Implements hook_install().
+ */
+function alternative_language_install() {
+  // Add the field to the languages table so that the 'alternative' property is
+  // set on every object in the array returned by language_list().
+  db_add_field(
+    'languages',
+    'alternative',
+    array(
+      'type'        => 'varchar',
+      'length'      => 12,
+      'not null'    => TRUE,
+      'default'     => '',
+      'description' => "Language code, e.g. 'de' or 'en-US'.",
+    )
+  );
+  // Add the use_alternative field to the languages table so that the
+  // 'use_alternative' property is set on every object in the array returned
+  // by language_list().
+  db_add_field(
+    'languages',
+    'use_alternative',
+    array(
+      'type'        => 'int',
+      'size'        => 'tiny',
+      'not null'    => TRUE,
+      'default'     => 1,
+      'description' => "A switch to determine if we should set an alternative for this language. 1 = Use alternative. 0 = Do not use alternative.",
+    )
+  );
+  drupal_static_reset('language_list');
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function alternative_language_uninstall() {
+  db_drop_field('languages', 'alternative');
+  db_drop_field('languages', 'use_alternative');
+  drupal_static_reset('language_list');
+}
