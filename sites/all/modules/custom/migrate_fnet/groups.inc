@@ -186,6 +186,7 @@ class MigrateDestinationGroupMembership extends MigrateDestination {
    *  IDs to be deleted.
    */
   public function rollback(array $mid) {
+    // TODO: This is Organic Groups cruft and needs to be checked.
     $group_membership = og_membership_load($mid);
     group_membership_delete($group_membership);
   }
@@ -222,6 +223,7 @@ class MigrateDestinationGroupMembership extends MigrateDestination {
     $this->prepare($group_membership, $row);
 
     // WARNING !!!! This part needs to be checked
+    $roles = array();
     if (isset($group_membership->roles)) {
       foreach ($group_membership->roles as $role_name) {
         $roles[] = user_role_load_by_name($role_name);

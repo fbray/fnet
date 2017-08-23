@@ -83,6 +83,30 @@ function migrate_fnet_register_migrations() {
   // Use the d2d D7 migration module class.
   Migration::registerMigration('FNETUserMigration', $arguments['machine_name'], $arguments);
 
+
+  /*
+   * Groups
+   */
+  // Node migrations - each has its own class derived from the migrate_d2d class,
+  // specifying its particular field mappings and transformations. source_type
+  // and destination_type are required arguments.
+  $group_arguments = array(
+    // Asia-Pacific Group
+    array(
+      'class_name' => 'APACGroupMigration',
+      'description' => t('Migration of the Asia-Pacific group'),
+      'machine_name' => 'APACGroup',
+      'source_type' => 'extranet_asia',  // D7 Vocabulary ID
+      'destination_type' => 'extranet_asia',
+    ),
+  );
+  // Tell the node migrations where the users are coming from, so they can
+  // set up the dependency and resolve D7->D7 uids.
+  $common_group_arguments = $common_arguments + array('user_migration' => 'FNETUser');
+  foreach ($group_arguments as $arguments) {
+    $arguments = array_merge_recursive($arguments, $common_group_arguments);
+    Migration::registerMigration($arguments['class_name'], $arguments['machine_name'], $arguments);
+  }
   
   /*
    *  Taxonomies

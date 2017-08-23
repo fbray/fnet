@@ -5,8 +5,6 @@
 */
 class FNETUserMigration extends DrupalUser7Migration {
   public function __construct(array $arguments) {
-    //$this->sourceFields['first_name'] = t('The parsed First Name field.');
-    //$this->sourceFields['last_name'] = t('The parsed Last Name field.');
     parent::__construct($arguments);
     // Deprecated Fields
     $this->addFieldMapping(NULL, 'field_user_onyx_id');
@@ -59,21 +57,4 @@ class FNETUserMigration extends DrupalUser7Migration {
     $this->addFieldMapping('field_address:data', 'field_user_address_line_2')
       ->defaultValue(NULL);
   }
-    
-  public function prepareRow($row) {
-    // Always include this snippet, in case our parent class decides to ignore the row
-    if (parent::prepareRow($row) === FALSE) {
-      return FALSE;
-    }
-    // Filter out the known spammers
-    $blacklist = array(
-      
-    );
-    // If the First Name and Last Name are the same, they are likely a spam account.
-    // If they have never logged in, they are likely a spam account
-    // If created date and last access date are the same day, it's likely a spam account.
-      
-  }
-    
-    // TODO: Log Duplicate entries.
 }
