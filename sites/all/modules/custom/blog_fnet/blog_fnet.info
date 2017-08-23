@@ -1,7 +1,9 @@
 name = Blog Fnet
+description = "Fluke Networks Blog Articles"
 core = 7.x
 package = Fluke Networks
-features[ctools][] = views:views_default:3.0
-features[features_api][] = api:2
-features[views_view][] = blog_articles
-features_exclude[dependencies][views] = views
+version = "7.x-1.1"
+
+dependencies[] = views
+
+stylesheets[all][] = blog_fnet.css
