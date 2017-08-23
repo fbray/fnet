@@ -6,113 +6,83 @@
 
 include_once 'knowledgebase.features.inc';
 
-function knowledgebase_preprocess_knowledgebase_template(&$vars){
-  // START: Set up essential variables.
-  // ********************************************************************
+/**
+ * Implementation of hook_help().
+ */
+function knowledgebase_help() {
 
-  $vid = taxonomy_vocabulary_machine_name_load('knowledge_base')->vid; // Fetch the vocabulary associated with knowledge base articles.
-
-  $tid = isset($_GET["tid"]) ? $_GET["tid"] : "all"; // Get term id from URL if available.
-  $term = $tid != "all" ? taxonomy_term_load($tid, false) : false; // Get term object if term id was provided in URL.
-  $tname = $term ? $term->name : "All"; // Get term name if term id was provided in URL. If term argument not provided display "Most Recent".
-  $tparents = $tid != "all" ? array_reverse(taxonomy_get_parents_all($tid)) : false; // Build an array of the hierarchical parents of the term provided in the URL.
-
-  // Make the above variables globally accessible.
-  $vars['vid'] = $vid;
-  $vars['tid'] = $tid;
-  $vars['term'] = $term;
-  $vars['tname'] = $tname;
-  $vars['tparents'] = $tparents;
-
-  // Using the $tparents array, build a "flattened" array of just the parent term ids for easier searching.
-  $tParentIds = array();
-  if ($tparents) {
-    foreach($tparents as $parent) {
-      $tParentIds[] = $parent->tid;
-    }
-  }
-
-  // Make the above variable globally accessible.
-  $vars['tParentIds'] = $tParentIds;
-
-  $searchQuery = isset($_GET["query"]) ? $_GET["query"] : false; // Get the search string from URL if available.
-
-  // Make the above variable globally accessible.
-  $vars['searchQuery'] = $searchQuery;
-
-  $nid = isset($_GET["nid"]) ? $_GET["nid"] : false; // Get node id from URL if provided.
-  $node = $nid ? node_load($nid) : false; // Get node object if node id is provided.
-  $node_title = $node ? $node->title : ""; // Get node title if node id is provided.
-  $node_body = $node ? $node->body[$node->language][0]['value'] : ""; // Get node body if node id is provided.
-
-  // Capture authoring information.
-  $node_author = '';
-  if ($node != false) {
-    $node_author = isset($node->field_article_author[0]["value"]) ? $node->field_article_author[0]["value"] : user_load($node->uid)->realname; // Get node "article author" field content.
-  }
-
-  $node_created = $node ? $node->created : ""; // Get node "created" timestamp.
-  $node_created = $node_created ? date('Y-m-d', $node_created) : $node_created;
-
-  $node_changed = $node ? $node->changed : ""; // Get node "created" timestamp.
-  $node_changed = $node_changed ? date('Y-m-d', $node_changed) : $node_changed;
-
-  // Make the above variables globally accessible.
-  $vars['nid'] = $nid;
-  $vars['node'] = $node;
-  $vars['node_title'] = $node_title;
-  $vars['node_body'] = $node_body;
-  $vars['node_author'] = $node_author;
-  $vars['node_created'] = $node_created;
-  $vars['node_changed'] = $node_changed;
-
-  // ********************************************************************
-  // END: Set up essential variables.
-//  if(module_exists('devel')) {
-//    dpm($vars);
-//  }
 }
 
-function knowledgebase_form_alter(&$form, &$form_state, $form_id){
-  switch ($form_id) {
-    case 'knowledge_base_article_node_form':
-      unset($form['locations']);
-      $form['#group_children']['field_article_author'] = 'authoring_information';
-      //$form['priority_override']['#access'] = false;
-      break;
-  }
-}
-
-function knowledgebase_menu(){
-  $items = array();
-  $items['knowledge-base'] = array(
-    'title' => t('Knowledge Base'),
-    'page callback' => 'knowledgebase_display',
-    'page arguments' => array(1),
+/**
+ * Implementation of hook_menu().
+ *
+ * @return array
+ */
+function knowledgebase_menu() {
+  $items = array(); 
+  $items['admin/kb/update_pathauto'] = array(
+    'title' => t('Knowledge Base - Update path auto flag'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('kb_pathauto_form'),
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
-
   return $items;
 }
 
-function knowledgebase_theme(){
-  return array(
-    'knowledgebase_template' => array(
-      'template' => 'knowledgebase_template',
-      'arguments' => array(
-        'knowledgebase' => NULL,
-      ),
-    ),
-  );
+/**
+ * Implementation of hock_form_FORM_ID_alter().
+ *
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ */
+function knowledgebase_form_knowledge_base_article_node_form_alter(&$form, &$form_state, $form_id){
+  unset($form['locations']);
+  $form['#group_children']['field_article_author'] = 'authoring_information';
 }
 
-function knowledgebase_display(){
 
-  drupal_add_css(drupal_get_path('module', 'knowledgebase') . '/css/knowledgebase.css'); // Load custom CSS.
-  drupal_add_library('system', 'ui.accordion');
+/**
+ * @return array
+ */
+function kb_pathauto_form(){
+	$node_types = '';
+	$node_types = node_type_get_names();
+	
+	$form = array();
+	$form['kb_node_types'] = array(
+		'#title' => t('Node Types'),
+		'#type' => 'checkboxes',
+		'#options' => $node_types
+	);
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => t('Update pathauto flag')
+	);
+	return $form;
+}
 
-  return theme('knowledgebase_template', '');
+/**
+ * @param $form
+ * @param $form_state
+ */
+function kb_pathauto_form_submit($form, &$form_state){
+	if(isset($form_state['values']['kb_node_types']['knowledge_base_article'])){
+		$subquery = db_select('node');
+		$subquery->addField('node', 'nid');
+		$subquery->condition('node.type', 'knowledge_base_article', '=');
+		$update_query = db_update('pathauto_state') // Table name no longer needs {}
+										->fields(array(
+											'pathauto' => 1,
+										))
+										->condition('entity_id', $subquery,'IN')
+										->execute();
+		//UPDATE {pathauto_state} SET pathauto=:db_update_placeholder_0 WHERE (entity_id IN (SELECT node.nid AS nid FROM {node} node WHERE (node.type = :db_condition_placeholder_0) )) 
+		drupal_set_message('Done Successfully!');
+	}else{
+		drupal_set_message("Knowledge Base not selected");
+	}
 }
 
 /**
@@ -123,5 +93,25 @@ function knowledgebase_metatag_page_cache_cid_parts_alter(&$cid_parts) {
     if (isset($_GET['nid'])) {
       $cid_parts['nid'] = $_GET['nid'];
     }
+  }
+}
+
+/**
+ * Implements hook_views_pre_render().
+ */
+function knowledgebase_views_pre_render(&$view) {
+  if ($view->name == 'knowledge_base_search') {
+		if(isset($view->exposed_data['title']) || isset($view->exposed_data['taxonomy_vocabulary_14_tid'])){
+			$title = ($view->exposed_data['title'] == "")?"All":$view->exposed_data['title'];
+			
+			$tid = $view->exposed_data['taxonomy_vocabulary_14_tid'];
+			$term = isset($tid)?taxonomy_term_load($tid):"";
+			$name = $term ? $term->name : "";	
+			
+			$label = ($name != "")?$name:$title;
+			$label = "Articles : ".$label;
+			
+			$view->field['title']->options['label'] = $label;
+		}
   }
 }

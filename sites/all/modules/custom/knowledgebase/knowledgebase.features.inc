@@ -3,10 +3,12 @@
  * @file
  * knowledgebase.features.inc
  */
-
 /**
- * Implements hook_views_api().
+ * Implements hook_views_api()
  */
-function knowledgebase_views_api($module = NULL, $api = NULL) {
-  return array("api" => "3.0");
+function knowledgebase_views_api() {
+  return array(
+    'api' => 3.0,
+    'path' => drupal_get_path('module', 'knowledgebase') . '/views',
+  );
 }

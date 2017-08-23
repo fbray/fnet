@@ -4,9 +4,7 @@
 
   <!-- START: Search Form -->
   <div id="kb-search">
-
     <form name="kbSearch" method="get" action="/knowledge-base">
-
       <input name="query" type="text" value="<?php if ($searchQuery !== FALSE) {
         print $searchQuery;
       } ?>" style="width:250px;">
@@ -20,10 +18,14 @@
         <?php
         $site_split_tids = site_split_personality_tids();
         $tree = taxonomy_get_tree($vid);
-        ?>
-
-        <?php foreach($tree as $termObj): ?>
-          <?php
+        dpm($tree);
+        $sorted = array();
+        foreach ($tree as $termObj) {
+            // Sort these bastards!
+          if ($termObj->depth == 0) {
+              $sorted[$termObj->tid] = $termObj;
+          }
+          else {}
           $wrapper = entity_metadata_wrapper('taxonomy_term', $termObj->tid);
           try {
             $business_entity = $wrapper->field_business_entity->tid->value();
@@ -33,25 +35,27 @@
           if (!in_array($business_entity, $site_split_tids)) {
             continue;
           }
-          ?>
-          <?php if ($termObj->depth == 0): ?>
+          if ($termObj->depth == 0) { ?>
+            $sorted[$termObj->tid] = $termObj;
             <option disabled><strong><?php echo $termObj->name; ?></strong>
             </option>
 
-          <?php elseif ($termObj->depth == 1): ?>
+          <?php }
+          elseif ($termObj->depth == 1) { ?>
             <option
               value="<?php echo $termObj->tid; ?>" <?php if ($searchQuery !== FALSE && $termObj->tid == $tid) {
               print "selected";
             } ?>>&nbsp;&nbsp;<?php echo $termObj->name; ?></option>
 
-          <?php else: ?>
+          <?php }
+          else { ?>
             <option
               value="<?php echo $termObj->tid; ?>" <?php if ($searchQuery !== FALSE && $termObj->tid == $tid) {
               print "selected";
             } ?>>&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $termObj->name; ?></option>
 
-          <?php endif; ?>
-        <?php endforeach; ?>
+          <?php }
+        } ?>
 
       </select>
 
@@ -64,20 +68,19 @@
   <div id="kb-breadcrumbs">
 
     <a href="/knowledge-base" id="bc-link">KB Home</a>
-    <?php dpm($tparents); ?>
+
     <?php if ($tparents): // Loop through array of term parent objects to build breadcrumbs. ?>
       <?php foreach ($tparents as $parent): ?>
-        &nbsp;&nbsp;&gt;&nbsp;&nbsp;<?php print $parent->name; ?>
+        &nbsp;&nbsp;&gt;&nbsp;&nbsp;<?php echo $parent->name; ?>
       <?php endforeach; ?>
     <?php else: ?>
-      &nbsp;&nbsp;&gt;&nbsp;&nbsp;All
+      &gt;&nbsp;&nbsp;<?php print t('All'); ?>
     <?php endif; ?>
 
   </div>
   <!-- END: Breadcrumbs -->
 
-
-  <?php if (isset($nid)): // If there is a NID to display ?>
+  <?php if ($nid): ?>
 
     <!-- START: "Back to List" link -->
     <div id="back-button">
@@ -102,9 +105,9 @@
     <!-- END: "Back to List" link -->
 
     <!-- START: KB Article -->
-    <div id="kb-article" <?php if ($node->do_not_translate): ?>
-      class="OneLinkNoTx"
-    <?php endif; ?>>
+    <div id="kb-article" <?php if ($node->do_not_translate) {
+      print 'class="OneLinkNoTx"';
+    } ?>>
       <h3 id="article-title"><?php echo $node_title; ?></h3>
       <div id="article-body"><?php echo $node_body; ?></div>
       <div id="article-author">
@@ -120,9 +123,9 @@
 
     <?php drupal_set_title("Knowledge Base - " . $node_title); // Set the <title> tag in the HTML doc. ?>
 
-  <?php else: // If there is no NID to display. ?>
+  <?php else: ?>
 
-    <script>
+  <script>
     $(function () {
 
       // Initialize the nested "accordion" menus.
@@ -134,8 +137,8 @@
 
       // If necessary, expand the appropriate top-level accordion menu based on the current selection.
       var elem = $("#h4-active-panel"); // Fetch "active" menu heading element to be used in the "index" function.
-      positionH4 = elem.closest(".accordion").find("h4").index(elem); // Determine the index position of the "active" menu element within the containing element.
-      elem.closest(".accordion").accordion("option", "active", positionH4); // Activate (or open) the menu within which is contained the active link selection.
+      positionH4 = $("#h4-active-panel").closest(".accordion").find("h4").index(elem); // Determine the index position of the "active" menu element within the containing element.
+      $("#h4-active-panel").closest(".accordion").accordion("option", "active", positionH4); // Activate (or open) the menu within which is contained the active link selection.
 
       $("#taxonomy-menu").fadeIn(200); // Since the accordion functionality of the menu is initialized/styled on the client side, display it only once this process completes.
 
@@ -154,74 +157,75 @@
 
         $(this).attr('href', href);
       });
+
+      <?php endif; ?>
+
     });
     </script>
 
   <!-- START: Taxonomy Menu -->
-  <div id="taxonomy-menu" style="display:none;">
+    <div id="taxonomy-menu">
+        <h3>Browse by Category</h3>
+        <div class="accordion" id="top-accordian">
 
-    <h3>Browse by Category</h3>
-
-    <div class="accordion" id="top-accordian">
+<?php
+$lastDepth = 0;
+$tree = taxonomy_get_tree($vid);
+dpm($tree);
+?>
+<?php foreach ($tree as $termObj): ?>
     <?php
-      $tree = taxonomy_get_tree($vid);
-      $lastDepth = 0;
-
-      foreach ($tree as $termObj) {
-        $wrapper = entity_metadata_wrapper('taxonomy_term', $termObj->tid);
-        try {
-          $business_entity = $wrapper->field_business_entity->tid->value();
-        }
-        catch (Exception $e) {
-          $business_entity = NULL;
-        }
-        if (!in_array($business_entity, $site_split_tids)) {
-          continue;
-        }
-
-        $step = ""; // Assign a value of "up" or "down" only if the term depth has changed accordingly.
-        if ($lastDepth < $termObj->depth) {
-          $step = "down";
-        }
-        elseif ($lastDepth > $termObj->depth) {
-          $step = "up";
-        }
-
-        if ($termObj->depth == 0) { // 1st level terms will act as top level accordion menu headings.
-          if ($step == "up") {
-            print "</ul></div>";
-          }
-          if (in_array($termObj->tid, $tParentIds)) {
-            print '<h4 id="h4-active-panel">';
-          }
-          else {
-            print '<h4>';
-          }
-          print $termObj->name . '</h4>';
-        }
-        elseif ($termObj->depth == 1) { // 2nd level terms will act as nested accordion menu links.
-          if ($step == "down") {
-            print '<div><ul>';
-          }
-          if ($termObj->tid == $tid) {
-            print '<li id="active-menu-item"><a
-            href="/knowledge-base/?tid=' . $termObj->tid . '">' . $termObj->name . '</a></li>';
-          }
-          $lastDepth = $termObj->depth; // Capture the term depth so that change in depth can be tracked from one term to the next.
-        }
-      } // End of foreach term.
-    if ($lastDepth == 1) { // Close up any open elements.
-      print "</ul></div>";
+    // echo "Term obj <pre>"; print_r($termObj); echo "</pre>"; exit;
+    $wrapper = entity_metadata_wrapper('taxonomy_term', $termObj->tid);
+    $step = ''; // Assign a value of "up" or "down" only if the term depth has changed accordingly.
+    if ($lastDepth < $termObj->depth) {
+        $step = "down";
+    }
+    elseif ($lastDepth > $termObj->depth) {
+      $step = "up";
     }
     ?>
+    <?php if ($termObj->depth == 0): // 1st level terms will act as top level accordion menu headings. ?>
+        <?php if ($step == "up"): ?>
+            </ul></div>
+        <?php endif; ?>
+        <?php $active_panel = in_array($termObj->tid, $tParentIds) ? ' id="h4-active-panel"' : ''; ?>
+        <h4<?php print $active_panel; ?>>
+            <?php $tcatname = str_replace(' ', '-', strtolower($termObj->name)) ;?>
+            <?php echo $termObj->name; ?>
+        </h4>
+
+    <?php elseif ($termObj->depth == 1): // 2nd level terms will act as nested accordion menu links. ?>
+        <?php if ($step == "down"): ?>
+      <div>
+      <ul>
+        <?php endif; ?>
+        <?php $active_menu_item = ($termObj->tid == $tid) ? ' id="active-menu-item"' : ''; ?>
+        <li<?php print $active_menu_item; ?>>
+				<!-- <a href="/knowledge-base/?tid=<?php //echo $termObj->tid; ?>"><?php //echo $termObj->name; ?></a> -->
+				<?php
+					$termname = str_replace("/","##",$termObj->name);
+					$link = url('taxonomy/term/' . $termObj->tid);
+				?>
+				<a href="<?php echo $link; ?>"><?php echo $termObj->name; ?></a>
+        </li>
+
+    <?php endif; ?>
+    <?php $lastDepth = $termObj->depth; // Capture the term depth so that change in depth can be tracked from one term to the next. ?>
+<?php endforeach; ?>
+<?php if ($lastDepth == 1): ?>
+      </ul>
+    </div>
+<?php endif; ?>
+
   </div>
-  <?php endif; ?>
+
 </div>
 <!-- END: Taxonomy Menu -->
 
 <!-- START: Article List View -->
 <div id="kb-article-list">
-  <h3>Articles: <?php print $tname; ?></h3>
+  <h3>Articles: <?php echo $tname; ?></h3>
 
   <?php
   $view = views_get_view('knowledge_base_articles'); // Get Drupal view by name.
@@ -248,7 +252,9 @@
   ?>
 </div>
 <!-- END: Article List View -->
+
 <?php endif; ?>
+
 <div style="clear:both;">&nbsp;</div>
 
 </div>
