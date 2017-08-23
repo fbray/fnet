@@ -186,7 +186,7 @@ hide($content['links']);
     <div class="col-1-3">
       <div class="inner-box content_hp_industry_box_left">
         <h3><?php print t('Cabling Certification'); ?></h3>
-        <p><div style="font-weight: normal;"><?php print $field_home13_category_description_1[0]['value']; ?></div></p>
+        <p><div style="font-weight: normal;"><?php print $field_home13_ind_desc_1[0]['value']; ?></div></p>
         <ul>
           <?php foreach ($datacom_cabling_families as $datacom_cabling_family): ?>
             <li class="content_hp_industry_content_link">
@@ -204,7 +204,7 @@ hide($content['links']);
     <div class="col-1-3">
       <div class="inner-box content_hp_industry_box_left">
         <h3><?php print t('Installation and Test'); ?></h3>
-        <p><div style="font-weight: normal;"><?php print $field_home13_category_description_2[0]['value']; ?></div></p>
+        <p><div style="font-weight: normal;"><?php print $field_home13_ind_desc_2[0]['value']; ?></div></p>
         <ul>
           <?php foreach ($it_networking_families as $it_networking_family): ?>
             <li class="content_hp_industry_content_link">
@@ -222,7 +222,7 @@ hide($content['links']);
     <div class="col-1-3">
       <div class="inner-box">
         <h3><?php print t('Telecom Test'); ?></h3>
-        <div style="font-weight: normal;"><p><?php print $field_home13_category_description_3[0]['value']; ?></p></div>
+        <div style="font-weight: normal;"><p><?php print $field_home13_ind_desc_3[0]['value']; ?></p></div>
         <ul>
           <?php foreach($telecom_families as $telecom_family): ?>
             <li class="content_hp_industry_content_link">

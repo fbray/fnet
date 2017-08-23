@@ -4240,10 +4240,115 @@ div#ps-widget-btn .ps-widget span, div#ps-widget-btn .ps-widget small{font-weigh
     font-weight:bold;
 }
 
+#knowledge-base h2 { font-size:28px; font-weight:normal; margin-top:0; }
+#knowledge-base h3 { font-size:20px; font-weight:normal; }
+
+body.page-knowledge-base header#main-content-header {
+    display:none; /* Hiding default page title */
+}
+
+#taxonomy-menu {
+    float:left;
+    width:34%;
+}
+#taxonomy-menu li { margin:0 0 0 1em; }
+#taxonomy-menu ul { padding:0; }
+
+#taxonomy-menu li#active-menu-item {
+    font-weight:bold;
+    background-color:#f5f5f5;
+}
+#kb-cat-list h3 {
+    background-color: #475D80;
+    font-size: 16px;
+}
+#kb-cat-list h3 a {
+    color: #FFF;
+    font-size: 16px;
+}
+
+#kb-article { float:left; }
+
+#kb-article-list caption{
+	float: left;
+	font-size: 20px;
+	padding: 15px 0px;
+}
+#kb-article-list {
+    float:right;
+    width:64%;
+}
+#kb-article-list h3{font-size: 20px;}
+#kb-article-list .item-list {
+    margin-top:15px;
+}
+
+#kb-article-list table.views-table { width:100%; }
+#kb-article-list table.views-table tr { border-bottom:1px solid #ccc; }
+#kb-article-list table.views-table tr.odd { background-color:#fff; }
+#kb-article-list table.views-table tr.even { background-color:#f9f9f9; }
+#kb-article-list table.views-table td { padding:6px 5px; font-size:1.2em; }
 #back-button {
     padding-bottom:15px;
     border-bottom:1px solid #999;
 }
+#views-exposed-form-knowledge-base-search-page h2 {
+	font-size: 28px;
+	font-weight: normal;
+	margin-top: 0;
+}
+#views-exposed-form-knowledge-base-search-page {
+	padding: 15px;
+	margin: 20px 0;
+	background-color: #eee;
+	border: 1px solid #ccc;
+	border-radius: 3px;
+}
+#edit-submit-knowledge-base-search {
+	margin-top: auto;
+}
+.taxonomy-menu{
+	float: left;
+	width: 34%;
+	margin-top: 15px;
+}
+.taxonomy-menu h2{
+	font-size: 20px;
+}
+.taxonomy-menu h3{
+	background-color: #475D80;
+	font-size: 16px;
+}
+.taxonomy-menu h3 a{
+	color: #FFF;
+	font-size: 16px;
+}
+#block-views-taxonomy-tree-block .ui-corner-all,#block-views-taxonomy-tree-block .ui-corner-top {
+	border-radius: 3px;
+}
+#block-system-main div.kb-article-list{
+	float: right;
+	width: 64%;
+	margin-bottom: 40px;
+}
+#block-system-main div.kb-article-list th{
+	font-size: 20px;
+	font-weight: normal;
+}
+.kb-article-list table.views-table td{
+	font-size:1.2em;
+	padding: 6px 5px;
+}
+.kb-article-list table.views-table tr.odd {
+	background-color: #fff;
+}
+.kb-article-list table.views-table tr.even {
+	background-color: #f9f9f9;
+}
+.kb-article-list table.views-table tbody tr {
+	border-bottom: 1px solid #ccc;
+}
+
 /*Recent blog block */
 
 .blog-main-content{

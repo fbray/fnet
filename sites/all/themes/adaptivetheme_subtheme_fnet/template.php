@@ -99,10 +99,11 @@ function adaptivetheme_subtheme_fnet_preprocess_page(&$vars) {
   if (isset($vars['node'])) {
     $vars['theme_hook_suggestion'] = 'page__type__' . $vars['node']->type;
   }
-  /*if (arg(0) == 'taxonomy' && arg(1) == 'term' && is_numeric(arg(2))) {
-    $vars['term'] = arg(2);
+  if (arg(0) == 'taxonomy' && arg(1) == 'term' && is_numeric(arg(2))) {
+    $term = taxonomy_term_load(arg(2));
+    $vars['term'] = $term;
     $vars['theme_hook_suggestions'][] = 'page__vocabulary__' . $term->vocabulary_machine_name;
-  }*/
+  }
 }
 
 /*
