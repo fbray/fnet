@@ -1,8 +1,0 @@
-name = fnet_cck_migrations
-description = Migrate data from D6 CCK fields to D7 fields
-core = 7.x
-version = 7.x 2014-12-24
-
-package = "FNET Migration"
-files[] = fnet_cck_migrations.profile.inc
-files[] = fnet_cck_migrations.marketo_forms.inc
