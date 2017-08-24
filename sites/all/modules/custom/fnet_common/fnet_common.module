@@ -129,6 +129,8 @@ function fnet_common_safe_get($field, $delta = 0, $column = 'value') {
 
   if ( isset($field[$delta]) && isset($field[$delta][$column]) ) {
     return $field[$delta][$column];
+  }else if ( isset($field[LANGUAGE_NONE][$delta]) && isset($field[LANGUAGE_NONE][$delta][$column]) ) {
+    return $field[LANGUAGE_NONE][$delta][$column];
   }
 
   return NULL;
@@ -337,5 +339,26 @@ function fnet_common_get_field_rendered($entity_type, $entity, $field_name, $dis
 }
 
 
-
+/**
+ * Get the value of Product from the key in the URL
+ *
+ * 
+ */
+function fnet_common_get_industry_value(){	
+	$industries = array(
+		-1 => t('Show all'),
+		1 => t('Cabling Certification'),
+		2 => t('Installation and Test'),
+		3 => t('Telecom Test'),
+	);
+	$support_types = array('manuals','downloads','training','whitepapers','application-notes','datasheets','webcasts');
+	$product_name = urldecode(arg(3));
+	if($product_name == ''){
+		if(arg(2)!= ""){
+			$all_param = (arg(2)== -1)?'':arg(2);
+			$product_name = $industries[$all_param];
+		}
+	}
+	return $product_name;
+}
 
