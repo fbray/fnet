@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: ems.install 26 2015-03-31 22:37:44Z sogden1 $
 /**
  * @file
  * EMS module's install and uninstall code.

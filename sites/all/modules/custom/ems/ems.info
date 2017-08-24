@@ -1,4 +1,4 @@
-; $Id$
+; $Id: ems.info 2065 2016-07-25 22:10:32Z mositis $
 name = EMS
 package = Fluke Networks
 description = the EMS module allows registration for an (event_occurrence) node, and interfaces with Marketo.

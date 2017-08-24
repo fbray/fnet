@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: event_summary.tpl.php 26 2015-03-31 22:37:44Z sogden1 $
 /**
  * @file Theme event summary information with items from both event node and event_occurrence node.
  */

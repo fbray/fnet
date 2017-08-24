@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: ems.module 2118 2016-08-30 13:01:15Z gkakade $
 require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'ems') . '/library/base62.php';
 require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'ems') . '/library/parsecsv.lib.php';
 /**
@@ -14,16 +14,6 @@ require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'ems') . '/library/pa
  * The module provides a form for registering and un-registering, submits registrant to Marketo, and
  * provides some basic reporting
  */
-
-/**
- * Implements hook_views_api()
- */
-function ems_views_api() {
-  return array(
-    'api' => 3.0,
-    'path' => drupal_get_path('module', 'ems') . '/views',
-  );
-}
 
 /**
  * Implements hook_menu().
@@ -133,8 +123,6 @@ function ems_menu() {
 
 /**
  * Implements hook_permission().
- *
- * @return array
  */
 function ems_permission() {
   return array(
@@ -1251,7 +1239,6 @@ function ems_preprocess_node(&$variables) {
 /**
  * Implements hook_preprocess_page().
  */
-// TODO: Uhh, why are we getting rid of the node title? - rositis
 function ems_preprocess_page(&$variables) {
   if (isset($variables['node']) && $variables['node']->type == 'event_occurrence') {
     $variables['title'] = '';
