@@ -1,0 +1,59 @@
+
+// _base.scss imports _custom.scss and other partials.
+@import "base";
+
+/*
+ *   Important Information about this CSS File
+ *
+ * - Do not delete or rename this file, if you do not use it leave it blank (delete
+ *   everything) and the file will be skipped when you enable Production Mode in
+ *   the Global theme settings.
+ *
+ * - Read the _README file in this directory, it contains useful help and other information.
+ */
+
+/* Increase the body font size on small devices */
+html {
+  font-size: 81.3%; 
+}
+
+.mkto-content-main {
+  width: 768px;
+
+  #mkto-content {
+    padding: 60px 25px 60px 25px;
+
+    #mkt-prod-details {
+      width: 430px;
+
+      #mkt-prod-title {
+        font-size: 24px;
+      }
+      
+      #mkt-prod-img-left,
+      #mkt-prod-img-right {
+        width: 182px;
+      }
+
+      #mkt-prod-content {
+        width: 220px;
+      }
+    }
+
+    #mkto-content-main-form {
+      width: 255px;
+
+      #mkto-form {
+        padding: 15px;
+      }
+    }
+
+    #mkt-more-links-content {
+      margin-top: 70px;
+    }
+
+    #mkt-contact-info {
+      margin-top: 135px;
+    }
+  }
+}

@@ -1,0 +1,52 @@
+/*
+ *   Important Information about this CSS File
+ *
+ * - Do not delete or rename this file, if you do not use it leave it blank (delete 
+ *   everything) and the file will be skipped when you enable Production Mode in
+ *   the Global theme settings.
+ *
+ * - Read the _README file in this directory, it contains useful help and other information.
+ */
+/* line 15, ../sass/responsive.tablet.landscape.scss */
+.mkto-content-main {
+  width: 768px;
+}
+/* line 18, ../sass/responsive.tablet.landscape.scss */
+.mkto-content-main #mkto-content {
+  padding: 60px 25px 60px 25px;
+}
+/* line 21, ../sass/responsive.tablet.landscape.scss */
+.mkto-content-main #mkto-content #mkt-prod-details {
+  width: 430px;
+}
+/* line 24, ../sass/responsive.tablet.landscape.scss */
+.mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-title {
+  font-size: 24px;
+}
+/* line 28, ../sass/responsive.tablet.landscape.scss */
+.mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-left,
+.mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-right {
+  width: 182px;
+}
+/* line 33, ../sass/responsive.tablet.landscape.scss */
+.mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-content {
+  width: 220px;
+}
+/* line 38, ../sass/responsive.tablet.landscape.scss */
+.mkto-content-main #mkto-content #mkto-content-main-form {
+  width: 255px;
+}
+/* line 41, ../sass/responsive.tablet.landscape.scss */
+.mkto-content-main #mkto-content #mkto-content-main-form #mkto-form {
+  padding: 15px;
+}
+/* line 46, ../sass/responsive.tablet.landscape.scss */
+.mkto-content-main #mkto-content #mkt-more-links-content {
+  margin-top: 70px;
+}
+/* line 50, ../sass/responsive.tablet.landscape.scss */
+.mkto-content-main #mkto-content #mkt-contact-info {
+  margin-top: 135px;
+}
+
+/*# sourceMappingURL=responsive.tablet.landscape.css.map */
