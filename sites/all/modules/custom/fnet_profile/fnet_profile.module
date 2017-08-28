@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: fnet_profile.module 2405 2017-04-10 23:27:23Z mositis $
 
 /**
  * @file
@@ -178,11 +178,18 @@ function fnet_profile_profile_edit_form($form, &$form_state, $user) {
     '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_job_role'),
     '#suffix' => '</div></div>',
   );
-  $form['gold_message'] = array(
-    '#markup' => '<strong>Gold Support Members Only</strong></br><div>Add a Gold Number and PIN here to associate it with your account.</div>',
-    '#prefix' => '<div class="field-group"><div id="gold-number">',
+
+  $form['gold'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Gold Support Members Only'),
+    '#description' => t('Add a Gold Number and PIN here to associate it with your account.'),
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
+    '#prefix' => '<div id="gold-number">',
+    '#suffix' => '</div>',
+    '#weight' => 2,
   );
-  $form['gold_number'] = array(
+  $form['gold']['gold_number'] = array(
     '#type' => 'textfield',
     '#title' => t('Gold Number'),
     '#size' => 10,
@@ -190,18 +197,18 @@ function fnet_profile_profile_edit_form($form, &$form_state, $user) {
     '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_gold_number'),
   );
 
-  $form['gold_pin'] = array(
+  $form['gold']['gold_pin'] = array(
     '#type' => 'textfield',
     '#title' => t('Gold PIN'),
     '#size' => 10,
     '#required' => FALSE,
     '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_gold_pin'),
-    '#suffix' => '</div></div>',
   );
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save Changes'),
     '#attributes' => array('class' => array('customfn-buttons')),
+    '#weight' => 3,
   );
   if ((!isset($user)) || ((isset($user->uid)) && ($user->uid == 0))) {
     $t_and_c_link = l('Terms and Conditions.', "node/" . variable_get('fn_myaccount_gold_credentials_terms_and_condition', ''), array(

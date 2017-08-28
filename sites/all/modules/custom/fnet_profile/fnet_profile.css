@@ -1,4 +1,4 @@
-/*$Id$*/
+/*$Id: fnet_profile.css 2408 2017-04-10 23:32:26Z mositis $*/
 
 #user-register-form div#profile-column-one, #fnet-profile-profile-edit-form div#profile-column-one {
     float: left;
@@ -30,6 +30,10 @@
     margin-bottom: 20px;
     border-top: 1px solid #666666;
     border-bottom: 1px solid #666666;
+}
+
+#gold-number legend {
+    font-weight:bold;
 }
 
 #edit-gold-number-wrapper, #edit-gold-pin-wrapper {

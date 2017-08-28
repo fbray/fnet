@@ -1,4 +1,4 @@
-; $Id$
+; $Id: fnet_profile.info 55 2015-05-06 22:54:37Z sogden1 $
 name = FNET Profile
 description = Maintain user profile information
 core = 7.x
