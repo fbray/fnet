@@ -7,6 +7,10 @@
  *
  */
 
+include_once DRUPAL_ROOT . '/includes/locale.inc';
+module_load_include('inc', 'addressfield', 'addressfield.administrative_areas');
+
+
 /**
  * Implements hook_menu().
  */
@@ -60,8 +64,14 @@ function fnet_profile_permission() {
  * Main profile edit form
  * @param $form
  * @param $form_state
+ * @param $user
+ * @return mixed
  */
 function fnet_profile_profile_edit_form($form, &$form_state, $user) {
+
+  // TODO: Convert to new user fields.
+  // TODO: Larger issue - This form is inflexible and US-centric. How do we redo with the dynamic Addressfield form?
+  // TODO: See https://www.drupal.org/node/970048 for more info.
   $form_state['#user'] = $user;
   $form['#attached']['css'][] = drupal_get_path('module', 'fnet_profile') . '/fnet_profile.css';
   $field_size = 40;
@@ -79,35 +89,35 @@ function fnet_profile_profile_edit_form($form, &$form_state, $user) {
     '#title' => t('First Name'),
     '#size' => $field_size,
     '#required' => TRUE,
-    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_first_name'),
+    '#default_value' => isset($user->field_address[LANGUAGE_NONE][0]['first_name']) ? $user->field_address[LANGUAGE_NONE][0]['first_name'] : '',
   );
   $form['last_name'] = array(
     '#type' => 'textfield',
     '#title' => t('Last Name'),
     '#size' => $field_size,
     '#required' => TRUE,
-    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_last_name'),
+    '#default_value' => isset($user->field_address[LANGUAGE_NONE][0]['last_name']) ? $user->field_address[LANGUAGE_NONE][0]['last_name'] : '',
   );
   $form['company'] = array(
     '#type' => 'textfield',
     '#title' => t('Company'),
     '#size' => $field_size,
     '#required' => TRUE,
-    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_company'),
+    '#default_value' => isset($user->field_address[LANGUAGE_NONE][0]['organisation_name']) ? $user->field_address[LANGUAGE_NONE][0]['organisation_name'] : '',
   );
-  $form['address_line_1'] = array(
+  $form['thoroughfare'] = array(
     '#type' => 'textfield',
     '#title' => t('Address Line 1'),
     '#size' => $field_size,
     '#required' => TRUE,
-    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_address_line_1'),
+    '#default_value' => isset($user->field_address[LANGUAGE_NONE][0]['thoroughfare']) ? $user->field_address[LANGUAGE_NONE][0]['thoroughfare'] : '',
   );
-  $form['address_line_2'] = array(
+  $form['premise'] = array(
     '#type' => 'textfield',
     '#title' => t('Address Line 2'),
     '#size' => $field_size,
     '#required' => FALSE,
-    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_address_line_2'),
+    '#default_value' => isset($user->field_address[LANGUAGE_NONE][0]['premise']) ? $user->field_address[LANGUAGE_NONE][0]['premise'] : '',
   );
   $form['ascii_profile_link'] = array(
     '#type' => 'markup',
@@ -121,16 +131,16 @@ function fnet_profile_profile_edit_form($form, &$form_state, $user) {
     '#title' => t('City'),
     '#size' => $field_size,
     '#required' => TRUE,
-    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_city'),
+    '#default_value' => isset($user->field_address[LANGUAGE_NONE][0]['locality']) ? $user->field_address[LANGUAGE_NONE][0]['locality'] : '',
   );
-  $country = (isset($form_state['values']['country'])) ? $form_state['values']['country'] : fnet_common_get_field_value('user', $user, 'field_user_country');
-  $options = addresses_province_get($country);
+  $country = isset($form_state['values']['country']) ? $form_state['values']['country'] : $user->field_address[LANGUAGE_NONE][0]['country'];
+  $options = addressfield_get_administrative_areas(trim(check_plain($country)));
   $form['province'] = array(
     '#type' => 'select',
     '#title' => t('State or Province'),
     '#options' => $options,
     '#required' => (!empty($options)),
-    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_province'),
+    '#default_value' => isset($user->field_address[LANGUAGE_NONE][0]['administrative_area']) ? $user->field_address[LANGUAGE_NONE][0]['administrative_area'] : '',
     '#prefix' => '<div id="province-wrapper">',
     '#suffix' => '</div>',
   );
@@ -139,17 +149,14 @@ function fnet_profile_profile_edit_form($form, &$form_state, $user) {
     '#title' => t('Zip/Postal Code'),
     '#size' => $field_size,
     '#required' => TRUE,
-    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_postal_code'),
+    '#default_value' => isset($user->field_address[LANGUAGE_NONE][0]['postal_code']) ? $user->field_address[LANGUAGE_NONE][0]['postal_code'] : '',
   );
   $form['country'] = array(
     '#type' => 'select',
     '#title' => t('Country'),
-    '#options' => addresses_country_get(array(), array(
-      'us' => 'United States',
-      'ca' => 'Canada'
-    )),
+    '#options' => country_get_list(),
     '#required' => TRUE,
-    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_country'),
+    '#default_value' => $country,
     '#ajax' => array(
       'wrapper' => 'province-wrapper',
       'callback' => 'fnet_profile_province_callback',
@@ -161,7 +168,7 @@ function fnet_profile_profile_edit_form($form, &$form_state, $user) {
     '#title' => t('Phone'),
     '#size' => $field_size,
     '#required' => TRUE,
-    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_phone'),
+    '#default_value' => fnet_common_get_field_value('user', $user, 'field_user_telephone'),
   );
   $form['preferred_language'] = array(
     '#type' => 'select',
@@ -300,7 +307,9 @@ function fnet_profile_province_callback($form, $form_state) {
 
 /**
  * Implements hook_form_FORM_ID_alter().
+ * TODO: This is weird duplication. Hereby deprecated. 8/28/2017 rositis
  */
+/*
 function fnet_profile_form_user_register_form_alter(&$form, &$form_state, $form_id) {
   drupal_add_css(drupal_get_path('module', 'fnet_profile') . '/fnet_profile.css');
   $user = new stdClass();
@@ -310,6 +319,7 @@ function fnet_profile_form_user_register_form_alter(&$form, &$form_state, $form_
   $form += $profile_form;
   $form['#submit'][] = 'fnet_profile_profile_edit_form_submit';
 }
+*/
 
 /**
  * hook for email registration api to set the username to be the part of the email before the @

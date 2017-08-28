@@ -4,4 +4,5 @@ description = Maintain user profile information
 core = 7.x
 version = 7.x
 package = "Fluke Networks"
-;dependencies[] =
+
+dependencies[] = addressfield
