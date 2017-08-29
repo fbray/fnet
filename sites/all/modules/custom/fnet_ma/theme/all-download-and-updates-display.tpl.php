@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: all-download-and-updates-display.tpl.php 48 2015-04-30 22:54:33Z sogden1 $
 
 /**
  * @file

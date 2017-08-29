@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: fnet_ma.register_products.inc 2011 2016-06-21 19:04:01Z mositis $
 
 /**
  * @file

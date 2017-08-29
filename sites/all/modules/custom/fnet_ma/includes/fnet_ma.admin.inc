@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: fnet_ma.admin.inc 25 2015-03-31 20:12:49Z sogden1 $
 
 define('NUMBER_OF_T2W_REDIRECT_CATEGORIES', 10);
 

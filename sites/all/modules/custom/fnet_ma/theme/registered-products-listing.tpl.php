@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: registered-products-listing.tpl.php 856 2015-10-05 21:01:38Z sogden1 $
 
 global $base_url;
 $image_path = $base_url . '/' . drupal_get_path('module', 'fnet_ma') . '/images/';

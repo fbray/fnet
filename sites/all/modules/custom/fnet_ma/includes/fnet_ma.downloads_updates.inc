@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: fnet_ma.downloads_updates.inc 1954 2016-05-23 21:17:17Z mositis $
 
 /**
  * @file

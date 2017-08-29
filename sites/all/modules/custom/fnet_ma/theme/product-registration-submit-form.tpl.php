@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: product-registration-submit-form.tpl.php 446 2015-07-14 19:28:26Z sogden1 $
 
 /**
  * @file

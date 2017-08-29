@@ -1,4 +1,4 @@
-;$Id$
+;$Id: fnet_ma.info 2194 2016-11-07 21:24:49Z mositis $
 name = My Account
 description = This module associates the Drupal user on Fluke Networks website with the legacy My Acocunt of .NET and it uses many webservices to allow users with specific roles to access Gold Contract related information and submit and view support incidents.
 package = Fluke Networks

@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: all-contracts-display.tpl.php 98 2015-05-26 19:58:17Z sogden1 $
 
 /**
  * @file

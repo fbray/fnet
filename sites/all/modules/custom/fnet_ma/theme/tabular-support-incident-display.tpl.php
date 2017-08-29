@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: tabular-support-incident-display.tpl.php 519 2015-07-28 17:41:31Z sogden1 $
 
 /**
  * @file

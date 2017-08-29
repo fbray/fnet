@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: fnet_ma.common_functions.inc 1940 2016-05-06 16:58:53Z mositis $
 
 /**
  * @file
