@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: fnet_bedrock.test.inc 1675 2016-03-30 22:14:30Z mositis $
 
 /**
  * @file

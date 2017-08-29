@@ -1,5 +1,5 @@
 <?php
-// $Id$
+// $Id: fnet_bedrock.support.inc 578 2015-08-10 16:07:59Z sogden1 $
 
 /**
  * @file
