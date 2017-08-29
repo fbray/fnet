@@ -258,24 +258,30 @@ function fnet_profile_profile_edit_form_validate($form, &$form_state) {
  * @param $form_state
  */
 function fnet_profile_profile_edit_form_submit($form, &$form_state) {
+  $values = $form_state['values'];
   $user = isset($form['#user']) ? $form['#user'] : $form_state['#user'];
   $edit = array();
-  $edit['field_user_first_name'][LANGUAGE_NONE][0]['value'] = $form_state['values']['first_name'];
-  $edit['field_user_last_name'][LANGUAGE_NONE][0]['value'] = $form_state['values']['last_name'];
-  $edit['field_user_company'][LANGUAGE_NONE][0]['value'] = $form_state['values']['company'];
-  $edit['field_user_phone'][LANGUAGE_NONE][0]['value'] = $form_state['values']['phone'];
-  $edit['field_user_address_line_1'][LANGUAGE_NONE][0]['value'] = $form_state['values']['address_line_1'];
-  $edit['field_user_address_line_2'][LANGUAGE_NONE][0]['value'] = $form_state['values']['address_line_2'];
-  $edit['field_user_city'][LANGUAGE_NONE][0]['value'] = $form_state['values']['city'];
-  $edit['field_user_province'][LANGUAGE_NONE][0]['value'] = $form_state['values']['province'];
-  $edit['field_user_postal_code'][LANGUAGE_NONE][0]['value'] = $form_state['values']['postal_code'];
-  $edit['field_user_country'][LANGUAGE_NONE][0]['value'] = $form_state['values']['country'];
-  $edit['field_user_preferred_language'][LANGUAGE_NONE][0]['value'] = $form_state['values']['preferred_language'];
-  $edit['field_user_job_role'][LANGUAGE_NONE][0]['value'] = $form_state['values']['job_role'];
-  $edit['field_user_gold_number'][LANGUAGE_NONE][0]['value'] = $form_state['values']['gold_number'];
-  $edit['field_user_gold_pin'][LANGUAGE_NONE][0]['value'] = $form_state['values']['gold_pin'];
+
+  $edit['field_address'][LANGUAGE_NONE][0] = array(
+    'first_name' => $values['first_name'],
+    'last_name' => $values['last_name'],
+    'country' => $values['country'],
+    'administrative_area' => $values['province'],
+    'locality' => $values['city'],
+    'postal_code' => $values['postal_code'],
+    'thoroughfare' => $values['thoroughfare'],
+    'premise' => $values['premise'],
+    'organisation_name' => $values['company'],
+  );
+
+  $edit['field_user_preferred_language'][LANGUAGE_NONE][0]['value'] = $values['preferred_language'];
+  $edit['field_user_job_role'][LANGUAGE_NONE][0]['value'] = $values['job_role'];
+  $edit['field_user_gold_number'][LANGUAGE_NONE][0]['value'] = $values['gold_number'];
+  $edit['field_user_gold_pin'][LANGUAGE_NONE][0]['value'] = $values['gold_pin'];
+  $edit['field_user_telephone'][LANGUAGE_NONE][0]['value'] = $values['phone'];
+
   $user = user_save($user, $edit);
-  // fnet_profile_marketo_lead_sync($user);
+
   $gold_pin = check_plain(trim($form_state['values']['gold_pin']));
   $gold_number = check_plain(trim($form_state['values']['gold_number']));
   fnet_ma_set_user_gold_role($gold_number, $gold_pin);
@@ -289,7 +295,7 @@ function fnet_profile_init() {
   global $user;
   // the full user profile is not loaded with the user object on a normal page load.  This user_load is
   // to insure that we have the full profile.
-  if (($user->uid != 0) && (!isset($user->field_user_first_name))) {
+  if (($user->uid != 0) && (!isset($user->field_address[LANGUAGE_NONE][0]['first_name']))) {
     $user = user_load($user->uid);
   }
 }
@@ -398,6 +404,11 @@ function fnet_profile_user_page() {
   }
 }
 
+/**
+ * List of Job Roles
+ * TODO: Move this into the field definition and make translatable!
+ * @return array
+ */
 function fnet_profile_job_role_list() {
   $options = drupal_map_assoc(array(
     'Other',
@@ -417,19 +428,3 @@ function fnet_profile_job_role_list() {
   return $options;
 }
 
-function fnet_profile_marketo_lead_sync($account) {
-
-  $marketo_data = array(
-    'FirstName' => fnet_common_get_field_value('user', $account, 'field_user_first_name'),
-    'LastName' => fnet_common_get_field_value('user', $account, 'field_user_last_name'),
-    'Job_Role__c' => fnet_common_get_field_value('user', $account, 'field_user_job_role'),
-    'Company' => fnet_common_get_field_value('user', $account, 'field_user_company'),
-    'Address' => fnet_common_get_field_value('user', $account, 'field_user_address_line_1') . ' ' . fnet_common_get_field_value('user', $account, 'field_user_address_line_2'),
-    'City' => fnet_common_get_field_value('user', $account, 'field_user_city'),
-    'State' => fnet_common_get_field_value('user', $account, 'field_user_province'),
-    'PostalCode' => fnet_common_get_field_value('user', $account, 'field_user_postal_code'),
-    'Country' => fnet_common_get_field_value('user', $account, 'field_user_country'),
-    'Phone' => fnet_common_get_field_value('user', $account, 'field_user_phone'),
-  );
-  // marketo_api_user_sync($account->mail, $marketo_data);
-}
