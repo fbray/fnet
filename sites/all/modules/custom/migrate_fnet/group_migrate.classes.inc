@@ -50,7 +50,7 @@ class MigrateDestinationGroup extends MigrateDestinationEntity {
     // Then add in anything provided by handlers
     $fields += migrate_handler_invoke_all('Entity', 'fields', $this->entityType, $this->bundle, $migration);
     $fields += migrate_handler_invoke_all('Group', 'fields', $this->entityType, $this->bundle, $migration);
-
+    print_r($fields);
     return $fields;
   }
 
@@ -136,7 +136,7 @@ class MigrateDestinationGroup extends MigrateDestinationEntity {
     }
 
     migrate_instrument_start('entity_save');
-    group_save($group);
+    entity_save('group', $group);
     migrate_instrument_stop('entity_save');
 
     if (isset($group->gid)) {
@@ -296,5 +296,116 @@ class MigrateDestinationGroupMembership extends MigrateDestination {
       'uid' => 'User ID',
       'roles' => 'Array of role names to assign to the user in this group.',
     );
+  }
+}
+
+
+/**
+ * Base class for all node migrations - handles commonalities across all
+ * supported source Drupal versions.
+ *
+ * In addition to the arguments supported by DrupalMigration, the following
+ * must be passed in the $arguments array:
+ *
+ * source_type - Drupal 6 content type machine name.
+ * destination_type - Drupal 7 content type machine name (bundle).
+ *
+ * The following optional arguments may be passed:
+ *
+ * user_migration - Machine name of a user migration, used to establish
+ *   dependencies and a sourceMigration for the uid mapping.
+ * default_uid - Drupal 7 (destination) uid of the user account to use as
+ *   the default.
+ * default_language - Default language for the node and node body. Defaults
+ *   to LANGUAGE_NONE.
+ */
+abstract class DrupalGroupMigration extends DrupalMigration {
+  /**
+   * The source and destination content types (bundles) we're dealing with.
+   */
+  protected $destinationType;
+
+  /**
+   * Default language to apply to the node and it's body field.
+   *
+   * @var string
+   */
+  protected $defaultLanguage = LANGUAGE_NONE;
+
+  /**
+   * @param array $arguments
+   */
+  public function __construct(array $arguments) {
+    $this->destinationType = $arguments['destination_type'];
+    $this->sourceType = $arguments['source_type'];
+    if (!empty($arguments['user_migration'])) {
+      $user_migration = $arguments['user_migration'];
+      $this->dependencies[] = $user_migration;
+    }
+    if (!empty($arguments['default_language'])) {
+      $this->defaultLanguage = $arguments['default_language'];
+    }
+    parent::__construct($arguments);
+
+    // Document known group type fields
+    $this->sourceFields += array(
+      'gid' => t('Group ID'),
+      'type' => t('Type'),
+      'title' => t('Title')
+    );
+
+    $this->sourceFields += $this->version->getSourceFields('group', $this->sourceType);
+    if ($this->moduleExists('path')) {
+      $this->sourceFields['path'] = t('Path alias');
+    }
+
+    $this->destination = new MigrateDestinationGroup($this->destinationType);
+
+    $this->map = new MigrateSQLMap($this->machineName,
+      array(
+        'gid' => array('type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'description' => 'Source Group ID',
+          'alias' => 'g',
+        ),
+      ),
+      MigrateDestinationGroup::getKeySchema()
+    );
+
+    // Setup common mappings
+    $this->addSimpleMappings(array('title'));
+    $this->addFieldMapping('type')->defaultValue($this->destinationType);
+
+    if ($this->moduleExists('path')) {
+      $this->addFieldMapping('path', 'path')
+        ->description('Handled in prepareRow');
+    }
+
+    if (module_exists('pathauto')) {
+      $this->addFieldMapping('pathauto')
+        ->description('By default, disable in favor of migrated paths')
+        ->defaultValue(0);
+    }
+  }
+
+  /**
+   * Called after the query data is fetched - we'll use this to populate the
+   * source row with the CCK fields.
+   */
+  public function prepareRow($row) {
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+
+    // Add the path to the source row, if relevant
+    if ($this->moduleExists('path')) {
+      $path = $this->version->getPath('group/' . $row->gid);
+      if ($path) {
+        $row->path = $path;
+      }
+    }
+
+    $this->version->getSourceValues($row, $row->gid);
   }
 }

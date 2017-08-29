@@ -23,20 +23,20 @@ class FNETAwardMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_intro:language', 'field_award_intro:language')
       ->defaultValue(LANGUAGE_NONE); // Long text
 
-    $this->addFieldMapping('field_award_link', 'field_award_link'); // Link
-    $this->addFieldMapping('field_award_link:title', 'field_award_link:title');
-    $this->addFieldMapping('field_award_link:attributes', 'field_award_link:attributes');
-    $this->addFieldMapping('field_award_link:language', 'field_award_link:language')
+    $this->addFieldMapping('field_external_url', 'field_award_link'); // Link
+    $this->addFieldMapping('field_external_url:title', 'field_award_link:title');
+    $this->addFieldMapping('field_external_url:attributes', 'field_award_link:attributes');
+    $this->addFieldMapping('field_external_url:language', 'field_award_link:language')
       ->defaultValue(NULL);
 
     // Date fields
     $this->addFieldMapping('field_award_date', 'field_award_date'); // Date
     $timezone = variable_get('date_default_timezone', '');
-    $this->addFieldMapping('field_award_date:timezone', 'field_award_date')
+    $this->addFieldMapping('field_award_date:timezone')
       ->defaultValue($timezone);
-    $this->addFieldMapping('field_award_date:rrule', 'field_award_date')
+    $this->addFieldMapping('field_award_date:rrule')
       ->defaultValue(NULL);
-    $this->addFieldMapping('field_award_date:to', 'field_award_date')
+    $this->addFieldMapping('field_award_date:to')
       ->defaultValue(NULL);
 
     // Convert this one to use the Weight module.
@@ -44,6 +44,6 @@ class FNETAwardMigration extends DrupalNode7Migration {
 
     // Internationalization
     // We're going to keep this for now.
-    $this->addFieldMapping('field_award_langreg', 'field_award_langreg'); //
+    $this->addFieldMapping('field_language_region', 'field_award_langreg'); //
   }
 }

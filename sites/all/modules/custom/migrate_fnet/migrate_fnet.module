@@ -97,7 +97,43 @@ function migrate_fnet_register_migrations() {
       'description' => t('Migration of the Asia-Pacific group'),
       'machine_name' => 'APACGroup',
       'source_type' => 'extranet_asia',  // D7 Vocabulary ID
-      'destination_type' => 'extranet_asia',
+      'destination_type' => 'sales_insider_region',
+    ),
+
+    // Europe-Middle East Group
+    array(
+      'class_name' => 'EMEAGroupMigration',
+      'description' => t('Migration of the Europe-Middle East group'),
+      'machine_name' => 'EMEAGroup',
+      'source_type' => 'extranet_europe',  // D7 Vocabulary ID
+      'destination_type' => 'sales_insider_region',
+    ),
+
+    // Latin America Group
+    array(
+      'class_name' => 'LatAmGroupMigration',
+      'description' => t('Migration of the Latin America group'),
+      'machine_name' => 'EMEAGroup',
+      'source_type' => 'extranet_latam',  // D7 Vocabulary ID
+      'destination_type' => 'sales_insider_region',
+    ),
+
+    // North America Group
+    array(
+      'class_name' => 'NorthAmericaGroupMigration',
+      'description' => t('Migration of the North America group'),
+      'machine_name' => 'NorthAmericaGroup',
+      'source_type' => 'extranet_north_america',  // D7 Vocabulary ID
+      'destination_type' => 'sales_insider_region',
+    ),
+
+    // Sales Insider Subtype Group
+    array(
+      'class_name' => 'SalesInsiderSubGroupMigration',
+      'description' => t('Migration of the Sales Insider subgroup'),
+      'machine_name' => 'SalesInsiderSubGroup',
+      'source_type' => 'sales_insider_subgroup',  // D7 Vocabulary ID
+      'destination_type' => 'sales_insider_subgroup',
     ),
   );
   // Tell the node migrations where the users are coming from, so they can
@@ -398,7 +434,7 @@ function migrate_fnet_register_migrations() {
       'machine_name' => 'Expertise',
       'source_type' => 'expertise',
       'destination_type' => 'expertise',
-      'dependencies' => array('ExpertiseTypes', 'ProductDisplay', 'Industries', 'Files', 'ProductCategories'),
+      'dependencies' => array('ExpertiseTypes', 'ProductDisplay', 'Industries', 'Files', 'ProductCategory'),
     ),
 
     // Expertise Role
@@ -415,9 +451,8 @@ function migrate_fnet_register_migrations() {
       'class_name' => 'FNETExpertiseRoleLanguageMigration',
       'description' =>  t('Migration of Expertise Role Language nodes from Drupal.'),
       'machine_name' => 'ExpertiseRoleLanguage',
-      'source_type' => 'exp_rle_lang',
-      'destination_type' => 'expertise_role_language', // more verbose naming improvement
-      'dependencies' => array('ExpertiseRole'),
+      'source_type' => 'exp_rle',
+      'destination_type' => 'expertise_role_language',  // more verbose naming improvement
     ),
 
     // Extranet News
@@ -566,7 +601,7 @@ function migrate_fnet_register_migrations() {
       'description' =>  t('Migration of the Page Region nodes from Drupal.'),
       'machine_name' => 'PageRegion',
       'source_type' => 'page_reg',
-      'destination_type' => 'page_reg',
+      'destination_type' => 'page_region',
     ),
 
     // Press Releases
@@ -594,7 +629,7 @@ function migrate_fnet_register_migrations() {
       'description' =>  t('Migration of the Product Language nodes from Drupal.'),
       'machine_name' => 'ProductLanguage',
       'source_type' => 'productlanguagew',
-      'destination_type' => 'productlanguage',
+      'destination_type' => 'product_language',
     ),
 
     // Product Sub Type
