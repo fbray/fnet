@@ -140,7 +140,7 @@ function fnet_bedrock_delete_user($bedrock_user) {
   $rest_method = 'users/' . $bedrock_user->id;
   $result = fnet_bedrock_rest('delete', $rest_method);
   if ($result->code == 204) {
-    $db_result = db_delete('bedrock_user')
+    db_delete('bedrock_user')
       ->condition('bedrock_user_id', $bedrock_user->id)
       ->execute();
     return TRUE;
@@ -159,17 +159,20 @@ function fnet_bedrock_delete_user($bedrock_user) {
  */
 function fnet_bedrock_create_user_profile($uid, fnet_bedrock_user $bedrock_user) {
   $account = user_load($uid);
-  $account->field_user_first_name[LANGUAGE_NONE][0]['value'] = $bedrock_user->first_name;
-  $account->field_user_last_name[LANGUAGE_NONE][0]['value'] = $bedrock_user->last_name;
-  $account->field_user_company[LANGUAGE_NONE][0]['value'] = $bedrock_user->company_name;
-  $account->field_user_address_line_1[LANGUAGE_NONE][0]['value'] = $bedrock_user->company_address1;
-  $account->field_user_address_line_2[LANGUAGE_NONE][0]['value'] = $bedrock_user->company_address2;
-  $account->field_user_city[LANGUAGE_NONE][0]['value'] = $bedrock_user->city;
-  $account->field_user_province[LANGUAGE_NONE][0]['value'] = $bedrock_user->state_code;
-  $account->field_user_postal_code[LANGUAGE_NONE][0]['value'] = $bedrock_user->postal_code;
-  $account->field_user_country[LANGUAGE_NONE][0]['value'] = $bedrock_user->country_code;
+  $addressfield_data = array(
+    'first_name' => $bedrock_user->first_name,
+    'last_name' => $bedrock_user->last_name,
+    'organisation_name' => $bedrock_user->company_name,
+    'thoroughfare' => $bedrock_user->company_address1,
+    'premise' => $bedrock_user->company_address2,
+    'locality' => $bedrock_user->city,
+    'administrative_area' => $bedrock_user->state_code,
+    'postal_code' => $bedrock_user->postal_code,
+    'country' => $bedrock_user->country_code,
+  );
+  $account->field_address[LANGUAGE_NONE][0] = $addressfield_data;
   $account->field_user_preferred_language[LANGUAGE_NONE][0]['value'] = $bedrock_user->language_code;
-  $account->field_user_phone[LANGUAGE_NONE][0]['value'] = $bedrock_user->phone_number;
+  $account->field_user_telephone[LANGUAGE_NONE][0]['value'] = $bedrock_user->phone_number;
   user_save($account);
   return $account;
 }
@@ -216,6 +219,7 @@ function fnet_bedrock_create_drupal_user(fnet_bedrock_user $bedrock_user) {
  */
 function fnet_bedrock_log_failure($result, $data = NULL) {
   if (!empty($data)) {
+    dpm($data);
     $payload = json_decode($data);
     if (($payload) && ($payload->user)) {
       $payload->user->password = '*******';
@@ -228,15 +232,22 @@ function fnet_bedrock_log_failure($result, $data = NULL) {
   $message .= 'Code: %code <br/>';
   $message .= 'Error: %error <br/>';
   $message .= 'Data: %data <br/>';
-  $request = explode(' ', $result->request);
-  $rest_method = $request[0] . ' ' . $request[1];
-  $variables = array(
-    '%method' => $rest_method,
-    '%data_sent' => $data,
-    '%code' => $result->code,
-    '%error' => $result->error,
-    '%data' => $result->data,
-  );
+  if (isset($result->request)) {
+    $request = explode(' ', $result->request);
+    $rest_method = $request[0] . ' ' . $request[1];
+    $variables = array(
+      '%method' => $rest_method,
+      '%data_sent' => $data,
+      '%code' => $result->code,
+      '%error' => $result->error,
+      '%data' => $result->data,
+    );
+
+  }
+  else {
+    $message = 'No result information';
+    $variables = array();
+  }
   watchdog('fnet_bedrock', $message, $variables, WATCHDOG_NOTICE);
 }
 
@@ -296,23 +307,24 @@ function fnet_bedrock_make_bedrock_user($email, $password) {
   $uid = db_query("SELECT uid FROM {users} WHERE mail = :mail LIMIT 1", array(':mail' => $email))->fetchField();
 
   $account = user_load($uid);
+  $addressfield_data = $account->field_address[LANGUAGE_NONE][0];
   $bedrock_user = new fnet_bedrock_user();
   $bedrock_user->email = $email;
   $bedrock_user->password = $password;
   $bedrock_user->time_zone = (!empty($account->timezone)) ? $account->timezone : 'UTC';
   if ($account) {
-    $bedrock_user->first_name = fnet_common_get_field_value('user', $account, 'field_user_first_name');
+    $bedrock_user->first_name = $addressfield_data['first_name'];
     $bedrock_user->middle_name = '';
-    $bedrock_user->last_name = fnet_common_get_field_value('user', $account, 'field_user_last_name');
-    $bedrock_user->company_name = fnet_common_get_field_value('user', $account, 'field_user_company');
-    $bedrock_user->company_address1 = fnet_common_get_field_value('user', $account, 'field_user_address_line_1');
-    $bedrock_user->company_address2 = fnet_common_get_field_value('user', $account, 'field_user_address_line_2');
-    $bedrock_user->city = fnet_common_get_field_value('user', $account, 'field_user_city');
-    $bedrock_user->state_code = fnet_common_get_field_value('user', $account, 'field_user_province');
-    $bedrock_user->postal_code = fnet_common_get_field_value('user', $account, 'field_user_postal_code');
-    $bedrock_user->country_code = fnet_common_get_field_value('user', $account, 'field_user_country');
+    $bedrock_user->last_name = $addressfield_data['last_name'];
+    $bedrock_user->company_name = $addressfield_data['organisation_name'];
+    $bedrock_user->company_address1 = $addressfield_data['thoroughfare'];
+    $bedrock_user->company_address2 = $addressfield_data['premise'];
+    $bedrock_user->city = $addressfield_data['locality'];
+    $bedrock_user->state_code = $addressfield_data['administrative_area'];
+    $bedrock_user->postal_code = $addressfield_data['postal_code'];
+    $bedrock_user->country_code = $addressfield_data['country'];
     $bedrock_user->language_code = fnet_common_get_field_value('user', $account, 'field_user_preferred_language');
-    $bedrock_user->phone_number = fnet_common_get_field_value('user', $account, 'field_user_phone');
+    $bedrock_user->phone_number = fnet_common_get_field_value('user', $account, 'field_user_telephone');
   }
   return $bedrock_user;
 }
@@ -341,8 +353,8 @@ function fnet_bedrock_fnet_profile_profile_edit_form_submit($form, &$form_state)
   $bedrock_user->middle_name = '';
   $bedrock_user->last_name = $form_state['values']['last_name'];
   $bedrock_user->company_name = $form_state['values']['company'];
-  $bedrock_user->company_address1 = $form_state['values']['address_line_1'];
-  $bedrock_user->company_address2 = $form_state['values']['address_line_2'];
+  $bedrock_user->company_address1 = $form_state['values']['thoroughfare'];
+  $bedrock_user->company_address2 = $form_state['values']['premise'];
   $bedrock_user->city = $form_state['values']['city'];
   $bedrock_user->state_code = $form_state['values']['province'];
   $bedrock_user->postal_code = $form_state['values']['postal_code'];
