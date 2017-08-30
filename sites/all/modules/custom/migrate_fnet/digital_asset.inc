@@ -76,8 +76,12 @@ class FNETDigitalAssetMigration extends DrupalNode7Migration {
     // File Fields
     $this->addFieldMapping('field_asset_file', 'field_dam_asset_file')
       ->sourceMigration('Files');
+    $this->addFieldMapping('field_asset_file:file_class')
+      ->defaultValue('MigrateFileFid');
 
-    $this->addFieldMapping('field_sortorder', 'field_dam_asset_file_pod')
+    $this->addFieldMapping('field_dam_asset_file_pod', 'field_dam_asset_file_pod')
       ->sourceMigration('Files');
+    $this->addFieldMapping('field_dam_asset_file_pod:file_class')
+      ->defaultValue('MigrateFileFid');
   }
 }
