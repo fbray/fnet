@@ -8,7 +8,8 @@
 
 /**
  * Implements hook_menu().
-().
+ *
+ * @return mixed
  */
 function product_finder_menu() {
   $items['product-finder'] = array(
@@ -20,25 +21,6 @@ function product_finder_menu() {
   );
 
   return $items;
-}
-
-/**
- * Implements hook_permission().
- *
- * @return array
- */
-function product_finder_permission() {
-  return array(
-    'search using product finder' => array(
-      'title' => t('search using product finder'),
-      'description' => t('Search Using Product Finder'),
-    ),
-    // TODO: Unneeded.
-    'administer product finder' => array(
-      'title' => t('administer product finder'),
-      'description' => t('Administer Product Finder'),
-    ),
-  );
 }
 
 /**
@@ -61,157 +43,66 @@ function product_finder_views_api() {
  * @return array
  */
 function product_finder_search_form($form, &$form_state) {
+  global $language;
   $form = array();
-  /*
-    //Hardcoding vocabulary ID
-    $vars      = variable_get('product_finder_settings', array());
-    $vocab_id  = $vars['vocabulary'];
-    $node_type = $vars['node_type'];
-    // TODO: Get content type titles
-    // TODO: This should be a group by query
-    $sql = <<<sql
-SELECT
-	n.nid,
-	n.vid,
-	n.title
-FROM
-	{node} AS n
-WHERE
-	n.type = :type
-AND n.`status` = :status
-ORDER BY
-	n.title ASC
-sql;
-    $results = db_query($sql, array(
-      ':type' => $node_type,
-      ':status' => 1
-    ));
-    $titles    = array();
+  // Get Product Categories and their Product Attributes.
+  $query = "SELECT n.title as title, ti.tid as tid, ttd.name as name, ttd.description as description
+  FROM {node} n
+  JOIN {taxonomy_index} ti ON ti.nid = n.nid
+  JOIN {taxonomy_term_data} ttd ON ttd.tid = ti.tid
+  WHERE n.type = 'product_category'
+  AND n.status = 1
+  AND (ttd.language = :language OR ttd.language = 'und')";
+  $result = db_query($query, array(':language' => $language->language))->fetchAll();
+  // Set the result up into an array for display.
+  $data = array();
+  foreach ($result as $row) {
+    $data[$row->title][] = array(
+      'tid' => $row->tid,
+      'name' => $row->name,
+      'description' => $row->description,
+    );
+  }
 
-    foreach ($results as $data) {
-      $node_title = str_replace(' ', '_', strtolower($data->title));
-      $titles[]   = $data->title;
-      $vid        = $data->vid;
-
-      //taxonomy_node_get_terms_by_vocabulary($node, $vid, $key = 'tid');
-
-      if (!isset($terms[$vid][$key])) {
-        $result = db_query('SELECT t.* FROM {taxonomy_index} r
-              JOIN {node} n ON n.nid = r.nid
-              INNER JOIN {taxonomy_term_data} t ON r.tid = t.tid
-              INNER JOIN {taxonomy_vocabulary} v ON t.vid = v.vid
-            WHERE n.vid = :vid AND t.vid = :vocab
-            ORDER BY v.weight, t.weight, t.name', array(":vId"=>$vid, ":vocab" => $vocab_id));
-        $terms = array();
-        foreach ($result as $term) {
-          $terms['attr-' . $term->tid . '-' . $term->vid] = t($term->name);
-        }
-
-        $form[$node_title] = array(
-          '#type' => 'checkboxes',
-          '#title' => t($data->title),
-          '#options' => $terms,
-        );
-        $terms = NULL;
-      }
+  // Now, put the data in to form elements. Split it up according to Product Category.
+  foreach ($data as $category => $attributes) {
+    // The categories are a fieldset.
+    $form[$category] = array(
+      '#type' => 'fieldset',
+      '#title' => $category,
+      '#collapsible' => FALSE,
+      '#collapsed' => FALSE,
+    );
+    foreach($attributes as $attribute) {
+      $form[$category][$attribute['tid']] = array(
+        '#type' => 'checkbox',
+        '#title' => $attribute['name'],
+        '#description' => $attribute['description'],
+      );
     }
-    $titles         = implode('||', $titles);
-    $form['titles'] = array(
-      '#type' => 'hidden',
-      '#value' => $titles,
-    );
-    $form['save']   = array(
-      '#type' => 'submit',
-      '#value' => t('Search'),
-      '#weight' => 10,
-    );
+  }
 
-    */
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Search'),
+  );
+
   return $form;
 }
 
 function product_finder_search_form_submit($form, &$form_state) {
-
-}
-
-/**
- * Implementations of Search results page view.
- */
-function product_finder_results_page() {
-
-  // Fetch regLang value to pass as argument to 'industry_family_products' view
-  $region = strtolower($_COOKIE["regLang"]);
-  if ($region == "") {
-    $region = "en-us";
-  }
-
-  drupal_add_css(drupal_get_path('module', 'product_finder') . '/product_finder.css');
-  $output       = ''
-                . '<div id="product-finder-results-wrapper">'
-                . '<div class="start-over"><a href="' . base_path()
-                . 'product_finder">Start over</a></div>';
-  $titles_arr   = explode('||', $_POST['titles']);
-  $result_state = 0; //0 = blank form submitted; 1 = no records found; 2 = records found
-
-  foreach ($titles_arr as $title_text) {
-    $title = str_replace(' ', '_', strtolower($title_text));
-
-    if (isset($_POST[$title])) {
-      $result_state = 1;
-      $term_ids     = array();
-
-      foreach ($_POST[$title] as $term_arr) {
-        $term_id    = explode('-', $term_arr);
-        $term_ids[] = $term_id[1];
-      }
-      // TODO: Replace taxonomy field with new here. -rositis
-      foreach ($term_ids as $term_id) {
-        $query = new EntityFieldQuery();
-        $query->entityCondition('entity_type', 'node')
-          ->propertyCondition('type', 'product')
-          ->propertyCondition('status', NODE_PUBLISHED)
-          ->fieldCondition('taxonomy_vocabulary_6', 'tid', $term_id);
-        $nodes = $query->execute();
-        $total_results = count($nodes);
-        try {
-          $term_name = taxonomy_term_load($term_id)->name;
-        } catch (Exception $e) {
-          watchdog('product_finder', 'Error loading taxonomy term for tid: %tid', array('%tid' => $term_id));
-        }
-
-        if ($total_results > 0) {
-          $output .= '<div class="industry-entry-wrapper"><h3 class="industry-title">'
-                   . html_entity_decode($title_text) . ': ' . $term_name . '</h3>';
-          $output .= '<ul class="product_finder_results_wrapper">';
-          foreach ($nodes['node'] as $nid => $info) {
-            $result_state = 2;
-            $data = entity_metadata_wrapper('node', $nid);
-            try {
-              $title = $data->title->value();
-              $description = $data->field_product_desc->value->value();
-            } catch (Exception $e) {
-              continue;
-            }
-            $output .= '<li><h4>' . html_entity_decode(l($title, 'node/' . $nid)) . '</h4><div class="description">' . $description . '</div></li>';
-          }
-          $output .= '</ul>';
-          $output .= '</div>';
-        }
-      }
+  $values = $form_state['values'];
+  $selected = array();
+  foreach($values as $key => $value) {
+    if((is_numeric($key)) && ($value == 1)) {
+      $selected[] = $key;
     }
   }
-
-  if ($result_state == 0) {
-    drupal_set_message(t('Please make at least one selection and try again!'), 'error');
-    drupal_goto('product_finder');
-  }
-  elseif ($result_state == 1) {
-    drupal_set_message(t('Sorry, no records were found for your selection!'), 'error');
-    drupal_goto('product_finder');
-  }
-
-  $output .= '</div>';
-  return $output;
+  // Format the results of the form (the checkboxes) into a value that the view will find useful. In this case Value1+Value2+Value3... and so on.
+  $tids = implode('+', $selected);
+  // TODO: Redirect to the view.
+  $form_state['redirect'] = '/product-finder/' . $tids;
 }
+
 
 

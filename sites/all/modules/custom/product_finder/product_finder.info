@@ -1,8 +1,8 @@
 ; $Id:
 name = Product Finder
-description = Adds custome product finder functionality to Drupal. This functionality is specific to Fluke Networks web portal.
+description = Adds a Product Finder to the website.
 package = Fluke Networks
 version = "7.x-1.1-20170830"
 core = 7.x
 
-configure = admin/config/product-finder
+dependencies[] = views
