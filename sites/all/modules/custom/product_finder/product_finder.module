@@ -1,9 +1,14 @@
 <?php
-// $Id: product_finder.module 1520 2016-02-19 18:37:19Z sogden1 $
-
 /**
  * @file
  * Adds custom product finder functionality to Drupal. This functionality is specific to Fluke Networks web portal.
+ */
+
+/**
+ * TODO: Add validation to the Contextual Filter in the view.
+ * Make sure it checks if the input is either
+ * a) numeric or
+ * b) fits the format of 123+124+125 (numbers concatinated with +).
  */
 
 /**
