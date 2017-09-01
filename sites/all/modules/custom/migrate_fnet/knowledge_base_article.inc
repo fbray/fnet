@@ -20,15 +20,8 @@ class FNETKnowledgeBaseArticleMigration extends DrupalNode7Migration {
     // Individual Fields
     $this->addFieldMapping('field_article_author', 'field_article_author');  // Should be changed to node author. Really.
 
-    // Taxonomy References
-    $this->addFieldMapping('knowledge_base', 'taxonomy_vocabulary_14')
+    // Entity References
+    $this->addFieldMapping('field_knowledge_base', 'taxonomy_vocabulary_14')
       ->sourceMigration('KnowledgeBase');
-    $this->addFieldMapping('knowledge_base:source_type')
-      ->defaultValue('tid');
-    $this->addFieldMapping('knowledge_base:create_term')
-      ->defaultValue(FALSE);
-    $this->addFieldMapping('knowledge_base:ignore_case')
-      ->defaultValue(TRUE);
-
   }
 }
