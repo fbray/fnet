@@ -7,10 +7,11 @@
  * and it uses many web services to allow users with specific roles to access Gold Contract related information
  * and submit and view support incidents.
  */
-define('FILTER_FORMAT_DEFAULT', 2);
 
 /**
+ * Implementation of hook_help().
  * Display help and module information
+ *
  * @param section which section of the site we're displaying help
  * @return help text for section
  */
@@ -41,19 +42,21 @@ function fnet_ma_init() {
 
 /**
  * Implements hook_permission().
+ *
+ * @return array
  */
 function fnet_ma_permission() {
   return array(
-    'Fluke Networks My Account Access' => array(
-      'title' => t('Fluke Networks My Account Access'),
+    'access my account' => array(
+      'title' => t('Access My Account'),
       'description' => t('Fluke Networks My Account Access'),
     ),
-    'Fluke Networks My Account Gold Access' => array(
-      'title' => t('Fluke Networks My Account Gold Access'),
+    'access my account gold' => array(
+      'title' => t('Access My Account Gold'),
       'description' => t('Fluke Networks My Account Gold Access'),
     ),
-    'Fluke Networks My Account Administer' => array(
-      'title' => t('Fluke Networks My Account Administer'),
+    'administer my account' => array(
+      'title' => t('Administer My Account'),
       'description' => t('Fluke Networks My Account Administer'),
     ),
   );
@@ -63,6 +66,7 @@ function fnet_ma_permission() {
  * Implements hook_theme().
  */
 function fnet_ma_theme() {
+  // TODO: Shouldn't the variable defaults be NULL?
   return array(
     'all_contracts_display' => array(
       'template' => 'theme/all-contracts-display',
@@ -75,6 +79,7 @@ function fnet_ma_theme() {
       'template' => 'theme/my-account-navigation-links-block',
       'variables' => array(),
     ),
+
     'all_support_incident_display' => array(
       'template' => 'theme/all-support-incident-display',
       'variables' => array(
@@ -118,7 +123,6 @@ function fnet_ma_theme() {
  * @param $items
  */
 function fnet_ma_menu_alter(&$items) {
-
   $items['user/login']['title'] = t('Log In');
   $items['user/register']['title'] = t('Create Account');
   $items['user/password']['title'] = t('Forgot Password?');
@@ -128,6 +132,8 @@ function fnet_ma_menu_alter(&$items) {
 
 /**
  * Implements hook_menu().
+ *
+ * @return array
  */
 function fnet_ma_menu() {
   $items = array();
@@ -424,6 +430,7 @@ function fnet_ma_user_login(&$edit, &$account) {
 /**
  * This section is related to - "User's My Account Page" which is his landing page after log-in.
  * Section starts from here and this code set is triggered on the URL - "'myaccount'"
+ * TODO: This is a hot mess that needs templating.
  */
 
 /**
@@ -432,11 +439,11 @@ function fnet_ma_user_login(&$edit, &$account) {
  */
 function fnet_ma_myaccount_home() {
   global $user;
+  $account = user_load($user->uid);
   fnet_ma_check_profile();
   $gold_member_greeting = '';
   $field_gold_number = '';
 
-  $users_first_name = trim(fnet_common_get_field_value('user', $user, 'field_user_first_name') );
   if (trim(fnet_common_get_field_value('user', $user, 'field_user_gold_number')) != '') {
     $field_gold_number = " - " . str_replace("-", "", trim(fnet_common_get_field_value('user', $user, 'field_user_gold_number')));
   }
@@ -451,15 +458,16 @@ function fnet_ma_myaccount_home() {
   $html = '';
   $html .= '<div class="my-account-user-pages">';
   $html .= '<div class="my-account-headlines header-border_bottom">' . t('Welcome  @users_firstname@gold_role_name @field_gold_number', array(
-      '@users_firstname' => $users_first_name,
+      '@users_firstname' => $account->field_address[LANGUAGE_NONE][0]['first_name'],
       '@gold_role_name' => $gold_member_greeting,
       '@field_gold_number' => $field_gold_number,
     )) . '</div>';
-  $html .= check_markup(variable_get('users_myaccount_page_static_content', t('Welcome to Fluke Networks!!!')), FILTER_FORMAT_DEFAULT, $langcode = '' /* TODO Set this variable. */, TRUE);
+  $html .= check_markup(variable_get('users_myaccount_page_static_content', t('Welcome to Fluke Networks!!!')));
   $html .= '</div>';
 
   /**
    * Code to display the Gold Contracts section on My Account main page.
+   * TODO: Move this HTML into a template.
    */
   $html .= '';
   $user_info = array();
@@ -547,13 +555,15 @@ function fnet_ma_display_tabular_all_gold_contracts_details($gold_pin, $gold_num
  *
  * @return string
  */
+// TODO: Switch to Addressfield for first and last names.
 function fnet_ma_display_all_gold_contracts() {
   global $user;
+  $account = user_load($user->uid);
   $user_info = array();
   //Fetch the current user's profile content information.
   $gold_pin = check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_gold_pin')));
   $gold_number = check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_gold_number')));
-  $user_info['fullname'] = check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_first_name'))) . " " . check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_last_name')));
+  $user_info['fullname'] = check_plain($account->address_field[LANGUAGE_NONE][0]['name_line']);
   $displayed_on = 'gold_contract_full_listing_page';
   $output = fnet_ma_display_tabular_all_gold_contracts_details($gold_pin, $gold_number, $user_info, $displayed_on);
   return $output;
@@ -615,11 +625,12 @@ function fnet_ma_user_login_submit($form, &$form_state) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Displays a 'Thank You' page. The text is defined in the Admin page for this module.
+ *
+ * @return mixed
  */
 function fnet_ma_display_myaccount_thankyou_page() {
-  return check_markup(variable_get('user_registration_thankyou_page_content', t('Thank you for registering on Fluke Networks website.')), FILTER_FORMAT_DEFAULT);
+  return check_markup(variable_get('user_registration_thankyou_page_content', t('Thank you for registering on Fluke Networks website.')));
 }
 
 /**
@@ -671,6 +682,7 @@ function fnet_ma_change_user_forgot_password_form($form, &$form_state) {
 
 /**
  * This is the common function that generates the content for different forms.
+ * TODO: Move this HTML into a template.
  */
 function fnet_ma_display_helper_text_on_pages($page_name = '') {
   $html = '';
@@ -773,10 +785,12 @@ function fnet_ma_display_registered_products($listing_displayed_on = '') {
   $total_registered_product = count($doc->NewDataSet->Table);
   $registered_product_list = array();
   // Debugging
+  /*
   if (module_exists('devel')) {
     dpm($doc);
-    dpm($total_registered_product);
+    dpm('Total Registered Products: ' . $total_registered_product);
   }
+  */
   if ($total_registered_product) {
     fnet_sfdc_insert_contact_on_product_registration($user->mail, $user);
     // Get the list of all products configured in LMS.
@@ -857,9 +871,11 @@ function fnet_ma_display_registered_products($listing_displayed_on = '') {
  */
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Provides an "Accessing your Gold Benefits" page. The node is defined in the Admin page.
+ *
+ * @return string
  */
+// TODO: Switch to using language for display?
 function fnet_ma_display_accessing_your_gold_benefits_page() {
   $html_content = '';
   // Fetch the title and the content of the page that displays the information about - "Accessing your Gold Benefits"
@@ -873,9 +889,11 @@ function fnet_ma_display_accessing_your_gold_benefits_page() {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Provides a "Analysis Service Element (ASE)" page. The node is defined in the Admin page.
+ *
+ * @return string
  */
+// TODO: Switch to using language for display?
 function fnet_ma_display_analysis_service_element_page() {
   $html_content = '';
   // Fetch the title and the content of the page that displays the information about - "Analysis Service Element (ASE)"
@@ -907,6 +925,8 @@ function fnet_ma_display_gold_support_contact_numbers_page() {
 
 /**
  * Implements hook_block_info().
+ *
+ * @return mixed
  */
 function fnet_ma_block_info() {
   $block['navigation']['info'] = t('My Account Navigation Links Block.');
@@ -915,8 +935,12 @@ function fnet_ma_block_info() {
 
 /**
  * Implements hook_block_view().
+ *
+ * @param $delta
+ * @return array
  */
 function fnet_ma_block_view($delta) {
+  $block = array();
   switch ($delta) {
     case 'navigation':
       $block['subject'] = t('');
@@ -965,8 +989,11 @@ function fnet_ma_load_registered_products($flag = '') {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * The Support Incident Search form
+ *
+ * @param $form
+ * @param $form_state
+ * @return mixed
  */
 function fnet_ma_support_incident_search_form($form, &$form_state) {
   $days = $_REQUEST['days'];
@@ -996,6 +1023,8 @@ function fnet_ma_support_incident_search_form($form, &$form_state) {
 }
 
 /**
+ * The Support Incident Search submit handler.
+ *
  * @param $form
  * @param $form_state
  */
@@ -1007,6 +1036,8 @@ function fnet_ma_support_incident_search_form_submit($form, &$form_state) {
 }
 
 /**
+ * Gets the list of Support Incidents.
+ *
  * @return array
  */
 function fnet_ma_fetch_support_incidents($days_history = 30, $asset_id = NULL, $open_only = FALSE) {
@@ -1126,6 +1157,8 @@ function fnet_ma_send_product_registration_email_to_user() {
  */
 function fnet_ma_send_pop_code_emails($form_values = array()) {
   global $user;
+  include_once DRUPAL_ROOT . '/includes/locale.inc';
+  module_load_include('inc', 'addressfield', 'addressfield.administrative_areas');
   $user_submitted_form_values = $form_values;
   if (count($user_submitted_form_values) == 0) {
     return FALSE;
@@ -1192,16 +1225,14 @@ function fnet_ma_send_pop_code_emails($form_values = array()) {
   $user_details_string .= '<b>' . t("Email: ") . '</b>' . check_plain($user_submitted_form_values['strOrigEmail']) . "<br />";
   $user_details_string .= '<b>' . t("Phone: ") . '</b>' . check_plain($user_submitted_form_values['strPhone']) . "<br />";
 
-  // Include the main module file of Addresses module.
-  module_load_include('inc', 'addresses');
-  $country_array = _addresses_country_get($available = array(), $top_countries = array(), $upper = FALSE);
+  $country_array = country_get_list();
   $country_name = '';
   if ($country_array[check_plain($user_submitted_form_values['strCountryCode'])] != '') {
     $country_name = $country_array[trim(check_plain($user_submitted_form_values['strCountryCode']))];
   }
   $user_details_string .= '<b>' . t("Country: ") . '</b>' . $country_name . "<br />";
 
-  $states_within_a_country_array = _addresses_province_get(trim(check_plain($user_submitted_form_values['strCountryCode'])));
+  $states_within_a_country_array = addressfield_get_administrative_areas(trim(check_plain($user_submitted_form_values['strCountryCode'])));
   $state_name = '';
   if ($states_within_a_country_array[trim(check_plain($user_submitted_form_values['strRegionCode']))]) {
     $state_name = $states_within_a_country_array[trim(check_plain($user_submitted_form_values['strRegionCode']))];
@@ -1244,6 +1275,7 @@ function fnet_ma_send_pop_code_emails($form_values = array()) {
  * @todo Please document this function.
  * @see http://drupal.org/node/1354
  */
+// TODO: I'm pretty sure this is deprecated, since neither the Profile content type or the Onyx ID is used anymore.
 function fnet_ma_fetch_previously_enabled_options($product_name = '', $serial_number = '', $page_to_display = '', $model_no = '') {
   global $user;
   $profile_content_type = variable_get('profile_content_type', 'profile');
@@ -1271,7 +1303,7 @@ function fnet_ma_fetch_previously_enabled_options($product_name = '', $serial_nu
   else {
     $activation_date_column_header = t('Activation Date');
   }
-
+  // TODO: Replace HTML with template theme call.
   $html .= "<table class='all_contracts_listing_table full-available-width' border='0' cellspacing='0' cellpadding='5'>
               <tr class='border-bottom-1px'>
                 <td class='tableHead-only-border-bottom'  valign='top' width = '30%'>" . t('Options Enabled') . "
@@ -1414,6 +1446,7 @@ function fnet_ma_get_enabled_options_for_product($individualid = '', $model_numb
 }
 
 /**
+ * TODO: DEPRECATED
  * Function to generate "chProductnumber" based upon the Onyx ID of the user and the OCP id of product that was just registered.
  * @param string $asset_id
  * @return array
@@ -1486,35 +1519,48 @@ function fnet_ma_fetch_product_model($productCodeField = '', $proof_of_purchase_
 
 /**
  * This section related to - Activate a Product/Option" on Fluke Networks ends here.
+ * This acts as a pseudo-validation routine, checking to see if there are any
+ * empty fields that need to be filled and alerting the user if there are.
+ * TODO: Update with Addressfield fields.
  */
 
 function fnet_ma_check_profile() {
   global $user;
+  // load the full user object.
+  $account = user_load($user->uid);
   $needs_update = FALSE;
-  $fields = array(
-    'field_user_first_name',
-    'field_user_last_name',
-    'field_user_company',
-    'field_user_phone',
-    'field_user_address_line_1',
-    'field_user_city',
-    'field_user_province',
-    'field_user_country',
-    'field_user_postal_code',
-    'field_user_job_role',
+  $required = array(
+    'country',
+    'administrative_area',
+    'locality',
+    'postal_code',
+    'thoroughfare',
+    'first_name',
+    'last_name',
   );
-  foreach ($fields as $field) {
-    $value = fnet_common_get_field_value('user', $user, $field);
-    if (($field == 'field_user_job_role') && (($value == 'none') || ($value == 'Not Applicable'))) {
-      $value = '';
-      $user->field_user_job_role[LANGUAGE_NONE][0]['value'] = $value;
-      user_save($user);
-    }
-    if (empty($value)) {
-      $needs_update = TRUE;
+
+  // Address fields
+  $fields = $account->field_adddress[LANGUAGE_NONE][0];
+  foreach ($fields as $key => $field) {
+    // Check the required fields to see if they are empty.
+    if (in_array($key, $required)) {
+      if (empty($field)) {
+        $needs_update = TRUE;
+      }
     }
   }
+
+  // Job Role
+  $job_role = fnet_common_get_field_value('user', $user, 'field_user_job_role');
+  if (($job_role == 'none') || ($job_role == 'Not Applicable')) {
+    $value = '';
+    $user->field_user_job_role[LANGUAGE_NONE][0]['value'] = $value;
+    user_save($user);
+  }
+
   if ($needs_update) {
-    drupal_set_message('New fields have been added. Please update your ' . l('profile.', "/myaccount/$user->uid/edit/profile"));
+    $path = 'myaccount/$user->uid/edit/profile';
+    $message = t('Please update your <a href="@profile-page">profile</a>.', array('@profile-page' => url($path)));
+    drupal_set_message($message);
   }
 }

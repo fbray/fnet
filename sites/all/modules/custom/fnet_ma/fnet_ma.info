@@ -3,6 +3,9 @@ name = My Account
 description = This module associates the Drupal user on Fluke Networks website with the legacy My Acocunt of .NET and it uses many webservices to allow users with specific roles to access Gold Contract related information and submit and view support incidents.
 package = Fluke Networks
 core = 7.x
+version = "7.x-1.1-20170905"
+
+dependencies[] = entity
 dependencies[] = fnet_helper
 dependencies[] = fnet_sfdc
 
