@@ -216,7 +216,6 @@ function fnet_ma_product_activation_form($form, $form_state) {
         '#default_value' => '',
         '#maxlength' => 7,
         '#required' => TRUE,
-        '#default_value' => '',
         '#size' => 25,
       );
 
@@ -428,7 +427,6 @@ function fnet_ma_product_activation_form($form, $form_state) {
         '#default_value' => '',
         '#maxlength' => 7,
         '#required' => TRUE,
-        '#default_value' => '',
         '#size' => 40,
       );
     }
@@ -452,7 +450,6 @@ function fnet_ma_product_activation_form($form, $form_state) {
         '#default_value' => '',
         '#maxlength' => 7,
         '#required' => TRUE,
-        '#default_value' => '',
         '#size' => 40,
       );
     }
@@ -472,7 +469,6 @@ function fnet_ma_product_activation_form($form, $form_state) {
     $form['popcode_one'] = array(
       '#type' => 'textfield',
       '#title' => t('Enter the Proof of Purchase Code'),
-      '#default_value' => '',
       '#required' => TRUE,
       '#default_value' => check_plain(trim($current_form_array['POPcode'])),
       '#size' => 40,
@@ -481,7 +477,6 @@ function fnet_ma_product_activation_form($form, $form_state) {
     $form['popcode_two'] = array(
       '#type' => 'textfield',
       '#title' => t('Re-enter the Proof of Purchase Code'),
-      '#default_value' => '',
       '#required' => TRUE,
       '#default_value' => check_plain(trim($current_form_array['POPcode'])),
       '#size' => 40,
@@ -734,14 +729,12 @@ function fnet_ma_product_activation_form($form, $form_state) {
       // If the POP code is provided in the URL and the POP code is NOT valid then display error message and return the form.
       if ($product_group_details['status'] == 'error_in_operations') {
         $form['message'] = array(
-          '#markup' => t(''),
           '#markup' => "<span class = 'red-text'>" . variable_get('myaccount_webservices_failure_notification_message', t('Our apologies. Your request is not currently available. A notification has been delivered to our web team to correct. If you need immediate assistance please call us at +1 425 446-4519.')) . "</span><br />",
         );
         return $form;
       }
       elseif ($product_group_details['status'] != 'POP_code_is_valid') {
         $form['message'] = array(
-          '#markup' => t(''),
           '#markup' => "<span class = 'red-text'>" . t('The POP code is in-valid, please try again.') . "</span><br />",
         );
         return $form;
@@ -872,13 +865,11 @@ function fnet_ma_product_activation_form($form, $form_state) {
       );
 
       $form['message_one'] = array(
-        '#markup' => t(''),
         '#weight' => '-42',
         '#markup' => "<div class=''><span class = 'red-text'><b>" . t('The Proof of Purchase Code entered is not valid for the selected product.') . "</b></span></div>",
       );
 
       $form['message_two'] = array(
-        '#markup' => t(''),
         '#weight' => '-40',
         '#markup' => fnet_ma_display_activate_error_800_links() . "</div>",
       );
@@ -897,13 +888,11 @@ function fnet_ma_product_activation_form($form, $form_state) {
       );
 
       $form['message_one'] = array(
-        '#markup' => t(''),
         '#weight' => '20',
         '#markup' => "<div class=''><span>" . t('Warning: This Serial Number is registered to two or more people. Please verify that the Serial Number entered matches the Serial Number on the product for which you are activating this option.') . "</span></div>",
       );
 
       $form['message_two'] = array(
-        '#markup' => t(''),
         '#weight' => '25',
         '#markup' => fnet_ma_display_activate_error_700_links() . "</div>",
       );
@@ -932,8 +921,7 @@ function fnet_ma_product_activation_form($form, $form_state) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * @return string
  */
 function fnet_ma_display_activate_error_700_links() {
   global $base_url, $user;
@@ -962,8 +950,7 @@ function fnet_ma_display_activate_error_700_links() {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * @return string
  */
 function fnet_ma_display_activate_error_800_links() {
   global $base_url, $user;
@@ -987,8 +974,8 @@ function fnet_ma_display_activate_error_800_links() {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Function for activating a product with duplicate serial numbers.
+ * TODO: Onyx ID is deprecated and no longer used. Rework?
  */
 function fnet_ma_activate_product_with_duplicate_serial_number() {
   global $user;
@@ -1102,10 +1089,11 @@ function fnet_ma_generate_non_optiview_keycode($individualid = '', $pop_code = '
   }
 }
 
-// Validation Rules for "Activate an option" forms.
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Validation Rules for "Activate an option" forms.
+ *
+ * @param $form
+ * @param $form_state
  */
 function fnet_ma_product_activation_form_validate($form, &$form_state) {
 
@@ -1127,9 +1115,6 @@ function fnet_ma_product_activation_form_validate($form, &$form_state) {
         }
 
       }
-      else {
-
-      }
     }
 
     if (($proof_of_purchase_code_error_status == 0) && ($proof_of_purchase_code != '')) {
@@ -1148,11 +1133,6 @@ function fnet_ma_product_activation_form_validate($form, &$form_state) {
         }
       }
     }
-  }
-
-  // FORM 2
-  elseif ($current_step_for_activate_product_process == 'two') {
-
   }
 
   // FORM 3
@@ -1279,10 +1259,12 @@ function fnet_ma_product_activation_form_validate($form, &$form_state) {
   }
 }
 
-// Submit Rules for "Activate an option" forms.
+
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Submit Rules for "Activate an option" forms.
+ *
+ * @param $form
+ * @param $form_state
  */
 function fnet_ma_product_activation_form_submit($form, &$form_state) {
   global $user;
@@ -1531,14 +1513,21 @@ function fnet_ma_product_activation_form_submit($form, &$form_state) {
 /**
  * This section is related to - "Activate a Product/Option using Gold type POP code" on Fluke Networks.
  * this code set is triggered on the URL - "'myaccount/activate-product-gold-type'"
+ *
+ * @param $form
+ * @param $form_state
+ * @return array
  */
 function fnet_ma_gold_type_product_activation_form($form, $form_state) {
+  include_once DRUPAL_ROOT . '/includes/locale.inc';
+  module_load_include('inc', 'addressfield', 'addressfield.administrative_areas');
   $current_form_array = array();
   $form = array();
   $current_form_array = $_REQUEST;
   $current_step_for_activate_product_process = check_plain($current_form_array['step']);
 
   global $user;
+  $account = user_load($user->uid);
 
   // FORM NO 2 and FORM NO 3.
   if ($current_step_for_activate_product_process == 'two' || $current_step_for_activate_product_process == 'three') {
@@ -1667,7 +1656,7 @@ function fnet_ma_gold_type_product_activation_form($form, $form_state) {
       $form['strFirstName'] = array(
         '#type' => 'textfield',
         '#title' => t('First Name'),
-        '#default_value' => trim(check_plain($user->field_user_first_name[LANGUAGE_NONE][0]['value'])),
+        '#default_value' => trim(check_plain($account->field_address[LANGUAGE_NONE][0]['first_name'])),
         '#required' => TRUE,
         '#size' => 35,
         '#maxlength' => 100,
@@ -1676,7 +1665,7 @@ function fnet_ma_gold_type_product_activation_form($form, $form_state) {
       $form['strLastName'] = array(
         '#type' => 'textfield',
         '#title' => t('Last Name'),
-        '#default_value' => trim(check_plain($user->field_user_last_name[LANGUAGE_NONE][0]['value'])),
+        '#default_value' => trim(check_plain($user->field_address[LANGUAGE_NONE][0]['last_name'])),
         '#required' => TRUE,
         '#size' => 35,
         '#maxlength' => 100,
@@ -1685,7 +1674,7 @@ function fnet_ma_gold_type_product_activation_form($form, $form_state) {
       $form['strOrigEmail'] = array(
         '#type' => 'textfield',
         '#title' => t('Email Address'),
-        '#default_value' => trim(check_plain($user->mail)),
+        '#default_value' => trim(check_plain($account->mail)),
         '#required' => TRUE,
         '#size' => 35,
         '#maxlength' => 255,
@@ -1694,7 +1683,7 @@ function fnet_ma_gold_type_product_activation_form($form, $form_state) {
       $form['strPhone'] = array(
         '#type' => 'textfield',
         '#title' => t('Phone'),
-        '#default_value' => trim(check_plain($user->field_user_phone[LANGUAGE_NONE][0]['value'])),
+        '#default_value' => trim(check_plain($account->field_user_telephone[LANGUAGE_NONE][0]['value'])),
         '#required' => TRUE,
         '#size' => 35,
         '#suffix' => '</div>',
@@ -1709,7 +1698,7 @@ function fnet_ma_gold_type_product_activation_form($form, $form_state) {
       $form['strCompanyName'] = array(
         '#type' => 'textfield',
         '#title' => t('Company Name'),
-        '#default_value' => trim(check_plain($user->field_user_company[LANGUAGE_NONE][0]['value'])),
+        '#default_value' => trim(check_plain($account->field_address[LANGUAGE_NONE][0]['organisation_name'])),
         '#required' => TRUE,
         '#size' => 35,
         '#maxlength' => 100,
@@ -1718,7 +1707,7 @@ function fnet_ma_gold_type_product_activation_form($form, $form_state) {
       $form['strAdd1'] = array(
         '#type' => 'textfield',
         '#title' => t('Company Address Line1'),
-        '#default_value' => trim(check_plain($user->field_user_address_line_1[LANGUAGE_NONE][0]['value'])),
+        '#default_value' => trim(check_plain($account->field_address[LANGUAGE_NONE][0]['thoroughfare'])),
         '#required' => TRUE,
         '#size' => 35,
         '#maxlength' => 150,
@@ -1727,7 +1716,7 @@ function fnet_ma_gold_type_product_activation_form($form, $form_state) {
       $form['strAdd2'] = array(
         '#type' => 'textfield',
         '#title' => t('Company Address Line2'),
-        '#default_value' => trim(check_plain($user->field_address_line_2[LANGUAGE_NONE][0]['value'])),
+        '#default_value' => trim(check_plain($account->field_address[LANGUAGE_NONE][0]['premise'])),
         '#size' => 35,
         '#maxlength' => 150,
       );
@@ -1735,18 +1724,18 @@ function fnet_ma_gold_type_product_activation_form($form, $form_state) {
       $form['strCityName'] = array(
         '#type' => 'textfield',
         '#title' => t('City Name'),
-        '#default_value' => trim(check_plain($user->field_user_city[LANGUAGE_NONE][0]['value'])),
+        '#default_value' => trim(check_plain($account->field_address[LANGUAGE_NONE][0]['locality'])),
         '#required' => TRUE,
         '#size' => 35,
         '#maxlength' => 100,
       );
 
       // Include the main module file
-      $country_array = addresses_country_get($available = array(), $top_countries = array(), $upper = FALSE);
+      $country_array = country_get_list();
       $form['strCountryCode'] = array(
         '#type' => 'select',
         '#title' => t('Country'),
-        '#default_value' => trim(check_plain($user->field_user_country[LANGUAGE_NONE][0]['value'])),
+        '#default_value' => trim(check_plain($account->field_address[LANGUAGE_NONE][0]['value'])),
         '#options' => $country_array,
         '#required' => TRUE,
         '#ahah' => array(
@@ -1759,7 +1748,7 @@ function fnet_ma_gold_type_product_activation_form($form, $form_state) {
       // define the second tier select dropdown element
       $country_code = $form_state['values']['strCountryCode'];
       if (!empty($country_code)) {
-        $states = addresses_province_get($country_code);
+        $states = addressfield_get_administrative_areas($country_code);
         asort($states);
         // If there are NO states present in the Country as per the Addresses module code base then display - "Not applicable"
         if (count($states) == 0) {
@@ -1767,12 +1756,12 @@ function fnet_ma_gold_type_product_activation_form($form, $form_state) {
         }
       }
       else {
-        $states = addresses_province_get($user->field_user_country[LANGUAGE_NONE][0]['value']);
+        $states = addressfield_get_administrative_areas($account->field_address[LANGUAGE_NONE][0]['country']);
       }
       $form['strRegionCode'] = array(
         '#type' => 'select',
         '#title' => t('State'),
-        '#default_value' => trim(check_plain($user->field_user_province[LANGUAGE_NONE][0]['value'])),
+        '#default_value' => trim(check_plain($account->field_address[LANGUAGE_NONE][0]['administrative_area'])),
         '#options' => $states,
         '#required' => TRUE,
         '#prefix' => '<div id="wrapper-2" class = "full-available-width fn-myaccount-float-left">',
@@ -1781,8 +1770,8 @@ function fnet_ma_gold_type_product_activation_form($form, $form_state) {
 
       $form['strPostalCode'] = array(
         '#type' => 'textfield',
-        '#title' => t('Zip/Postal Code'),
-        '#default_value' => trim(check_plain($user->field_user_postal_code[LANGUAGE_NONE][0]['value'])),
+        '#title' => t('Postal Code'),
+        '#default_value' => trim(check_plain($user->field_address[LANGUAGE_NONE][0]['postal_code'])),
         '#required' => TRUE,
         '#size' => 35,
         '#suffix' => '</div>',
@@ -1825,8 +1814,10 @@ function fnet_ma_gold_type_product_activation_form($form, $form_state) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * The Gold Product activation form.
+ *
+ * @param $form
+ * @param $form_state
  */
 function fnet_ma_gold_type_product_activation_form_validate($form, &$form_state) {
   if (trim(check_plain($form_state['values']['strPurchaseDate'])) != '') {
@@ -1847,8 +1838,9 @@ function fnet_ma_gold_type_product_activation_form_validate($form, &$form_state)
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Gold Product activation form submit handler.
+ * @param $form
+ * @param $form_state
  */
 function fnet_ma_gold_type_product_activation_form_submit($form, &$form_state) {
   global $user;
@@ -2048,11 +2040,9 @@ function fnet_ma_gold_type_product_activation_form_submit($form, &$form_state) {
  * Function for checking the POP code supplied by the user using the web service to know if its a valid one or not,
  * this function also for fetches the Product group details based on the POP code supplied by the user
  * using the same web service but by a different parameter supplied in the function call.
- */
-
-/**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ *
+ * @param string $proof_of_purchase_code
+ * @return array
  */
 function fnet_ma_validate_proof_of_purchase_code($proof_of_purchase_code = '') {
   global $user;
@@ -2144,8 +2134,10 @@ function fnet_ma_validate_proof_of_purchase_code($proof_of_purchase_code = '') {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Validates Gold based the Proof of Purchase code.
+ *
+ * @param string $proof_of_purchase_code
+ * @return array
  */
 function fnet_ma_validate_gold_type_proof_of_purchase_code($proof_of_purchase_code = '') {
   $status_with_results = array();
@@ -2190,8 +2182,11 @@ function fnet_ma_validate_gold_type_proof_of_purchase_code($proof_of_purchase_co
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * @param string $proof_of_purchase_code
+ * @param string $productCode
+ * @param string $optionCode
+ * @param string $SerialNumber
+ * @return array
  */
 function fnet_ma_validate_proof_of_purchase_code_being_already_used($proof_of_purchase_code = '', $productCode = '', $optionCode = '', $SerialNumber = '') {
   $status_with_results = array();
@@ -2238,8 +2233,7 @@ function fnet_ma_validate_proof_of_purchase_code_being_already_used($proof_of_pu
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * @return null|string
  */
 function fnet_ma_print_keycodes() {
   $current_form_array = $_REQUEST;
@@ -2314,6 +2308,10 @@ function fnet_ma_print_keycodes() {
 /**
  * This function will check if whether any product is registered
  * for the product group code, and it returns a product number.
+ *
+ * @param string $productGroupCode
+ * @param string $onyx_individualId
+ * @return array
  */
 function fnet_ma_verify_has_registered_product_for_prd_group($productGroupCode = '', $onyx_individualId = '') {
   $status_with_results = array();
@@ -2365,6 +2363,10 @@ function fnet_ma_verify_has_registered_product_for_prd_group($productGroupCode =
  * Function for fetching the product details upon successful validation of pop code,
  * this service method will extract the  product details like product group name,
  * option name, product group code and image.
+ *
+ * @param string $ProductCode
+ * @param string $OptionCode
+ * @return array
  */
 function fnet_ma_fetch_product_information_based_on_POPcode($ProductCode = '', $OptionCode = '') {
   $status_with_results = array();
@@ -2408,8 +2410,8 @@ function fnet_ma_fetch_product_information_based_on_POPcode($ProductCode = '', $
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * @param $proof_of_purchase_code
+ * @return array
  */
 function fnet_ma_verify_gold_type_popcode_already_activated_status($proof_of_purchase_code) {
   global $user;
@@ -2456,8 +2458,8 @@ function fnet_ma_verify_gold_type_popcode_already_activated_status($proof_of_pur
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * @param string $productnumber
+ * @return array
  */
 function fnet_ma_registered_products_in_product_group($productnumber = '') {
   $resultant_array = array();
@@ -2581,7 +2583,9 @@ function fnet_ma_registered_products_in_product_group($productnumber = '') {
   }
 }
 
-
+/**
+ * @return string
+ */
 function flukenetworks_myaccount_activate_option_page() {
   $mail_to_link = l('fnetlicensing@flukenetworks.com', 'mailto:fnetlicensing@flukenetworks.com');
   $output = '';

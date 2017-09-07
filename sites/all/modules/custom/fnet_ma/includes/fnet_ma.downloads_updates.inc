@@ -15,6 +15,7 @@
  */
 function fnet_ma_downloads_and_updates_form($form, $form_state) {
   $form = array();
+  // TODO: Initialize $product_id with a default value.
 
   if (check_plain(trim(arg(3))) != '') {
     $product_id = check_plain(trim(arg(3)));
@@ -64,6 +65,8 @@ function fnet_ma_process_text($element, $children) {
 
 /**
  * Function to populate the Drop down that user sees on the top of "Download and Updates" page.
+ *
+ * @return array
  */
 function fnet_ma_fetch_product_list_related_to_download_updates() {
   global $user;
@@ -118,15 +121,18 @@ function fnet_ma_display_all_user_download_and_updates() {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * An AJAX function to
+ * @param $category
+ * @return array
  */
 function fnet_ma_get_downloads_ajax($category) {
   global $user;
-  if ($user->uid == '' || $user->uid == '0') {
+  // Must be a logged-in user.
+  if ($user->uid == '0') {
     drupal_goto('user', array(), 301);
   }
 
+  // Expect a numberic value. If the value isn't, return a blank array.
   if (check_plain(trim($category)) == '' || (!is_numeric(check_plain(trim($category))))) {
     return array();
   }
@@ -143,6 +149,7 @@ function fnet_ma_get_downloads_ajax($category) {
   }
 
   //Check the current language of the website.
+  // TODO: Change this when converting to Entity Translation.
   $siteReg = module_invoke('fnet_helper', 'site_region');
   $language = $siteReg["lang"];
   $table = array();
@@ -198,10 +205,11 @@ function fnet_ma_get_downloads_ajax($category) {
   //return $content_array;
 }
 
-// Generic Function for printing the "Download and Updates" layout.
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Generic Function for printing the "Download and Updates" layout.
+ *
+ * @param string $message
+ * @return string
  */
 function fnet_ma_print_download_update_messages($message = '') {
   $complete_message = '';

@@ -112,6 +112,7 @@ function fnet_ma_admin_settings($form, &$form_state) {
   );
 
   //Fetch all the content types on the website and display it in drop down list.
+  $node_types_array = array();
   $node_types = node_type_get_types();
   if (count($node_types)) {
     foreach ($node_types as $content_machine_readable_name => $content_human_readable_name) {

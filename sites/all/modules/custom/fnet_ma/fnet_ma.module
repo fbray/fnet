@@ -555,7 +555,6 @@ function fnet_ma_display_tabular_all_gold_contracts_details($gold_pin, $gold_num
  *
  * @return string
  */
-// TODO: Switch to Addressfield for first and last names.
 function fnet_ma_display_all_gold_contracts() {
   global $user;
   $account = user_load($user->uid);

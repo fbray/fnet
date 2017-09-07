@@ -8,8 +8,11 @@
  */
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * The Support Incident form
+ *
+ * @param $form
+ * @param $form_state
+ * @return mixed
  */
 function fnet_ma_support_incident_form($form, $form_state) {
 
@@ -73,8 +76,10 @@ function fnet_ma_support_incident_form($form, $form_state) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * The Support Incident form validation callback.
+ *
+ * @param $form
+ * @param $form_state
  */
 function fnet_ma_support_incident_form_validate($form, &$form_state) {
   // Any validation code can be placed here.
@@ -87,8 +92,10 @@ function fnet_ma_support_incident_form_validate($form, &$form_state) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * The Support Incident form submit callback.
+ *
+ * @param $form
+ * @param $form_state
  */
 function fnet_ma_support_incident_form_submit($form, &$form_state) {
   fnet_ma_report_product_incidents($form_state, 'insert');
@@ -96,8 +103,12 @@ function fnet_ma_support_incident_form_submit($form, &$form_state) {
 
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * The Product Support Incident form.
+ *
+ * @param $form
+ * @param $form_state
+ * @param $asset_id
+ * @return mixed
  */
 function fnet_ma_product_support_incident_form($form, $form_state, $asset_id) {
   $registered_product_list = fnet_ma_load_registered_products();
@@ -193,8 +204,10 @@ function fnet_ma_product_support_incident_form($form, $form_state, $asset_id) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * The Product Support Incident form validate callback.
+ *
+ * @param $form
+ * @param $form_state
  */
 function fnet_ma_product_support_incident_form_validate($form, &$form_state) {
   // Any validation code can be placed here.
@@ -204,14 +217,18 @@ function fnet_ma_product_support_incident_form_validate($form, &$form_state) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * The Product Support Incident form submit callback.
+ *
+ * @param $form
+ * @param $form_state
  */
 function fnet_ma_product_support_incident_form_submit($form, &$form_state) {
   fnet_ma_report_product_incidents($form_state, 'insert');
 }
 
 /**
+ * The View Support Incident form.
+ *
  * @param $form
  * @param $form_state
  * @return mixed
@@ -327,8 +344,9 @@ function fnet_ma_view_support_incident_form($form, $form_state, $incident_id) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * The View Support Incident submit callback.
+ * @param $form
+ * @param $form_state
  */
 function fnet_ma_view_support_incident_form_submit($form, &$form_state) {
   fnet_ma_report_product_incidents($form_state, 'update');
@@ -336,6 +354,9 @@ function fnet_ma_view_support_incident_form_submit($form, &$form_state) {
 
 
 /**
+ * Displays a list of the Support Incidents.
+ * TODO: Can this be replaced by a View?
+ *
  * @param int $user_id
  * @param int $asset_id
  * @return string
@@ -367,6 +388,12 @@ function fnet_ma_display_all_support_incidents($days_history = 30, $asset_id = N
   return $html;
 }
 
+/**
+ * A helper function that, given the model number, will return the name of the model .
+ *
+ * @param $model_number
+ * @return mixed
+ */
 function fnet_ma_get_model_name($model_number) {
   $categories = fnet_sfdc_get_web_products()->data;
   foreach ($categories as $products) {
@@ -377,8 +404,9 @@ function fnet_ma_get_model_name($model_number) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * This function generates a 'Thank You' message.
+ *
+ * @return mixed|string
  */
 function fnet_ma_display_support_incident_thanks_message() {
   $text = variable_get('myaccount_thankyou_message_support_incident', t('Thank you for posting the support incident.'));
