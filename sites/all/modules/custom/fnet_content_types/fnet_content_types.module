@@ -1,9 +1,0 @@
-<?php
-/**
- * @file
- * Code for the FNET Content Types 1 feature.
- */
-
-include_once 'fnet_content_types.features.inc';
-
-
