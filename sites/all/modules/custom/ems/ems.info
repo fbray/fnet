@@ -1,11 +1,13 @@
 ; $Id: ems.info 2065 2016-07-25 22:10:32Z mositis $
-name = EMS
+name = Fluke Networks Event Management System (EMS)
 package = Fluke Networks
 description = the EMS module allows registration for an (event_occurrence) node, and interfaces with Marketo.
+version = "7.x-1.1
+core = 7.x
+
 dependencies[] = addressfield
 dependencies[] = marketo_api
-version = 7.x.0.0
-core = 7.x
+dependencies[] = locale
 
 files[] = library/base62.php
 files[] = library/parsecsv.lib.php

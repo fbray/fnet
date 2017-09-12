@@ -1,7 +1,10 @@
 <?php
 // $Id: ems.module 2118 2016-08-30 13:01:15Z gkakade $
 require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'ems') . '/library/base62.php';
-require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'ems') . '/library/parsecsv.lib.php';
+require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'ems') . '/library/parsecsv.lib.php';  // Kinda out of date with PHP 7.
+
+include_once DRUPAL_ROOT . '/includes/locale.inc';
+
 /**
  * @file
  */
@@ -155,11 +158,10 @@ function ems_permission() {
  */
 function ems_registration_thank_you($event_occurrence_id) {
   $event_occurrence = node_load($event_occurrence_id);
-  $thank_you = $event_occurrence->field_evnt_occ_thank_you[LANGUAGE_NONE][0]['value'];
+  $thank_you = $event_occurrence->field_event_occ_thank_you[LANGUAGE_NONE][0]['value'];
   if (trim($thank_you) == '') {
     $thank_you = variable_get('ems_default_thank_you_message_text', '');
-    $format = db_query("SELECT format FROM {filter_format} WHERE `name` = :name", array(':name' => 'Full HTML'))->fetchField();
-    $thank_you = check_markup($thank_you, $format, $langcode = '', FALSE);
+    $thank_you = check_markup($thank_you, 'full_html', $langcode = '', FALSE);
   }
   $output = "<div class='ems-registration-thank-you'>";
   $output .= $thank_you;
@@ -178,9 +180,8 @@ function ems_registration_event_full($event_occurrence_id = NULL) {
   else {
     $output = '';
   }
-  $sorry = variable_get('ems_event_full_message_text', '<h3>Sorry, this event is full.</h3>');
-  $format = db_query("SELECT format FROM {filter_format} WHERE `name` = :name", array(':name' => 'Full HTML'))->fetchField();
-  $sorry = check_markup($sorry, $format, $langcode = '', FALSE);
+  $sorry = variable_get('ems_event_full_message_text', '<h3>' . t('Sorry, this event is full.') . '</h3>');
+  $sorry = check_markup($sorry, 'full_html', $langcode = '', FALSE);
   $output .= "<div class='ems-registration-event-full'>";
   $output .= $sorry;
   $output .= "</div>";
@@ -189,6 +190,7 @@ function ems_registration_event_full($event_occurrence_id = NULL) {
 
 /**
  * Present a page listing all those registered for an event.
+ * TODO: Replace this function with a View.
  *
  * @param int $event_occurrence_id
  *  Node id of the event_occurrence to be listed.
@@ -268,6 +270,8 @@ function ems_registration_list($event_occurrence_id) {
 /**
  *  Output a CSV file with a list of all those registered for an event_occurrence
  *
+ * TODO: Replace this with a View CSV output display.
+ *
  * @param int $event_occurrence_id
  *  Node id for the event_occurrence to be listed
  *
@@ -326,6 +330,7 @@ function ems_registration_list_csv($event_occurrence_id) {
 
 /**
  * Presents the registration form to the user.  The same page is used for both adding and editing a registration.
+ * TODO: Rework Event Registrations into an Entity.
  *
  * @param string $op
  *  Operation being preformed. Can be 'add' or 'edit'.
@@ -405,15 +410,15 @@ function ems_registration_form($form, $form_state, $op, $event_occurrence, $regi
   );
   $form['max_reg'] = array(
     '#type' => 'value',
-    '#value' => $event_occurrence->field_evnt_occ_capacity[LANGUAGE_NONE][0]['value'],
+    '#value' => $event_occurrence->field_event_occ_capacity[LANGUAGE_NONE][0]['value'],
   );
   $form['waitlist'] = array(
     '#type' => 'value',
-    '#value' => $event_occurrence->field_evnt_occ_waitlist[LANGUAGE_NONE][0]['value'],
+    '#value' => $event_occurrence->field_event_occ_waitlist[LANGUAGE_NONE][0]['value'],
   );
   $form['marketo_program'] = array(
     '#type' => 'value',
-    '#value' => $event_occurrence->field_evnt_occ_marketo_program[LANGUAGE_NONE][0]['value'],
+    '#value' => $event_occurrence->field_marketo_program[LANGUAGE_NONE][0]['value'],
   );
   $form['operation'] = array(
     '#type' => 'value',
@@ -479,8 +484,8 @@ function ems_registration_form($form, $form_state, $op, $event_occurrence, $regi
     '#required' => TRUE,
     '#default_value' => $registration->phone,
   );
-  if (($event_occurrence->field_evnt_occ_req_address[LANGUAGE_NONE][0]['value']) || ($op == 'edit')) {
-    if ($event_occurrence->field_evnt_occ_req_address[LANGUAGE_NONE][0]['value']) {
+  if (($event_occurrence->field_event_occ_req_address[LANGUAGE_NONE][0]['value']) || ($op == 'edit')) {
+    if ($event_occurrence->field_event_occ_req_address[LANGUAGE_NONE][0]['value']) {
       $require_address = TRUE;
     }
     else {
@@ -536,7 +541,7 @@ function ems_registration_form($form, $form_state, $op, $event_occurrence, $regi
       'method' => 'replace',
     ),
   );
-  if (($event_occurrence->field_evnt_occ_req_gold_number[LANGUAGE_NONE][0]['value']) || ($op == 'edit')) {
+  if (($event_occurrence->field_event_occ_req_gold_number[LANGUAGE_NONE][0]['value']) || ($op == 'edit')) {
     $form['gold_number'] = array(
       '#type' => 'textfield',
       '#title' => t('Gold Support number'),
@@ -634,11 +639,32 @@ function ems_registration_form_submit($form, &$form_state) {
  *  Either a populated registration object or an empty stdClass.
  */
 function ems_registration_load($event_occurrence, $rid) {
-  $sql = "SELECT r.nid, r.rid, p.first_name, p.last_name, p.email, p.job_title, p.job_role, p.company, ";
-  $sql .= "p.address, p.phone, p.city, p.state, p.postal_code, p.country, r.gold_number, r.payment_status, r.region, ";
-  $sql .= "r.`language`, r.registration_status, r.registration_sequence, r.cancellation_token ";
-  $sql .= "FROM ems_registrant AS p INNER JOIN ems_registration AS r ON p.rid = r.rid ";
-  $sql .= "WHERE r.nid = :nid AND p.rid = :rid";
+  $sql = "SELECT 
+    r.nid, 
+    r.rid, 
+    p.first_name, 
+    p.last_name, 
+    p.email, 
+    p.job_title, 
+    p.job_role, 
+    p.company,
+    p.address, 
+    p.phone, 
+    p.city, 
+    p.state, 
+    p.postal_code, 
+    p.country, 
+    r.gold_number, 
+    r.payment_status, 
+    r.region,
+    r.language, 
+    r.registration_status, 
+    r.registration_sequence, 
+    r.cancellation_token
+    FROM {ems_registrant} AS p 
+    INNER JOIN {ems_registration} AS r ON p.rid = r.rid 
+    WHERE r.nid = :nid 
+    AND p.rid = :rid";
   $result = db_query($sql, array(':nid' => $event_occurrence, ':rid' => $rid));
   foreach ($result as $record) {
     $registration = $record;
@@ -941,21 +967,23 @@ function ems_registration_marketo_request_campaign($registration) {
     $registration = (object) $registration;
   }
   $event_occurrence = node_load($registration->nid);
-  $event = node_load($event_occurrence->field_evnt_occ_parent[LANGUAGE_NONE][0]['nid']);
-  $marketo_program = $event_occurrence->field_evnt_occ_marketo_program[LANGUAGE_NONE][0]['value'];
+  dpm($event_occurrence);
+  $event = node_load($event_occurrence->field_event_parent[LANGUAGE_NONE][0]['nid']);
+  $marketo_program = $event_occurrence->field_marketo_program[LANGUAGE_NONE][0]['value'];
   // If we don't have a program name we can't do Marketo requestCampaign
   if ($marketo_program <> '') {
     $campaign = variable_get('ems_marketo_campaign_name', 'EMS Registration');
     $marketo_campaign = $marketo_program . '.' . $campaign;
-    $date = date('M j, Y', strtotime($event_occurrence->field_evnt_occ_date[LANGUAGE_NONE][0]['value']));
-    if ($event_occurrence->field_evnt_occ_date[LANGUAGE_NONE][0]['value'] <> $event_occurrence->field_evnt_occ_date[LANGUAGE_NONE][0]['value2']) {
-      $date .= ' - ' . date('M j, Y', strtotime($event_occurrence->field_evnt_occ_date[LANGUAGE_NONE][0]['value2']));
+    $date = date('M j, Y', strtotime($event_occurrence->field_event_date[LANGUAGE_NONE][0]['value']));
+    $time = date('G:ia T', strtotime($event_occurrence->field_event_date[LANGUAGE_NONE][0]['value']));
+    if ($event_occurrence->field_event_date[LANGUAGE_NONE][0]['value'] <> $event_occurrence->field_event_date[LANGUAGE_NONE][0]['to']) {
+      $date .= ' - ' . date('M j, Y', strtotime($event_occurrence->field_event_date[LANGUAGE_NONE][0]['to']));
     }
     $tokens = array(
       'EMS Event Title' => $event->title,
       'EMS Cancellation URL' => $base_url . $base_path . 'ems/registration/cancel/' . $registration->cancellation_token,
       'EMS Event Date' => $date,
-      'EMS Event Time' => $event_occurrence->field_evnt_occ_time[LANGUAGE_NONE][0]['value'],
+      'EMS Event Time' => $time,
       'EMS Event Location' => ems_build_location_string($event_occurrence->location),
       'EMS Lead Email' => $registration->email,
     );
@@ -978,7 +1006,7 @@ function ems_register_from_waitlist($event_occurrence) {
     ':registration_status1' => 'registered',
     ':registration_status2' => 'waitlist-registered'
   ))->fetchField();
-  if ($registered < $event_occurrence->field_evnt_occ_capacity[LANGUAGE_NONE][0]['value']) {
+  if ($registered < $event_occurrence->field_event_occ_capacity[LANGUAGE_NONE][0]['value']) {
     //check to see if there is anyone waiting
     $query = db_select('ems_registrant', 'p')
       ->fields('r', array(
@@ -1044,8 +1072,8 @@ function ems_node_load($nodes, $types) {
       ':registration_status1' => 'registered',
       ':registration_status2' => 'waitlist-registered'
     ))->fetchField();
-    $capacity = $node->field_evnt_occ_capacity[LANGUAGE_NONE][0]['value'];
-    $waitlist = $node->field_evnt_occ_waitlist[LANGUAGE_NONE][0]['value'];
+    $capacity = $node->field_event_occ_capacity[LANGUAGE_NONE][0]['value'];
+    $waitlist = $node->field_event_occ_waitlist[LANGUAGE_NONE][0]['value'];
     if (($registered >= $capacity) && (!$waitlist)) {
       $node->event_full = TRUE;
     }
@@ -1062,14 +1090,14 @@ function ems_node_view($node, $view_mode, $langcode) {
   if ($node->type == 'event_occurrence') {
     //fix up the node before we display it in a normal view
     $node->content['body'][0]['#markup'] = "<div class='content_body'>" . $node->content['body'][0]['#markup'] . "</div>";
-    unset($node->content['field_evnt_occ_parent']);
-    unset($node->content['field_evnt_occ_marketo_program']);
-    unset($node->content['field_evnt_occ_capacity']);
-    unset($node->content['field_evnt_occ_waitlist']);
-    unset($node->content['field_evnt_occ_req_address']);
-    unset($node->content['field_evnt_occ_req_gold_number']);
-    unset($node->content['field_evnt_occ_langreg']);
-    unset($node->content['field_evnt_occ_thank_you']);
+    unset($node->content['field_event_parent']);
+    unset($node->content['field_marketo_program']);
+    unset($node->content['field_event_occ_capacity']);
+    unset($node->content['field_event_occ_waitlist']);
+    unset($node->content['field_event_occ_req_address']);
+    unset($node->content['field_event_occ_req_gold_number']);
+    unset($node->content['field_language_region']);
+    unset($node->content['field_event_occ_thank_you']);
   }
 }
 
@@ -1087,9 +1115,9 @@ function ems_node_delete($node) {
     }
   }
   if ($node->type == 'event') {
-    $query = db_select('field_data_field_evnt_occ_parent', 'p')
+    $query = db_select('field_data_field_event_parent', 'p')
       ->fields('p', array('entity_id'))
-      ->condition('field_evnt_occ_parent_nid', $node->nid)
+      ->condition('field_event_parent_target_id', $node->nid)
       ->execute();
     $count = 0;
     foreach ($query as $occurrence_nid) {
@@ -1139,7 +1167,7 @@ function ems_form_alter(&$form, &$form_state, $form_id) {
  * @param array $form_state
  */
 function ems_validate_marketo_program($form_id, &$form_state) {
-  $marketo_program = $form_state['values']['field_evnt_occ_marketo_program'][LANGUAGE_NONE][0]['value'];
+  $marketo_program = $form_state['values']['field_marketo_program'][LANGUAGE_NONE][0]['value'];
   if (!empty($marketo_program)) {
     $result = marketo_api_get_campaigns_for_source();
     if ($result) {
@@ -1155,7 +1183,7 @@ function ems_validate_marketo_program($form_id, &$form_state) {
       $programs = array_unique($programs);
 
       if (array_search($marketo_program, $programs) === FALSE) {
-        form_set_error('field_evnt_occ_marketo_program', 'Marketo program is not valid');
+        form_set_error('field_marketo_program', 'Marketo program is not valid');
       }
     }
   }
@@ -1192,7 +1220,7 @@ function ems_theme() {
 function ems_preprocess_node(&$variables) {
   if ($variables['type'] == 'event_occurrence') {
     $occurrence = $variables['node'];
-    $event = node_load( fnet_common_get_field_value('event_occurrence', $occurrence, 'field_evnt_occ_parent', 'nid') );
+    $event = node_load( fnet_common_get_field_value('event_occurrence', $occurrence, 'field_event_parent', 'nid') );
     $variables['parent_title'] = l($event->title, 'node/' . $event->nid);
     $link = l('Register for this event', 'ems/registration/add/' . $variables['nid']);
     $buttons = theme('fnet_button', array('link' => $link, 'auto' => TRUE));
@@ -1238,6 +1266,8 @@ function ems_preprocess_node(&$variables) {
 
 /**
  * Implements hook_preprocess_page().
+ *
+ * @param $variables
  */
 function ems_preprocess_page(&$variables) {
   if (isset($variables['node']) && $variables['node']->type == 'event_occurrence') {
@@ -1256,7 +1286,7 @@ function template_preprocess_event_summary(&$variables) {
   $event_occurrence_id = $variables['event_occurrence_id'];
   $occurrence = node_load($event_occurrence_id);
   $variables['occurrence'] = $occurrence;
-  $variables['event'] = node_load( fnet_common_get_field_value('event_occurrence', $occurrence, 'field_evnt_occ_parent', 'nid') );
+  $variables['event'] = node_load( fnet_common_get_field_value('event_occurrence', $occurrence, 'field_event_parent', 'field_event_parent_target_id') );
 }
 
 function ems_state_province_ajax($form, &$form_state) {
@@ -1265,13 +1295,14 @@ function ems_state_province_ajax($form, &$form_state) {
 
 /**
  * Provides an array of states for the registration form state field.
+ * Uses the Addressfield module for the list
  *
  * @return array
  *  Associative array of state abbreviations and names.
  */
 function ems_get_state_province_options($country_code) {
-  $state_prov_options = addresses_province_get(trim(check_plain(strtolower($country_code))));
-  return $state_prov_options;
+  $administrative_areas  = addressfield_get_administrative_areas(trim(check_plain(strtolower($country_code))));
+  return $administrative_areas;
 }
 
 /**
@@ -1279,10 +1310,11 @@ function ems_get_state_province_options($country_code) {
  *
  * @return array
  *  Associative array of country codes and country names.
+ *  Uses the Locale module for the country list.
  */
 function ems_get_country_options() {
-  $country_options = addresses_country_get($available = array(), $top_countries = array(), $upper = FALSE);
-  return $country_options;
+  $countries = country_get_list();
+  return $countries;
 }
 
 /**
@@ -1292,20 +1324,20 @@ function ems_get_country_options() {
  */
 function ems_get_job_role_options() {
   $job_role_options = array(
-    'C-Level' => 'C-Level',
-    'VP' => 'VP',
-    'IT Director' => 'IT Director',
-    'IT Manager' => 'IT Manager',
-    'Network Engineer' => 'Network Engineer',
-    'Network Tech/Admin' => 'Network Tech/Admin',
-    'Consultant/Analyst' => 'Consultant/Analyst',
-    'Owner/Business Manager' => 'Owner/Business Manager',
-    'Project Manager' => 'Project Manager',
-    'Project Crew Leader' => 'Project Crew Leader',
-    'Technician/Installer' => 'Technician/Installer',
-    'Student' => 'Student',
-    'Other' => 'Other',
-    'Not Applicable' => 'Not Applicable',
+    'C-Level'             => t('C-Level'),
+    'VP'                  => t('Vice President'),
+    'IT Director'         => t('IT Director'),
+    'IT Manager'          => t('IT Manager'),
+    'Network Engineer'    => t('Network Engineer'),
+    'Network Tech/Admin'  => t('Network Tech/Admin'),
+    'Consultant/Analyst'  => t('Consultant/Analyst'),
+    'Owner/Business Manager' => t('Owner/Business Manager'),
+    'Project Manager'     => t('Project Manager'),
+    'Project Crew Leader' => t('Project Crew Leader'),
+    'Technician/Installer' => t('Technician/Installer'),
+    'Student'             => t('Student'),
+    'Other'               => t('Other'),
+    'Not Applicable'      => t('Not Applicable'),
   );
 
   return $job_role_options;
@@ -1376,6 +1408,3 @@ function ems_events_get_valid_marketo_programs() {
     watchdog('ems_events', 'Caught SOAP exception: %message', array('%message' => $e->getMessage()), WATCHDOG_ERROR);
   }
 }
-/**
- * @} End of "defgroup ems".
- */
