@@ -6,6 +6,8 @@
 
 /**
  * Configuration form for FNET Where To Buy Tab settings
+ *
+ * @return mixed
  */
 function product_distributor_admin() {
   $form = array();
@@ -41,30 +43,10 @@ function product_distributor_admin() {
   return system_settings_form($form);
 }
 
-
-/**
- * Implementations of hook_submit() for FNET WTB Tab settings form - DEPRECATED 4/22/2016
-
-function wtb_settings_form_submit($form, &$form_state) {
-  $vars1 = array();
-  $vars1['tab1_title'] = $form['#post']['tab1_title'];
-  $vars1['tab1_content'] = $form['#post']['tab1_content'];
-  variable_set('wtb_settings_tab1', $vars1);
-
-  $vars2 = array();
-  $vars2['tab2_title'] = $form['#post']['tab2_title'];
-  variable_set('wtb_settings_tab2', $vars2);
-
-  $vars3 = array();
-  $vars3['tab3_title'] = $form['#post']['tab3_title'];
-  variable_set('wtb_settings_tab3', $vars3);
-  drupal_set_message('<strong>' . t('Configurations have been saved.') . '</strong>');
-}
- * /
-
-
 /**
  * Implementation of hook_form() for configuring FNET WTB countries settings
+ * TODO: Update with better country list using Locale module.
+ * @return array
  */
 function wtb_configure_countries_form() {
   $form = array();
@@ -119,6 +101,9 @@ Please note you can choose not to check neither of these features, or only one.
 
 /**
  * Implementation of hook_submit for FNET WTB countries settings form
+ *
+ * @param $form
+ * @param $form_state
  */
 function wtb_configure_countries_form_submit($form, &$form_state) {
   if (isset($form['#post']['skip_region'])) {
@@ -144,6 +129,8 @@ function wtb_configure_countries_form_submit($form, &$form_state) {
 
 /**
  * Views field extension for formatting data
+ *
+ * @param $data
  */
 function views_distributor_list_customfield($data) {
 /*  $results = db_query('SELECT n.nid, n.title FROM {node} n'
@@ -161,6 +148,9 @@ function views_distributor_list_customfield($data) {
 
 /**
  * Functionality to build custom view for Countries and their regions
+ * TODO: Uhh...countries from the Locale module, plz. KTHXBYE!
+ *
+ * @return string
  */
 function wtb_countries_regions_listing() {
   $countries = array();
@@ -281,7 +271,13 @@ function wtb_countries_regions_listing() {
 
 
 /**
- * Implementation of hook_form() for building countries & regions filter
+ * Implementation of hook_form().
+ * For building countries & regions filter
+ *
+ * @param $form
+ * @param $form_state
+ * @param null $countries
+ * @return array
  */
 function wtb_country_region_form($form, $form_state, $countries = NULL) {
   $form = array();
@@ -319,6 +315,9 @@ function wtb_country_region_form($form, $form_state, $countries = NULL) {
 
 /**
  * Implementation of hook_submit for countries & regions filter form
+ *
+ * @param $form
+ * @param $form_state
  */
 function wtb_country_region_form_submit(&$form, &$form_state) {
   if ($form_state['values']['op'] == 'Apply') {
@@ -339,6 +338,7 @@ function wtb_country_region_form_submit(&$form, &$form_state) {
 /**
  * Export distributors and their products.
  * Output is in CSV format
+ * TODO: Switch this to a View.
  */
 function export_distributor_records() {
   $data = array();

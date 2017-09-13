@@ -12,7 +12,9 @@ define("NO_RESULTS_FOR_PROXIMITY_SEARCH", -2);
 
 /**
  * Implements hook_help().
-().
+ *
+ * @param $path
+ * @param $arg
  */
 function product_distributor_help($path, $arg) {
   //Help content
@@ -20,16 +22,19 @@ function product_distributor_help($path, $arg) {
 
 
 /**
+ * Implementation of hook_init().
+ *
  * Add css for admin toolbar position fix - avoid overlap by admin menu
  */
 function product_distributor_init() {
-  drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/admin_toolbar_top_postion_fix.css');
+  drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/admin_toolbar_top_postion_fix.css');
 }
 
 
 /**
  * Implements hook_menu().
-().
+ *
+ * @return array
  */
 function product_distributor_menu() {
   $items = array();
@@ -92,12 +97,12 @@ function product_distributor_menu() {
 
   //Admin callbacks
   $items['admin/fnet/wtb'] = array(
-    'title' => 'WTB configurations',
-    'description' => 'Configure WTB settings',
-    'file' => 'product_distributor.admin.inc',
+    'title' => 'Where To Buy',
+    'description' => 'Where To Buy configuration',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('product_distributor_admin'),
     'access arguments' => array('configure wtb tabs'),
+    'file' => 'product_distributor.admin.inc',
   );
   $items['admin/fnet/wtb/configure'] = array(
     'title' => 'Configure Tabs',
@@ -114,7 +119,7 @@ function product_distributor_menu() {
     'weight' => -10,
   );
   $items['admin/fnet/wtb/export-distributors'] = array(
-    'title' => 'Export distributor records',
+    'title' => 'Export Product Distributors',
     'file' => 'product_distributor.admin.inc',
     'page callback' => 'export_distributor_records',
     'access arguments' => array('export distributors'),
@@ -128,6 +133,8 @@ function product_distributor_menu() {
     'type' => MENU_NORMAL_ITEM,
     'weight' => 10,
   );
+  
+  // TODO: Is this needed?
   $items['admin/content/countries-regions'] = array(
     'title' => 'Countries & Regions',
     'description' => 'List of Countries and Regions.',
@@ -153,7 +160,8 @@ function product_distributor_menu() {
 
 /**
  * Implements hook_permission().
-().
+ *
+ * @return array
  */
 function product_distributor_permission() {
   return array(
@@ -190,8 +198,9 @@ function product_distributor_permission() {
 
 
 /**
- * Implements hook_theme()
-().
+ * Implements hook_theme().
+ * TODO: Move the templates to the theme directory in the module.
+ * @return array
  */
 function product_distributor_theme() {
   return array(
@@ -213,12 +222,16 @@ function product_distributor_theme() {
 
 /**
  * Implements hook_form_alter().
-().
+ *
+ * @param $menu
  */
 function product_distributor_menu_alter(&$menu) {
+  // TODO: No longer using Location module. Replace with something from Locale or Addressfield.
+  /*
   if (isset($menu['location/autocomplete'])) {
     $menu['location/autocomplete']['page callback'] = '_custom_location_autocomplete';
   }
+  */
 }
 
 
@@ -226,7 +239,9 @@ function product_distributor_menu_alter(&$menu) {
  * Helper function to modify the list of regions that show in autocomplete suggestions
  * This function overrides the default autocomplete function "_location_autocomplete" of location module
  * located in location.module
+ * TODO: Deprecated. Use Location or Addressfield module for similar functionality.
  */
+/*
 function _custom_location_autocomplete($country, $string = '') {
   $counter = 0;
   $string   = strtolower($string);
@@ -254,21 +269,26 @@ function _custom_location_autocomplete($country, $string = '') {
   }
   drupal_json_output($matches);
 }
+*/
 
 
 /**
  * Implements hook_form_alter().
-().
+ *
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ * @return mixed
  */
 function product_distributor_form_alter(&$form, &$form_state, $form_id) {
   switch ($form_id) {
     case 'product_node_form':
-      drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/product_form.css');
+      drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/product_form.css');
       break;
 
     case 'product_distributor_group_node_form':
-      drupal_add_js(drupal_get_path('module', 'product_distributor') . '/javascripts/distributor_group_form.js');
-      drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/distributor_group_form.css');
+      drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/distributor_group_form.js');
+      drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/distributor_group_form.css');
       //To resolve multiselect issue: Product with &reg; does not show in Selected Products list
       //Bring the entire multiselect form in same text format with htmlentities
       $form['#after_build'] = array('modify_distributor_form');
@@ -295,8 +315,8 @@ function product_distributor_form_alter(&$form, &$form_state, $form_id) {
       break;
 
     case 'distributor_node_form':
-      drupal_add_js(drupal_get_path('module', 'product_distributor') . '/javascripts/distributor_form.js');
-      drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/distributor_form.css');
+      drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/distributor_form.js');
+      drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/distributor_form.css');
       $form['title']['#description'] = 'This is an internal facing name to help you search and manage your locations. It does not appear to the customer.';
       $form['#after_build'] = array('modify_location_form');
 
@@ -425,11 +445,11 @@ function modify_location_form($form_element, &$form_state) {
  */
 function where2buy_page() {
   $default_map_img = 'productcollage.jpg';
-  drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/tabs.css');
-  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/javascripts/tabs.js', array('defer' => TRUE, 'preprocess' => FALSE));
+  drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/tabs.css');
+  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/tabs.js', array('defer' => TRUE, 'preprocess' => FALSE));
 
-  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/javascripts/where2buy_page_1.js', array('defer' => TRUE, 'preprocess' => FALSE));
-  // drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/where2buy_page.css');
+  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/where2buy_page_1.js', array('defer' => TRUE, 'preprocess' => FALSE));
+  // drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/where2buy_page.css');
 
   drupal_add_js(array('where2buy_path' => drupal_get_path('module', 'product_distributor')), array('type' => 'setting', 'scope' => JS_DEFAULT));
   drupal_add_js(array('where2buy_default_img' => base_path() . drupal_get_path('module', 'product_distributor') . '/images/' . $default_map_img), array('type' => 'setting', 'scope' => JS_DEFAULT));
@@ -460,15 +480,18 @@ function where2buy_page() {
 }
 
 /**
- * Implementation of hook_page() to implement ContactUs public facing website
+ * Implementation of hook_page().
+ * to implement Contact Us public facing website
+ * TODO: Move to a theme template?
+ * @return string
  */
 function contactus_page() {
   $default_map_img = 'productcollage.jpg';
-  drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/tabs.css');
-//  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/javascripts/tabs.js', 'module', 'header', TRUE, TRUE, FALSE);
+  drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/tabs.css');
+//  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/tabs.js', 'module', 'header', TRUE, TRUE, FALSE);
 
-  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/javascripts/where2buy_page_1.js', array('defer' => TRUE, 'preprocess' => FALSE));
-  drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/where2buy_page.css');
+  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/where2buy_page_1.js', array('defer' => TRUE, 'preprocess' => FALSE));
+  drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/where2buy_page.css');
 
   drupal_add_js(array('where2buy_path' => drupal_get_path('module', 'product_distributor')), array('type' => 'setting', 'scope' => JS_DEFAULT));
   drupal_add_js(array('where2buy_default_img' => base_path() . drupal_get_path('module', 'product_distributor') . '/images/' . $default_map_img), array('type' => 'setting', 'scope' => JS_DEFAULT));
@@ -485,6 +508,9 @@ function contactus_page() {
 
 /**
  * Provide tab contents for WTB user-facing functionality
+ *
+ * @param int $tab
+ * @return string
  */
 function get_tab_content($tab = 1) {
   $output = '';
@@ -524,6 +550,11 @@ function get_tab_content($tab = 1) {
 
 /**
  * Implementation of hook_form().
+ * TODO: Rename, as we now use Marketo instead of Eloqua.
+ * TODO: Rework with countries and states from the Locale and Addressfield modules.
+ *
+ * @param $form
+ * @return array
  */
 function eloqua_form($form) {
   $form = array();
@@ -941,9 +972,9 @@ function eloqua_form($form) {
 
   $products[0] = 'Select a Product';
   //$products[-1] = 'All Products';
-//  while ($pdata = db_fetch_object($presults)) {
-  foreach ($presults as $pdata) {
-    $products[trim($pdata->title)] = trim($pdata->title);
+//  while ($product_data = db_fetch_object($presults)) {
+  foreach ($presults as $product_data) {
+    $products[trim($product_data->title)] = trim($product_data->title);
   }
 
   $form['C_Product'] = array(
@@ -1106,6 +1137,13 @@ function get_inactive_countries() {
 
 /**
  * Implementation of hook_form().
+ * TODO: Remove Business Entity
+ * TODO: Switch to using Locale and Addressfield instead of Location module.
+ *
+ * @param $form
+ * @param $form_state
+ * @param null $continent_code
+ * @return array
  */
 function pd_l1_form($form, $form_state, $continent_code = NULL) {
   $form = array();
@@ -1148,28 +1186,19 @@ function pd_l1_form($form, $form_state, $continent_code = NULL) {
   }
 
 
-  $sql = <<<sql
-SELECT
-	n.nid,
-	n.title
-FROM
-	{node} AS n
-INNER JOIN field_data_field_business_entity AS be ON n.nid = be.entity_id
-AND n.vid = be.revision_id
-WHERE
-	n.type = 'product'
-AND n.`status` = 1
-AND be.field_business_entity_tid IN (:tids)
-ORDER BY
-	n.title ASC
-sql;
-  $presults = db_query($sql, array(':tids' => site_split_personality_tids()));
-  $products = array();
+  $sql = "SELECT n.nid, n.title
+    FROM {node} AS n
+    WHERE n.type = 'product'
+    AND n.`status` = 1
+    ORDER BY n.title ASC";
 
+
+  $product_results = db_query($sql, array());
+  $products = array();
   $products[0] = t('Select a Product');
 
-  foreach ($presults as $pdata) {
-    $products[$pdata->nid] = trim($pdata->title);
+  foreach ($product_results as $product_data) {
+    $products[$product_data->nid] = trim($product_data->title);
   }
 
   $distributor = field_info_instances('node', 'distributor');
@@ -1302,7 +1331,7 @@ function product_distributor_views_api() {
 function product_distributor_views_pre_render(&$view) {
   if ($view->name == 'improved_admin_content' || $view->name == 'improved_admin_content_wtb' || $view->name == 'wtb_distributor_countries') {
     // Add CSS to improved_admin_content view: IE8 fix
-    drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/distributor_group_form.css');
+    drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/distributor_group_form.css');
   }
 }
 
@@ -1328,6 +1357,9 @@ function product_distributor_node_view($node, $view_mode = 'full') {
 
 /**
  * Implements hook_node_load().
+ *
+ * @param $nodes
+ * @param $types
  */
 function product_distributor_node_load($nodes, $types) {
   foreach ($nodes as $node) {
@@ -1346,23 +1378,18 @@ function product_distributor_node_load($nodes, $types) {
 }
 
 /**
- * Implements hook_nodeapi
-().
- */
-function product_distributor_nodeapi_OLD(&$node, $op, $a3 = NULL, $a4 = NULL) { }
-
-
-/**
  * Views helper function to provide results for custom field in view wtb_distributor_countries
+ * TODO: Rework to get rid of Location module stuff. Replace with Addressfield or Locale module stuff.
+ *
+ * @param null $distributor_nid
+ * @param bool $csv
+ * @param bool $return_country_code_array
+ * @return array
  */
 function get_countries_of_distributors($distributor_nid = NULL, $csv = FALSE, $return_country_code_array = FALSE) {
   if ($distributor_nid) {
     $countries = array();
     $location_countries = location_get_iso3166_list();
-/*    $lresults = db_query('SELECT n.vid FROM {node} n'
-      . ' INNER JOIN {content_field_product_groups} cfpg ON cfpg.vid = n.vid'
-      . ' WHERE cfpg.field_product_groups_nid = :distributorNid '
-      , array(":distributorNid"=>$distributor_nid)); */
     $lresults = db_query('SELECT n.vid FROM {node} n'
       . ' INNER JOIN {field_data_field_product_groups} cfpg ON cfpg.revision_id = n.vid'
       . ' WHERE cfpg.field_product_groups_nid = :distributorNid '
@@ -1399,6 +1426,11 @@ function get_countries_of_distributors($distributor_nid = NULL, $csv = FALSE, $r
 /**
  * Views helper function to provide results for custom filter in view wtb_distributor_countries.
  * See hook_form_alter() to see where the country field is added
+ *
+ * TODO: Rework to get rid of Location module stuff.
+ * TODO: This needs to be in a Views Handler, not a Views PHP field. Seriously.
+ *
+ * @return array|null
  */
 function filter_distributors_by_countries() {
   if (isset($_GET['countries'])) {
@@ -1433,16 +1465,15 @@ function filter_distributors_by_countries() {
 
 /**
  * Provides list of products available at a distributor to show in Views PHP field
+ * TODO: BAD! This needs to be a Views Handler, not a Views PHP field result!!
+ *
+ * @param null $distributor_vid
+ * @param bool $csv
+ * @param bool $return_array
+ * @return array
  */
 function product_distributor_get_products_for_distributor($distributor_vid = NULL, $csv = FALSE, $return_array = FALSE ) {
   if ($distributor_vid) {
-/*    $sql = <<<sql
-SELECT DISTINCT n.title AS product, IF(n.`status`,'','(unpublished)') AS status
-FROM content_field_products AS cfp
-INNER JOIN node AS n ON cfp.field_products_nid = n.nid
-WHERE cfp.vid = :distributorVid
-ORDER BY product ASC;
-sql; */
     $sql = <<<sql
 SELECT DISTINCT n.title AS product, IF(n.`status`,'','(unpublished)') AS status
 FROM field_data_field_products AS cfp
@@ -1476,6 +1507,7 @@ sql;
 
 /**
  * Provides export of distributor's locations in CSV format
+ * TODO: Oh, FFS! Get rid of the Location module.
  */
 function product_distributor_location_query() {
 /*  $sql = <<<sql
@@ -1619,6 +1651,9 @@ function _product_distributor_unichr($u) {
 
 /**
  * helper function to sanitize string
+ *
+ * @param $string
+ * @return mixed
  */
 function _product_distributor_clean_string($string) {
   $string = str_replace('<sup>', '', $string);
@@ -1630,23 +1665,24 @@ function _product_distributor_clean_string($string) {
 
 
 /**
- * Implements hook_clone_node_alter()
-().
+ * Implements hook_clone_node_alter().
+ * TODO: Get rid of Location module usage.
+ * @param $node
+ * @param $original_node
+ * @param $method
  */
 function product_distributor_clone_node_alter(&$node, $original_node, $method) {
   if ($method === 'prepopulate' && $node->type === 'distributor') {
     unset($node->location['name'], $node->location['lid'], $node->locations[0]['name'], $node->locations[0]['lid']);
-    // print '<pre>';
-    // print_r($node);
-    // print '</pre>';
   }
 }
 
 
 /**
  * Implements hook_action_info().
-().
  * Called by VBO on its own hook_action_info().
+ *
+ * @return array
  */
 function product_distributor_action_info() {
   if (!module_exists('content')) {
@@ -1666,6 +1702,9 @@ function product_distributor_action_info() {
 /**
  * Implementation of hook_theme().
  * Called by VBO on its own hook_theme().
+ * TODO: Rename to be consistent with module!
+ *
+ * @return array
  */
 function wtb_remove_product_action_theme() {
   return array(
@@ -1678,6 +1717,9 @@ function wtb_remove_product_action_theme() {
 
 /**
  * Action function for removing products
+ * TODO: Rename to be consistent with module!
+ * @param $node
+ * @param $context
  */
 function wtb_remove_product_action(&$node, $context) {
 
@@ -1700,6 +1742,10 @@ function wtb_remove_product_action(&$node, $context) {
 
 /**
  * VBO remove products action: Configuration form
+ * TODO: Rename to be consistent with module!
+ *
+ * @param $context
+ * @return array
  */
 function wtb_remove_product_action_form($context) {
   module_load_include('inc', 'content', 'includes/content.node_form');
@@ -1719,6 +1765,10 @@ function wtb_remove_product_action_form($context) {
 
 /**
  * VBO remove products action: Configuration form submit handler
+ * TODO: Rename to be consistent with module!
+ * @param $form
+ * @param $form_state
+ * @return array
  */
 function wtb_remove_product_action_submit($form, $form_state) {
   return (array('values' => $form_state['values']));

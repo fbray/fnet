@@ -1,0 +1,5 @@
+.form-checkboxes{width:100%;display:table}
+.form-checkboxes .form-item{width:45%;float:left}
+#edit-locations-0-delete-location-wrapper{display:none}
+fieldset.location.fieldset.titled, fieldset.location.fieldset.titled div.fieldset-content, #edit-locations-0-province-wrapper{position:relative;z-index:100;}
+#autocomplete{z-index:100!important;}

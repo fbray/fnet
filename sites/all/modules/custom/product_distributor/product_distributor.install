@@ -4,45 +4,18 @@
  * Install, update, and uninstall functions for the product_distributor module.
  */
 
-
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_install().
  */
 function product_distributor_install() {
-  // Create product-distributor group content type
-  $filename = drupal_get_path('module', 'product_distributor') . "/product_distributor_group_content.install.inc";
-  $content = implode('', file($filename));
-  // Build form state
-  $form_state = array(
-    'values' => array(
-      'type_name' => '<create>',
-      'macro' => $content,
-    ),
-  );
-  drupal_form_submit("content_copy_import_form", $form_state);
+  // TODO: Define the Product Distributor content type.
 
-  // Create distributor content type
-  $filename = drupal_get_path('module', 'product_distributor') . "/distributor_content.install.inc";
-  $content  = implode('', file($filename));
-  // Build form state
-  $form_state = array(
-    'values' => array(
-      'type_name' => '<create>',
-      'macro' => $content,
-    ),
-  );
-  drupal_form_submit("content_copy_import_form", $form_state);
 }
 
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_uninstall().
  */
 function product_distributor_uninstall() {
-  node_type_delete('distributor');
-  node_type_delete('product_distributor_group');
-  node_types_rebuild();
-  drupal_flush_all_caches();
+
 }

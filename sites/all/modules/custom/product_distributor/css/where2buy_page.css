@@ -1,0 +1,102 @@
+#wtb-tabs-container .btn_46w {
+    height: 28px;
+    width: 46px;
+}
+#wtb-tabs-container .btn_46w a{
+    background-image: url("../images/btn_46w_grey.jpg");
+    background-position: left top;
+    background-repeat: no-repeat;
+    color: #000000;
+    display: block;
+    font-family: Arial,Helvetica,sans-serif;
+    font-size: 13px;
+    height: 28px;
+    line-height: 28px;
+    text-align: center;
+    text-decoration: none;
+    width: 46px;
+}
+#wtb-tabs-container .btn_94w {
+    height: 28px;
+    width: 94px;
+}
+#wtb-tabs-container .btn_94w a{
+    background-image: url("../images/btn_94w_yellow.jpg");
+    background-position: left top;
+    background-repeat: no-repeat;
+    color: #000000;
+    display: block;
+    font-family: Arial,Helvetica,sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    height: 28px;
+    line-height: 28px;
+    text-align: center;
+    text-decoration: none;
+    width: 94px;
+}
+#wtb-tabs-container .btn_132w {
+    height: 28px;
+    width: 132px;
+}
+#wtb-tabs-container .btn_132w a{
+    background-image: url("../images/btn_132w_yellow.gif");
+    background-position: left top;
+    background-repeat: no-repeat;
+    color: #000000;
+    display: block;
+    font-family: Arial,Helvetica,sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    height: 28px;
+    line-height: 28px;
+    text-align: center;
+    text-decoration: none;
+    width: 132px;
+}
+
+/*Find A Reseller TAB*/
+#w2b-form-img-wrapper{display:table;margin-left:20px;}
+#w2b-form-img-wrapper #airmagnet-wtb-link{margin-top:10px}
+#pd-l1-form #edit-products-wrapper,
+#pd-l1-form #edit-buying-methods-wrapper,
+#pd-l1-form #edit-regions-wrapper,
+#pd-l1-form #edit-cities-wrapper,
+#pd-l1-form #edit-postal-code-wrapper,
+#pd-l1-form #edit-search-range-wrapper,
+#pd-l1-form #edit-submit,
+#pd-l1-form #edit-gsa-schedule-wrapper{display:none}
+#pd-l1-form #edit-products-wrapper{clear:both}
+#w2b-form-img-wrapper #global-img-map-wrapper #pimg-wrapper img{height:385px;width:488px;}
+#pd-l1-form #edit-buying-methods-wrapper{font-size:12px}
+
+#w2b-form-wrapper{width:250px;padding-right:60px;float:left}
+#w2b-form-wrapper #wtb-far-msg{width:240px;font-size:12px;color:#7c7c7c;}
+#w2b-form-wrapper #wtb-far-msg h4{font-size:16px;font-weight:bold;margin:0;padding:0;margin-bottom:5px;color:#293f6a}
+#pd-l1-form{float:left;display:table;margin-top:20px}
+#w2b-form-img-wrapper #global-img-map-wrapper{float:right;}
+#pd-l1-form select, #pd-l1-form input[type=text]{width:240px;font-size:11px;background:#FFF;}
+#pd-l1-form label{font-size:13px;font-weight:bold;margin-bottom:5px;color:#293f6a}
+
+#dsearch-results{display:table;width:100%;margin-top:30px}
+#dsearch-results ol{list-style:none}
+#dsearch-results .dsearch-item{float:left;width:230px;font-size:14px;color:#293f6a;font-weight:bold;padding-right:50px;margin-bottom:30px}
+#dsearch-results .dsearch-item.new-row{clear:left;padding-left:0}
+#dsearch-results .dsearch-item h4{margin:0;padding:2px 0px 0px 0px;}
+#dsearch-results .dsearch-item .dist-address{padding:0;font-size:12px;color:#989898;font-weight:normal}
+#dsearch-results .dsearch-item .distance{padding:5px;font-size:12px;color:#989898;font-weight:normal}
+#dsearch-results .dsearch-item-clearence{width:100%;float:none;clear:both;height:1px;margin:0;padding:0}
+#dsearch-results #wtb-error-msg #wtb-contact-info{margin: 20px 0 30px;}
+#dsearch-results #wtb-error-msg .msg{color:#FF0000}
+#dsearch-results .buy-online-wrapper{margin: 9px 0}
+#dsearch-results .dist-phone-other, #dsearch-results .dist-phone-other .dist-wrapper{margin-top: 9px}
+#dsearch-results .dist-phone-other a{word-wrap:break-word;display:inline-block;max-width:86%;vertical-align:top;}
+
+/*Email Us TAB*/
+#wtb-purchase-airmagnet-cb-wrapper{font-size:12px;font-weight:bold;color:black;margin-bottom:10px;}
+#wtb-purchase-airmagnet-cb-wrapper input{float:left;margin-right:8px;}
+#eloqua-form{font-size:12px;color:black}
+#eloqua-form #edit-c-emailaddress-wrapper,#eloqua-form #edit-c-lastname-wrapper,#eloqua-form #edit-c-company-wrapper,#eloqua-form #edit-c-state-prov-wrapper,#eloqua-form #edit-c-zip-postal-wrapper{float:left;padding-right:5px;margin-top:4px;margin-bottom:4px}
+#eloqua-form #edit-c-firstname-wrapper,#eloqua-form #edit-c-title-wrapper,#eloqua-form #edit-c-busphone-wrapper,#eloqua-form #edit-c-address1-wrapper,#eloqua-form #edit-c-address2-wrapper,#eloqua-form #edit-c-city-wrapper,#eloqua-form #edit-c-country-wrapper, #eloqua-form #edit-c-product-wrapper,#eloqua-form #edit-submit{clear:both;float:left;padding-right:5px;margin-top:4px;margin-bottom:4px}
+#eloqua-form #edit-submit{margin-top:20px;margin-bottom:20px;display:none}
+#eloqua-form #edit-Submit-dummy{clear:both;float:left;padding-right:5px;margin-bottom:4px;margin-top:20px;margin-bottom:20px;}

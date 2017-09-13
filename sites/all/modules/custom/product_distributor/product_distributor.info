@@ -1,24 +1,29 @@
 ; $Id$
 name = Product Distributors
-description = Implement WTB functionality for Fluke Neteworks.
+description = Product Distributors content type and Where To Buy functionality.
 package = Fluke Networks
-version = "7.x-1.1"
-dependencies[] = location
-dependencies[] = views
-dependencies[] = site_split
-stylesheets[all][] = styles/admin_toolbar_top_position_fix.css
-stylesheets[all][] = styles/distributor_form.css
-stylesheets[all][] = styles/distributor_group_form.css
-stylesheets[all][] = styles/product_form.css
-stylesheets[all][] = styles/tabs.css
-stylesheets[all][] = styles/where2buy_page.css
-stylesheets[all][] = styles/wtb_countries_form.css
-
-scripts[] = javascripts/distributor_group_form.js
-scripts[] = javascripts/tabs.js
-scripts[] = javascripts/views_filters_reset.js
-scripts[] = javascripts/where2buy_page_1.js
-scripts[] = javascripts/wtb_countries_form.js
-files[] = product_distributor.admin.inc
 core = 7.x
-php = 5.x
+version = "7.x-1.2"
+
+dependencies[] = locale
+dependencies[] = views
+
+stylesheets[all][] = css/admin_toolbar_top_position_fix.css
+stylesheets[all][] = css/distributor_form.css
+stylesheets[all][] = css/distributor_group_form.css
+stylesheets[all][] = css/product_form.css
+stylesheets[all][] = css/tabs.css
+stylesheets[all][] = css/where2buy_page.css
+stylesheets[all][] = css/wtb_countries_form.css
+
+scripts[] = js/distributor_group_form.js
+scripts[] = js/tabs.js
+scripts[] = js/views_filters_reset.js
+scripts[] = js/where2buy_page_1.js
+scripts[] = js/wtb_countries_form.js
+
+files[] = product_distributor.admin.inc
+
+configure = admin/fnet/wtb
+
+
