@@ -178,36 +178,53 @@ function homepage_preprocess_page(&$variables) {
  * @param $variables
  */
 function homepage_preprocess_node(&$variables) {
-
   if ($variables['node']->type == 'homepage2013') {
 
     // Provide additional data to the tpl file.
-
-    $familyList = views_get_view('product_category');
+    // Datacom Cabling.
+    $familyList = views_get_view('product_family');
     $familyList->set_items_per_page(0);
-    $familyList->set_arguments(array(6)); // Datacom Cabling
-    $familyList->set_display('default');
+    $familyList->set_display('families_by_product_category');
+    $nid = _homepage2013_nid_from_alias('cabling-certification');
+    $familyList->set_arguments(array($nid));
     $familyList->execute();
     $datacom_cabling_families = $familyList->result;
 
-    $familyList = views_get_view('product_category');
-    $familyList->set_items_per_page(0);
-    $familyList->set_arguments(array(7)); // IT Consulting
-    $familyList->set_display('default');
-    $familyList->execute();
-    $it_networking_families = $familyList->result;
 
-    $familyList = views_get_view('product_category');
+    // Installation and Test
+    $familyList = views_get_view('product_family');
     $familyList->set_items_per_page(0);
-    $familyList->set_arguments(array(8)); // Telecom
-    $familyList->set_display('default');
+    $familyList->set_display('families_by_product_category');
+    $nid = _homepage2013_nid_from_alias('installation-and-test');
+    $familyList->set_arguments(array($nid));
+    $familyList->execute();
+    $installation_and_test_families = $familyList->result;
+
+    // Telecom Test
+    $familyList = views_get_view('product_family');
+    $familyList->set_items_per_page(0);
+    $familyList->set_display('families_by_product_category');
+    $nid = _homepage2013_nid_from_alias('telecom-test');
+    $familyList->set_arguments(array($nid));
     $familyList->execute();
     $telecom_families = $familyList->result;
 
     $variables['datacom_cabling_families'] = $datacom_cabling_families;
-    $variables['it_networking_families'] = $it_networking_families;
+    $variables['installation_and_test_families'] = $installation_and_test_families;
     $variables['telecom_families'] = $telecom_families;
-
   }
 
+}
+
+/**
+ * Helper function to get a Node ID from a path alias.
+ *
+ * @param $path
+ * @return mixed
+ */
+function _homepage2013_nid_from_alias($path) {
+  $normal_path = drupal_get_normal_path($path);
+  $nid = str_ireplace("node/",'', $normal_path);
+  dpm($nid);
+  return $nid;
 }

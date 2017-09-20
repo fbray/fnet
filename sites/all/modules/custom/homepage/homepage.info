@@ -2,5 +2,5 @@
 name = homepage
 package = Fluke Networks
 description = Handles all of the language overrides for the homepage content type
-version = 7.x.1.0-20150602
+version = "7.x-1.1-20170823"
 core = 7.x
