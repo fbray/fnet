@@ -225,6 +225,5 @@ function homepage_preprocess_node(&$variables) {
 function _homepage2013_nid_from_alias($path) {
   $normal_path = drupal_get_normal_path($path);
   $nid = str_ireplace("node/",'', $normal_path);
-  dpm($nid);
   return $nid;
 }
