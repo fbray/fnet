@@ -2,5 +2,9 @@
 name = industries_families
 package = Fluke Networks
 description = Handles all of the data gathering, including language overrides, for the industry and family types
-version = 7.x.1.0-20150603
+version = 7.x.1.1-20170920
 core = 7.x
+
+dependencies = views
+
+

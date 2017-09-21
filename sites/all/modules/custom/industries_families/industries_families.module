@@ -4,9 +4,29 @@
  * Code for the industries_families module.
  */
 
-function industries_families_preprocess_page(&$variables) {
+function industries_families_help() {
 
-  if (isset($variables['node']) && ($variables['node']->type == 'industry' || $variables['node']->type == 'family')) {
+}
+
+/**
+ * Implementation of hook_views_api()
+ *
+ * @return array
+ */
+function industries_families_views_api() {
+  return array(
+    'api' => 3.0,
+    'path' => drupal_get_path('module', 'industries_families') . '/views',
+  );
+}
+
+/**
+ * Implementation of hook_preprocess_page().
+ *
+ * @param $variables
+ */
+function industries_families_preprocess_page(&$variables) {
+  if (isset($variables['node']) && ($variables['node']->type == 'product_industry' || $variables['node']->type == 'product_family')) {
 
     // Add necessary JavaScript and CSS for the industry page.
     drupal_add_js(drupal_get_path('module', 'industries_families') . '/javascript/script.js');
@@ -17,14 +37,16 @@ function industries_families_preprocess_page(&$variables) {
 
     // Hide title for this content type.
     $variables['title'] = '';
-
   }
 }
 
+/**
+ * Implementation of hook_preprocess_node().
+ *
+ * @param $variables
+ */
 function industries_families_preprocess_node(&$variables) {
-
   if ($variables['view_mode'] != 'full') return;
-
   if (isset($variables['node']) && $variables['node']->type == 'industry') {
 
     // Fetch the current user's region/language.
@@ -32,27 +54,22 @@ function industries_families_preprocess_node(&$variables) {
     $regLang = $siteReg["regLang"];
     if (! isset($regLang)) $regLang = "en-us";
 
+    $variables['industry_families'] = array();
     $query = new EntityFieldQuery();
     $query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'Family')
+      ->propertyCondition('type', 'product_family')
       ->propertyCondition('status', NODE_PUBLISHED)
       ->addTag('draggableviews')
-      ->fieldCondition('field_family_industry', 'nid', $variables['node']->nid , '=')
-      ;
+      ->fieldCondition('field_product_category', 'entity_id', $variables['node']->nid , '=');
 
     $result = $query->execute();
     if (count($result) > 0) {
       $variables['industry_families'] = node_load_multiple(array_keys($result['node']));
     }
-    else {
-      $variables['industry_families'] = array();
-    }
 
     // Get list of products by family related to this industry
     $products_by_family = array();
-
     foreach (array_keys($variables['industry_families']) as $family_nid) {
-
       $family = node_load($family_nid);
       $product_list = views_get_view('industry_family_products');
       $product_list->set_items_per_page(0);
@@ -177,14 +194,15 @@ function industries_families_preprocess_node(&$variables) {
     }
 
   }
-
 }
 
 
-/*
-*
-*  Returns array mapping industry field names to industry_lang's
-*/
+/**
+ *  Helper function that returns array mapping industry field names to industry_lang's
+ *
+ * @param string $type
+ * @return array
+ */
 function _get_field_substitution_array($type = 'industry') {
 
     $return = array();
