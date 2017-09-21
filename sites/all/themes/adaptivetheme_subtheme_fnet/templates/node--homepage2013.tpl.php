@@ -190,11 +190,7 @@ hide($content['links']);
         <ul>
           <?php foreach ($datacom_cabling_families as $datacom_cabling_family): ?>
             <li class="content_hp_industry_content_link">
-            <?php if ($datacom_cabling_family->field_field_family_page_active[0]['raw']['value'] == "Yes"): ?>
               <a href="/<?php print drupal_lookup_path('alias',"node/" . $datacom_cabling_family->nid); ?>#family-product-list-<?php print $datacom_cabling_family->nid; ?>">
-            <?php else: ?>
-              <a href="/<?php print drupal_lookup_path('alias',"node/6"); ?>#family-product-list-<?php print $datacom_cabling_family->nid; ?>">
-            <?php endif; ?>
             <?php print $datacom_cabling_family->node_title; ?> &raquo;</a></li>
           <?php endforeach; ?>
         </ul>
@@ -206,14 +202,10 @@ hide($content['links']);
         <h3><?php print t('Installation and Test'); ?></h3>
         <p><div style="font-weight: normal;"><?php print $field_category_description_2[0]['value']; ?></div></p>
         <ul>
-          <?php foreach ($it_networking_families as $it_networking_family): ?>
+          <?php foreach ($installation_and_test_families as $installation_and_test_family): ?>
             <li class="content_hp_industry_content_link">
-            <?php if ($it_networking_family->field_field_family_page_active[0]['raw']['value'] == "Yes"): ?>
-              <a href="/<?php print drupal_lookup_path('alias',"node/" . $it_networking_family->nid); ?>#family-product-list-<?php print $it_networking_family->nid; ?>">
-            <?php else: ?>
-              <a href="/<?php print drupal_lookup_path('alias',"node/7"); ?>#family-product-list-<?php print $it_networking_family->nid; ?>">
-            <?php endif; ?>
-            <?php print $it_networking_family->node_title; ?> &raquo;</a></li>
+              <a href="/<?php print drupal_lookup_path('alias',"node/" . $installation_and_test_family->nid); ?>#family-product-list-<?php print $installation_and_test_family->nid; ?>">
+            <?php print $installation_and_test_family->node_title; ?> &raquo;</a></li>
           <?php endforeach; ?>
         </ul>
       </div>
@@ -226,11 +218,8 @@ hide($content['links']);
         <ul>
           <?php foreach($telecom_families as $telecom_family): ?>
             <li class="content_hp_industry_content_link">
-            <?php if ($telecom_family->field_field_family_page_active[0]['raw']['value'] == "Yes"): ?>
               <a href="/<?php print drupal_lookup_path('alias',"node/" . $telecom_family->nid); ?>#family-product-list-<?php print $telecom_family->nid; ?>">
-            <?php else: ?>
-              <a href="/<?php print drupal_lookup_path('alias',"node/8"); ?>#family-product-list-<?php print $telecom_family->nid; ?>">
-            <?php endif; ?><?php print $telecom_family->node_title; ?> &raquo;</a></li>
+            <?php print $telecom_family->node_title; ?> &raquo;</a></li>
           <?php endforeach; ?>
         </ul>
       </div>
