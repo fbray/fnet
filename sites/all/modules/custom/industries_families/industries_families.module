@@ -175,10 +175,10 @@ function industries_families_preprocess_node(&$variables) {
     if (!isset($regLang)) $regLang = "en-us";
 
     // Get list of products by family
-    $product_list = views_get_view('industry_family_products');
+    $product_list = views_get_view('product_family');
     $product_list->set_items_per_page(0);
-    $product_list->set_arguments(array($variables['node']->nid, strtolower($regLang)));
-    $product_list->set_display('page_1');
+    $product_list->set_arguments(array($variables['node']->nid));
+    $product_list->set_display('families_by_product_category');
     $product_list->execute();
     $products_by_family = array($variables['node']->nid, $variables['node']->title, $product_list->result);
 
@@ -221,20 +221,13 @@ function _get_field_substitution_array($type = 'industry') {
 }
 
 
-function industries_families_digital_assets($language, $industry, $type) {
-  // The $type variable is going to be either 'whitepapers' or 'webcasts'.
-  $industries = array(
-    'Datacom Cabling' => 'Datacom Cabling',
-    'IT Networking' => 'IT Networking',
-    'Telecom' => 'Telecommunications Providers',
-    'Cabling Certification' => 'Cabling Certification',
-    'Installation and Test' => 'Installation and Test',
-    'Telecom Test' => 'Telecom Test',
-  );
+function industries_families_digital_assets($language, $product_category, $type) {
 
-  $assets = views_get_view('industry_assets', FALSE);
+  // TODO: Add the industry_assets to the views.
+  // Product Category
+  $assets = views_get_view('product_category', FALSE);
   $assets->set_display($type); // Machine Name of the display.
-  $assets->set_arguments(array($language, $industries[$industry]));
+  $assets->set_arguments(array($language, $product_category));
   $assets->pre_execute();
   $assets->execute();
 
@@ -248,7 +241,8 @@ function industries_families_digital_assets($language, $industry, $type) {
 }
 
 function industries_families_case_studies($industry_nid) {
-  $case_studies = views_get_view('industry_case_studies');
+  // TODO: Use Product Category view
+  $case_studies = views_get_view('product_category');
   $case_studies->set_display('case_studies');
   $case_studies->set_arguments($industry_nid);
   $case_studies->pre_execute();
