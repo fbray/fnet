@@ -320,7 +320,6 @@ if (!user_access('access extranet')) {
   <?php endif; ?>
 
 </div>
-</div>
 
 <!-- START: EU Cookie Notice (message is dynamically inserted by JavaScript) -->
 <div id="eucookie">&nbsp;</div>

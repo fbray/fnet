@@ -1,5 +1,5 @@
 <?php
-// $Id: node--edoc.tpl.php 2122 2016-09-02 12:40:14Z gkakade $
+// $Id: node--edoc.tpl.php 2778 2017-09-14 15:04:54Z gkakade $
 
 /**
  * Hide Content and Print it Separately
@@ -23,8 +23,9 @@ hide($content['links']);
 	<?php } ?>
       <?php if ($title): ?>
         <h1<?php print $title_attributes; ?>>
-          <a href="<?php print $node_url; ?>"
-             rel="bookmark"><?php print $title; ?></a>
+          <!--<a href="<?php //print $node_url; ?>"
+             rel="bookmark"><?php //print $title; ?></a>-->
+						 <?php print $title; ?>
         </h1>
       <?php endif; ?>
     </header>

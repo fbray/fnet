@@ -124,8 +124,8 @@ hide($content['links']);
         <?php if(isset($content['field_expertise_image'])): ?>
           <div><?php print render($content['field_expertise_image']) ?></div>
         <?php endif; ?>
-        <?php if(isset($content['field_expertise_relatedcontent'])): ?>
-          <div style="width:230px"><?php print render($content['field_expertise_relatedcontent']); ?></div>
+        <?php if(isset($content['field_expertise_related_content'])): ?>
+          <div style="width:230px"><?php print render($content['field_expertise_related_content']); ?></div>
         <?php endif; ?>
       </div>
     </div>

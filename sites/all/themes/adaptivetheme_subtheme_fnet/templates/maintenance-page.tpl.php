@@ -30,7 +30,7 @@
 </head>
 <body class="<?php print $classes; ?>" <?php print $attributes;?>>
   <section id="main-content" role="main">
-    <img src="/sites/flukenetworks.com/themes/adaptivetheme_subtheme_fnet/images/FNET_logo.png" alt="Fluke Networks" />
+    <img src="/sites/all/themes/adaptivetheme_subtheme_fnet/images/FNET_logo.png" alt="Fluke Networks" />
     <?php if ($title): ?>
       <h1 id="page-title"><?php print $title; ?></h1>
     <?php endif; ?>

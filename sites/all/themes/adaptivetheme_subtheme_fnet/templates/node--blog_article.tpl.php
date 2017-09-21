@@ -9,9 +9,6 @@ if (isset($node->taxonomy) && is_array($node->taxonomy)) {
     $vocab = taxonomy_vocabulary_load($term_object->vid);
     if ($vocab->name == 'Blog Categories') {
       $blog_category_term = $term_object->name;
-      if ($blog_category_term == 'AirWise' || $blog_category_term == 'Link-Solutions' || $blog_category_term == 'The Decoder') {
-        $blog_category_term = 'Network Insider';
-      }
     }
   }
 }

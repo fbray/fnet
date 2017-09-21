@@ -102,10 +102,6 @@
  */
 // Check to see if this user can access the extranet
 $member = isset($page['#access_extranet']) ? $page['#access_extranet'] : FALSE ;
-/*
-if (!user_access('access extranet')) {
-  drupal_goto('/extranet-access-denied');
-} */
 ?>
 <div id="page-wrapper" class="fextranet">
   <a name="topanchor" style="font-size:0; height:0;"></a>
@@ -321,7 +317,7 @@ if (!user_access('access extranet')) {
   <?php endif; ?>
 
 </div>
-</div>
+
 
 <!-- START: EU Cookie Notice (message is dynamically inserted by JavaScript) -->
 <div id="eucookie">&nbsp;</div>
