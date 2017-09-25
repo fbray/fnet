@@ -136,8 +136,7 @@ function migrate_fnet_register_migrations() {
       'destination_type' => 'sales_insider_subgroup',
     ),
   );
-  // Tell the node migrations where the users are coming from, so they can
-  // set up the dependency and resolve D7->D7 uids.
+
   $common_group_arguments = $common_arguments + array('user_migration' => 'FNETUser');
   foreach ($group_arguments as $arguments) {
     $arguments = array_merge_recursive($arguments, $common_group_arguments);
@@ -628,7 +627,7 @@ function migrate_fnet_register_migrations() {
       'class_name' => 'FNETProductLanguageMigration',
       'description' =>  t('Migration of the Product Language nodes from Drupal.'),
       'machine_name' => 'ProductLanguage',
-      'source_type' => 'productlanguagew',
+      'source_type' => 'productlanguage',
       'destination_type' => 'product_language',
     ),
 
@@ -683,6 +682,13 @@ function migrate_fnet_register_migrations() {
     $file_arguments['source_dir'] = '/home/dev/playon-import-files/';
   }
   Migration::registerMigration('FNETFileMigration', $file_arguments['machine_name'], $file_arguments);
+
+  /*
+   * Event Registrations and Registrants
+   */
+  Migration::registerMigration('EventRegistrantMigration', 'EventRegistrants', $common_arguments);
+  $registration_arguments = $common_arguments + array('dependencies' => array('EventRegistrants', 'EventOccurrence'));
+  Migration::registerMigration('EventRegistrationMigration', 'EventRegistrations', $registration_arguments);
 
 }
 

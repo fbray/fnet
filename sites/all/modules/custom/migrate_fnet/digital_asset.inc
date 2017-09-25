@@ -31,8 +31,7 @@ class FNETDigitalAssetMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_dam_export_controlled', 'field_dam_export_controlled');
     $this->addFieldMapping('field_dam_document_status', 'field_dam_document_status');
     $this->addFieldMapping('ffield_dam_entitlement_level', 'field_dam_entitlement_level');
-    $this->addFieldMapping('field_dam_industry', 'field_dam_industry');
-    $this->addFieldMapping('field_dam_industry', 'field_dam_new_industry');
+
     $this->addFieldMapping('field_dam_bulk_fulfillment', 'field_dam_bulk_fulfillment');
     $this->addFieldMapping('field_dam_keep_original_filename', 'field_dam_keep_original_filename');
     $this->addFieldMapping('field_dam_storage_file_folder_po', 'field_dam_storage_file_folder_po');
@@ -48,6 +47,11 @@ class FNETDigitalAssetMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_dam_l2_category', 'field_dam_l2_category');
     $this->addFieldMapping('field_dam_l3_category', 'field_dam_l3_category');
     $this->addFieldMapping('field_dam_l4_category', 'field_dam_l4_category');
+
+    // TODO: Special processing. These two fields need to be made into an Entity Reference field, referencing the Product Category content type.
+    // field_product_category
+    $this->addFieldMapping('field_dam_industry', 'field_dam_industry');
+    $this->addFieldMapping('field_dam_industry', 'field_dam_new_industry');
 
     // Link Fieldss
     $this->addFieldMapping('field_dam_edoc_url', 'field_dam_edoc_url');
@@ -83,5 +87,27 @@ class FNETDigitalAssetMigration extends DrupalNode7Migration {
       ->sourceMigration('Files');
     $this->addFieldMapping('field_dam_asset_file_pod:file_class')
       ->defaultValue('MigrateFileFid');
+  }
+
+  /**
+   * Implementation of prepareRow()
+   *
+   * @param $row
+   * @return bool
+   */
+  public function prepareRow($row) {
+    // Always include this snippet, in case our parent class decides to ignore the row
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+    $row->field_dam_industry;
+  }
+
+  // TODO: Flesh this out.
+  protected function productCategoryNidFromTitle($title) {
+    $nid = 0;
+    // look up the NID from the title.
+
+    return $nid;
   }
 }

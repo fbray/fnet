@@ -44,7 +44,7 @@ class FNETUserMigration extends DrupalUser7Migration {
     $this->addFieldMapping('field_address:sub_premise')
       ->defaultValue(NULL);
     // Company Name
-    $this->addFieldMapping('field_address:organization_name', 'field_user_company')
+    $this->addFieldMapping('field_address:organisation_name', 'field_user_company')
       ->defaultValue(NULL);
     // Full Name
     $this->addFieldMapping('field_address:name_line', 'name')
