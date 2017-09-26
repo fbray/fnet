@@ -8,6 +8,7 @@ core = 7.x
 dependencies[] = addressfield
 dependencies[] = marketo_api
 dependencies[] = locale
+dependencies[] = views
 
 files[] = library/base62.php
 files[] = ems_registration.class.php
