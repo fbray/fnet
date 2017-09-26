@@ -1,7 +1,6 @@
 <?php
 // $Id: ems.module 2118 2016-08-30 13:01:15Z gkakade $
 require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'ems') . '/library/base62.php';
-require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'ems') . '/library/parsecsv.lib.php';  // Kinda out of date with PHP 7.
 
 include_once DRUPAL_ROOT . '/includes/locale.inc';
 
@@ -288,44 +287,88 @@ function ems_registration_list_csv($event_occurrence_id) {
     drupal_set_message(t('Event occurrence not found'), 'error');
     return;
   }
-  $csv = new parseCSV();
-  $sql = "SELECT r.rid, r.first_name, r.last_name, r.email, r.job_title, r.job_role, r.company, r.address, r.phone, r.city, ";
-  $sql .= "r.state, r.postal_code, r.country, t.gold_number, t.payment_status, t.region, t.`language`, ";
-  $sql .= "t.registration_status, t.registration_sequence, t.cancellation_token ";
-  $sql .= "FROM ems_registrant AS r ";
-  $sql .= "INNER JOIN ems_registration AS t ON r.rid = t.rid ";
-  $sql .= "WHERE t.nid = :node_id ";
-  $sql .= "ORDER BY t.registration_status ASC, t.registration_sequence ASC; ";
+
+  $sql = "SELECT 
+      r.rid, 
+      r.first_name, 
+      r.last_name, 
+      r.email, 
+      r.job_title, 
+      r.job_role, 
+      r.company, 
+      r.address, 
+      r.phone, 
+      r.city, 
+      r.state, 
+      r.postal_code, 
+      r.country, 
+      t.gold_number, 
+      t.payment_status, 
+      t.region, 
+      t.`language`,
+      t.registration_status, 
+      t.registration_sequence, 
+      t.cancellation_token
+    FROM {ems_registrant} AS r 
+    INNER JOIN {ems_registration} AS t ON r.rid = t.rid
+    WHERE t.nid = :node_id
+    ORDER BY t.registration_status ASC, t.registration_sequence ASC";
   $result = db_query($sql, array(':node_id' => $event_occurrence_id));
-  $rows = array();
   $fields = array(
-    'Registrant ID',
-    'First',
-    'Last',
-    'Email',
-    'Title',
-    'Role',
-    'Company',
-    'Address',
-    'Phone',
-    'City',
-    'State',
-    'Postal Code',
-    'Country',
-    'Gold Number',
-    'Payment Status',
-    'Region',
-    'Language',
-    'Status',
-    'Sequence',
-    'Token',
+    t('Registrant ID'),
+    t('First'),
+    t('Last'),
+    t('Email'),
+    t('Title'),
+    t('Role'),
+    t('Company'),
+    t('Address'),
+    t('Phone'),
+    t('City'),
+    t('State'),
+    t('Postal Code'),
+    t('Country'),
+    t('Gold Number'),
+    t('Payment Status'),
+    t('Region'),
+    t('Language'),
+    t('Status'),
+    t('Sequence'),
+    t('Token'),
   );
-  foreach ($result as $record) {
-    // Perform operations on $record->nid, etc. here.
-    $rows[] = $record;
+  drupal_add_http_header('Content-Type', 'text/csv; utf-8');
+  drupal_add_http_header('Content-Disposition', 'attachment; filename = registration.csv');
+  $fh = fopen('php://output', 'w');
+  fputcsv($fh, $fields);
+  foreach ($result as $row) {
+    // create the record array, since fputcsv only handles arrays. Grr...
+    $record = array(
+      $row->rid,
+      $row->first_name,
+      $row->last_name,
+      $row->email,
+      $row->job_title,
+      $row->job_role,
+      $row->company,
+      $row->address,
+      $row->phone,
+      $row->city,
+      $row->state,
+      $row->postal_code,
+      $row->country,
+      $row->gold_number,
+      $row->payment_status,
+      $row->region,
+      $row->language,
+      $row->registration_status,
+      $row->registration_sequence,
+      $row->cancellation_token
+    );
+    fputcsv($fh, $record);
   }
-  $csv->output(TRUE, 'registration.csv', $rows, $fields);
-  return;
+  fclose($fh);
+  // $csv->output(TRUE, 'registration.csv', $rows, $fields);
+
 }
 
 /**
@@ -1204,8 +1247,11 @@ function ems_init() {
  * @return array
  */
 function ems_theme() {
+  $base = array(
+    'path' => drupal_get_path('module', 'ems') . '/theme',
+  );
   return array(
-    'event_summary' => array(
+    'event_summary' => $base + array(
       'template' => 'event_summary',
       'variables' => array(
         'event_occurrence_id' => NULL,
@@ -1220,7 +1266,7 @@ function ems_theme() {
 function ems_preprocess_node(&$variables) {
   if ($variables['type'] == 'event_occurrence') {
     $occurrence = $variables['node'];
-    $event = node_load( fnet_common_get_field_value('event_occurrence', $occurrence, 'field_event_parent', 'nid') );
+    $event = node_load( fnet_common_get_field_value('event_occurrence', $occurrence, 'field_event_parent', 'target_id') );
     $variables['parent_title'] = l($event->title, 'node/' . $event->nid);
     $link = l('Register for this event', 'ems/registration/add/' . $variables['nid']);
     $buttons = theme('fnet_button', array('link' => $link, 'auto' => TRUE));
@@ -1246,7 +1292,7 @@ function ems_preprocess_node(&$variables) {
       $region = 'en-us';
     }
     if ($variables['view_mode'] == 'full') {
-      $view = views_embed_view('ems_event_occurrences', 'block_1', $region, $variables['nid']);
+      $view = views_embed_view('events', 'event_occurrences', $region, $variables['nid']);
       if (empty($view) || preg_match('/<div class="view-empty">/im', $view)) {
         $variables['occurrences'] = '';
         $variables['more_occurrences'] = '';
@@ -1286,7 +1332,8 @@ function template_preprocess_event_summary(&$variables) {
   $event_occurrence_id = $variables['event_occurrence_id'];
   $occurrence = node_load($event_occurrence_id);
   $variables['occurrence'] = $occurrence;
-  $variables['event'] = node_load( fnet_common_get_field_value('event_occurrence', $occurrence, 'field_event_parent', 'field_event_parent_target_id') );
+  $variables['event'] = node_load( fnet_common_get_field_value('event_occurrence', $occurrence, 'field_event_parent', 'target_id') );
+  $variables['intro'] = fnet_common_get_field_value('event', $variables['event'], 'field_intro', 'value');
 }
 
 function ems_state_province_ajax($form, &$form_state) {
@@ -1407,4 +1454,14 @@ function ems_events_get_valid_marketo_programs() {
   } catch (Exception $e) {
     watchdog('ems_events', 'Caught SOAP exception: %message', array('%message' => $e->getMessage()), WATCHDOG_ERROR);
   }
+}
+
+/**
+ * Implements hook_views_api()
+ */
+function ems_views_api() {
+  return array(
+    'api' => 3.0,
+    'path' => drupal_get_path('module', 'ems') . '/views',
+  );
 }

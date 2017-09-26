@@ -1,12 +1,12 @@
 <?php
-// $Id: ems.admin.inc 25 2015-03-31 20:12:49Z sogden1 $
-
 /**
  * Module configuration admin form.
  *
+ * @param $form
+ * @param $form_state
+ * @return mixed
  */
 function ems_admin_form($form, &$form_state) {
-  global $user;
   $form = array();
   $campaign_name = variable_get('ems_marketo_campaign_name', 'EMS Registration');
   $form['ems_marketo_campaign_name'] = array(
@@ -37,13 +37,15 @@ function ems_admin_form($form, &$form_state) {
     '#default_value' => $event_full,
     '#description' => t('Message displayed to users who try to register for an event that is at it\'s capacity. Full HTML is allowed.'),
   );
-  $form = system_settings_form($form);
-  return $form;
+  return system_settings_form($form);
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Form for Re-submitting Registration
+ *
+ * @param $form
+ * @param $form_state
+ * @return array
  */
 function ems_admin_resubmit_ems_registration($form, &$form_state) {
   $form = array();
@@ -71,8 +73,10 @@ function ems_admin_resubmit_ems_registration($form, &$form_state) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Submission Handler for Re-submitting Registration
+ *
+ * @param $form
+ * @param $form_state
  */
 function ems_admin_resubmit_ems_registration_submit($form, &$form_state) {
   if (!function_exists('marketo_api_user_sync')) {
