@@ -1,8 +1,10 @@
 <?php
-// $Id$
+
 
 /**
  * Implements hook_menu().
+ *
+ * @return mixed
  */
 function edoc_menu() {
   $items['admin/fnet/edoc'] = array(
@@ -197,6 +199,9 @@ function edoc_footer_form($form, &$form_values) {
 /**
  * Module configuration admin form.
  *
+ * @param $form
+ * @param $form_state
+ * @return mixed
  */
 function edoc_admin_form($form, &$form_state) {
   $vocabs = taxonomy_get_vocabularies('edoc');
@@ -226,6 +231,8 @@ function edoc_admin_form($form, &$form_state) {
 
 /**
  * Implements hook_theme().
+ *
+ * @return array
  */
 function edoc_theme() {
   return array(
@@ -237,10 +244,15 @@ function edoc_theme() {
 
 /**
  * Theme hook which themes the appropriate brand banner for print pages only.
+ * TODO: Deprecated. Only the Fluke Networks logo needs to be here.
+ *
+ * @param $variables
+ * @return string
  */
 function theme_edoc_print_banner($variables) {
   $taxonomy = $variables['taxonomy'];
   $brand_banner = '';
+  $edoc_brand = '';
   $edoc_type_vocab = variable_get('edoc_type_vocab', 0);
   $edoc_brands_vocab = variable_get('edoc_brands_vocab', 0);
 
@@ -278,6 +290,8 @@ function theme_edoc_print_banner($variables) {
 }
 
 /**
+ * TODO: DEPRECATED. Only the Fluke Networks brand is used now. Rework.
+ *
  * @param $taxonomy
  * @return string
  */
@@ -290,7 +304,8 @@ function edoc_brand_header($taxonomy, &$variables) {
   // prepare page logo
   if (strlen($edoc_brand) > 0) {
     $filename = strtolower(str_replace(' ', '_', $edoc_brand));
-//    $image_url = "http://images.flukenetworks.com/edoc-images/header/$filename.png";
+
+    // TODO: WHAT?! No, we can't use the domain in hard code!!!
     $image_url = "http://www.flukenetworks.com/".drupal_get_path('module','edoc')."/images/$filename.png";
     $brand_header = "\n<style>\n";
     $brand_header .= "#print_view .edocs_page_header, #print_view .edocs_page_wrapper, \n";
@@ -358,7 +373,7 @@ function edoc_preprocess_print(&$variables) {
 if ((isset($variables['type']) && $variables['type'] == 'edoc') || $variables['node']->type == 'edoc') {
     // This is the only CCK value other than body that we need to display
     //$variables['subtitle'] = $variables['field_edoc_subtitle'][0]['value'];
-    $variables['subtitle'] = isset($variables['node']->field_edoc_subtitle['und'][0]['value'])?$variables['node']->field_edoc_subtitle['und'][0]['value']:"";
+    $variables['subtitle'] = isset($variables['node']->field_subtitle['und'][0]['value'])?$variables['node']->field_subtitle['und'][0]['value']:"";
     // Custom pre-footer
     $variables['ds_footer'] = _edoc_generate_footer($variables['node']);
     $edoc_brands_vocab = variable_get('edoc_brands_vocab', 0);
@@ -372,7 +387,7 @@ if ((isset($variables['type']) && $variables['type'] == 'edoc') || $variables['n
  */
 function _edoc_generate_footer(&$node) {
   $footer = '';
-  $literatureId = isset($node->field_edoc_lid_en[LANGUAGE_NONE][0]['value'])?$node->field_edoc_lid_en[LANGUAGE_NONE][0]['value']:"";
+  $literatureId = isset($node->field_literature_id_en[LANGUAGE_NONE][0]['value'])?$node->field_literature_id_en[LANGUAGE_NONE][0]['value']:"";
 
   $siteReg = module_invoke('fnet_helper', 'site_region');
   $siteLangReg = $siteReg["regLang"]; // Even though we access "regLang" the string is arranged language-region like "en-us".
@@ -380,7 +395,7 @@ function _edoc_generate_footer(&$node) {
   $formatCurrentRev = 'm/d/Y g:i a';
   $outputCurrentRev = date($formatCurrentRev, $node->changed);
 
-  //$footerImg = "http://images.flukenetworks.com/edoc-images/fnet_logo_footer.jpg";
+  // TODO: No, no, no! NO hard-coded domains! Do a work-around!
   $footerImg = "http://www.flukenetworks.com/".drupal_get_path('module','edoc')."/images/fnet_logo_footer.jpg";
   $brandTermId = $node->taxonomy_vocabulary_12[LANGUAGE_NONE][0]['tid'];
   $brandName = '';
@@ -391,13 +406,6 @@ function _edoc_generate_footer(&$node) {
     // prepare footer logo
     if (strlen($brandName) > 0) {
       $brandName = strtolower(str_replace(' ', '_', $brandName));
-      switch ($brandName) {
-        case 'netscout':
-          $footerImg = "http://www.flukenetworks.com/".drupal_get_path('module','edoc')."/images/netscout_logo_footer.jpg";
-          drupal_add_css(drupal_get_path('module','edoc').'/css/edoc_netscout.css');
-          break;
-        default:
-      }
     }
   }
 
@@ -435,36 +443,36 @@ function _edoc_generate_footer(&$node) {
 
       case "fr-eu": // French/Europe
         $footer .= variable_get('edoc_fr_eu_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_edoc_lid_fr[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_edoc_lid_fr[LANGUAGE_NONE][0]['value'];
+        if ($node->field_literature_id_fr[LANGUAGE_NONE][0]['value']) {
+          $literatureId = $node->field_literature_id_fr[LANGUAGE_NONE][0]['value'];
         }
         break;
 
       case "fr-ca": // French/Canada
         $footer .= variable_get('edoc_fr_ca_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_edoc_lid_fr[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_edoc_lid_fr[LANGUAGE_NONE][0]['value'];
+        if ($node->field_literature_id_fr[LANGUAGE_NONE][0]['value']) {
+          $literatureId = $node->field_literature_id_fr[LANGUAGE_NONE][0]['value'];
         }
         break;
 
       case "de-eu": // German/Europe
         $footer .= variable_get('edoc_de_eu_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_edoc_lid_de[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_edoc_lid_de[LANGUAGE_NONE][0]['value'];
+        if ($node->field_literature_id_de[LANGUAGE_NONE][0]['value']) {
+          $literatureId = $node->field_literature_id_de[LANGUAGE_NONE][0]['value'];
         }
         break;
 
       case "es-eu": // Spanish/Europe
         $footer .= variable_get('edoc_es_eu_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_edoc_lid_es[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_edoc_lid_es[LANGUAGE_NONE][0]['value'];
+        if ($node->field_literature_id_es[LANGUAGE_NONE][0]['value']) {
+          $literatureId = $node->field_literature_id_es[LANGUAGE_NONE][0]['value'];
         }
         break;
 
       case "es-ln": // Spanish/Latin America
         $footer .= variable_get('edoc_es_ln_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_edoc_lid_es[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_edoc_lid_es[LANGUAGE_NONE][0]['value'];
+        if ($node->field_literature_id_es[LANGUAGE_NONE][0]['value']) {
+          $literatureId = $node->field_literature_id_es[LANGUAGE_NONE][0]['value'];
         }
         break;
 
@@ -474,36 +482,36 @@ function _edoc_generate_footer(&$node) {
 
       case "pt-br": // Portuguese/Brazil
         $footer .= variable_get('edoc_pt_br_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_edoc_lid_pt[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_edoc_lid_pt[LANGUAGE_NONE][0]['value'];
+        if ($node->field_literature_id_pt[LANGUAGE_NONE][0]['value']) {
+          $literatureId = $node->field_literature_id_pt[LANGUAGE_NONE][0]['value'];
         }
         break;
 
       case "cn-zh": // Chinese/China
         $footer .= variable_get('edoc_cn_zh_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_edoc_lid_cn[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_edoc_lid_cn[LANGUAGE_NONE][0]['value'];
+        if ($node->field_literature_id_cn[LANGUAGE_NONE][0]['value']) {
+          $literatureId = $node->field_literature_id_cn[LANGUAGE_NONE][0]['value'];
         }
         break;
 
       case "jp-ja": // Japanese/Japan
         $footer .= variable_get('edoc_jp_ja_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_edoc_lid_jp[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_edoc_lid_jp[LANGUAGE_NONE][0]['value'];
+        if ($node->field_literature_id_jp[LANGUAGE_NONE][0]['value']) {
+          $literatureId = $node->field_literature_id_jp[LANGUAGE_NONE][0]['value'];
         }
         break;
 
       case "ko-kr": // Korean/Korea
         $footer .= variable_get('edoc_ko_kr_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_edoc_lid_ko[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_edoc_lid_ko[LANGUAGE_NONE][0]['value'];
+        if ($node->field_literature_id_ko[LANGUAGE_NONE][0]['value']) {
+          $literatureId = $node->field_literature_id_ko[LANGUAGE_NONE][0]['value'];
         }
         break;
 
       case "ru-ru":
         $footer .= variable_get('edoc_ru_ru_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_edoc_lid_ru[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_edoc_lid_ru[LANGUAGE_NONE][0]['value'];
+        if ($node->field_literature_id_ru[LANGUAGE_NONE][0]['value']) {
+          $literatureId = $node->field_literature_id_ru[LANGUAGE_NONE][0]['value'];
         }
         break;
 
@@ -512,14 +520,6 @@ function _edoc_generate_footer(&$node) {
     }
   }
   $footer .= "</div>";
-  $year = format_date(REQUEST_TIME, 'custom', 'Y');
-  switch ($brandName) {
-    case 'netscout':
-      $footer .= '<br />© ' . $year . t(' NETSCOUT.&nbsp;&nbsp;');
-      break;
-    default:
-      $footer .= '<br />© ' . $year . t(' Fluke Corporation.&nbsp;&nbsp;');
-  }
   if (strlen($outputCurrentRev) > 0) {
     $footer .= t("Rev: " . $outputCurrentRev . "&nbsp;&nbsp;");
   }
@@ -531,8 +531,10 @@ function _edoc_generate_footer(&$node) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * The download function for eDocs.
+ *
+ * @param $download_type
+ * @param $document_id
  */
 function edoc_download($download_type, $document_id) {
   $result = array();
@@ -575,6 +577,7 @@ function edoc_download($download_type, $document_id) {
 
 /**
  * Implements hook_node_view().
+ * TODO: Heads up! This is going to cause problems with Entity Translation.
  */
 function edoc_node_view($node, $view_mode, $langcode) {
   if ($node->type == 'edoc') {
@@ -633,12 +636,8 @@ function edoc_nodeapi_OLD(&$node, $op) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
- */
-/**
- * NOTE: This function will be deprecated by moving to using the i18n module - rositis
- *
+ * TODO: This function will be deprecated by moving to using the i18n module - rositis
+ * TODO: Well, crap. Now what do I do?
  * @param $node
  * @return null|string
  */
