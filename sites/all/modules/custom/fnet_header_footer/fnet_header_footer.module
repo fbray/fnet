@@ -83,10 +83,8 @@ function fnet_header_footer_branded_node_type_form_submit($form, &$form_state) {
  */
 function _fnet_header_footer_branded_choice() {
   return array(
-    "fnet_with_navi" => "Fluke Networks with Navigation",
-    "fnet_no_navi" => "Fluke Networks without Navigation",
-    "fnet_ntct_dual_branded" => "Dual Branded (NETSCOUT & Fluke Networks logo)",
-    "ntct_no_navi" => "NETSCOUT without Navigation",
+    "fnet_with_navi" => "With Navigation",
+    "fnet_no_navi" => "Without Navigation",
     "blank" => "Blank (No Header and Footer)"
   );
 }
@@ -205,10 +203,9 @@ function fnet_header_footer_block_visibility ($brandedType) {
 
 /**
  * Implements hook_preprocess_html().
+ * TODO: Make this go away. It should be ONLY in a given theme.
  */
 function fnet_header_footer_preprocess_html(&$variables) {
-  // Add necessary JavaScript and CSS
-  //drupal_add_js(drupal_get_path('module', 'fnet_header_footer') . '/javascript/fnet_header_footer.js');
   drupal_add_css(drupal_get_path('module', 'fnet_header_footer') . '/css/fnet_header_footer.css');
 }
 
@@ -232,12 +229,6 @@ function fnet_header_footer_block_info() {
   $blocks['fnet_header_footer_bottom_menu'] = array(
     'info' => t('FNET Header/Footer Bottom Menu'),
   );
-  $blocks['fnet_header_footer_bottom_ntct'] = array(
-    'info' => t('NETSCOUT Header/Footer Bottom Menu'),
-  );
-  $blocks['fnet_header_footer_bottom_dual'] = array(
-    'info' => t('Fluke Networks & NETSCOUT Header/Footer Bottom Menu'),
-  );
   return $blocks;
 }
 
@@ -246,34 +237,27 @@ function fnet_header_footer_block_info() {
  */
 function fnet_header_footer_block_view($delta = '') {
   global $user;
+  $block = array();
   switch ($delta) {
     case 'fnet_header_footer_top_menu':
       $block['subject'] = t('Top Menu');
-      $block['content'] = theme('top_menu_block', array('user' => $user));
+      $block['content'] = fnet_header_footer_block_visibility('fnet_with_navi') ? theme('top_menu_block', array('user' => $user)): false;
       break;
     case 'fnet_header_footer_top_menu_b':
       $block['subject'] = t('Top Menu Blank');
-      $block['content'] = theme('top_menu_blank_block', array('user' => $user));
+      $block['content'] = fnet_header_footer_block_visibility('fnet_no_navi') ? theme('top_menu_blank_block', array('user' => $user)) : false;
       break;
     case 'fnet_header_footer_main_menu':
       $block['subject'] = t('Main Menu');
-      $block['content'] = theme('main_menu_block');
+      $block['content'] = fnet_header_footer_block_visibility('fnet_with_navi') ? theme('main_menu_block') : false;
       break;
     case 'fnet_header_footer_footer_menu':
       $block['subject'] = t('Footer Menu');
-      $block['content'] = theme('footer_menu_block');
+      $block['content'] = fnet_header_footer_block_visibility('fnet_with_navi') ?theme('footer_menu_block') : false;
       break;
     case 'fnet_header_footer_bottom_menu':
       $block['subject'] = t('Bottom Menu');
       $block['content'] = theme('bottom_menu_block');
-      break;
-    case 'fnet_header_footer_bottom_ntct':
-      $block['subject'] = t('NETSCOUT Bottom Menu');
-      $block['content'] = theme('bottom_menu_ntct_block');
-      break;
-    case 'fnet_header_footer_bottom_dual':
-      $block['subject'] = t('Fluke Networks & NETSCOUT Bottom Menu');
-      $block['content'] = theme('bottom_menu_dual_block');
       break;
   }
   return $block;
@@ -281,38 +265,39 @@ function fnet_header_footer_block_view($delta = '') {
 
 /**
  * Implements hook_theme().
+ *
+ * @param $existing
+ * @param $type
+ * @param $theme
+ * @param $path
+ * @return array
  */
 function fnet_header_footer_theme($existing, $type, $theme, $path) {
-  $hooks = array();
-  $hooks['top_menu_block'] = array(
-    'template' => 'theme/top_menu_block',
-    'variables' => array(),
+  $base = array(
+    'path' => drupal_get_path('module', 'fnet_header_footer') . '/theme',
   );
-  $hooks['top_menu_blank_block'] = array(
-    'template' => 'theme/top_menu_blank_block',
-    'variables' => array(),
+  return array(
+    'top_menu_block' => $base + array(
+      'template' => 'top_menu_block',
+      'variables' => array(),
+    ),
+    'top_menu_blank_block' => $base + array(
+      'template' => 'top_menu_blank_block',
+      'variables' => array(),
+    ),
+    'main_menu_block' => $base + array(
+      'template' => 'main_menu_block',
+      'variables' => array(),
+    ),
+    'footer_menu_block' => $base + array(
+      'template' => 'footer_menu_block',
+      'variables' => array(),
+    ),
+    'bottom_menu_block' => $base + array(
+      'template' => 'bottom_menu_block',
+      'variables' => array(),
+    ),
   );
-  $hooks['main_menu_block'] = array(
-    'template' => 'theme/main_menu_block',
-    'variables' => array(),
-  );
-  $hooks['footer_menu_block'] = array(
-    'template' => 'theme/footer_menu_block',
-    'variables' => array(),
-  );
-  $hooks['bottom_menu_block'] = array(
-    'template' => 'theme/bottom_menu_block',
-    'variables' => array(),
-  );
-  $hooks['bottom_menu_ntct_block'] = array(
-    'template' => 'theme/bottom_menu_ntct_block',
-    'variables' => array(),
-  );
-  $hooks['bottom_menu_dual_block'] = array(
-    'template' => 'theme/bottom_menu_dual_block',
-    'variables' => array(),
-  );
-  return $hooks;
 }
 
 /**
@@ -338,11 +323,6 @@ function fnet_header_footer_preprocess_page(&$variables) {
           $variables['show_breadcrumb'] = FALSE;
           drupal_add_css(drupal_get_path('module','fnet_header_footer').'/css/fnet_header_footer_netscout.css');
           break;
-        case 'fnet_ntct_dual_branded':
-          $variables['logo'] = drupal_get_path('module','fnet_header_footer') . '/css/images/netscout_fnet_logo_white.png';
-          $variables['show_breadcrumb'] = FALSE;
-          drupal_add_css(drupal_get_path('module','fnet_header_footer').'/css/fnet_header_footer_dual.css');
-          break;
         default:
       }
     } else if (isset($variables['node']->field_removenav)) {
@@ -356,7 +336,15 @@ function fnet_header_footer_preprocess_page(&$variables) {
   }
 }
 
+/**
+ * OMG THIS IS HORRIBLE
+ * TODO: Deprecated the hell out of this and come up with something better!!
+ *
+ * @param $breadcrumb
+ * @return array
+ */
 function fnet_header_footer_breadcrumb($breadcrumb) {
+  /*
   $path = $_GET['q'];
   switch ($path) {
     case 'solutions':
@@ -673,5 +661,6 @@ function fnet_header_footer_breadcrumb($breadcrumb) {
       $breadcrumb[] = l('Support', '/support');
     break;
   }
+  */
   return $breadcrumb;
 }
