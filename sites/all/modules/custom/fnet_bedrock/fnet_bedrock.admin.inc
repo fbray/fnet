@@ -1,5 +1,4 @@
 <?php
-// $Id: fnet_bedrock.admin.inc 25 2015-03-31 20:12:49Z sogden1 $
 /**
  * @file
  * Admin forms and functions for fnet_bedrock module
@@ -7,8 +6,11 @@
  */
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Administrative settings form for FNET Bedrock module.
+ *
+ * @param $form
+ * @param $form_state
+ * @return mixed
  */
 function fnet_bedrock_admin_form($form, &$form_state) {
   $form = array();
@@ -53,6 +55,5 @@ function fnet_bedrock_admin_form($form, &$form_state) {
     '#default_value' => variable_get('fnet_bedrock_authentication', FALSE),
     '#description' => t('Should Bedrock be used to authenticate users attempting to log in.'),
   );
-  $form = system_settings_form($form);
-  return $form;
+  return system_settings_form($form);
 }

@@ -1,6 +1,4 @@
 <?php
-// $Id: fnet_bedrock.install 25 2015-03-31 20:12:49Z sogden1 $
-
 /**
  * @file
  * Install file for fnet_bedrock module.
@@ -15,6 +13,8 @@ function fnet_bedrock_install() {
 
 /**
  * Implements hook_uninstall.
+ *
+ * Deletes the settings from the variables table.
  */
 function fnet_bedrock_uninstall() {
   variable_del('fnet_bedrock_url_scheme');

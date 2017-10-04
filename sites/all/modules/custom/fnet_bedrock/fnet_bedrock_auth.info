@@ -1,4 +1,3 @@
-; $Id: fnet_bedrock_auth.info 25 2015-03-31 20:12:49Z sogden1 $
 name = FNET Bedrock Authentication
 package = Fluke Networks
 description = Bedrock authentication module
