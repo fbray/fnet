@@ -20,14 +20,14 @@ function fnet_bedrock_support($form, &$form_state) {
     '#title' => t('Email'),
     '#size' => 60,
     '#required' => TRUE,
-    '#default_value' => $form_state['values']['email'],
+    '#default_value' => isset($form_state['values']['email']) ? $form_state['values']['email'] : '',
   );
   $form['password'] = array(
     '#type' => 'textfield',
     '#title' => t('Password'),
     '#size' => 60,
     '#required' => FALSE,
-    '#default_value' => $form_state['values']['password'],
+    '#default_value' => isset($form_state['values']['password']) ? $form_state['values']['password'] : '',
   );
   $form['method'] = array(
     '#type' => 'select',
@@ -40,19 +40,16 @@ function fnet_bedrock_support($form, &$form_state) {
       'Enable locked bedrock account',
       'Create Bedrock User from FNET user',
     )),
-    '#default_value' => $form_state['values']['method'],
+    '#default_value' => isset($form_state['values']['method']) ? $form_state['values']['method'] : '',
   );
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
   );
-  $form['spacer'] = array(
-    '#markup' => '<div>&nbsp;</div>',
-  );
   $form['result'] = array(
     '#type' => 'item',
     '#title' => 'Result',
-    '#markup' => '<pre>' . $form_state['fnet_bedrock']['result'] . '</pre>',
+    '#markup' => '<pre>' . isset($form_state['fnet_bedrock']['result']) ? $form_state['fnet_bedrock']['result'] : '' . '</pre>',
   );
   return $form;
 }
