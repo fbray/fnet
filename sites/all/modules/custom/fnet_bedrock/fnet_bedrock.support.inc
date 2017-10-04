@@ -46,10 +46,11 @@ function fnet_bedrock_support($form, &$form_state) {
     '#type' => 'submit',
     '#value' => t('Submit'),
   );
+  $result = isset($form_state['fnet_bedrock']['result']) ? $form_state['fnet_bedrock']['result'] : '';
   $form['result'] = array(
     '#type' => 'item',
     '#title' => 'Result',
-    '#markup' => '<pre>' . isset($form_state['fnet_bedrock']['result']) ? $form_state['fnet_bedrock']['result'] : '' . '</pre>',
+    '#markup' => '<pre>' . $result . '</pre>',
   );
   return $form;
 }
