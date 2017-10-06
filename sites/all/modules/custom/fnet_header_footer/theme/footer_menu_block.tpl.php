@@ -16,8 +16,8 @@
       <div class="footer_box">
         <div class="footer_title"><a href="/solutions">SOLUTIONS</a></div>
         <div class="footer_link"><a href="/solutions/roles"><?php print t('Roles'); ?></a></div>
-        <div class="footer_link"><a href="/learn-about"><?php print t('Learn About'); ?></a></div>
-        <div class="footer_link"><a href="/case-studies"><?php print t('Case Studies'); ?></a></div>
+         <div class="footer_link"><a href="/solutions/learn-about"><?php print t('Learn About'); ?></a></div>
+        <div class="footer_link"><a href="/solutions/case-studies"><?php print t('Case Studies'); ?></a></div>
         <div class="clear_15px">&nbsp;</div>
         <div class="footer_subtitle"><a href="/blog"><?php print t('Blog'); ?>:</a></div>
         <div class="footer_link"><a href="/blog/cabling-chronicles"><?php print t('Cabling
@@ -39,9 +39,9 @@
 
       <div class="footer_box">
         <div class="footer_title"><a href="/support">SUPPORT</a></div>
-        <div class="footer_link"><a href="/gold"><?php print t('Gold Product Support'); ?></a></div>
+        <div class="footer_link"><a href="/content/gold-product-support"><?php print t('Gold Product Support'); ?></a></div>
         <div class="footer_link"><a href="/support/downloads"><?php print t('Downloads & Updates'); ?></a></div>
-        <div class="footer_link"><a href="/kb"><?php print t('Knowledge Base'); ?></a></div>
+        <div class="footer_link"><a href="/knowledge-base"><?php print t('Knowledge Base'); ?></a></div>
         <div class="footer_link"><a href="/support/service-centers"><?php print t('Service
             Centers'); ?></a></div>
         <div class="footer_link"><a href="/content/standard-warranty"><?php print t('Warranty
@@ -62,11 +62,11 @@
       </div>
 
       <div class="footer_box">
-        <div class="footer_title"><a href="/news">NEWS &amp; EVENTS</a></div>
-        <div class="footer_link"><a href="/news">News Articles</a></div>
-        <div class="footer_link"><a href="/news">Upcoming Events</a></div>
-        <div class="footer_link"><a href="/news">Training</a></div>
-        <div class="footer_link"><a href="/news">Workshops</a></div>
+        <div class="footer_title"><a href="/news-events">NEWS &amp; EVENTS</a></div>
+        <div class="footer_link"><a href="/news-list">News Articles</a></div>
+        <div class="footer_link"><a href="/news-events/tradeshows">Upcoming Events</a></div>
+        <div class="footer_link"><a href="/news-events/training">Training</a></div>
+        <div class="footer_link"><a href="/news-events/workshops">Workshops</a></div>
       </div>
     </div>
   </div>

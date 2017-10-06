@@ -20,11 +20,51 @@
             <div class="mega_nav_std_outer">
               <div class="mega_nav_std_inner">
                 <div class="topnav_submenu_item"><a href="/solutions/roles"><?php print t('Roles'); ?></a></div>
+								<div class="topnav_submenu_item">
+                  <a href="/expertise/role/Architects-Consultants-Designers"><?php print t('Architects, Consultants and Designers'); ?></a>
+                </div>
+								<div class="topnav_submenu_item">
+                  <a href="/expertise/role/guide-to-contract-installers-and-installation"><?php print t('Contractors and Installers'); ?></a>
+                </div>
+                <div class="topnav_submenu_item">
+                  <a
+                    href="/expertise/role/network-engineers"><?php print t('Network Engineers'); ?></a>
+                </div>
                 <div class="topnav_submenu_item"><a
                     href="/solutions/learn-about"><?php print t('Learn About'); ?></a>
                 </div>
+								<div class="topnav_submenu_item">
+                  <a
+                    href="/Expertise/Learn-About/Cable-Installation"><?php print t('Cable Installation Tools'); ?></a>
+                </div>
+                <div class="topnav_submenu_item">
+                  <a
+                    href="/Expertise/Learn-About/Cable-Testing"><?php print t('Network Cable Testers'); ?></a>
+                </div>
+                <div class="topnav_submenu_item">
+                  <a
+                    href="/Expertise/Learn-About/Fiber-Testing"><?php print t('Fiber Optic Testers'); ?></a>
+                </div>
+                <div class="topnav_submenu_item">
+                  <a
+                    href="/expertise/learn-about/otdr"><?php print t('OTDR - Optical Time Domain Reflectometer'); ?></a>
+                </div>
+								<div class="topnav_submenu_item">
+                  <a
+                    href="/content/category-8-cable-testing"><?php print t('Category 8 Cable Testing'); ?></a>
+                </div>
                 <div class="topnav_submenu_item"><a
                     href="/solutions/case-studies"><?php print t('Case Studies'); ?></a>
+                </div>
+								<div class="topnav_submenu_item">
+                  <a href="/content/compucom-case-study"><?php print t('CompuCom Case Study'); ?></a>
+                </div>
+                <div class="topnav_submenu_item">
+                  <a href="/content/ecr-informatique-case-study"><?php print t('ECR Informatique Case Study '); ?></a>
+                </div>
+                <div class="topnav_submenu_item">
+                  <a
+                    href="/content/extreme-packets-case-study"><?php print t('Extreme Packets Case Study'); ?></a>
                 </div>
               </div>
             </div>
