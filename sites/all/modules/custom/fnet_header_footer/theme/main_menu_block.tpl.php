@@ -19,7 +19,7 @@
           <div class="mega_nav_std_middle">
             <div class="mega_nav_std_outer">
               <div class="mega_nav_std_inner">
-                <div class="topnav_submenu_item"><a href="/solutions/roles"><?php print t('Roles'); ?></a></div>
+                <div class="topnav_submenu_title"><a href="/solutions/roles"><?php print t('Roles'); ?></a></div>
 								<div class="topnav_submenu_item">
                   <a href="/expertise/role/Architects-Consultants-Designers"><?php print t('Architects, Consultants and Designers'); ?></a>
                 </div>
@@ -30,7 +30,7 @@
                   <a
                     href="/expertise/role/network-engineers"><?php print t('Network Engineers'); ?></a>
                 </div>
-                <div class="topnav_submenu_item"><a
+                <div class="topnav_submenu_title"><a
                     href="/solutions/learn-about"><?php print t('Learn About'); ?></a>
                 </div>
 								<div class="topnav_submenu_item">
@@ -53,7 +53,7 @@
                   <a
                     href="/content/category-8-cable-testing"><?php print t('Category 8 Cable Testing'); ?></a>
                 </div>
-                <div class="topnav_submenu_item"><a
+                <div class="topnav_submenu_title"><a
                     href="/solutions/case-studies"><?php print t('Case Studies'); ?></a>
                 </div>
 								<div class="topnav_submenu_item">
