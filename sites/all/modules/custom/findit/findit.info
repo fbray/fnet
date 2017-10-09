@@ -13,3 +13,5 @@ files[] = includes/DigitalAsset.php
 files[] = includes/OCREaseRequest.php
 files[] = includes/OCRLog.php
 files[] = views/findit.views.inc
+
+configure = admin/fnet/findit
