@@ -44,34 +44,34 @@ class UserProfile {
     foreach ($this as $field => $value) {
       switch ($field) {
         case 'first_name':
-          $this->$field = fnet_common_get_field_value('user', $account, 'field_user_first_name');
+          $this->$field = $account->field_address[LANGUAGE_NONE][0]['first_name'];
           break;
         case 'last_name':
-          $this->$field = fnet_common_get_field_value('user', $account, 'field_user_last_name');
+          $this->$field = $account->field_address[LANGUAGE_NONE][0]['last_name'];
           break;
         case 'company':
-          $this->$field = fnet_common_get_field_value('user', $account, 'field_user_company');
+          $this->$field = $account->field_address[LANGUAGE_NONE][0]['organisation_name'];
           break;
         case 'phone':
-          $this->$field = fnet_common_get_field_value('user', $account, 'field_user_phone');
+          $this->$field = fnet_common_get_field_value('user', $account, 'field_user_telephone');
           break;
         case 'address1':
-          $this->$field = fnet_common_get_field_value('user', $account, 'field_user_address_line_1');
+          $this->$field = $account->field_address[LANGUAGE_NONE][0]['thoroughfare'];
           break;
         case 'address2':
-          $this->$field = fnet_common_get_field_value('user', $account, 'field_user_address_line_2');
+          $this->$field = $account->field_address[LANGUAGE_NONE][0]['premise'];
           break;
         case 'city':
-          $this->$field = fnet_common_get_field_value('user', $account, 'field_user_city');
+          $this->$field = $account->field_address[LANGUAGE_NONE][0]['locality'];
           break;
         case 'province':
-          $this->$field = fnet_common_get_field_value('user', $account, 'field_user_province');
+          $this->$field = $account->field_address[LANGUAGE_NONE][0]['administrative_area'];
           break;
         case 'country':
-          $this->$field = fnet_common_get_field_value('user', $account, 'field_user_country');
+          $this->$field = $account->field_address[LANGUAGE_NONE][0]['country'];
           break;
         case 'postal_code':
-          $this->$field = fnet_common_get_field_value('user', $account, 'field_user_postal_code');
+          $this->$field = $account->field_address[LANGUAGE_NONE][0]['postal_code'];
           break;
         case 'gold_number':
           $this->$field = fnet_common_get_field_value('user', $account, 'field_user_gold_number');

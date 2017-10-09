@@ -3,6 +3,7 @@
 require DRUPAL_ROOT . '/' . drupal_get_path('module', 'ascii_profile') . '/includes/DatabaseRecord.php';
 require DRUPAL_ROOT . '/' . drupal_get_path('module', 'ascii_profile') . '/includes/AsciiProfile.php';
 require DRUPAL_ROOT . '/' . drupal_get_path('module', 'ascii_profile') . '/includes/UserProfile.php';
+include_once DRUPAL_ROOT . '/includes/locale.inc';
 /**
  * @file
  * Ascii_profile.module handles the maintenance or the ascii_profile database table.  Ascii profile
@@ -246,13 +247,13 @@ function ascii_profile_form_defaults($field, UserProfile $profile, AsciiProfile 
     case 'province_name':
       $ascii_profile->province = NULL;
       $profile_value = $profile->province;
-      $provinces = addresses_province_get($profile->country);
+      $provinces = addressfield_get_administrative_areas($profile->country);
       $profile_value = $provinces[$profile_value];
       break;
     case 'country_name':
       $ascii_profile->country = NULL;
       $profile_value = strtolower($profile->country);
-      $countries = addresses_country_get($available = array(), $top_countries = array(), $upper = FALSE);
+      $countries = country_get_list();
       $profile_value = $countries[$profile_value];
       break;
     default:
@@ -298,6 +299,7 @@ function ascii_profile_form_fnet_profile_profile_edit_form_alter(&$form, &$form_
  */
 function _ascii_profile_ordutf8($string, &$offset) {
   $code = ord(substr($string, $offset, 1));
+  $bytesnumber = 0;
   if ($code >= 128) { //otherwise 0xxxxxxx
     if ($code < 224) {
       $bytesnumber = 2;
