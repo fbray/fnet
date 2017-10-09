@@ -126,7 +126,7 @@ function globallink_get_ready_translations_details_from_pd($pd_obj, $type = 'nod
               }
 
               break;
-            case 'fieldable_panels':
+            case 'fieldable_panels_panes':
               if ($source_type != 'fieldable_panels_panes') {
                 continue;
               }

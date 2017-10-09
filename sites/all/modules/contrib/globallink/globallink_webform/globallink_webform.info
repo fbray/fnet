@@ -9,9 +9,9 @@ package = GlobalLink
 php = 5.2.5
 scripts[] = js/globallink_webform_active_submissions.js
 
-; Information added by Drupal.org packaging script on 2017-05-25
-version = "7.x-6.5"
+; Information added by Drupal.org packaging script on 2017-09-19
+version = "7.x-6.6"
 core = "7.x"
 project = "globallink"
-datestamp = "1495704192"
+datestamp = "1505813953"
 

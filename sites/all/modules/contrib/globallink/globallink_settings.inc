@@ -295,6 +295,16 @@ function globallink_adaptor_settings() {
     '#default_value' => variable_get('globallink_entity_create_revisions', 0),
     '#options' => array(t('No'), t('Yes')),
   );
+  
+  $entity_version = system_get_info('module', 'entity_translation');
+  if ($entity_version['version'] == '7.x-1.0-beta5') {
+    $form['globallink_adaptor_settings']['globallink_override_localize'] = array(
+      '#type' => 'radios',
+      '#title' => t('Override Localize with Translate for Taxonomy'),
+      '#default_value' => variable_get('globallink_override_localize', 0),
+      '#options' => array(t('No'), t('Yes')),
+    );
+  }
 
   $form['globallink_adaptor_settings']['submit_general_save'] = array(
     '#type' => 'submit',

@@ -36,6 +36,9 @@ function globallink_field() {
       $selected_value = '';
     }
   }
+  else if (globallink_starts_with($selected_value, 'bean:')) {
+      $entity_type = 'bean';
+  }
 
   $form = array();
 
@@ -60,6 +63,15 @@ function globallink_field() {
       $node_types += $t_arr;
     }
   }
+  if (module_exists('globallink_beans')) {
+      module_load_include('inc', 'globallink', 'globallink_beans/globallink_beans');
+      $t_arr = globallink_get_all_translatable_bean_types_and_names();
+      if (!empty($t_arr)) {
+          $node_types += array('_bean_' => t('--Select Bean Type--'));
+          $node_types += $t_arr;
+      }
+  }
+  
   $form['#attributes']['class'][] = 'globallink-field';
 
   $form['select_field'] = array(
@@ -103,6 +115,10 @@ function globallink_field() {
       case 'taxonomy_term':
         $tax_type = str_replace('tax:', '', $selected_value);
 	$p_arr = globallink_get_pending_fields($tax_type, $entity_type);
+        break;
+      case 'bean':
+        $bean_type = str_replace('bean:', '', $selected_value);
+        $p_arr = globallink_get_pending_fields($bean_type, $entity_type);
         break;
     }
 
@@ -171,7 +187,21 @@ function globallink_field() {
       if ($item->field_type == 'field_collection') {
         continue;
       }
-
+      
+      if ($item->entity_type != 'node' || ($item->entity_type == 'node' && entity_translation_node_supported_type($item->content_type))) {
+        if ($item->field_name != 'metatags' && (strpos($item->field_name, '@summary') == FALSE)) {
+            $query = db_select('field_config', 'tf')
+              ->fields('tf', array('field_name'))
+              ->condition('field_name', $item->field_name, '=')
+              ->condition(db_or()->condition(db_and()->condition('translatable', '1', '='))
+                           ->condition(db_and()->condition('type', 'image', '=')));
+            $result_field = $query->execute();
+            $row_count = $result_field->rowCount();
+            if (!$row_count) {
+              continue 1;
+            }
+        }
+      }
       $count++;
 
       $bundle_info = $field_bundles[$item->entity_type];
@@ -196,7 +226,13 @@ function globallink_field() {
             $bundle_text = $bundle_info[$bundle]['label'];    
           }
           break;
-      
+        case 'bean':
+          $exploded_bl = explode(':', $item->bundle);
+          $bundle = $exploded_bl[1];
+          if(isset($bundle_info[$bundle])) {
+            $bundle_text = $bundle_info[$bundle]['label'];
+          }
+          break;
       }  
       $rows[$item->fid] = array(
         'field_label' => $item->field_label,
@@ -346,6 +382,10 @@ function globallink_insert_gl_field_config($field_name, $content_type, $entity_t
     $tax_type = str_replace('tax:', '', $content_type);
     $p_arr = globallink_get_pending_fields($tax_type, $entity_type);
   }
+  else if ($entity_type == 'bean') {
+    $bean_type = str_replace('bean:', '', $content_type);
+    $p_arr = globallink_get_pending_fields($bean_type, $entity_type);
+  }
   if ($field_name == '[all]') {
     $f_keys = array_keys($p_arr);
 
@@ -450,7 +490,13 @@ function globallink_insert_gl_field_config($field_name, $content_type, $entity_t
  *   The node type.
  */
 function globallink_insert_fc_fields($node_type) {
-  $field_arr = field_info_instances('node', $node_type);
+  $entity_type = 'node';
+  $bean_type = $node_type;
+  if (strpos($node_type, 'bean:') !== false) {
+    $bean_type = str_replace('bean:', '', $node_type);
+    $entity_type = 'bean';
+  }
+  $field_arr = field_info_instances($entity_type, $bean_type);
 
   $keys = array_keys($field_arr);
 
@@ -464,7 +510,7 @@ function globallink_insert_fc_fields($node_type) {
     db_insert('globallink_field_config')
     ->fields(array(
       'content_type' => $node_type,
-      'entity_type' => 'node',
+      'entity_type' => $entity_type,
       'bundle' => $node_type,
       'field_name' => $field_name,
       'field_type' => $field_info['type'],
@@ -478,6 +524,9 @@ function globallink_insert_fc_fields($node_type) {
       $fc_items = array_keys($fc_field_infos[$field_name]);
 
       foreach ($fc_items as $fc_item) {
+          if (globallink_is_field_configured_for_translation('field_collection_item', $field_name, $fc_item, $node_type)) {
+              continue;
+          }
         globallink_insert_fc_item_fields($node_type, $field_name, $fc_item);
       }
     }

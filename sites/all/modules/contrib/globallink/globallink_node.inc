@@ -479,6 +479,12 @@ function globallink_get_translated_content($pd4, &$globallink_arr) {
     $count = 0;
 
     foreach ($globallink_arr as $globallink) {
+      $title = globallink_get_node_title($globallink);
+      if (!$title) {
+        $globallink->status = 'Source Deleted';
+        $globallink->sourceDeleted = TRUE;
+        
+      }  
       if (!$globallink->sourceDeleted) {
         $globallink->targetXML = globallink_download_target_resource($pd4, $globallink->targetTicket);
 
@@ -1040,7 +1046,7 @@ function globallink_get_translated_array($xml) {
           if ($attr_node->value == 'title') {
             $field_image_obj->title = $attr->nodeValue;
           }
-          elseif ($attr_node->value == 'alt') {
+          if ($attr_node->value == 'alt') {
             $field_image_obj->alt = $attr->nodeValue;
           }
           continue 2;
@@ -1068,7 +1074,7 @@ function globallink_get_translated_array($xml) {
     }
 
     if (isset($field_image_obj->field_name)) {
-      $arr[$field_image_obj->field_name][LANGUAGE_NONE][$field_image_obj->delta] = new GLFieldImage();
+      if(!isset($arr[$field_image_obj->field_name][LANGUAGE_NONE][$field_image_obj->delta])) $arr[$field_image_obj->field_name][LANGUAGE_NONE][$field_image_obj->delta] = new GLFieldImage();
       if (isset($field_image_obj->title)) {
         $arr[$field_image_obj->field_name][LANGUAGE_NONE][$field_image_obj->delta]->title = $field_image_obj->title;
       }
@@ -1388,6 +1394,12 @@ function globallink_save_translated_node_with_fields($node, &$tnode, $t_arr) {
         }
 
         $updated = FALSE;
+        if ($field_def['type'] == 'image') {
+            $source_lang = field_language('node', $node, $field);
+            if (!isset($arr[$t_target_lang])) {
+                $arr[$t_target_lang] = $arr[$source_lang];
+            }
+        }
 
         foreach ($arr[$t_target_lang] as $delta => $n_field) {
           if (isset($t_field_arr[$delta])) {

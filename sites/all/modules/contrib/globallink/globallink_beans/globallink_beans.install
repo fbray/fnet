@@ -1,0 +1,122 @@
+<?php
+
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+/**
+ * Implements hook_schema().
+ */
+function globallink_beans_schema() {
+  $schema = array();
+
+  $schema ['globallink_core_beans'] = array(
+    'description' => 'GlobalLink Core Beans Table',
+    'fields' => array(
+      'rid' => array(
+        'description' => 'The row ID',
+        'type' => 'serial',
+        'unsigned' => FALSE,
+        'not null' => TRUE,
+      ),
+      'object_id' => array(
+        'description' => 'The Object id',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'type' => array(
+        'description' => 'The {node_type}.type of this node.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'title' => array(
+        'description' => 'The title of this node, always treated as non-markup plain text.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'timestamp' => array(
+        'description' => 'The timestamp',
+        'type' => 'int',
+        'length' => 14,
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ),
+      'source' => array(
+        'description' => 'The origin language of the requested translation',
+        'type' => 'varchar',
+        'length' => 12,
+        'not null' => TRUE,
+      ),
+      'target' => array(
+        'description' => 'The target language of the requested translation',
+        'type' => 'varchar',
+        'length' => 12,
+        'not null' => TRUE,
+      ),
+      'status' => array(
+        'description' => 'The status of the request',
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => 'Pending Translations',
+        'length' => 50,
+      ),
+      'document_ticket' => array(
+        'description' => 'PD Document Ticket Id',
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+        'length' => 50,
+      ),
+      'submission' => array(
+        'description' => 'PD Submission Name',
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+        'length' => 255,
+      ),
+      'submission_ticket' => array(
+        'description' => 'PD Submission Ticket Id',
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+        'length' => 50,
+      ),
+      'project_code' => array(
+        'description' => 'PD Project Code',
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+        'length' => 255,
+      ),
+      'last_modified' => array(
+        'description' => 'Last Modified Date for Source Node',
+        'type' => 'int',
+        'length' => 14,
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ),
+      'changed' => array(
+        'description' => 'Boolean Flag indicating whether source node has changed',
+        'type' => 'int',
+        'length' => 1,
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('rid'),
+    'indexes' => array(
+      'status' => array('status'),
+    ),
+  );
+
+  return $schema;
+}
+

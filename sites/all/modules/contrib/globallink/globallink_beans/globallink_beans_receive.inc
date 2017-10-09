@@ -1,54 +1,58 @@
 <?php
 
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 /**
- * Builds forms on GlobalLink receive dashboard.
+ * Builds forms on beans receive dashboard.
  *
  * @param string $type
  *   The type of task we are working on.
  *
  * @return array
- *   Array of forms for the GlobalLink receive dashboard.
+ *   Array of forms for the entity receive dashboard.
  */
-function globallink_dashboard_receive_page($type) {
-  $_SESSION['transpefect_dashboard_receive_type'] = $type;
+function globallink_beans_receive_submissions($type) {
+  $_SESSION['globallink_beans_receive_type'] = $type;
 
-  $array = array();
+  $arr = array();
 
-  $array[] = drupal_get_form('globallink_node_receive_filter_form');
-  $array[] = drupal_get_form('globallink_node_receive_pager_form');
-  $array[] = drupal_get_form('globallink_dashboard_receive');
+  $arr[] = drupal_get_form('globallink_beans_receive_filter_form');
+  $arr[] = drupal_get_form('globallink_beans_receive_pager_form');
+  $arr[] = drupal_get_form('globallink_beans_receive_form');
 
-  return $array;
+  return $arr;
 }
 
 /**
- * Builds form to filter GlobalLink nodes to receive on dashboard.
+ * Builds form to filter beans to receive on dashboard.
  */
-function globallink_node_receive_filter_form() {
+function globallink_beans_receive_filter_form() {
   module_load_include('inc', 'globallink', 'globallink');
-  module_load_include('inc', 'globallink', 'globallink_node');
+  module_load_include('inc', 'globallink', 'globallink_settings');
+  module_load_include('inc', 'globallink_beans', 'globallink_beans');
+  module_load_include('inc', 'globallink', 'gl_ws/gl_ws_receive_translations');
 
   $form = array();
 
-  $submission_options = globallink_get_distinct_active_submission_names();
-  unset($submission_options['']);
+  $filter = FALSE;
 
-  $submission_options['[any]'] = 'Any';
+  $submission_options = globallink_beans_get_distinct_active_submission_names();
   $default_submission = '[any]';
 
-  if (!empty($_SESSION['globallink_node_receive_filter_submission'])) {
-    if (!array_key_exists($_SESSION['globallink_node_receive_filter_submission'], $submission_options)) {
-      $_SESSION['globallink_node_receive_filter_submission'] = '';
-      $_SESSION['globallink_globalLink_arr'] = array();
+  if (!empty($_SESSION['globallink_beans_receive_filter_submission'])) {
+    if (!array_key_exists($_SESSION['globallink_beans_receive_filter_submission'], $submission_options)) {
+      $_SESSION['globallink_beans_receive_filter_submission'] = '';
+      $_SESSION['globallink_beans_globalLink_arr'] = array();
 
-      unset($_SESSION['globallink_globalLink_arr_last_refreshed']);
+      unset($_SESSION['globallink_beans_globalLink_arr_last_refreshed']);
     }
   }
 
-  $filter = FALSE;
-
-  if (!empty($_SESSION['globallink_node_receive_filter_submission'])) {
-    $default_submission = $_SESSION['globallink_node_receive_filter_submission'];
+  if (!empty($_SESSION['globallink_beans_receive_filter_submission'])) {
+    $default_submission = $_SESSION['globallink_beans_receive_filter_submission'];
     $filter = TRUE;
   }
 
@@ -56,7 +60,8 @@ function globallink_node_receive_filter_form() {
   $t_arr = globallink_get_mapped_locales_with_drupal_desc(FALSE);
   $languages = $n_arr + $t_arr;
 
-  $status_arr = array('[any]' => t('Any'),
+  $status_arr = array(
+    '[any]' => t('Any'),
     'Translation Completed' => 'Translation Completed',
     'Error' => 'Error',
     'Source Deleted' => 'Source Deleted',
@@ -64,33 +69,35 @@ function globallink_node_receive_filter_form() {
 
   $default = '[any]';
 
-  if (!empty($_SESSION['globallink_node_receive_filter_language'])) {
-    $default = $_SESSION['globallink_node_receive_filter_language'];
+  if (!empty($_SESSION['globallink_beans_receive_filter_language'])) {
+    $default = $_SESSION['globallink_beans_receive_filter_language'];
     $filter = TRUE;
   }
 
   $default_status = '[any]';
-  if (!empty($_SESSION['globallink_node_receive_filter_status'])) {
-    $default_status = $_SESSION['globallink_node_receive_filter_status'];
+
+  if (!empty($_SESSION['globallink_beans_receive_filter_status'])) {
+    $default_status = $_SESSION['globallink_beans_receive_filter_status'];
     $filter = TRUE;
   }
 
-  $form['node_receive_filter'] = array(
+  $form['beans_receive_filter'] = array(
     '#type' => 'fieldset',
     '#title' => t('FILTER RECORDS'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
 
-  $form['node_receive_filter']['filters'] = array(
+  $form['beans_receive_filter']['filters'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('container-inline')),
   );
 
-  $form['node_receive_filter']['filters'][] = array('#markup' => '<table>');
+  $form['beans_receive_filter']['filters'][] = array('#markup' => '<table>');
 
-  $form['node_receive_filter']['filters']['language'] = array(
-    '#type' => 'select', '#title' => t('Target Language'),
+  $form['beans_receive_filter']['filters']['language'] = array(
+    '#type' => 'select',
+    '#title' => t('Target Language'),
     '#options' => $languages,
     '#default_value' => $default,
     '#field_suffix' => '&nbsp;&nbsp;&nbsp;&nbsp;',
@@ -100,8 +107,9 @@ function globallink_node_receive_filter_form() {
     '#field_prefix' => '</td><td>',
   );
 
-  $form['node_receive_filter']['filters']['status'] = array(
-    '#type' => 'select', '#title' => t('Status'),
+  $form['beans_receive_filter']['filters']['status'] = array(
+    '#type' => 'select',
+    '#title' => t('Status'),
     '#options' => $status_arr,
     '#default_value' => $default_status,
     '#field_suffix' => '&nbsp;&nbsp;&nbsp;&nbsp;',
@@ -111,8 +119,9 @@ function globallink_node_receive_filter_form() {
     '#field_prefix' => '</td><td>',
   );
 
-  $form['node_receive_filter']['filters']['submission'] = array(
-    '#type' => 'select', '#title' => t('Submission'),
+  $form['beans_receive_filter']['filters']['submission'] = array(
+    '#type' => 'select',
+    '#title' => t('Submission'),
     '#options' => $submission_options,
     '#default_value' => $default_submission,
     '#field_suffix' => '&nbsp;&nbsp;&nbsp;&nbsp;',
@@ -122,11 +131,11 @@ function globallink_node_receive_filter_form() {
     '#field_prefix' => '</td><td>',
   );
 
-  $form['node_receive_filter']['filters'][] = array('#markup' => '</table>');
+  $form['beans_receive_filter']['filters'][] = array('#markup' => '</table>');
 
   $disable_submit = $filter ? TRUE : FALSE;
 
-  $form['node_receive_filter']['filters']['filter'] = array(
+  $form['beans_receive_filter']['filters']['filter'] = array(
     '#type' => 'submit',
     '#value' => t('Filter'),
     '#disabled' => $disable_submit,
@@ -166,9 +175,7 @@ function globallink_node_receive_filter_form() {
 
     $form['filter-search']['status']['actions'] = array(
       '#type' => 'actions',
-      '#attributes' => array(
-        'class' => array('container-inline'),
-      ),
+      '#attributes' => array('class' => array('container-inline')),
     );
 
     $form['filter-search']['status']['actions']['reset'] = array(
@@ -183,32 +190,36 @@ function globallink_node_receive_filter_form() {
 /**
  * Handles submission of filter form.
  */
-function globallink_node_receive_filter_form_submit($form, &$form_state) {
+function globallink_beans_receive_filter_form_submit($form, &$form_state) {
   $op = isset($form_state['values']['op']) ? $form_state['values']['op'] : '';
 
   switch ($op) {
     case t('Filter'):
-      $_SESSION['globallink_node_receive_filter_language'] = $form_state['values']['language'];
-      $_SESSION['globallink_node_receive_filter_status'] = $form_state['values']['status'];
-      $_SESSION['globallink_node_receive_filter_submission'] = $form_state['values']['submission'];
+      $_SESSION['globallink_beans_receive_filter_language'] = $form_state['values']['language'];
+      $_SESSION['globallink_beans_receive_filter_status'] = $form_state['values']['status'];
+      $_SESSION['globallink_beans_receive_filter_submission'] = $form_state['values']['submission'];
 
-      unset($_SESSION['globallink_globalLink_arr_last_refreshed']);
+      unset($_SESSION['globallink_beans_globalLink_arr_last_refreshed']);
 
       break;
     case t('Reset'):
-      $_SESSION['globallink_node_receive_filter_language'] = '';
-      $_SESSION['globallink_node_receive_filter_status'] = '';
-      $_SESSION['globallink_node_receive_filter_submission'] = '';
-      unset($_SESSION['globallink_globalLink_arr_last_refreshed']);
+      $_SESSION['globallink_beans_receive_filter_language'] = '';
+      $_SESSION['globallink_beans_receive_filter_status'] = '';
+      $_SESSION['globallink_beans_receive_filter_submission'] = '';
+
+      unset($_SESSION['globallink_beans_globalLink_arr_last_refreshed']);
 
       break;
   }
 }
 
 /**
- * Builds form to add pagination to GlobalLink receive dashboard.
+ * Builds form to add pagination to beans receive dashboard.
  */
-function globallink_node_receive_pager_form() {
+function globallink_beans_receive_pager_form() {
+  $module_path = drupal_get_path('module', 'globallink');
+  drupal_add_css($module_path . '/css/globallink.css');
+
   $form = array();
 
   $form['page_counter']['markup'] = array(
@@ -219,7 +230,7 @@ function globallink_node_receive_pager_form() {
   $form['page_counter']['markup']['p_count'] = array(
     '#type' => 'textfield',
     '#size' => 5,
-    '#default_value' => isset($_SESSION['globallink_receive_page_count']) ? $_SESSION['globallink_receive_page_count'][0] : TPT_PAGER_LIMIT,
+    '#default_value' => isset($_SESSION['globallink_beans_receive_page_count']) ? $_SESSION['globallink_beans_receive_page_count'][0] : TPT_PAGER_LIMIT,
     '#field_prefix' => t('Show') . '&nbsp;&nbsp;',
     '#field_suffix' => '&nbsp;&nbsp;' . t('records') . '&nbsp;&nbsp;&nbsp;&nbsp;',
     '#prefix' => '<div class="container-inline">',
@@ -230,7 +241,7 @@ function globallink_node_receive_pager_form() {
     '#value' => t('Go'),
     '#suffix' => '</div>',
     '#limit_validation_errors' => array(),
-    '#submit' => array('globallink_node_receive_pager_form_submit'),
+    '#submit' => array('globallink_beans_receive_pager_form_submit'),
     '#access' => TRUE,
   );
 
@@ -240,7 +251,7 @@ function globallink_node_receive_pager_form() {
 /**
  * Handles submission of pager form.
  */
-function globallink_node_receive_pager_form_submit($form, &$form_state) {
+function globallink_beans_receive_pager_form_submit($form, &$form_state) {
   $op = $form_state['values']['op'];
 
   if ($op != t('Go')) {
@@ -253,28 +264,51 @@ function globallink_node_receive_pager_form_submit($form, &$form_state) {
     form_set_error('', t('Invalid Page Count.'));
   }
   else {
-    $_SESSION['globallink_receive_page_count'] = array($page_count);
+    $_SESSION['globallink_beans_receive_page_count'] = array($page_count);
 
     return;
   }
 }
 
 /**
- * Builds form to receive a GlobalLink submission.
+ * Builds form to receive a beans submission.
  */
-function globallink_dashboard_receive() {
-  module_load_include('inc', 'globallink', 'globallink_settings');
-  module_load_include('inc', 'globallink', 'gl_ws/gl_ws_receive_translations');
-
+function globallink_beans_receive_form() {
   $form = array();
 
-  if (!empty($_SESSION['transpefect_dashboard_receive_type'])) {
-    $type = $_SESSION['transpefect_dashboard_receive_type'];
+  if (!empty($_SESSION['globallink_beans_receive_type'])) {
+    $type = $_SESSION['globallink_beans_receive_type'];
+  }
 
-    $globallink_arr = array();
+  $globallink_arr = array();
 
-    if (!empty($_SESSION['globallink_globalLink_arr'])) {
-      $globallink_arr = unserialize($_SESSION['globallink_globalLink_arr']);
+  if (!empty($_SESSION['globallink_beans_globalLink_arr'])) {
+    $globallink_arr = unserialize($_SESSION['globallink_beans_globalLink_arr']);
+  }
+
+  $page_count = isset($_SESSION['globallink_beans_receive_page_count']) ? $_SESSION['globallink_beans_receive_page_count'][0] : TPT_PAGER_LIMIT;
+
+  $rows = array();
+
+  $filter_lang = '[any]';
+
+  if (!empty($_SESSION['globallink_beans_receive_filter_language'])) {
+    $filter_lang = $_SESSION['globallink_beans_receive_filter_language'];
+  }
+
+  if (isset($globallink_arr) && is_array($globallink_arr)) {
+    foreach ($globallink_arr as $key => &$globallink) {
+      if ($filter_lang != '[any]' && $globallink->targetLocale != $filter_lang) {
+        unset($globallink_arr[$key]);
+      }
+    }
+  }
+
+  if (isset($globallink_arr) && is_array($globallink_arr)) {
+    $filter_status = '[any]';
+
+    if (!empty($_SESSION['globallink_beans_receive_filter_status'])) {
+      $filter_status = $_SESSION['globallink_beans_receive_filter_status'];
     }
 
     $header = array(
@@ -289,108 +323,79 @@ function globallink_dashboard_receive() {
       $header['preview'] = '';
     }
 
-    $rows = array();
-
     $count = 1;
+    $rid_arr = array();
 
-    $filter_lang = '[any]';
-
-    if (!empty($_SESSION['globallink_node_receive_filter_language'])) {
-      $filter_lang = $_SESSION['globallink_node_receive_filter_language'];
-    }
-
-    if (isset($globallink_arr) && is_array($globallink_arr)) {
-      foreach ($globallink_arr as $key => &$globallink) {
-        if ($filter_lang != '[any]' && $globallink->targetLocale != $filter_lang) {
-          unset($globallink_arr[$key]);
-        }
+    foreach ($globallink_arr as $key => &$globallink) {
+      if ($globallink->type != 'bean') {
+        continue;
       }
-    }
+      $tpt_beans_arr = globallink_beans_get_sent_tpt_rows($globallink->submissionTicket, $globallink->documentTicket, $globallink->targetLocale);
+      $title = '';
 
-    if (isset($globallink_arr) && is_array($globallink_arr)) {
-      $filter_status = '[any]';
-
-      if (!empty($_SESSION['globallink_node_receive_filter_status'])) {
-        $filter_status = $_SESSION['globallink_node_receive_filter_status'];
+      if ($tpt_beans_arr) {
+        $bnid = $tpt_beans_arr->object_id;
+        $status = globallink_beans_get_translation_status($bnid, $globallink->targetLocale, $title);
+      }
+      else {
+        $status = 'Source Deleted';
+        $title = 'Link Deleted';
       }
 
-      $rid_arr = array();
+      if ($status == 'Source Deleted') {
+        $globallink->sourceDeleted = TRUE;
+      }
 
-      foreach ($globallink_arr as $key => &$globallink) {
-        if ($globallink->type != 'node') {
-          continue;
-        }
+      if ($filter_status != '[any]' && $status != $filter_status) {
+        unset($globallink_arr[$key]);
 
-        $source_xml = '';
+        continue;
+      }
 
-        $status = 'Translation Completed';
+      $filter_submission = '[any]';
 
-        $title = globallink_get_node_title($globallink);
+      if (!empty($_SESSION['globallink_beans_receive_filter_submission'])) {
+        $filter_submission = $_SESSION['globallink_beans_receive_filter_submission'];
+      }
 
-        if (!$title) {
-          $title = $globallink->title;
-          $status = 'Source Deleted';
-          $source_xml = 'Source Deleted';
-          $globallink->status = 'Source Deleted';
-          $globallink->sourceDeleted = TRUE;
-        }
+      if ($filter_submission != '[any]' && $globallink->submissionName != $filter_submission) {
+        unset($globallink_arr[$key]);
 
-        if ($globallink->status == 'Error') {
-          $status = 'Error';
-        }
+        continue;
+      }
 
-        if ($filter_status != '[any]' && $status != $filter_status) {
-          unset($globallink_arr[$key]);
+      if (variable_get('globallink_enable_preview', 1)) {
+        $tpt_row_id = globallink_beans_get_row_id_from_submission($globallink->submissionTicket, $globallink->documentTicket, $globallink->targetLocale);
 
-          continue;
-        }
-
-        $filter_submission = '[any]';
-
-        if (!empty($_SESSION['globallink_node_receive_filter_submission'])) {
-          $filter_submission = $_SESSION['globallink_node_receive_filter_submission'];
-        }
-        if ($filter_submission != '[any]' && $globallink->submissionTicket != $filter_submission) {
-          unset($globallink_arr[$key]);
-
-          continue;
-        }
-
-        $tpt_row_id = globallink_get_row_id_from_submission($globallink->submissionTicket, $globallink->documentTicket, $globallink->targetLocale);
-
-        if ($tpt_row_id) {
+        if ($status != 'Source Deleted') {
+          $bnid_tpt_arr = array();
+          $bnid_tpt_arr['object_id'] = $bnid;
+          $bnid_tpt_arr['target'] = $globallink->targetLocale;
           $rid_arr['tpt_content_div_' . $key] = $tpt_row_id;
         }
-
-        $source_name = globallink_get_drupal_locale_name($globallink->sourceLocale);
-        $target_name = globallink_get_drupal_locale_name($globallink->targetLocale);
-
-        $rows[$key] = array(
-          'submissionName' => $globallink->submissionName,
-          'sourceLocale' => $source_name,
-          'targetLocale' => $target_name,
-          'title' => $title,
-          'status' => $status,
-        );
-
-        if (variable_get('globallink_enable_preview', 1)) {
-          $rows[$key]['preview'] = $source_xml != 'Source Deleted' ? l(t('Preview Translations'), 'javascript:void(0)', array(
-            'fragment' => '',
-            'external' => TRUE,
-            'attributes' => array(
-              'title' => 'Click to Preview',
-              'id' => 'tpt_content_link_' . $key,
-            ),
-          )) : '';
-        }
-
-        $count++;
       }
 
+      $source_name = globallink_get_drupal_locale_name($globallink->sourceLocale);
+      $target_name = globallink_get_drupal_locale_name($globallink->targetLocale);
 
+      $rows[$key] = array(
+        'submissionName' => $globallink->submissionName,
+        'sourceLocale' => $source_name,
+        'targetLocale' => $target_name,
+        'title' => $title,
+        'status' => $status,
+      );
+
+      if (variable_get('globallink_enable_preview', 1)) {
+        $rows[$key]['preview'] = $status != 'Source Deleted' ? l(t('Preview Translations'), 'javascript:void(0)', array(
+          'fragment' => '',
+          'external' => TRUE,
+          'attributes' => array('id' => 'tpt_content_link_' . $key),
+        )) : '';
+      }
+
+      $count++;
     }
-
-    $page_count = isset($_SESSION['globallink_receive_page_count']) ? $_SESSION['globallink_receive_page_count'][0] : TPT_PAGER_LIMIT;
 
     $form['table'] = array(
       '#type' => 'tableselect',
@@ -403,28 +408,29 @@ function globallink_dashboard_receive() {
 
     if (variable_get('globallink_enable_preview', 1)) {
       $lcount = 1;
-
       $div_arr = array();
 
       foreach ($rid_arr as $key => $rid) {
-        if (isset($rid)) {
-          $lcount = str_replace('tpt_content_div_', '', $key);
-
-          $form['tpt_content_div_' . $lcount] = array(
-            '#type' => 'markup',
-            '#markup' => '',
-            '#prefix' => '<div id="tpt_content_div_' . $lcount . '" style="display: none;">',
-            '#suffix' => '</div>',
-          );
-
-          $div_arr['tpt_content_link_' . $lcount] = 'tpt_content_div_' . $lcount;
+        if (!isset($rid)) {
+          continue;
         }
+
+        $lcount = str_replace('tpt_content_div_', '', $key);
+
+        $form['tpt_content_div_' . $lcount] = array(
+          '#type' => 'markup',
+          '#markup' => '',
+          '#prefix' => '<div id="tpt_content_div_' . $lcount . '" style="display: none;">',
+          '#suffix' => '</div>',
+        );
+
+        $div_arr['tpt_content_link_' . $lcount] = 'tpt_content_div_' . $lcount;
       }
 
       drupal_add_js(array(
         'globallink' => array(
           'popup' => $div_arr,
-          'previewpath' => base_path() . 'admin/globallink-translations/preview',
+          'previewpath' => base_path() . 'admin/globallink-translations/receiveTranslation/beans/preview',
           'rids' => $rid_arr,
         ),
       ), 'setting');
@@ -456,10 +462,12 @@ function globallink_dashboard_receive() {
       );
     }
 
+
+
     $last_refreshed = '';
 
-    if (isset($_SESSION['globallink_globalLink_arr_last_refreshed'])) {
-      $last_refreshed = $_SESSION['globallink_globalLink_arr_last_refreshed'];
+    if (isset($_SESSION['globallink_beans_globalLink_arr_last_refreshed'])) {
+      $last_refreshed = $_SESSION['globallink_beans_globalLink_arr_last_refreshed'];
     }
 
     $form['submit_refresh_hidden'] = array(
@@ -483,24 +491,24 @@ function globallink_dashboard_receive() {
     );
   }
 
-  drupal_add_js('jQuery(document).ready(function(){jQuery("#edit-submit-refresh").click(function(){jQuery("#edit-submit-refresh").hide();jQuery("#edit-submit-refresh-hidden").css("display","inline");});});', 'inline');
   drupal_add_js('jQuery(document).ready(function(){jQuery("#edit-submit-clear-deleted").click(function(){jQuery("#edit-submit-clear-deleted").hide();jQuery("#edit-submit-clear-deleted-hidden").css("display","inline");});});', 'inline');
+  drupal_add_js('jQuery(document).ready(function(){jQuery("#edit-submit-refresh").click(function(){jQuery("#edit-submit-refresh").hide();jQuery("#edit-submit-refresh-hidden").css("display","inline");});});', 'inline');
   drupal_add_library('system', 'ui.dialog');
 
   $module_path = drupal_get_path('module', 'globallink');
   drupal_add_css($module_path . '/css/globallink.css');
-  drupal_add_js($module_path . '/js/globallink_receive.js');
+  drupal_add_js($module_path . '/globallink_beans/js/globallink_beans_receive.js');
 
   return $form;
 }
 
 /**
- * Validates GlobalLink form input.
+ * Validates beans form input.
  */
-function globallink_dashboard_receive_validate($form, &$form_state) {
+function globallink_beans_receive_form_validate($form, &$form_state) {
   $op = isset($form_state['values']['op']) ? $form_state['values']['op'] : '';
-
   $pd4 = globallink_get_project_director_details();
+
   globallink_validate_project_director_details($pd4);
 
   if ($op == t('Update Selected')) {
@@ -513,19 +521,18 @@ function globallink_dashboard_receive_validate($form, &$form_state) {
 }
 
 /**
- * Handles GlobalLink form submission.
+ * Handles beans form submission.
  */
-function globallink_dashboard_receive_submit($form, &$form_state) {
-  $type = $_SESSION['transpefect_dashboard_receive_type'];
+function globallink_beans_receive_form_submit($form, &$form_state) {
+  $type = $_SESSION['globallink_beans_receive_type'];
   $op = isset($form_state['values']['op']) ? $form_state['values']['op'] : '';
   $pd4 = globallink_get_project_director_details();
 
   switch ($op) {
     case t('Update All'):
       try {
-        $globallink_arr = unserialize($_SESSION['globallink_globalLink_arr']);
-        $count = globallink_get_translated_content($pd4, $globallink_arr);
-
+        $globallink_arr = unserialize($_SESSION['globallink_beans_globalLink_arr']);
+        $count = globallink_beans_get_translated($pd4, $globallink_arr);
         $error = FALSE;
         $delete_records_selected = FALSE;
 
@@ -535,7 +542,6 @@ function globallink_dashboard_receive_submit($form, &$form_state) {
           }
 
           if ($updated->status == 'Error') {
-            globallink_update_status($updated);
             $error = TRUE;
           }
         }
@@ -558,30 +564,20 @@ function globallink_dashboard_receive_submit($form, &$form_state) {
         form_set_error('', t('Error: @message', array('@message' => $e->getMessage())));
       }
 
-      $_SESSION['globallink_globalLink_arr'] = array();
-      $_SESSION['globallink_selected_submission'] = array();
-
-      unset($_SESSION['globallink_globalLink_arr_last_refreshed']);
+      $_SESSION['globallink_beans_globalLink_arr'] = array();
+      $_SESSION['globallink_beans_selected_submission'] = array();
+      unset($_SESSION['globallink_beans_globalLink_arr_last_refreshed']);
 
       break;
     case t('Clear Deleted Records'):
-      try {
-        $globallink_arr = unserialize($_SESSION['globallink_globalLink_arr']);
-
+       try {
+        $globallink_arr = unserialize($_SESSION['globallink_beans_globalLink_arr']);
         $success = FALSE;
-
         $count = 0;
 
         foreach ($globallink_arr as $globallink) {
-          $title = globallink_get_node_title($globallink);
-
-          if (!$title) {
-            $globallink->status = 'Source Deleted';
-            $globallink->sourceDeleted = TRUE;
-          }
           if ($globallink->sourceDeleted == TRUE) {
-            $success = globallink_update_deleted_records($pd4, $globallink);
-
+            $success = globallink_beans_update_deleted_records($pd4, $globallink);
             $count++;
           }
         }
@@ -590,10 +586,10 @@ function globallink_dashboard_receive_submit($form, &$form_state) {
           drupal_set_message(t('No source record(s) deleted.'), 'warning', NULL);
         }
         else {
-          $_SESSION['globallink_globalLink_arr'] = array();
-          $_SESSION['globallink_selected_submission'] = array();
+          $_SESSION['globallink_beans_globalLink_arr'] = array();
+          $_SESSION['globallink_beans_selected_submission'] = array();
 
-          unset($_SESSION['globallink_globalLink_arr_last_refreshed']);
+          unset($_SESSION['globallink_beans_globalLink_arr_last_refreshed']);
         }
 
         if ($success) {
@@ -608,29 +604,26 @@ function globallink_dashboard_receive_submit($form, &$form_state) {
       break;
     case t('Update Selected'):
       try {
-        $delete_records_selected = FALSE;
-        $globallink_arr = unserialize($_SESSION['globallink_globalLink_arr']);
-
-        $updated_globallink_arr = array();
+        $globallink_arr = unserialize($_SESSION['globallink_beans_globalLink_arr']);
+        $updated_globalLink_arr = array();
         $rids = array_filter($form_state['values']['table']);
 
         foreach ($rids as $rid) {
-          array_push($updated_globallink_arr, $globallink_arr[$rid]);
+          array_push($updated_globalLink_arr, $globallink_arr[$rid]);
         }
 
-        $count = globallink_get_translated_content($pd4, $updated_globallink_arr);
+        $count = globallink_beans_get_translated($pd4, $updated_globalLink_arr);
 
         $error = FALSE;
+        $delete_records_selected = FALSE;
 
-        foreach ($updated_globallink_arr as $updated) {
+        foreach ($globallink_arr as $updated) {
           if ($updated->sourceDeleted == TRUE) {
             $delete_records_selected = TRUE;
           }
 
           if ($updated->status == 'Error') {
             $error = TRUE;
-
-            globallink_update_status($updated);
           }
         }
 
@@ -652,10 +645,10 @@ function globallink_dashboard_receive_submit($form, &$form_state) {
         form_set_error('', t('Error: @message', array('@message' => $e->getMessage())));
       }
 
-      $_SESSION['globallink_globalLink_arr'] = array();
-      $_SESSION['globallink_selected_submission'] = array();
+      $_SESSION['globallink_beans_globalLink_arr'] = array();
+      $_SESSION['globallink_beans_selected_submission'] = array();
 
-      unset($_SESSION['globallink_globalLink_arr_last_refreshed']);
+      unset($_SESSION['globallink_beans_globalLink_arr_last_refreshed']);
 
       break;
     case t('Refresh Page'):
@@ -663,8 +656,8 @@ function globallink_dashboard_receive_submit($form, &$form_state) {
 
       $pd4 = globallink_get_project_director_details();
       //Get all the active submission tickets.
-      $query = db_select('globallink_core', 'gc')
-                ->fields('gc')
+      $query = db_select('globallink_core_beans', 'gcb')
+                ->fields('gcb')
                 ->condition('status', array('Sent for Translations', 'Error') ,'IN');
       $results = $query->execute();
       $submission_tickets = array();
@@ -687,13 +680,13 @@ function globallink_dashboard_receive_submit($form, &$form_state) {
       }
 
       if (sizeof($globallink_arr) > 0) {
-        $_SESSION['globallink_globalLink_arr'] = serialize($globallink_arr);
-        $_SESSION['globallink_globalLink_arr_last_refreshed'] = format_date(REQUEST_TIME, 'custom', 'D M j, Y G:i:s');
+        $_SESSION['globallink_beans_globalLink_arr'] = serialize($globallink_arr);
+        $_SESSION['globallink_beans_globalLink_arr_last_refreshed'] = format_date(REQUEST_TIME, 'custom', 'D M j, Y G:i:s');
       }
       else {
-        $_SESSION['globallink_globalLink_arr'] = array();
+        $_SESSION['globallink_beans_globalLink_arr'] = array();
 
-        unset($_SESSION['globallink_globalLink_arr_last_refreshed']);
+        unset($_SESSION['globallink_beans_globalLink_arr_last_refreshed']);
       }
 
       break;
@@ -701,37 +694,36 @@ function globallink_dashboard_receive_submit($form, &$form_state) {
 }
 
 /**
- * Previews translated GlobalLink content in the form of JSON.
+ * Previews translated beans content in the form of JSON.
  */
-function globallink_preview_translated_content() {
+function globallink_beans_preview_translated_content() {
   $row_id = $_POST['rid'];
-  $arr = globallink_get_translations_for_row_id($row_id);
+  $arr = globallink_beans_get_translations_for_row_id($row_id);
 
   drupal_json_output($arr);
 }
 
 /**
- * Gets GlobalLink translations by row ID.
+ * Gets beans translations by row ID.
  *
  * @param string $row_id
  *   The row ID.
  *
  * @return array
- *   Array of GlobalLink translations.
+ *   Array of beans translations.
  */
-function globallink_get_translations_for_row_id($row_id) {
+function globallink_beans_get_translations_for_row_id($row_id) {
   module_load_include('inc', 'globallink', 'globallink');
-  module_load_include('inc', 'globallink', 'globallink_node');
   module_load_include('inc', 'globallink', 'globallink_settings');
+  module_load_include('inc', 'globallink_beans', 'globallink_beans');
   module_load_include('inc', 'globallink', 'gl_ws/gl_ws_receive_translations');
 
-  $row = globallink_get_row($row_id);
+  $row = globallink_beans_get_row_by_id($row_id, 'bean');
 
   $globallink = new GlobalLink();
   $globallink->tptRowId = $row_id;
-  $globallink->nid = $row->nid;
-  $globallink->vid = $row->vid;
-  $globallink->type = $row->type;
+  $globallink->rid = $row->rid;
+  $globallink->object_id = $row->object_id;
   $globallink->title = $row->title;
   $globallink->sourceLocale = $row->source;
   $globallink->targetLocale = $row->target;
@@ -755,61 +747,38 @@ function globallink_get_translations_for_row_id($row_id) {
 
     foreach ($targets as $target) {
       if (str_replace('-', '_', $target->targetLanguage->locale) != $globallink->targetLocale) {
-        $source_xml = 'Source Deleted';
-        $globallink->sourceDeleted = TRUE;
-
         continue;
       }
 
-      if (!is_null($target->ticket) && $target->ticket != '') {
-        $globallink->targetTicket = $target->ticket;
-        $globallink->targetXML = globallink_download_target_resource($pd4, $globallink->targetTicket);
-
-        if (!is_null($globallink->targetXML) && $globallink->targetXML != '') {
-          $translation = globallink_get_translated_array($globallink->targetXML);
-
-          $nid = $translation['nid'];
-          $vid = $translation['vid'];
-
-          $node = node_load($nid, $vid);
-
-          if ($node && is_object($node) && !is_null($node)) {
-            $drupal_locale_code = globallink_get_drupal_locale_code($globallink->sourceLocale);
-
-            if ($node->tnid != 0 && $node->language != $drupal_locale_code) {
-              $translations = translation_node_get_translations($node->tnid);
-
-              if (isset($translations) && isset($translations[$drupal_locale_code])) {
-                $src_tnode = $translations[$drupal_locale_code];
-                $node = node_load($src_tnode->nid);
-              }
-            }
-
-            $name = '';
-
-            $source_xml = globallink_get_xml($node, $globallink->targetLocale, NULL, NULL, $name, TRUE);
-
-            $source_arr = array();
-
-            if ($source_xml != 'Source Deleted') {
-              $source_arr = globallink_get_translated_array($source_xml);
-            }
-          }
-          else {
-            $source_xml = 'Source Deleted';
-            $globallink->sourceDeleted = TRUE;
-          }
-        }
+      if (empty($target->ticket)) {
+        continue;
       }
 
-      $name = '';
+      $globallink->targetTicket = $target->ticket;
+      $globallink->targetXML = globallink_download_target_resource($pd4, $globallink->targetTicket);
 
-      $source_xml = globallink_get_xml($node, $globallink->targetLocale, NULL, NULL, $name, TRUE);
+      if (empty($globallink->targetXML)) {
+        continue;
+      }
 
-      $source_arr = array();
+      $translation = globallink_beans_get_translated_array($globallink->targetXML);
+      $bnid = $translation['object_id'];
 
-      if ($source_xml != 'Source Deleted') {
-        $source_arr = globallink_get_translated_array($source_xml);
+      $entity_arr = entity_load('bean', array($bnid));
+      $key = key($entity_arr);
+      $entity = $entity_arr[$key];
+
+      if (!empty($entity)) {
+        $source_xml = globallink_beans_get_xml($bnid);
+        $source_arr = array();
+
+        if ($source_xml) {
+          $source_arr = globallink_beans_get_translated_array($source_xml);
+        }
+      }
+      else {
+        $source_xml = 'Source Deleted';
+        $globallink->sourceDeleted = TRUE;
       }
     }
   }
@@ -836,3 +805,4 @@ function globallink_get_translations_for_row_id($row_id) {
 
   return $arr;
 }
+
