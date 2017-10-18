@@ -330,24 +330,31 @@ function findit_log_download(FindItResponse $response) {
  * @return array
  */
 function findit_theme($existing, $type, $theme, $path) {
-  $hooks = array();
-  $hooks['findit_download'] = array(
-    'template' => 'findit_download',
-    'arguments' => array(
-      'document_url' => NULL,
-      'document_name' => NULL,
-    ),
+  $base = array(
+    'path' => drupal_get_path('module', 'findit') . '/theme',
   );
-  $hooks['findit_flash'] = array(
-    'template' => 'findit_flash',
-    'arguments' => array(
-      'swf_file' => NULL,
-      'base_path' => NULL,
+  return array(
+    'findit_download' => $base + array(
+      'template' => 'findit_download',
+      'variables' => array(
+        'document_url' => NULL,
+        'document_name' => NULL,
+      ),
     ),
+    'findit_flash' => $base + array(
+      'template' => 'fextranet_default_page_menu_item',
+      'variables' => array('swf_file' => NULL),
+    ),
+
   );
-  return $hooks;
 }
 
+/**
+ * Implements hook_preprocess_HOOK().
+ * TODO: Uhh, we implement this theme hook inside this module. Why overrride in our own damn module?
+ * TODO: Move this into the theme template.
+ * @param $variables
+ */
 function template_preprocess_findit_flash(&$variables) {
   //drupal_add_js(drupal_get_path('module', 'findit') . '/js/swfobject.js', 'module');
   $script = 'swfobject.registerObject("findit_flash", "9", "' . drupal_get_path('module', 'findit') . '/js/expressInstall.swf")';
@@ -461,16 +468,18 @@ function findit_check($document_number, $locale, $source = NULL) {
     return $response;
   }
 
+  // TODO: Internationalize the message with t().
+
   if ($asset->ExportCompliance) {
+    // As defined in /includes/UserProfile.php
     $profile = new UserProfile($account->uid);
     if ((strlen($profile->last_name) < 2) || (strlen($profile->company) < 2) || (!$profile->is_complete())) {
-      $message = 'Fluke Networks policy for downloads requires that we collect your name, ';
-      $message .= 'address, and company name. Before downloading, please ';
-      $message .= 'provide this information by updating your profile below.';
+      $message = t('Fluke Networks policy for downloads requires that we collect your name, address, and company name. Before downloading, please provide this information by updating your profile below.');
       drupal_set_message($message);
       $destination = drupal_get_destination();
       drupal_goto('/myaccount/' . $account->uid . '/edit/profile', array('query' => $destination));
     }
+    // TODO: ASCII Profile is deprecated. Bring it back?
     if ($profile->has_unicode_characters()) {
       $profile = new AsciiProfile(($account->uid));
       if (empty($profile->last_name)) {
@@ -482,6 +491,9 @@ function findit_check($document_number, $locale, $source = NULL) {
         drupal_goto('/myaccount/' . $account->uid . '/edit/ascii_profile', array('query' => $destination));
       }
     }
+
+    // Generate the OCR Request.
+    // TODO: Switch to Addressfield
     $ocr = new OCREaseRequest();
     //check the individual
     $ocr->uid = $account->uid;
@@ -683,10 +695,12 @@ function findit_stream_file($file_url, $filename) {
 
   $headers = $response->headers;
   // loop through headers and pick out the ones we want to echo.  Intentionally skip the first one.
+  $content_type = '';
   foreach ($headers as $header => $value) {
     switch ($header) {
       case 'content-type':
         $content_type = trim($value);
+        break;
       case 'content-length':
       case 'date':
       case 'last-modified':
@@ -713,6 +727,11 @@ function findit_level3_auth_cookie($url) {
   //setrawcookie('CDNAuth', $url, time() + 60 * 60, '/', $cookie_domain);
 }
 
+/**
+ * TODO: Level 3 will be deprecated with Pantheon. Need a plan to deal with that.
+ * @param $filepath
+ * @return string
+ */
 function findit_level3_query_string($filepath) {
 
   // use rawurlencode to replace spaces in filenames
@@ -788,17 +807,24 @@ function findit_ocr_status_options() {
 }
 
 /**
- * Implementation of hook_views_api
+ * Implementation of hook_views_api().
  *
  * @return array
  */
 function findit_views_api() {
   return array(
     'api' => 3,
-    'path' => drupal_get_path('module', 'findit'),
+    'path' => drupal_get_path('module', 'findit') . '/views',
   );
 }
 
+/**
+ * @param $form
+ * @param $form_state
+ * @param $uid
+ * @param $entity_type
+ * @return mixed
+ */
 function findit_delete_ocr_log_entry($form, &$form_state, $uid, $entity_type) {
   $form['uid'] = array(
     '#type' => 'value',
@@ -808,7 +834,7 @@ function findit_delete_ocr_log_entry($form, &$form_state, $uid, $entity_type) {
     '#type' => 'value',
     '#value' => $entity_type,
   );
-  $question = 'Are you sure you want to delete this log entry?';
+  $question = t('Are you sure you want to delete this log entry?');
   $form = confirm_form($form, $question, 'admin/reports/ocr_log');
   return $form;
 }

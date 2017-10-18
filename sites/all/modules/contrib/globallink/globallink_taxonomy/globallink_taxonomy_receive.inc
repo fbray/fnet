@@ -787,16 +787,32 @@ function globallink_taxonomy_get_translations_for_row_id($row_id) {
 
       if (!empty($term) && !empty($vocab)) {
         $path = drupal_lookup_path('alias', 'taxonomy/term/' . $bid, $term->language);
-	if ($vocab->i18n_mode == I18N_MODE_LOCALIZE) {
-            $source_xml = globallink_get_taxonomy_xml_for_I18N_MODE_LOCALIZE($term, $path);
-
-	}
-	else if ($vocab->i18n_mode == I18N_MODE_TRANSLATE) {
-          $source_xml = globallink_get_taxonomy_xml_for_I18N_MODE_ENTITY_TRANSLATE($term, $path);
-        }
-        else if($vocab->i18n_mode == I18N_MODE_ENTITY_TRANSLATION) {
+        if ($entity_version == '7.x-1.0-beta5') {
+          if ($vocab->i18n_mode == I18N_MODE_LOCALIZE) {
+            $override_localize = variable_get('globallink_override_localize', 0);
+            if ($override_localize == 1) {
+              $source_xml = globallink_get_taxonomy_xml_for_I18N_MODE_ENTITY_TRANSLATE($term, $path);
+            }
+            else {
+              $source_xml = globallink_get_taxonomy_xml_for_I18N_MODE_LOCALIZE($term, $path);
+            }
+	  }
+	  else if ($vocab->i18n_mode == I18N_MODE_TRANSLATE) {
             $source_xml = globallink_get_taxonomy_xml_for_I18N_MODE_ENTITY_TRANSLATE($term, $path);
+          }
         }
+        else {
+   	  if ($vocab->i18n_mode == I18N_MODE_LOCALIZE) {
+            $source_xml = globallink_get_taxonomy_xml_for_I18N_MODE_LOCALIZE($term, $path);
+	  }
+	  else if ($vocab->i18n_mode == I18N_MODE_TRANSLATE) {
+            $source_xml = globallink_get_taxonomy_xml_for_I18N_MODE_ENTITY_TRANSLATE($term, $path);
+          }
+          else if($vocab->i18n_mode == I18N_MODE_ENTITY_TRANSLATION) {
+            $source_xml = globallink_get_taxonomy_xml_for_I18N_MODE_ENTITY_TRANSLATE($term, $path);
+          }            
+        }
+
         $source_arr = array();
 
         if ($source_xml) {

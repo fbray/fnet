@@ -88,8 +88,8 @@ class DigitalAsset {
       }
       $this->AssetType = ucwords(fnet_common_get_field_value('digital_asset', $asset, 'field_dam_asset_type'));
       $this->AccessLevel = fnet_common_get_field_value('digital_asset', $asset, 'field_dam_entitlement_level');
-      $start_date = fnet_common_get_field_value('digital_asset', $asset, 'field_dam_availability_date');
-      $end_date = fnet_common_get_field_value('digital_asset', $asset, 'field_dam_availability_date', 'value2');
+      $start_date = fnet_common_get_field_value('digital_asset', $asset, 'field_dam_availability_dates');
+      $end_date = fnet_common_get_field_value('digital_asset', $asset, 'field_dam_availability_dates', 'value2');
       $temp = explode('T', $start_date);
       list($year, $month, $day) = explode('-', $temp[0]);
       $start = mktime(0, 0, 0, $month, $day, $year);

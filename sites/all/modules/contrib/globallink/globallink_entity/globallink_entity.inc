@@ -616,11 +616,15 @@ function globallink_entity_update_status(&$globallink) {
  * @param array $t_arr
  *   The translated array.  Defaults to NULL.
  */
-function globallink_entity_update(&$globallink, $t_arr = NULL) {
+function globallink_entity_update($globallink, $t_arr = NULL) {
   module_load_include('inc', 'globallink', 'globallink');
+  $target_nid = '';
+  $target_vid = '';
 
   try {
-    $target_lang = globallink_get_drupal_locale_code($globallink->targetLocale);
+    if (isset($globallink->targetLocale)) {
+      $target_lang = globallink_get_drupal_locale_code($globallink->targetLocale);
+    }
 
     if ($t_arr != NULL) {
       $translated_arr = $t_arr;
@@ -629,8 +633,14 @@ function globallink_entity_update(&$globallink, $t_arr = NULL) {
       $translated_arr = globallink_entity_get_translated_array($globallink->targetXML, $target_lang);
     }
 
-    $target_nid = $translated_arr['nid'];
-    $target_vid = $translated_arr['vid'];
+    if (isset($translated_arr['nid'])) {
+      $target_nid = $translated_arr['nid'];
+    }
+
+    if (isset($translated_arr['vid'])) {
+      $target_vid = $translated_arr['vid'];
+    }
+
     $globallink->nid = $target_nid;
     $globallink->vid = $target_vid;
 
@@ -810,6 +820,7 @@ function globallink_entity_get_translated_array($xml, $target_lang = LANGUAGE_NO
       }
 
       if (isset($field_image_obj->field_name)) {
+        if(!isset($arr[$field_image_obj->field_name][$target_lang][$field_image_obj->delta])) $arr[$field_image_obj->field_name][$target_lang][$field_image_obj->delta] = new GLFieldImage();
         if (isset($field_image_obj->title)) {
           $arr[$field_image_obj->field_name][$target_lang][$field_image_obj->delta]->title = $field_image_obj->title;
         }
@@ -1091,6 +1102,17 @@ function globallink_entity_save_translated_entity_with_fields(&$node, $translati
     }
     foreach ($values as $target => $arr_value) {
       foreach ($arr_value as $obj) {
+        if ($field_def['type'] == 'image') {
+          if (is_object($obj)) {
+            $delta = key($node->{$field}[$target]);
+            if (isset($obj->title)) {
+              $node->{$field}[$target][$delta]['title'] = $obj->title;
+            }
+            if (isset($obj->alt)) {
+              $node->{$field}[$target][$delta]['alt'] = $obj->alt;
+            }
+          }
+        }
         if (!isset($obj->translatedContent)) {
           continue;
         }
@@ -1101,48 +1123,48 @@ function globallink_entity_save_translated_entity_with_fields(&$node, $translati
           $format = $obj->format;
         }
         if (isset($node->{$field}[$target])) {
-                    if (strpos($field, '@summary') == false) {
-                        if ($field_def['type'] == 'text_with_summary' && !empty($body_summary)) {
-                            $node->{$field}[$target][$obj->delta] = array(
-                              'value' => $obj->translatedContent,
-                              'summary' => $body_summary[$obj->delta]->translatedContent,
-                              'format' => $format,
-                            );
-                        }
-                        else {
-                            $node->{$field}[$target][$obj->delta] = array(
-                              'value' => $obj->translatedContent,
-                              'format' => $format,
-                            );
-                        }
-                    }
-                }
-                else {
-                    if (strpos($field, '@summary') == false) {
-                        if ($field_def['type'] == 'text_with_summary' && !empty($body_summary)) {
-                            $node->{$field}[$target] = array(
-                              $obj->delta => array(
-                                'value' => $obj->translatedContent,
-                                'summary' => $body_summary[$obj->delta]->translatedContent,
-                                'format' => $format,
-                              ),
-                            );
-                        }
-                        else {
-                            $node->{$field}[$target] = array(
-                              $obj->delta => array(
-                                'value' => $obj->translatedContent,
-                                'format' => $format,
-                              ),
-                            );
-                        }
-                    }
-                }
+          if (strpos($field, '@summary') == false) {
+            if ($field_def['type'] == 'text_with_summary' && !empty($body_summary)) {
+              $node->{$field}[$target][$obj->delta] = array(
+                'value' => $obj->translatedContent,
+                'summary' => $body_summary[$obj->delta]->translatedContent,
+                'format' => $format,
+              );
             }
+            else {
+              $node->{$field}[$target][$obj->delta] = array(
+                'value' => $obj->translatedContent,
+                'format' => $format,
+              );
+            }
+          }
+         
         }
+        else {
+          if (strpos($field, '@summary') == false) {
+            if ($field_def['type'] == 'text_with_summary' && !empty($body_summary)) {
+              $node->{$field}[$target] = array(
+                $obj->delta => array(
+                  'value' => $obj->translatedContent,
+                  'summary' => $body_summary[$obj->delta]->translatedContent,
+                  'format' => $format,
+                ),
+              );
+            }
+            else {
+              $node->{$field}[$target] = array(
+              $obj->delta => array(
+                'value' => $obj->translatedContent,
+                'format' => $format,
+                ),
+              );
+            }
+          }
+        }
+      }
+    }
   }
   $is_hook_enabled = variable_get('globallink_implementation_type', 0);
-
   if ($is_hook_enabled == 1) {
     globallink_update_node_hook($node, $node);
   }
@@ -1166,7 +1188,9 @@ function globallink_entity_save_translated_entity_with_fields(&$node, $translati
   $success = globallink_entity_save($node);
   if ($success) {
     if (module_exists('field_collection') && isset($translation_arr['field_collection'])) {
-      globallink_entity_save_field_collections($node, $translation_arr, $target_lang);
+      $nid = $node->translations->data[$target_lang]['entity_id'];
+      $node_fc = node_load($nid);
+      globallink_entity_save_field_collections($node_fc, $translation_arr, $target_lang);
     }
   }
 
@@ -1254,16 +1278,16 @@ function globallink_entity_save_field_collections_recursively($entity_type, $hos
 
           break;
         default:
+          $lang = key($field_collection_item_array[$key]);
           if (!isset($field_collection_item_array[$key])) {
             break;
           }
 
-          if (!isset($field_collection_item_array[$key][LANGUAGE_NONE])) {
+          if (!isset($field_collection_item_array[$key][$lang])) {
             break;
           }
 
-          $field_data_arr = $field_collection_item_array[$key][LANGUAGE_NONE];
-
+          $field_data_arr = $field_collection_item_array[$key][$lang];
           foreach ($field_data_arr as $delta => $field_data) {
             if (isset($translated_fc_arr[$field_collection_name][$fc_entity_id][$key][$target_lang][$delta])) {
               $gl_obj = $translated_fc_arr[$field_collection_name][$fc_entity_id][$key][$target_lang][$delta];
@@ -1293,7 +1317,7 @@ function globallink_entity_save_field_collections_recursively($entity_type, $hos
   $new_entity = entity_create('field_collection_item', $new_field_collection_arr); // Create new field collection item.
   $new_entity->setHostEntity($entity_type, $host_entity, $target_lang); // Attach it to the node.
   $new_entity->save(TRUE); // Save field-collection item
-
+  
   field_attach_presave($entity_type, $host_entity);
   field_attach_update($entity_type, $host_entity);
 

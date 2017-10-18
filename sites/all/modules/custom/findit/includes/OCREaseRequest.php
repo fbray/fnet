@@ -162,7 +162,7 @@ class OCREaseRequest {
       'indent' => TRUE,
       'wrap' => TRUE,
       "char-encoding" => TRUE,
-      "wrap" => 0
+      // "wrap" => 0
     );
     $xml = drupal_convert_to_utf8(trim($xml), 'ISO-8859-1');
     $xml = preg_replace('/[\r\n\t]/', '', $xml);

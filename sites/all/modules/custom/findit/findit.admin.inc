@@ -85,8 +85,7 @@ function findit_admin_form($form, &$form_state) {
     '#description' => t("Message to display if user is not logged in"),
   );
 
-  $form = system_settings_form($form);
-  return $form;
+  return system_settings_form($form);
 }
 
 /**
@@ -193,8 +192,8 @@ function findit_admin_ocr_form($form, &$form_state) {
     '#default_value' => variable_get('findit_ocr_log_max_check_count', 2),
     '#description' => t("Maximum number of times to check OCR status."),
   );
-  $form = system_settings_form($form);
-  return $form;
+
+  return system_settings_form($form);
 }
 
 /**
@@ -237,6 +236,6 @@ function findit_admin_level3_form($form, &$form_state) {
     '#required' => FALSE,
     '#default_value' => variable_get('findit_level3_valid_time_interval', 15),
   );
-  $form = system_settings_form($form);
-  return $form;
+
+  return system_settings_form($form);
 }

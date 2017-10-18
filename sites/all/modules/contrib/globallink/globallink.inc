@@ -767,6 +767,9 @@ function globallink_get_pending_fields($content_type, $entity_type = NULL) {
   else if ($entity_type == 'taxonomy_term') {
     $_type = 'tax:' . $content_type;
   }
+  else if ($entity_type == 'bean') {
+    $_type = 'bean:' . $content_type;
+  }
   $config_fields = globallink_get_config_fields($_type);
 
   if ($entity_type == NULL || $entity_type == 'node') {
@@ -815,7 +818,7 @@ function globallink_get_pending_fields($content_type, $entity_type = NULL) {
   }
 
   asort($field_arr);
-  if (!entity_translation_node_supported_type($content_type)) {
+  if (!entity_translation_node_supported_type($content_type) && $entity_type == 'node') {
     return $field_arr;
   }
   else {

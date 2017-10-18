@@ -29,6 +29,7 @@ function globallink_taxonomy_send_for_translations($lids, $pd4, $submission_name
 
   $submitter = $submission_details['submitter'];
   $globallink_arr = array();
+  $override_localize = variable_get('globallink_override_localize', 0);
   $vocabs = taxonomy_get_vocabularies();
   foreach ($lids as $lid) {
     $rows = globallink_taxonomy_get_sent_rows_by_bid($lid);
@@ -58,20 +59,38 @@ function globallink_taxonomy_send_for_translations($lids, $pd4, $submission_name
     else {
       continue;
     }
-
-    if ($vocab->i18n_mode == I18N_MODE_LOCALIZE) {
-        $xml = globallink_get_taxonomy_xml_for_I18N_MODE_LOCALIZE($term, $path);
-    }
-    else if ($vocab->i18n_mode == I18N_MODE_ENTITY_TRANSLATION) {
-      $xml = globallink_get_taxonomy_xml_for_I18N_MODE_ENTITY_TRANSLATE($term, NULL);
-    }
-    else if ($vocab->i18n_mode == I18N_MODE_TRANSLATE) {
-      $xml = globallink_get_taxonomy_xml_for_I18N_MODE_ENTITY_TRANSLATE($term, NULL);
+    
+    $entity_version = system_get_info('module', 'entity_translation');
+    if ($entity_version['version'] == '7.x-1.0-beta5') {
+      if ($vocab->i18n_mode == I18N_MODE_LOCALIZE) {
+        if ($override_localize == 1) {
+          $xml = globallink_get_taxonomy_xml_for_I18N_MODE_ENTITY_TRANSLATE($term, NULL);
+        }
+        else {
+          $xml = globallink_get_taxonomy_xml_for_I18N_MODE_LOCALIZE($term, $path);
+        }
+      }
+      else if ($vocab->i18n_mode == I18N_MODE_TRANSLATE) {
+        $xml = globallink_get_taxonomy_xml_for_I18N_MODE_ENTITY_TRANSLATE($term, NULL);
+      }
+      else {
+        continue;
+      }
     }
     else {
-      continue;
+      if ($vocab->i18n_mode == I18N_MODE_LOCALIZE) {
+        $xml = globallink_get_taxonomy_xml_for_I18N_MODE_LOCALIZE($term, $path);
+       }
+      else if ($vocab->i18n_mode == I18N_MODE_ENTITY_TRANSLATION) {
+        $xml = globallink_get_taxonomy_xml_for_I18N_MODE_ENTITY_TRANSLATE($term, NULL);
+      }
+      else if ($vocab->i18n_mode == I18N_MODE_TRANSLATE) {
+        $xml = globallink_get_taxonomy_xml_for_I18N_MODE_ENTITY_TRANSLATE($term, NULL);
+      }
+      else {
+        continue;
+      }
     }
-
 
     $name = 'Taxonomy_' . $lid . '.xml';
 
@@ -536,6 +555,8 @@ function globallink_taxonomy_get_translated($pd4, &$globallink_arr) {
   module_load_include('inc', 'globallink', 'globallink');
   $count = 0;
   $vocabs = taxonomy_get_vocabularies();
+  $override_localize = variable_get('globallink_override_localize', 0);
+  $entity_version = system_get_info('module', 'entity_translation');
   
   foreach ($globallink_arr as $globallink) {
     if ($globallink->sourceDeleted) {
@@ -569,7 +590,94 @@ function globallink_taxonomy_get_translated($pd4, &$globallink_arr) {
       }
 
       if ($vocab->i18n_mode == I18N_MODE_LOCALIZE) {
+                if ($override_localize == 1) {
+                    // Use i18n fields translation
+                    $source_locale = $term->language;
+                    $fields = get_configured_fields_for_taxonomy($vocab->machine_name);
+                    $field_names = array_keys($fields);
 
+                    foreach ($field_names as $fieldName) {
+                        if ($fieldName == 'metatags') {
+                            if (empty($translated_arr[$fieldName])) {
+                                if (isset($term->$fieldName) && isset($term->{$fieldName}[$source_locale])) {
+                                    $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$source_locale];
+                                }
+                                continue;
+                            }
+                            foreach ($translated_arr['metatags'] as $metatag) {
+
+                                if (key($metatag) !== LANGUAGE_NONE) {
+                                    $t_field_lang = key($metatag);
+                                }
+
+                                if (empty($term->{$fieldName}[$target_locale]) && $target_locale != LANGUAGE_NONE) {
+                                    $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$t_field_lang];
+                                }
+
+                                $t_field_arr = $metatag[$source_locale];
+                                $mt_name = $t_field_arr->fieldName;
+                                if (empty($t_field_arr->translatedContent)) {
+                                    continue;
+                                }
+
+                                if (empty($term->{$fieldName}[$target_locale][$mt_name])) {
+                                    continue;
+                                }
+
+                                $translation = $t_field_arr->translatedContent;
+                                $term->{$fieldName}[$target_locale][$mt_name]['value'] = $translation;
+                            }
+                            continue;
+                        }
+                        $t_field_lang = LANGUAGE_NONE;
+                        if (empty($translated_arr[$fieldName])) {
+                            if (isset($term->$fieldName) && isset($term->{$fieldName}[$source_locale])) {
+                                $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$source_locale];
+                            }
+                            continue;
+                        }
+
+                        if (key($translated_arr[$fieldName]) !== LANGUAGE_NONE) {
+                            $t_field_lang = key($translated_arr[$fieldName]);
+                        }
+
+                        if (empty($term->{$fieldName}[$target_locale]) && $target_locale != LANGUAGE_NONE) {
+                            $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$t_field_lang];
+                        }
+
+                        $t_field_arr = $translated_arr[$fieldName][$source_locale];
+                        foreach ($term->{$fieldName}[$target_locale] as $delta => $fp_field) {
+                            if (empty($t_field_arr[$delta])) {
+                                continue;
+                            }
+
+                            $translation = $t_field_arr[$delta]->translatedContent;
+                            $term->{$fieldName}[$target_locale][$delta]['value'] = $translation;
+                        }
+                    }
+
+                    if (!isset($term->translations->data[$target_locale])) {
+                        $term->translations->data[$target_locale] = array(
+                          'language' => $target_locale, // Target language
+                          'source' => $term->language, // Source language
+                          'uid' => $term->translations->data[$term->language]['uid'],
+                          'status' => variable_get('globallink_publish_node', 0), // publish translation
+                          'created' => $term->translations->data[$term->language]['created'],
+                        );
+                        $term->translations->hook[$target_locale] = array(
+                          'hook' => 'insert',
+                          'date' => NULL,
+                        );
+                    }
+                    else {
+                        $term->translations->data[$target_locale]['status'] = variable_get('globallink_publish_node', 0); // publish translation
+                        $term->translations->hook[$target_locale] = array(
+                          'hook' => 'update',
+                          'date' => NULL,
+                        );
+                    }
+                }
+                else {
                     unset($term->tid);
                     $term->language = $target_locale;
                     $new_term = taxonomy_term_save($term);
@@ -594,8 +702,8 @@ function globallink_taxonomy_get_translated($pd4, &$globallink_arr) {
                         }
                     }
             }
-            else if ($vocab->i18n_mode == I18N_MODE_ENTITY_TRANSLATION) {
-
+        }
+            else if (($entity_version['version'] == '7.x-1.0-beta6' && $vocab->i18n_mode == I18N_MODE_ENTITY_TRANSLATION) || ($entity_version['version'] == '7.x-1.0-beta5' && $vocab->i18n_mode == I18N_MODE_TRANSLATE)) {
                         // Use i18n fields translation
                         $source_locale = $term->language;
                         $fields = get_configured_fields_for_taxonomy($vocab->machine_name);
@@ -680,7 +788,7 @@ function globallink_taxonomy_get_translated($pd4, &$globallink_arr) {
                             );
                         }
                     }
-                    else if ($vocab->i18n_mode == I18N_MODE_TRANSLATE) {
+                    else if ($vocab->i18n_mode == I18N_MODE_TRANSLATE && $entity_version['version'] == '7.x-1.0-beta6') {
                       $vocabulary = $term->vocabulary_machine_name;
                       $translation_set = !empty($term->i18n_tsid) ? i18n_translation_set_load($term->i18n_tsid) : NULL;
                       if ($translation_set == NULL) {
@@ -760,6 +868,7 @@ function globallink_taxonomy_get_translated($pd4, &$globallink_arr) {
                                 }
 
                                 $translation = $t_field_arr[$delta]->translatedContent;
+                                $term->{$fieldName}[$target_locale][$delta]['value'] = $translation;
                                 $term->{$fieldName}[$source_locale][$delta]['value'] = $translation;
                             }
                         }
@@ -1353,15 +1462,24 @@ function get_taxonomy_fields($taxonomy_type) {
 }
 
 function globallink_get_all_translatable_taxonomy_types_and_names() {
+    $override_localize = variable_get('globallink_override_localize', 0);
+    $entity_version = system_get_info('module', 'entity_translation');
     $entity_info = entity_get_info('taxonomy_term');
     $arr = array();
     if (isset($entity_info) && isset($entity_info['bundles'])) {
         $bundles = $entity_info['bundles'];
         foreach ($bundles as $key => $bundle) {
-            $vocab = taxonomy_vocabulary_machine_name_load($key);
+          $vocab = taxonomy_vocabulary_machine_name_load($key);
+          if ($entity_version['version'] == '7.x-1.0-beta6') {
             if (($vocab->i18n_mode == I18N_MODE_TRANSLATE) || ($vocab->i18n_mode == I18N_MODE_ENTITY_TRANSLATION)) {
-                $arr['tax:' . $key] = $bundle['label'];
+              $arr['tax:' . $key] = $bundle['label'];
             }
+          }
+          elseif ($entity_version['version'] == '7.x-1.0-beta5') {
+            if (($vocab->i18n_mode == I18N_MODE_TRANSLATE) || ($vocab->i18n_mode == I18N_MODE_LOCALIZE && $override_localize == 1)) {
+              $arr['tax:' . $key] = $bundle['label'];
+            }
+          }
         }
         asort($arr);
     }

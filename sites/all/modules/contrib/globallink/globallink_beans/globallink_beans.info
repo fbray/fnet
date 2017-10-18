@@ -1,12 +1,12 @@
-name = GlobalLink Entity Translation
-description = Allows users to manage and translate entity nodes using Translations.com translation services.
+name = GlobalLink Beans Translation
+description = Allows users to manage and translate beans using Translations.com translation services.
 core = 7.x
 dependencies[] = entity_translation
+dependencies[] = bean
+dependecies[] = bean_admin_ui
 dependencies[] = globallink
 package = GlobalLink
 php = 5.2.5
-scripts[] = js/globallink_entity_active_submissions.js
-scripts[] = js/globallink_entity_send.js
 
 ; Information added by Drupal.org packaging script on 2017-09-19
 version = "7.x-6.6"
