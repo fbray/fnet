@@ -40,53 +40,95 @@ body {
   border-bottom: 1px solid #fff;
 }
 
-/* line 46, ../sass/responsive.smalltouch.portrait.scss */
+/* line 45, ../sass/responsive.smalltouch.portrait.scss */
+#footer-wrapper {
+  margin-bottom: 20px;
+}
+
+/* Marketo Form  */
+/* line 50, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main {
   text-align: center;
-  width: 377px;
+  width: 100%;
 }
-/* line 50, ../sass/responsive.smalltouch.portrait.scss */
+/* line 54, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main #mkto-content {
   padding: 15px 30px 60px 30px;
 }
-/* line 53, ../sass/responsive.smalltouch.portrait.scss */
+/* line 57, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main #mkto-content #mkt-prod-details {
-  width: 300px;
+  width: 100%;
 }
-/* line 56, ../sass/responsive.smalltouch.portrait.scss */
+/* line 60, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-title {
   font-size: 18px;
 }
-/* line 60, ../sass/responsive.smalltouch.portrait.scss */
-.mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-left,
-.mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-right {
-  display: none;
+@media only screen and (max-width: 275px) {
+  /* line 64, ../sass/responsive.smalltouch.portrait.scss */
+  .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-left,
+  .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-right {
+    display: none;
+  }
 }
-/* line 65, ../sass/responsive.smalltouch.portrait.scss */
+/* line 71, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-content {
   font-size: 12px;
   line-height: 16px;
-  width: 300px;
-  margin-top: 20px;
+  width: 100%;
+  text-align: justify;
 }
-/* line 73, ../sass/responsive.smalltouch.portrait.scss */
+/* line 79, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main #mkto-content #mkto-content-main-form {
   float: left;
-  width: 320px;
+  width: 100%;
   border: 2px solid #DDD;
   margin-top: 20px;
 }
-/* line 79, ../sass/responsive.smalltouch.portrait.scss */
+/* line 85, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main #mkto-content #mkto-content-main-form #mkto-form-header {
   padding: 5px;
 }
-/* line 84, ../sass/responsive.smalltouch.portrait.scss */
+/* line 90, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main #mkto-content #mkt-more-links-content {
   margin-top: 40px;
+  width: 100%;
 }
-/* line 88, ../sass/responsive.smalltouch.portrait.scss */
+/* line 95, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main #mkto-content #mkt-contact-info {
   margin-top: 40px;
+  width: 100%;
+}
+
+/*
+ * Footer region
+ */
+/* line 104, ../sass/responsive.smalltouch.portrait.scss */
+.region-footer {
+  font-size: 7px;
+}
+/* line 107, ../sass/responsive.smalltouch.portrait.scss */
+.region-footer #block-menu-menu-footer-main-menu {
+  float: none;
+  width: 315px;
+  margin: 0 auto;
+}
+@media only screen and (max-width: 320px) {
+  /* line 107, ../sass/responsive.smalltouch.portrait.scss */
+  .region-footer #block-menu-menu-footer-main-menu {
+    width: 70%;
+  }
+}
+/* line 116, ../sass/responsive.smalltouch.portrait.scss */
+.region-footer #block-block-11 {
+  float: none;
+  width: 200px;
+  margin: 0 auto;
+}
+/* line 122, ../sass/responsive.smalltouch.portrait.scss */
+.region-footer #block-menu-menu-footer-social-links {
+  float: none;
+  width: 135px;
+  margin: 0 auto;
 }
 
 /*# sourceMappingURL=responsive.smalltouch.portrait.css.map */

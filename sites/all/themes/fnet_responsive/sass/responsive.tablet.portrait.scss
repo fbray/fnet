@@ -17,14 +17,20 @@ html {
   font-size: 81.3%; 
 }
 
+#footer-wrapper{
+  margin-bottom: 20px;
+ }
+
+/* Marketo Form page */
 .mkto-content-main {
-  width: 768px;
+  width: 100%;
 
   #mkto-content {
-    padding: 60px 25px 60px 25px;
+    padding: 60px 20px 60px 20px;
+    margin-left: 15px;
 
     #mkt-prod-details {
-      width: 430px;
+      width: 350px;
 
       #mkt-prod-title {
         font-size: 24px;
@@ -32,11 +38,13 @@ html {
       
       #mkt-prod-img-left,
       #mkt-prod-img-right {
-        width: 182px;
+        width: 160px;
+        margin-right: 10px;
       }
 
       #mkt-prod-content {
-        width: 220px;
+        width: auto;
+        float: none;
       }
     }
 
@@ -49,11 +57,18 @@ html {
     }
 
     #mkt-more-links-content {
-      margin-top: 70px;
+      margin-top: 30px;
     }
 
     #mkt-contact-info {
-      margin-top: 135px;
+      margin-top: 30px;
     }
   }
+}
+
+/*
+ * Footer region
+ */
+.region-footer {
+  font-size: 8px;
 }

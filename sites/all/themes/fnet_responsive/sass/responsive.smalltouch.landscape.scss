@@ -41,39 +41,46 @@ body {
     border-bottom: 1px solid #fff;
   }
 }
-
+#footer-wrapper{
+  margin-bottom: 20px;
+ }
+/* Marketo Form */
 .mkto-content-main {
-  text-align: center;
-  width: 377px;
+  width: 100%;
 
   #mkto-content {
     padding: 15px 30px 60px 30px;
 
     #mkt-prod-details {
-      width: 300px;
+      width: 47%;
+      margin-right: 10px;
 
       #mkt-prod-title {
         font-size: 18px;
+        margin-top: 45px;
       }
       
       #mkt-prod-img-left,
       #mkt-prod-img-right {
-        display: none;
+        width: 131px;
+        margin-top: 15px; 
       }
 
       #mkt-prod-content {
-        font-size: 12px;
-        line-height: 16px;
-        width: 300px;
+        font-size: 14px;
+        line-height: 21px;
+        width: 100%;
         margin-top: 20px;
+        float: none;
+        text-align: justify;
       }
     }
 
     #mkto-content-main-form {
-      float: left;
-      width: 320px;
+      float: right;
+      width: 49%;
       border: 2px solid #DDD;
-      margin-top: 20px;
+      margin-top: 45px;
 
       #mkto-form-header {
         padding: 5px;
@@ -81,11 +88,38 @@ body {
     }
 
     #mkt-more-links-content {
-      margin-top: 40px;
+      margin-top: 55px;
+      width: 45%;
     }
 
     #mkt-contact-info {
       margin-top: 40px;
+      width: 45%;
     }
+  }
+}
+
+/*
+ * Footer region
+ */
+.region-footer {
+  font-size: 7px;
+
+  #block-menu-menu-footer-main-menu{
+    float: none;
+    width: 315px;
+    margin: 0 auto;
+  }
+
+  #block-block-11{
+    float: none;
+    width: 200px;
+    margin: 0 auto;
+  }
+
+  #block-menu-menu-footer-social-links{
+    float: none;
+    width: 135px;
+    margin: 0 auto;
   }
 }

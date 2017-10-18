@@ -314,7 +314,7 @@
       </select>
     </div>
     <div style="padding:10px 5px 5px 5px;"><strong>Select available language:</strong></div>
-    <select id="language" name="language" disabled="disabled" style="width:auto;font-size:12px;"">
+    <select id="language" name="language" disabled="disabled" style="width:auto;font-size:12px;">
     <option value="">-- Language --</option>
     </select>
     <div class="clear">&nbsp;</div>
