@@ -3,4 +3,3 @@ package = Fluke Networks
 description = News Events
 version = 7.x.1.0-20150617
 core = 7.x
-dependencies[] = site_split

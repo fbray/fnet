@@ -5,70 +5,73 @@
  * Code for  news events.
  */
 
-
+/**
+ * Implementation of hook_menu().
+ *
+ * @return array
+ */
 function fnet_news_events_menu() {
 
-    $items = array();
+  $items = array();
 
-    $items['news-events'] = array(
-      'type' => MENU_NORMAL_ITEM,
-      'title'   =>    t('News and Events'),
-      'access arguments' => array('access content'),
-      'page callback' => 'news_events',
-    );
-    $items['news-list'] = array(
-      'type' => MENU_NORMAL_ITEM,
-      'title'   =>    t('News'),
-      'access arguments' => array('access content'),
-      'page callback' => 'get_news_html',
-    );
+  $items['news-events'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => t('News and Events'),
+    'access arguments' => array('access content'),
+    'page callback' => 'news_events',
+  );
+  $items['news-list'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => t('News'),
+    'access arguments' => array('access content'),
+    'page callback' => 'get_news_html',
+  );
 
-    $items['awards-list'] = array(
-      'type' => MENU_NORMAL_ITEM,
-      'title'   =>    t('Awards'),
-      'access arguments' => array('access content'),
-      'page callback' => 'get_awards_html',
-    );
+  $items['awards-list'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => t('Awards'),
+    'access arguments' => array('access content'),
+    'page callback' => 'get_awards_html',
+  );
 
-    $items['news-events/training'] = array(
-      'type' => MENU_NORMAL_ITEM,
-      'title'   =>    t('Training'),
-      'access arguments' => array('access content'),
-      'page callback' => 'get_event_html',
-      'page arguments' => array('Training'),
-    );
+  $items['news-events/training'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => t('Training'),
+    'access arguments' => array('access content'),
+    'page callback' => 'get_event_html',
+    'page arguments' => array('Training'),
+  );
 
-    $items['news-events/tradeshows'] = array(
-      'type' => MENU_NORMAL_ITEM,
-      'title'   =>    t('Trade Shows'),
-      'access arguments' => array('access content'),
-      'page callback' => 'get_event_html',
-      'page arguments' => array('Trade Shows'),
-    );
-    $items['news-events/webcasts'] = array(
-      'type' => MENU_NORMAL_ITEM,
-      'title'   =>    t('Webcasts'),
-      'access arguments' => array('access content'),
-      'page callback' => 'get_event_html',
-      'page arguments' => array('Webcasts'),
-    );
-    $items['news-events/workshops'] = array(
-      'type' => MENU_NORMAL_ITEM,
-      'title'   =>    t('Workshops'),
-      'access arguments' => array('access content'),
-      'page callback' => 'get_event_html',
-      'page arguments' => array('Workshops'),
-    );
-    $items['news-events/seminars'] = array(
-      'type' => MENU_NORMAL_ITEM,
-      'title'   =>    t('Seminars'),
-      'access arguments' => array('access content'),
-      'page callback' => 'get_event_html',
-      'page arguments' => array('Seminars'),
-    );
+  $items['news-events/tradeshows'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => t('Trade Shows'),
+    'access arguments' => array('access content'),
+    'page callback' => 'get_event_html',
+    'page arguments' => array('Trade Shows'),
+  );
+  $items['news-events/webcasts'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => t('Webcasts'),
+    'access arguments' => array('access content'),
+    'page callback' => 'get_event_html',
+    'page arguments' => array('Webcasts'),
+  );
+  $items['news-events/workshops'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => t('Workshops'),
+    'access arguments' => array('access content'),
+    'page callback' => 'get_event_html',
+    'page arguments' => array('Workshops'),
+  );
+  $items['news-events/seminars'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => t('Seminars'),
+    'access arguments' => array('access content'),
+    'page callback' => 'get_event_html',
+    'page arguments' => array('Seminars'),
+  );
 
-    return $items;
-
+  return $items;
 }
 
 function news_events() {
@@ -78,83 +81,77 @@ function news_events() {
 
 }
 
-
-
-
 /**
- *  
+ * Implements hook_entity_view().
  *
- * Implements hook_entity_view($entity, $type, $view_mode, $langcode)
+ * @param $entity
+ * @param $type
+ * @param $view_mode
+ * @param $langcode
  */
 function fnet_news_events_entity_view($entity, $type, $view_mode, $langcode) {
+  if ($view_mode == 'teaser') {
+    if (($type == 'node') && (in_array($entity->type, array(
+        'pressrelease',
+        'award'
+      )))) {
+      //        $entity->content['body'] = array();
+      $entity->content['links'] = array();
+      $entity->content['title'] = array(
+        '#theme' => 'link',
+        '#weight' => 0,
+        '#text' => $entity->title,
+        '#path' => drupal_get_path_alias('node/' . $entity->nid),
+        '#view_mode' => 'teaser',
+        '#options' => array(
+          'attributes' => array(),
+          'html' => TRUE,
+        ),
+      );
+      $entity->body = array();
 
-    if ($view_mode=='teaser')  {
+      $entity->location = array();
+      $entity->locations = array();
+      $entity->content['locations'] = array();
 
-        if ( ($type=='node') && ( in_array($entity->type, array('pressrelease', 'award') ) ) ) {
+      $entity->title = '';
+      $entity->name = '';
+      $entity->uid = '';
+      $entity->field_award_link = array();
+
+    }
+
+    if (($type == 'node') && ($entity->type == 'event')) {
 
       //        $entity->content['body'] = array();
-              $entity->content['links'] = array();
-              $entity->content['title'] = array( 
-                '#theme' => 'link',
-                '#weight' => 0,
-                '#text' => $entity->title ,
-                '#path' => drupal_get_path_alias('node/' . $entity->nid),
-                '#view_mode' => 'teaser',
-                '#options' => array(
-                  'attributes' => array(),
-                  'html' => TRUE,
+      $entity->field_workshop_reglink = array();
+      $entity->location = array();
+      $entity->locations = array();
+      $entity->content['links'] = array();
+      $entity->content['locations'] = array();
+      $entity->content['title'] = array(
+        '#theme' => 'link',
+        '#weight' => 0,
+        '#text' => $entity->title,
+        '#path' => drupal_get_path_alias('node/' . $entity->nid),
+        '#view_mode' => 'teaser',
+        '#options' => array(
+          'attributes' => array(),
+          'html' => TRUE,
 
-                  ),
-                );
-              $entity->body = array();
+        ),
+      );
+      $entity->body = array();
+      $entity->title = '';
 
-              $entity->location = array();
-              $entity->locations = array();
-              $entity->content['locations'] = array();
-
-              $entity->title = '';
-              $entity->name = '';
-              $entity->uid = '';
-              $entity->field_award_link = array();
-
-        }
-
-        if ( ($type=='node') && ( $entity->type == 'event') ) {
-
-      //        $entity->content['body'] = array();
-              $entity->field_workshop_reglink = array();
-              $entity->location = array();
-              $entity->locations = array();
-              $entity->content['links'] = array();
-              $entity->content['locations'] = array();
-              $entity->content['title'] = array( 
-                '#theme' => 'link',
-                '#weight' => 0,
-                '#text' => $entity->title ,
-                '#path' => drupal_get_path_alias('node/' . $entity->nid),
-                '#view_mode' => 'teaser',
-                '#options' => array(
-                  'attributes' => array(),
-                  'html' => TRUE,
-
-                  ),
-                );
-              $entity->body = array();
-              $entity->title = '';
-
-        }
-
-
-    } // end if teaser
-
+    }
+  } // end if teaser
 }
 
-
-
 /**
- *  
- *
  * Implements hook_block_info()
+ *
+ * @return array
  */
 function fnet_news_events_block_info() {
 
@@ -235,31 +232,29 @@ function fnet_news_events_block_info() {
 
 
 /**
- *  
+ * Implements hook_block_view().
  *
- * Implements hook_block_view($delta = '')
+ * @param string $delta
+ * @return array
  */
 function fnet_news_events_block_view($delta = '') {
-
   $block = array();
-
   switch ($delta) {
-
     case 'news_block':
       $block['subject'] = t('News');
-      $more = l( t('More News'), 'news-list' );
+      $more = l(t('More News'), 'news-list');
       $block['content'] = get_news_html(5) . $more;
       break;
 
     case 'awards_block':
       $block['subject'] = t('Awards');
-      $more = l( t('More Awards'), 'awards-list' );
+      $more = l(t('More Awards'), 'awards-list');
       $block['content'] = get_awards_html(5) . $more;
       break;
 
     case 'webcasts_block':
       $block['subject'] = t('Webcasts');
-      $more = l( t('On Demand Webcasts'), 'support/technical-docs/webcasts' );
+      $more = l(t('On Demand Webcasts'), 'support/technical-docs/webcasts');
       $block['content'] = get_event_html('Webcasts', 5) . $more;
       break;
 
@@ -293,157 +288,180 @@ function fnet_news_events_block_view($delta = '') {
   return $block;
 }
 
-
-
-
+/**
+ * TODO: Replace this with a View.
+ * @param null $range
+ * @return string
+ */
 function get_news_html($range=NULL) {
+  $siteReg = module_invoke('fnet_helper', 'site_region');
+  $regLang = $siteReg["regLang"];
 
-    $siteReg = module_invoke('fnet_helper', 'site_region');
-    $regLang = $siteReg["regLang"];
+  if ($range) {
+    $cache_name = 'news_block_' . $regLang . '_' . $range;
+  }
+  else {
+    $cache_name = 'news_block_' . $regLang;
+  }
 
-    if ($range) {
-      $cache_name = 'news_block_' . $regLang . '_' . $range;
-    } else {
-      $cache_name = 'news_block_' . $regLang ;
+  $cache = cache_get($cache_name, 'cache_block');
+
+  if (!empty($cache) && isset($cache->data) && !empty($cache->data)) {
+    return $cache->data;
+  }
+  else {
+    $nodes = node_load_multiple(get_news_nids($regLang, $range));
+    $rendered = ''; // "no results" ?
+    if (count($nodes) > 0) {
+      $nodes_to_render = node_view_multiple($nodes, 'teaser');
+      $rendered = render($nodes_to_render);
     }
-
-    $cache = cache_get($cache_name, 'cache_block');
-
-    if (!empty($cache) && isset($cache->data) && !empty($cache->data)) {
-      return $cache->data;
-    }
-    else {
-      $nodes = node_load_multiple( get_news_nids($regLang, $range) ); 
-      $rendered = ''; // "no results" ?
-      if (count($nodes) > 0) {
-        $nodes_to_render = node_view_multiple($nodes, 'teaser');
-        $rendered = render($nodes_to_render);
-      }
-      cache_set($cache_name, $rendered, 'cache_block', time() + 600);
-      return $rendered;
-    }
-
+    cache_set($cache_name, $rendered, 'cache_block', time() + 600);
+    return $rendered;
+  }
 }
 
+/**
+ * @param $regLang
+ * @param null $range
+ * @return array
+ */
 function get_news_nids($regLang, $range=NULL) {
 
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'node')
-        ->propertyCondition('type', 'pressrelease')
-        ->propertyCondition('status', NODE_PUBLISHED)
-        ->fieldCondition('field_news_langreg', 'value', $regLang , '=')
-        ->fieldOrderBy('field_news_date', 'value', 'DESC');
-  if (strtolower(variable_get('site_split_personality', 'pre-split')) != 'pre-split') {
-    $query->fieldCondition('field_business_entity', 'tid', site_split_personality_tids(), 'IN');
+    ->propertyCondition('type', 'pressrelease')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_language_region', 'value', $regLang, '=')
+    ->fieldOrderBy('field_release_date', 'value', 'DESC');
+  if ($range) {
+    $query->range(0, $range);
   }
-  if ($range) $query->range(0,$range);
   $entities = $query->execute();
 
-  if ( isset($entities['node']) ) {
-    return array_keys($entities['node']) ;
-  } else {
+  if (isset($entities['node'])) {
+    return array_keys($entities['node']);
+  }
+  else {
     return array();
   }
-
 }
 
-
-
-
+/**
+ * TODO: Replace this with a View.
+ * @param null $range
+ * @return string
+ */
 function get_awards_html($range=NULL) {
+  $siteReg = module_invoke('fnet_helper', 'site_region');
+  $regLang = $siteReg["regLang"];
 
-    $siteReg = module_invoke('fnet_helper', 'site_region');
-    $regLang = $siteReg["regLang"];
+  if ($range) {
+    $cache_name = 'awards_block_' . $regLang . '_' . $range;
+  }
+  else {
+    $cache_name = 'awards_block_' . $regLang;
+  }
 
-    if ($range) {
-      $cache_name = 'awards_block_' . $regLang . '_' . $range;
-    } else {
-      $cache_name = 'awards_block_' . $regLang ;
+  $cache = cache_get($cache_name, 'cache_block');
+
+  if (!empty($cache) && isset($cache->data) && !empty($cache->data)) {
+    return $cache->data;
+  }
+  else {
+    $nodes = node_load_multiple(get_awards_nids($regLang, $range));
+    $rendered = '';
+    if (count($nodes) > 0) {
+      $nodes_to_render = node_view_multiple($nodes, 'teaser');
+      $rendered = render($nodes_to_render);
     }
-
-    $cache = cache_get($cache_name, 'cache_block');
-
-    if (!empty($cache) && isset($cache->data) && !empty($cache->data)) {
-      return $cache->data;
-    }
-    else {
-      $nodes = node_load_multiple( get_awards_nids($regLang, $range) ); 
-      $rendered = '';
-      if (count($nodes) > 0) {
-        $nodes_to_render = node_view_multiple($nodes, 'teaser');
-        $rendered = render($nodes_to_render);
-      }
-      cache_set($cache_name, $rendered, 'cache_block', time() + 600);
-      return $rendered;
-    }
-
+    cache_set($cache_name, $rendered, 'cache_block', time() + 600);
+    return $rendered;
+  }
 }
 
+/**
+ * TODO: Replace this with a View.
+ *
+ * @param $regLang
+ * @param null $range
+ * @return array
+ */
 function get_awards_nids($regLang, $range=NULL) {
-
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'node')
-        ->propertyCondition('type', 'award')
-        ->propertyCondition('status', NODE_PUBLISHED)
-        ->fieldCondition('field_award_langreg', 'value', $regLang , '=')
-        ->fieldOrderBy('field_award_date', 'value', 'DESC');
-  if (strtolower(variable_get('site_split_personality', 'pre-split')) != 'pre-split') {
-    $query->fieldCondition('field_business_entity', 'tid', site_split_personality_tids(), 'IN');
+    ->propertyCondition('type', 'award')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_language_region', 'value', $regLang, '=')
+    ->fieldOrderBy('field_award_date', 'value', 'DESC');
+  if ($range) {
+    $query->range(0, $range);
   }
-  if ($range) $query->range(0,$range);
   $entities = $query->execute();
 
-  if ( isset($entities['node']) ) {
-    return array_keys($entities['node']) ;
-  } else {
+  if (isset($entities['node'])) {
+    return array_keys($entities['node']);
+  }
+  else {
     return array();
   }
-
 }
 
-
-
+/**
+ * TODO: Replace this with a View.
+ *
+ * @param $type
+ * @param null $range
+ * @return string
+ */
 function get_event_html($type, $range=NULL) {
 
   $siteReg = module_invoke('fnet_helper', 'site_region');
   $regLang = $siteReg["regLang"];
 
-    if ($range) {
-      $cache_name = 'events_block_' . $type . $regLang . '_' . $range;
-    } else {
-      $cache_name = 'events_block_' . $type . $regLang ;
-    }
+  if ($range) {
+    $cache_name = 'events_block_' . $type . $regLang . '_' . $range;
+  }
+  else {
+    $cache_name = 'events_block_' . $type . $regLang;
+  }
 
-    $cache = cache_get($cache_name, 'cache_block');
+  $cache = cache_get($cache_name, 'cache_block');
 
-    if (!empty($cache) && isset($cache->data) && !empty($cache->data)) {
-      return $cache->data;
-    }
-    else {
+  if (!empty($cache) && isset($cache->data) && !empty($cache->data)) {
+    return $cache->data;
+  }
+  else {
 
-      $event_tid=0;
-      $tids = taxonomy_get_term_by_name($type);
-      foreach ($tids as $term) {
-        if ($term->vocabulary_machine_name = 'vocabulary_10') $event_tid=$term->tid;
+    $event_tid = 0;
+    $tids = taxonomy_get_term_by_name($type);
+    foreach ($tids as $term) {
+      if ($term->vocabulary_machine_name = 'event_type') {
+        $event_tid = $term->tid;
       }
-
-      $nodes = node_load_multiple( get_event_nids($type, $event_tid, $regLang, $range) ); 
-
-      $rendered = '';
-      if (count($nodes) > 0) {
-        $nodes_to_render = node_view_multiple($nodes, 'teaser');
-        $rendered = render($nodes_to_render);
-      }
-      
-      cache_set($cache_name, $rendered, 'cache_block', time() + 600);
-      return $rendered;
     }
 
-  return '';
+    $nodes = node_load_multiple(get_event_nids($type, $event_tid, $regLang, $range));
 
+    $rendered = '';
+    if (count($nodes) > 0) {
+      $nodes_to_render = node_view_multiple($nodes, 'teaser');
+      $rendered = render($nodes_to_render);
+    }
+
+    cache_set($cache_name, $rendered, 'cache_block', time() + 600);
+    return $rendered;
+  }
 }
 
-
+/**
+ * TODO: Replace this with a View.
+ * @param $type
+ * @param $tid
+ * @param $regLang
+ * @param int $range
+ * @return array
+ */
 function get_event_nids($type, $tid, $regLang, $range=50) {
 
   $today = date('Y-m-d 00:00:00');
@@ -455,12 +473,14 @@ function get_event_nids($type, $tid, $regLang, $range=50) {
 
   $query = new EntityFieldQuery();
   $expired_nodes = $query->entityCondition('entity_type', 'node')
-        ->propertyCondition('type', 'event')
-        ->fieldCondition('field_event_date', 'value', $today ,  '<')
-        ->propertyCondition('status', NODE_PUBLISHED)
-        ->execute();
+    ->propertyCondition('type', 'event')
+    ->fieldCondition('field_event_date', 'value', $today, '<')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->execute();
 
-  if (isset($expired_nodes['node']) ) $expired_nids =   array_keys($expired_nodes['node']);
+  if (isset($expired_nodes['node'])) {
+    $expired_nids = array_keys($expired_nodes['node']);
+  }
 
 
   // We want items with either a future date, or no date set
@@ -471,40 +491,35 @@ function get_event_nids($type, $tid, $regLang, $range=50) {
 
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'node')
-        ->propertyCondition('type', 'event')
-        ->propertyCondition('nid', $expired_nids, 'NOT IN')
-        ->fieldCondition('field_event_langreg', 'value', $regLang , '=')
-        ->fieldCondition('taxonomy_vocabulary_10', 'tid', $tid )
-        ->propertyCondition('status', NODE_PUBLISHED);
-  if (strtolower(variable_get('site_split_personality', 'pre-split')) != 'pre-split') {
-    $query->fieldCondition('field_business_entity', 'tid', site_split_personality_tids(), 'IN');
-  }
+    ->propertyCondition('type', 'event')
+    ->propertyCondition('nid', $expired_nids, 'NOT IN')
+    ->fieldCondition('field_language_region', 'value', $regLang, '=')
+    ->fieldCondition('field_event_types', 'target_id', $tid)
+    ->propertyCondition('status', NODE_PUBLISHED);
   if ($type == 'Award') {
-        $query->fieldOrderBy('field_news_date', 'value', 'ASC');
-        $query->propertyOrderBy('title', 'ASC');
-  } else {
-        $query->propertyOrderBy('title', 'ASC');
-      }
+    $query->fieldOrderBy('field_award_date', 'value', 'ASC');
+    $query->propertyOrderBy('title', 'ASC');
+  }
+  else {
+    $query->propertyOrderBy('title', 'ASC');
+  }
 
- if ($range) $query->range(0,$range);
+  if ($range) {
+    $query->range(0, $range);
+  }
   $entities = $query->execute();
 
-  if ( isset($entities['node']) ) {
+  if (isset($entities['node'])) {
     $return = array();
     foreach ($entities['node'] as $nid => $node) {
-      if (! in_array($nid, $expired_nids) ) $return[$nid] = $nid;
+      if (!in_array($nid, $expired_nids)) {
+        $return[$nid] = $nid;
+      }
     }
 
     return $return;
-  } else {
+  }
+  else {
     return array();
   }
-
-
-
-}
-
-function __fnet_news_events_query_empty_event_date_alter($query) {
-
-
 }
