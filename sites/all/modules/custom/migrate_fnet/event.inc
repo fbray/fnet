@@ -9,17 +9,19 @@
 /*
  *  Event Migration Class
 */
-class FNETEventMigration extends DrupalNode7Migration {
+class FNETEventMigration extends FNETNode7Migration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
     // Deprecated Fields
-    $this->addFieldMapping(NULL, 'field_business_entity');
+    $this->addFieldMapping(NULL, 'field_business_entity')
+      ->description(t('No longer necessary as NetScout split is complete.'))
+      ->issueGroup(t('DNM'));
 
     // Individual Fields
     $this->addFieldMapping('field_intro', 'field_event_intro');
-    $this->addFieldMapping('field_intro:format', 'field_event_intro:format');
+    $this->addFieldMapping('field_intro:format', 'field_event_intro:format'); // Careful here. The first migration had messed up Text Formats because one was missing on import.
     $this->addFieldMapping('field_intro:language', 'field_event_intro:language')
       ->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('weight', 'field_event_priority'); // Move to Weight
@@ -40,21 +42,10 @@ class FNETEventMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_event_date:rrule', 'field_event_date:rrule');
     $this->addFieldMapping('field_event_date:to', 'field_event_date:to');
 
-    // Address Field - convert from Location
-    // TODO: Is this necessary? Hmm.
-    // It doesn't appear to be used for anything.
-
-    // Taxonomy References
-    $this->addFieldMapping('event_types', 'taxonomy_vocabulary_10')
-      ->sourceMigration('EventTypes');
-    $this->addFieldMapping('event_types:source_type')
-      ->defaultValue('tid');
-    $this->addFieldMapping('event_types:create_term')
-      ->defaultValue(FALSE);
-    $this->addFieldMapping('event_types:ignore_case')
-      ->defaultValue(TRUE);
 
     // Entity References
+    $this->addFieldMapping('event_types', 'taxonomy_vocabulary_10')
+      ->sourceMigration('EventTypes');
     $this->addFieldMapping('field_product_category', 'field_workshop_industry')
       ->sourceMigration('ProductCategory')
       ->defaultValue(NULL);
@@ -62,26 +53,12 @@ class FNETEventMigration extends DrupalNode7Migration {
       ->sourceMigration('ProductDisplay')
       ->defaultValue(NULL);
 
-    // Internationalization TODO: Sort this out.
-    $this->addFieldMapping('language', 'field_event_langreg');
+    // Internationalization
+    $this->addFieldMapping('field_language_region', 'field_event_langreg');
   }
 
-  protected function query() {
-    $query = parent::query();
-
-    // Join location table
-    $query->join('location_instance', 'i', 'i.nid = n.nid AND i.vid = n.vid');
-    $query->join('location', 'l', 'l.lid = i.lid');
-    $query->fields('l', array(
-      'name',
-      'street',
-      'additional',
-      'city',
-      'province',
-      'postal_code',
-      'country')
-    );
-
-    return $query;
+  public function complete($node, stdClass $row) {
+    // Generate URL Redirects.
+    parent::generateNodeRedirect($node, $row);
   }
 }

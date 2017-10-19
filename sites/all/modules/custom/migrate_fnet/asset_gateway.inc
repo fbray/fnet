@@ -8,13 +8,19 @@
 /*
  *  Asset Gateway Migration Class
 */
-class FNETAssetGatewayMigration extends DrupalNode7Migration {
+class FNETAssetGatewayMigration extends FNETNode7Migration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
+
     // Deprecated Fields
-    $this->addFieldMapping(NULL, 'field_business_entity');
+    $this->addFieldMapping(NULL, 'field_business_entity')
+      ->description(t('No longer necessary as NetScout split is complete.'))
+      ->issueGroup(t('DNM'));
 
     // Individual Fields
     $this->addFieldMapping('field_ag_redirect_wait', 'field_ag_redirect_wait');

@@ -9,7 +9,7 @@
 /*
  *  Event Occurance Migration Class
 */
-class FNETEventOccurrenceMigration extends DrupalNode7Migration {
+class FNETEventOccurrenceMigration extends FNETNode7Migration {
   public function __construct(array $arguments) {
     $this->sourceFields += array(
       'parsed_event_date' => t('The formatted date compiled from the date and time fields.'),
@@ -69,7 +69,7 @@ class FNETEventOccurrenceMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_address:sub_premise')
       ->defaultValue(NULL);
     // Company Name
-    $this->addFieldMapping('field_address:organization_name')
+    $this->addFieldMapping('field_address:organisation_name')
       ->defaultValue(NULL);
     // Full Name
     $this->addFieldMapping('field_address:name_line', 'name')
@@ -86,7 +86,7 @@ class FNETEventOccurrenceMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_event_date', 'parsed_event_date');
     $timezone = variable_get('date_default_timezone', '');
     $this->addFieldMapping('field_event_date:timezone', 'parsed_event_date:timezone')
-      ->defaultValue($timezone); // TODO: Calculate this from address country?
+      ->defaultValue($timezone);
     $this->addFieldMapping('field_event_date:rrule', 'parsed_event_date:rrule')
       ->defaultValue(NULL);
     $this->addFieldMapping('field_event_date:to', 'parsed_event_date_end');
@@ -143,6 +143,8 @@ class FNETEventOccurrenceMigration extends DrupalNode7Migration {
   }
 
   /**
+   * Parses the various text entries for time into usable datetimes.
+   *
    * @param $time
    * @return \stdClass
    */
@@ -163,5 +165,10 @@ class FNETEventOccurrenceMigration extends DrupalNode7Migration {
     // format to 24hr time - HH:MM:SS
 
     return $parsed;
+  }
+
+  public function complete($node, stdClass $row) {
+    // Generate URL Redirects.
+    parent::generateNodeRedirect($node, $row);
   }
 }

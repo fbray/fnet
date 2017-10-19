@@ -9,13 +9,15 @@
 /*
  *  Homepage2013 Migration Class
 */
-class FNETHomepage2013Migration extends DrupalNode7Migration {
+class FNETHomepage2013Migration extends FNETNode7Migration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
     // Deprecated Fields
-    $this->addFieldMapping(NULL, 'field_business_entity');
+    $this->addFieldMapping(NULL, 'field_business_entity')
+      ->description(t('No longer necessary as NetScout split is complete.'))
+      ->issueGroup(t('DNM'));
 
     // Individual Fields
     $this->addFieldMapping('field_home13_banner_html', 'field_home13_banner_html');
@@ -52,5 +54,10 @@ class FNETHomepage2013Migration extends DrupalNode7Migration {
       ->defaultValue(NULL);
     $this->addFieldMapping('field_home13_expind:language', 'field_home13_expind:language')
       ->defaultValue(LANGUAGE_NONE);
+  }
+
+  public function complete($node, stdClass $row) {
+    // Generate URL Redirects.
+    parent::generateNodeRedirect($node, $row);
   }
 }

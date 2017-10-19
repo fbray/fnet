@@ -14,15 +14,19 @@ class FNETProductDistributorMigration extends DrupalNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
-    $this->addFieldMapping(NULL, 'field_business_entity');
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
 
-    // Node Reference
-    // TODO: Migrate this to Entity Reference?
+    $this->addFieldMapping(NULL, 'field_business_entity')
+      ->description(t('No longer necessary as NetScout split is complete.'))
+      ->issueGroup(t('DNM'));
+    $this->addFieldMapping(NULL, 'field_custom_publish_content')
+      ->description(t('This was redundant with node status.'))
+      ->issueGroup(t('DNM'));
 
-    // Migrate the fieldset
+    // Entity References
+    $this->addFieldMapping('field_product', 'field_products')
+      ->sourceMigration('ProductDisplay');
 
-    // Individual fields
-    // TODO: This is a WTF?! Should this just be Node Status? Hmm.
-    $this->addFieldMapping('field_custom_publish_content', 'field_custom_publish_content');
   }
 }

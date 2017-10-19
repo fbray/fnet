@@ -371,18 +371,17 @@ function migrate_fnet_register_migrations() {
       'machine_name' => 'DigitalAsset',
       'source_type' => 'digital_asset',
       'destination_type' => 'digital_asset',
-      // TODO: dependency on files?
+      'dependencies' => array('Files'),
     ),
 
      // Distributors
-     array(
+    array(
       'class_name' => 'FNETProductDistributorMigration',
       'description' => t('Migration of Distributor nodes from Drupal. Formerly called Distributor.'),
       'machine_name' => 'ProductDistributor', // Changed from 'Distributor'.
       'source_type' => 'product_distributor_group',
       'destination_type' => 'product_distributor',
-       // TODO: This has a node reference.
-       // 'dependencies' => array('BlogCategories', 'BlogTags'),
+      'dependencies' => array('ProductDisplay'),
     ),
 
     // eDocs
@@ -393,7 +392,6 @@ function migrate_fnet_register_migrations() {
       'source_type' => 'edoc',
       'destination_type' => 'edoc',
       'dependencies' => array('eDocTypes', 'Brand'),
-      // TODO: Node Reference dependencies?
     ),
 
     // eDoc Language
@@ -533,6 +531,7 @@ function migrate_fnet_register_migrations() {
       'machine_name' => 'ProductCategoryLanguage',
       'source_type' => 'industrylanguage',
       'destination_type' => 'product_category_language',
+      'dependencies' => array('ProductCategory')
     ),
 
 
@@ -601,6 +600,16 @@ function migrate_fnet_register_migrations() {
       'machine_name' => 'PageRegion',
       'source_type' => 'page_reg',
       'destination_type' => 'page_region',
+    ),
+
+    // Page Region Language
+    array(
+      'class_name' => 'FNETPageRegionLanguageMigration',
+      'description' =>  t('Migration of the Page Region nodes from Drupal.'),
+      'machine_name' => 'PageRegionLanguage',
+      'source_type' => 'page_reg_lang',
+      'destination_type' => 'page_region_language',
+      'dependencies' => array('PageRegion'),
     ),
 
     // Press Releases

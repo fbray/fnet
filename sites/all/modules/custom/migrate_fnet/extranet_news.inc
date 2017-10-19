@@ -8,7 +8,7 @@
 /*
  *  Extranet News Migration Class
 */
-class FNETExtranetNewsMigration extends DrupalNode7Migration {
+class FNETExtranetNewsMigration extends FNETNode7Migration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
 
@@ -16,5 +16,10 @@ class FNETExtranetNewsMigration extends DrupalNode7Migration {
 
     // Individual Fields
     $this->addFieldMapping('field_display_title', 'field_display_title');
+  }
+
+  public function complete($node, stdClass $row) {
+    // Generate URL Redirects.
+    parent::generateNodeRedirect($node, $row);
   }
 }

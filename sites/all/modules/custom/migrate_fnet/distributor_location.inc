@@ -9,7 +9,7 @@
 /*
  *  Distributor Migration Class
 */
-class FNETDistributorLocationMigration extends DrupalNode7Migration {
+class FNETDistributorLocationMigration extends FNETNode7Migration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
 
@@ -104,7 +104,6 @@ class FNETDistributorLocationMigration extends DrupalNode7Migration {
 
   protected function query() {
     $query = parent::query();
-
     // Join location table
     $query->join('location_instance', 'i', 'i.nid = n.nid AND i.vid = n.vid');
     $query->join('location', 'l', 'l.lid = i.lid');
@@ -118,5 +117,10 @@ class FNETDistributorLocationMigration extends DrupalNode7Migration {
     );
 
     return $query;
+  }
+
+  public function complete($node, stdClass $row) {
+    // Generate URL Redirects.
+    parent::generateNodeRedirect($node, $row);
   }
 }

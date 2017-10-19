@@ -8,9 +8,12 @@
 /*
  *  Blog Article Migration Class
 */
-class FNETBlogArticleMigration extends DrupalNode7Migration {
+class FNETBlogArticleMigration extends FNETNode7Migration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
+
 
     // Entity References
     $this->addFieldMapping('field_blog_categories', 'taxonomy_vocabulary_16')
@@ -18,4 +21,5 @@ class FNETBlogArticleMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_blog_tags', 'taxonomy_vocabulary_17')
       ->sourceMigration('BlogTags');
   }
+
 }

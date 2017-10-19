@@ -9,13 +9,15 @@
 /*
  *  Knowledge Base Article Migration Class
 */
-class FNETKnowledgeBaseArticleMigration extends DrupalNode7Migration {
+class FNETKnowledgeBaseArticleMigration extends FNETNode7Migration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
     // Deprecated Fields
-    $this->addFieldMapping(NULL, 'field_business_entity');
+    $this->addFieldMapping(NULL, 'field_business_entity')
+      ->description(t('No longer necessary as NetScout split is complete.'))
+      ->issueGroup(t('DNM'));
 
     // Individual Fields
     $this->addFieldMapping('field_article_author', 'field_article_author');  // Should be changed to node author. Really.
@@ -23,5 +25,10 @@ class FNETKnowledgeBaseArticleMigration extends DrupalNode7Migration {
     // Entity References
     $this->addFieldMapping('field_knowledge_base', 'taxonomy_vocabulary_14')
       ->sourceMigration('KnowledgeBase');
+  }
+
+  public function complete($node, stdClass $row) {
+    // Generate URL Redirects.
+    parent::generateNodeRedirect($node, $row);
   }
 }

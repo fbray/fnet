@@ -40,6 +40,7 @@ files[] = microsite_page.inc
 files[] = microsite_page_language.inc
 files[] = microsite_story.inc
 files[] = microsite_story_language.inc
+files[] = node_migrate.classes.inc
 files[] = north_america_group.inc
 files[] = page.inc
 files[] = page_region.inc

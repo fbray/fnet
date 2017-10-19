@@ -33,7 +33,7 @@ class EventRegistrantMigration extends Migration {
     // First, we set up a query for this data. Note that by ordering on
     // style_parent, we guarantee root terms are migrated first, so the
     // parent_name mapping below will find that the parent exists.
-    $query = $query = Database::getConnection('default', $arguments['source_connection'])
+    $query = Database::getConnection('default', $arguments['source_connection'])
       ->select('ems_registrant', 'emsr')
       ->fields('emsr', array('rid', 'first_name', 'last_name', 'email', 'job_title',
         'job_role', 'company', 'address', 'phone', 'city', 'state', 'postal_code', 'country'));

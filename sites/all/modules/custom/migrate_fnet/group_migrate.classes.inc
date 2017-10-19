@@ -174,6 +174,7 @@ class MigrateDestinationGroupMembership extends MigrateDestination {
       'mid' => array(
         'description' => "The group membership's unique ID.",
         'type' => 'int',
+        'unsigned' => TRUE,
         'not null' => TRUE,
       ),
     );
@@ -182,14 +183,13 @@ class MigrateDestinationGroupMembership extends MigrateDestination {
   /**
    * Delete a membership.
    *
-   * @param $mid
+   * @param array $mids
    *  IDs to be deleted.
    */
-  public function rollback(array $mid) {
-    // TODO: This is Organic Groups cruft and needs to be checked.
-    $group_membership = og_membership_load($mid);
-    group_membership_delete($group_membership);
+  public function rollback(array $mids) {
+    group_membership_delete_multiple($mids);
   }
+
 
   /**
    * Delete a batch of memberships at once.
@@ -234,7 +234,7 @@ class MigrateDestinationGroupMembership extends MigrateDestination {
       $group_membership->roles = array();
     }
 
-    group_membership_save($group_membership);
+    entity_save('group_membership', $group_membership);
 
     $this->complete($group_membership, $row);
 
@@ -258,7 +258,7 @@ class MigrateDestinationGroupMembership extends MigrateDestination {
     );
 
     // Call any general handlers.
-    migrate_handler_invoke_all('og_membership', 'prepare', $group_membership, $row);
+    migrate_handler_invoke_all('group_membership', 'prepare', $group_membership, $row);
     // Then call any prepare handler for this specific Migration.
     if (method_exists($migration, 'prepare')) {
       $migration->prepare($group_membership, $row);
@@ -283,7 +283,7 @@ class MigrateDestinationGroupMembership extends MigrateDestination {
     );
 
     // Call any general handlers.
-    migrate_handler_invoke_all('og_membership', 'complete', $group_membership, $row);
+    migrate_handler_invoke_all('group_membership', 'complete', $group_membership, $row);
     // Then call any complete handler for this specific Migration.
     if (method_exists($migration, 'complete')) {
       $migration->complete($group_membership, $row);

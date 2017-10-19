@@ -9,13 +9,19 @@
 /*
  *  Award Migration Class
 */
-class FNETAwardMigration extends DrupalNode7Migration {
+class FNETAwardMigration extends FNETNode7Migration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
+
     // Deprecated Fields
-    $this->addFieldMapping(NULL, 'field_business_entity');
+    $this->addFieldMapping(NULL, 'field_business_entity')
+      ->description(t('No longer necessary as NetScout split is complete.'))
+      ->issueGroup(t('DNM'));
 
     // Individual Fields
     $this->addFieldMapping('field_intro', 'field_award_intro'); // Long text
@@ -23,6 +29,7 @@ class FNETAwardMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_intro:language', 'field_award_intro:language')
       ->defaultValue(LANGUAGE_NONE); // Long text
 
+    // Link
     $this->addFieldMapping('field_external_url', 'field_award_link'); // Link
     $this->addFieldMapping('field_external_url:title', 'field_award_link:title');
     $this->addFieldMapping('field_external_url:attributes', 'field_award_link:attributes');
@@ -45,5 +52,10 @@ class FNETAwardMigration extends DrupalNode7Migration {
     // Internationalization
     // We're going to keep this for now.
     $this->addFieldMapping('field_language_region', 'field_award_langreg'); //
+  }
+
+  public function complete($node, stdClass $row) {
+    // Generate URL Redirects.
+    parent::generateNodeRedirect($node, $row);
   }
 }
