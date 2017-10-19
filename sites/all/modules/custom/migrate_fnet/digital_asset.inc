@@ -8,19 +8,31 @@
 /*
  *  Digital Asset Migration Class
 */
-class FNETDigitalAssetMigration extends DrupalNode7Migration {
+class FNETDigitalAssetMigration extends FNETNode7Migration {
   public function __construct(array $arguments) {
+    // TODO: Consolidated Industry
+    $this->sourceFields += array(
+      'consolidated_industry' => t('Combining the field_dam_industry and the field_dam_new_industry fields.'),
+    );
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
+
     // Deprecated Fields
-    $this->addFieldMapping(NULL, 'field_business_entity');
+    $this->addFieldMapping(NULL, 'field_business_entity')
+      ->description(t('No longer necessary as NetScout split is complete.'))
+      ->issueGroup(t('DNM'));
+
+    // Override the language
+    $this->addFieldMapping('language', 'field_dam_language');
 
     // Individual Fields
     $this->addFieldMapping('field_dam_document_id', 'field_dam_document_id');
     $this->addFieldMapping('field_dam_ams_id', 'field_dam_ams_id');
     $this->addFieldMapping('field_dam_revision_letter', 'field_dam_revision_letter');
-    $this->addFieldMapping('field_dam_language', 'field_dam_language');
     $this->addFieldMapping('field_dam_storage_file_folder', 'field_dam_storage_file_folder');
     $this->addFieldMapping('field_dam_storage_file_name', 'field_dam_storage_file_name');
     $this->addFieldMapping('field_dam_cdn_status', 'field_dam_cdn_status');
@@ -33,7 +45,6 @@ class FNETDigitalAssetMigration extends DrupalNode7Migration {
     $this->addFieldMapping('ffield_dam_entitlement_level', 'field_dam_entitlement_level');
 
     $this->addFieldMapping('field_dam_bulk_fulfillment', 'field_dam_bulk_fulfillment');
-    $this->addFieldMapping('field_dam_keep_original_filename', 'field_dam_keep_original_filename');
     $this->addFieldMapping('field_dam_storage_file_folder_po', 'field_dam_storage_file_folder_po');
     $this->addFieldMapping('field_dam_storage_filename_pod', 'field_dam_storage_filename_pod');
     $this->addFieldMapping('field_dam_cdn_status_pod', 'field_dam_cdn_status_pod');
@@ -48,10 +59,8 @@ class FNETDigitalAssetMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_dam_l3_category', 'field_dam_l3_category');
     $this->addFieldMapping('field_dam_l4_category', 'field_dam_l4_category');
 
-    // TODO: Special processing. These two fields need to be made into an Entity Reference field, referencing the Product Category content type.
-    // field_product_category
-    $this->addFieldMapping('field_dam_industry', 'field_dam_industry');
-    $this->addFieldMapping('field_dam_industry', 'field_dam_new_industry');
+    $this->addFieldMapping('field_dam_industry', 'consolidated_industry');
+
 
     // Link Fieldss
     $this->addFieldMapping('field_dam_edoc_url', 'field_dam_edoc_url');
@@ -100,14 +109,40 @@ class FNETDigitalAssetMigration extends DrupalNode7Migration {
     if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
-    $row->field_dam_industry;
+
+    // Merge the two industry fields.
+    $consolidated = array();
+    if (is_array($row->field_dam_industry)) {
+      foreach($row->field_dam_industry as $industry) {
+        if ($industry != '') {
+          $consolidated[] = $industry;
+        }
+      }
+    }
+    if (is_array($row->field_dam_new_industry)) {
+      foreach($row->field_dam_new_industry as $new_industry) {
+        if ($new_industry != '') {
+          if ($new_industry == 'Both') {
+            $consolidated[] = 'Enterprise Systems';
+            $consolidated[] = 'Portable Network Tools';
+          }
+          else {
+            $consolidated[] = $new_industry;
+          }
+        }
+      }
+    }
+    $row->consolidated_industry = $consolidated;
+
+    // Correct the language field.
+    // Traditional Chinese
+    if ($row->field_dam_language == 'tw') {
+      $row->field_dam_language = 'zh-hant';
+    }
+    // Simplified Chinese
+    if ($row->field_dam_language == 'zh') {
+      $row->field_dam_language = 'zh-hans';
+    }
   }
 
-  // TODO: Flesh this out.
-  protected function productCategoryNidFromTitle($title) {
-    $nid = 0;
-    // look up the NID from the title.
-
-    return $nid;
-  }
 }
