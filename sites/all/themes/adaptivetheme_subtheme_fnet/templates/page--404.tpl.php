@@ -204,7 +204,21 @@
                 <?php if ($content = render($page['content'])): ?>
                   <div id="content">
                     <h2><?php print t("We are sorry, the page you requested cannot be found."); ?></h2>
-                    <p><?php print t("The URL may be misspelled or the page you're looking for is no longer available."); ?>
+                    <p><?php print t("The URL may be misspelled or the page you're looking for is no longer available."); ?><br />
+                        <?php print t('You can visit our <a href="@home-page">home page</a> to get an overview of our products, services and technical support.', array('@home-page' => '/')); ?></p>
+                      <p><?php print t('Let us help you find what you\'re looking for! If you were trying to get to specific content areas, click on the links below.'); ?></p>
+                      <ul>
+                          <li><?php print t('Read articles in our <a href="@blog-page">Blog</a>', array('@blog-page' => url('blog/cabling-chronicles'))); ?></li>
+                          <li><?php print t('Get info on <a href="@products-page">Products</a> and <a href="@support-page">Support</a>', array('@products-page' => url('products'), '@support-page' => url('support'))); ?></li>
+                          <li><?php print t('Find detailed product and technical information in our <a href="@knowledgebase-page">Knowledge Base</a>', array('@knowledgebase-page' => url('knowledge-base'))); ?></li>
+                          <li><?php print t('Take a tour of our <a href="@versive-page">Versiv Configurator</a>', array('@versive-page' => url('versivconfig'))); ?></li>
+                          <li><?php print t('Find <a href="@wtb-page">where to buy</a> our products', array('@wtb-page' => url('wheretobuy'))); ?></li>
+                          <li><?php print t('Login or sign-up for <a href="@myaccount-page">MyAccount</a>, <a href="@salesinsider-page">Sales Insider</a>, <a href="@opportunity-page">Opportunity Insider</a>', array(
+                              '@myaccount-page' => url('user'),
+                              '@salesinsider-page' => url('extranet'),
+                              '@opportunity-page' => 'https://fnet.secure.force.com/partner/')); ?></li>
+                          <li><?php print t('Searching for something else? Check out our <a href="@sitemap-page">sitemap</a> or call us directly at 1-800-283-5853.', array('@sitemap-page' => url('sitemap'))); ?></li>
+                      </ul>
                     <?php // print $content; ?>
                   </div>
                 <?php endif; ?>
