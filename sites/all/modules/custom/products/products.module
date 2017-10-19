@@ -1,26 +1,161 @@
 <?php
 /**
  * @file
- * Code for the Products feature.
+ * Functions related to Products.
  */
 
-include_once 'products.features.inc';
+/**
+ * Implements hook_views_api().
+ *
+ * @return array
+ */
+function products_views_api() {
+  return array(
+    'api' => 3.0,
+    'path' => drupal_get_path('module', 'products') . '/views',
+  );
+}
 
 /**
  * Implements hook_theme().
  */
 function products_theme($existing, $type, $theme, $path) {
-  $theme = array();
-  $theme['node__product'] = array(
-    'render element' => 'content',
-    'base hook' => 'node',
-    'template' => 'node--product',
-    'path' => drupal_get_path('module', 'products') . '/theme',
+  $base = array(
+    'path' => drupal_get_path('module', 'fextranet') . '/theme',
   );
-  return $theme;
+  return array(
+    'node__product' => $base + array(
+      'render element' => 'content',
+      'base hook' => 'node',
+      'template' => 'node--product',
+    ),
+  );
+}
+
+/* =============================================================================
+ *   Block functions
+ * ========================================================================== */
+/**
+ * Implements hook_block_info().
+ *
+ * @return mixed
+ */
+function products_block_info() {
+  $blocks['product_list_DCI'] = array(
+    'info' => t('Product Listing: Datacom Cabling'),
+    'cache' => DRUPAL_CACHE_PER_ROLE,
+  );
+  $blocks['product_list_ITN'] = array(
+    'info' => t('Product Listing: IT Networking'),
+    'cache' => DRUPAL_CACHE_PER_ROLE,
+  );
+  $blocks['product_list_TEL'] = array(
+    'info' => t('Product Listing: Telecom'),
+    'cache' => DRUPAL_CACHE_PER_ROLE,
+  );
+  return $blocks;
 }
 
 /**
+ * Implements hook_block_view().
+ *
+ * @param string $delta
+ * @return array
+ */
+function products_block_view($delta = '') {
+  $block = array();
+  switch ($delta) {
+    case 'product_list_DCI':
+      $block['subject'] = t('Product Listing (Datacom Cabling)');
+      $block['content'] = _product_list_contents(6);
+      break;
+    case 'product_list_ITN':
+      $block['subject'] = t('Product Listing (IT Networking)');
+      $block['content'] = _product_list_contents(7);
+      break;
+    case 'product_list_TEL':
+      $block['subject'] = t('Product Listing (Telecom)');
+      $block['content'] = _product_list_contents(8);
+      break;
+    default:
+      break;
+  }
+  return $block;
+}
+
+/**
+ * Helper function to provide content to Product List Blocks.
+ *
+ * @param $industryNid
+ * @return string
+ */
+function _product_list_contents($industryNid) {
+  $industry = node_load($industryNid);
+  $output = '';
+  $output .= '<div class="product_industry_title">' . "\n"
+    . '<a href="' . "/" . drupal_lookup_path('alias',"node/".$industry->nid)
+    .'">' . $industry->title."</a><br>"
+    . "</div>\n";
+
+  //display family
+  $familyCount=1;
+  $familyList = views_get_view('product_family');
+  $familyList->set_items_per_page(0);
+  $familyList->set_arguments(array($industryNid));
+  $familyList->set_display('families_by_product_category');
+  $familyList->execute();
+  $familyResult = $familyList->result;
+
+  foreach ($familyResult as $family) {
+    if ($familyCount > 1) $output .= '<div class="clear_15px">&nbsp;</div>' . "\n";
+    else $output .= '<div class="clear_5px">&nbsp;</div>' . "\n";
+    $output .= '<div class="product_family_title">' . "\n";
+
+    if ($family->field_field_family_page_active[0]['raw']['value'] == "Yes") {
+      $output .= '<a href="/' . drupal_lookup_path('alias',"node/" . $family->nid)
+        . "#family-product-list-" . $family->nid . '">' . $family->node_title . "</a>";
+    }
+    else {
+      $output .= '<a href="/' . drupal_lookup_path('alias',"node/" . $industry->nid)
+        . "#family-product-list-" . $family->nid . '">' . $family->node_title . "</a>";
+    }
+    $output .= "</div>\n";
+
+    $productsList = views_get_view('product_family');
+    $productsList->set_items_per_page(0);
+
+    // Fetch regLang value to pass as argument to 'industry_family_products' view
+    $region = '';
+    if(isset($_COOKIE["regLang"])) {
+      $region = strtolower($_COOKIE["regLang"]);
+    }
+    // Default to US
+    if ($region == '') {
+      $region = "en-us";
+    }
+
+    $productsList->set_arguments(array($family->nid, $region));
+//    $productsList->set_arguments(array($family->nid));
+    $productsList->set_display('products_by_family');
+    $productsList->execute();
+    $productsListResult = $productsList->result;
+
+    foreach ($productsListResult as $product) {
+      $output .= '<div class="product_item_title">' . "\n"
+        . '<a href="/' . drupal_lookup_path('alias', "node/" . $product->nid)
+        . '">' . $product->node_title . "</a>"
+        . "</div>\n";
+    }
+
+    $familyCount++;
+  }
+//  $output .= '<div class="clear_20px;">&nbsp;</div>';
+  $output .= '<div class="clear">&nbsp;</div>';
+
+  return $output;
+}
+
+/**cu
  * Implements hook_preprocess_page().
  */
 function products_preprocess_page(&$variables) {
@@ -31,17 +166,65 @@ function products_preprocess_page(&$variables) {
     drupal_add_library('system', 'ui.accordion');
 
     // Enable product features accordion
-    drupal_add_js(drupal_get_path('module', 'products') . '/javascript/enable-ui-elements.js');
+    drupal_add_js(drupal_get_path('module', 'products') . '/js/enable-ui-elements.js');
 
     // Enable product page section menu
-    drupal_add_js(drupal_get_path('module', 'products') . '/javascript/toc/sticky/jquery.sticky.js');
-    drupal_add_css(drupal_get_path('module', 'products') . '/javascript/toc/styles.css');
+    drupal_add_js(drupal_get_path('module', 'products') . '/js/toc/sticky/jquery.sticky.js');
+    drupal_add_css(drupal_get_path('module', 'products') . '/js/toc/styles.css');
     drupal_add_css(drupal_get_path('module', 'products') . '/css/products.css');
-    drupal_add_js(drupal_get_path('module', 'products') . '/javascript/toc/table-of-contents.js');
+    drupal_add_js(drupal_get_path('module', 'products') . '/js/toc/table-of-contents.js');
 
     // Hide title for this content type.
     $variables['title'] = '';
 
+  }
+}
+
+
+/* =============================================================================
+ *   Features functions
+ * ========================================================================== */
+/**
+ * Implements hook_node_info().
+ */
+function products_node_info() {
+  $items = array(
+    'product' => array(
+      'name' => t('Product'),
+      'base' => 'node_content',
+      'description' => t('Use this content type for all product pages.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+  );
+  drupal_alter('node_info', $items);
+  return $items;
+}
+
+/**
+ * Implements hook_weight_features_default_settings().
+ */
+function products_weight_features_default_settings() {
+  $settings = array();
+
+  $settings['family'] = array(
+    'enabled' => 1,
+    'range' => 20,
+    'menu_weight' => 0,
+    'default' => 0,
+    'sync_translations' => 0,
+  );
+
+  return $settings;
+}
+
+/**
+ * Implements hook_ctools_plugin_api().
+ */
+function products_ctools_plugin_api($module = NULL, $api = NULL) {
+  if ($module == "field_group" && $api == "field_group") {
+    return array("version" => "1");
   }
 }
 
@@ -81,24 +264,6 @@ function products_node_view($node, $view_mode) {
       }
     }
 
-    /*
-      // Get array of just "models".
-    for($i=0; $i<count($product_moa); $i++){
-      if($product_moa[$i]->taxonomy_term_data_node_name == "Models"){
-        $tempArray[] = $product_moa[$i];
-      }
-    }
-    $node->content['product_models'] = $tempArray;
-
-    // Get array of just "accessories".
-    $tempArray = array();
-    for($i=0; $i<count($product_moa); $i++){
-      if($product_moa[$i]->taxonomy_term_data_node_name == "Accessories"){
-        $tempArray[] = $product_moa[$i];
-      }
-    }
-    $node->content['product_accessories'] = $tempArray;
-*/
     // Get documents/demos.
     $product_assets = products_get_assets($node);
     $node->content['product_documents'] = $product_assets['documents'];
@@ -123,6 +288,12 @@ function products_node_view($node, $view_mode) {
   }
 }
 
+/**
+ * TODO: Are we getting rid of PCATID? If so, we need to rework this.
+ *
+ * @param $node
+ * @return array
+ */
 function products_get_assets(&$node) {
   global $theme_path;
   $siteReg = module_invoke('fnet_helper', 'site_region');
@@ -223,6 +394,9 @@ function products_get_assets(&$node) {
 
 /**
  * Custom function which performs language override content substitution on a given node.
+ * TODO: This goes away with the switch to Entity Translation.
+ *
+ * @param $node
  */
 function products_language_override(&$node) {
   // Fetch the current user's region/language.
@@ -266,6 +440,7 @@ function products_language_override(&$node) {
   }
 
   // Perform language override node field substitutions if necessary.
+  // TODO: Change field names here.
   if (!is_null($qualified_language_override_node)) {
     // Fetch override content.
     /*
@@ -432,11 +607,11 @@ define('NODE_PRODUCT_SUB_TYPE_GENERAL_CACHE_EXPIRE', 12 * 60 * 60);
 /**
  * Find support contracts that apply to specific product moas.
  *
- * "moa" refers to "models and/or accessories". These are things like models,
+ * "MOA" refers to "models and/or accessories". These are things like models,
  * bundles, kits and so on.
  *
  * This code compensates for the fact that there is no real relationship
- * between product moa and the support contracts available for those moa.
+ * between product MOA and the support contracts available for those MOA.
  * We have to make this relationship by finding all moas and support items
  * that apply to the same product NID and then doing some guesswork based on
  * the string IDs for them. This is some convoluted code. ¡Cuidado!
@@ -471,7 +646,8 @@ function products_support_by_moa($moa_nid) {
   if (!$drupal_cache_enabled || !$moa_plans_list_cache) {
     $moa_plans_list_cache = array();
 
-    // A list of all support options available for each moa
+    // A list of all support options available for each MOA
+    // TODO: Move to using db_query for better performance.
     $sql = "
       SELECT n.nid AS moa_nid, n.title AS moa_name, so.field_support_options_nid AS support_option
       FROM {node} n
@@ -513,7 +689,7 @@ function products_support_by_moa($moa_nid) {
 
   if (!$drupal_cache_enabled || !$support_details_list_cache) {
     $support_details_list_cache = array();
-
+    // TODO: Move to using db_query for better performance.
     $sql = "
       SELECT n.nid, n.title AS support_name, nr.body support_desc
       FROM {node} n
@@ -555,7 +731,7 @@ function products_support_by_moa($moa_nid) {
       $moa_plans = $moa_plans_list_cache[$moa_nid]['support_options'];
       $moa_name = $moa_plans_list_cache[$moa_nid]['moa_name'];
     }
-    // There may be no plans configured for this moa
+    // There may be no plans configured for this MOA
     if (!is_array($moa_plans) || empty($moa_name)) {
       return;
     }
@@ -592,31 +768,6 @@ function products_support_by_moa($moa_nid) {
 }
 
 /**
- * Implementation of hook_cron()
- */
-//function products_cron() {
-//  // Clear cache if any sub-product moa nodes have been updated
-//  $cache_timestamp = variable_get('products_support_by_product_updated', 0);
-//
-//  $sql = "
-//    SELECT MAX(n.changed)
-//    FROM {node} n
-//    LEFT JOIN term_node tn ON n.vid = tn.vid
-//    WHERE tn.tid = %s
-//  ";
-//  $query = db_select('node', 'n');
-//  $query->addExpression('MAX(n.changed)');
-//  $query->addJoin('taxonomy_index', 't', 'n.nid = t.nid');
-//  $query->condition('t.tid', NODE_PRODUCT_SUB_TYPE_MODEL_TID);
-//  $updated_timestamp = $query->execute()->fetchField();
-//
-//  if ($updated_timestamp > $cache_timestamp) {
-//    cache_clear_all('products:support_by_product:', 'cache', TRUE);
-//    variable_set('products_support_by_product_updated', $updated_timestamp);
-//    watchdog('node_product_sub_type', 'Cleared product moa & support cache', array(), WATCHDOG_INFO);
-//  }
-//}
-/**
  * Return unicode char by its code
  *
  * @param int $u
@@ -626,6 +777,10 @@ function products_unichr($u) {
   return mb_convert_encoding('&#' . intval($u) . ';', 'UTF-8', 'HTML-ENTITIES');
 }
 
+/**
+ * @param $string
+ * @return mixed
+ */
 function products_clean_string($string) {
   $string = str_replace('<sup>', '', $string);
   $string = str_replace('</sup>', '', $string);
@@ -640,13 +795,24 @@ function products_clean_string($string) {
   return $string;
 }
 
-
+/**
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ * @return mixed
+ */
 function products_form_alter(&$form, &$form_state, $form_id){
 	if($form_id == 'product_node_form'){
 		$form['#after_build']=array('language_options');		
 	}
 	return $form;
 }
+
+/**
+ * @param $form
+ * @param $form_state
+ * @return mixed
+ */
 function language_options(&$form, &$form_state){
 	$nid = $form['nid']['#value'];
 	$lang_arr = array();
