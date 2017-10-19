@@ -1,10 +1,16 @@
-core = 7.x
-dependencies[] = "link"
-dependencies[] = "number"
-; dependencies[] = "optionwidgets"
-dependencies[] = "text"
+name = Asset Gateway
 description = "A node primarily for capturing user data and redirecting the user to a target asset"
-name = "Asset Gateway"
-package = "Fluke Networks"
-project = "asset_gateway"
-version = "7.x-1.0-20150430"
+package = Fluke Networks
+core = 7.x
+version = "7.x-1.1"
+
+dependencies[] = findit
+dependencies[] = link
+dependencies[] = fnet_common
+
+
+
+
+
+
+
