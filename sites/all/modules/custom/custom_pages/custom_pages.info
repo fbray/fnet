@@ -1,6 +1,0 @@
-; $Id$
-name = Custom Pages
-description = Contain custom pages configuration and templates
-package = Fluke Networks
-version = "7.x-1.0-20150309"
-core = 7.x
