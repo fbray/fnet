@@ -4,6 +4,8 @@
  * Code for the industries_families module.
  */
 
+// TODO: Merge this module with the Products module. -rositis 10/11/2017
+
 function industries_families_help() {
 
 }
