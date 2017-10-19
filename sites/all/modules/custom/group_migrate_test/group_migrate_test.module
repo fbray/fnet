@@ -1,0 +1,3 @@
+<?php
+
+module_load_include('inc', 'group_migrate_test', 'group_migrate_test.migrate_classes');

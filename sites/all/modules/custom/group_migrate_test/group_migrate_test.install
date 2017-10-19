@@ -1,0 +1,154 @@
+<?php
+
+/**
+ * Implementation of hook_install()
+ */
+function group_migrate_test_install() {
+  // Create "profile_test" profile and all fields related
+  $bundle_profile = 'profile_test';
+  if (!profile2_type_load($bundle_profile)) {
+    profile2_type_save(new ProfileType(array(
+      'type' => $bundle_profile,
+      'label' => "Test profile",
+      'weight' => 0
+    )));
+    
+    // Add fields to profile_test
+    group_migrate_test_create_fields('profile2', $bundle_profile, group_migrate_test_profile_fields_list());
+  }
+    
+  // Create Unit group type
+  $bundle_unit = 'unit';
+  $values = array();
+  $values['name'] = $bundle_unit;
+  $values['label'] = 'Unit';
+  $group = entity_create('group_type', $values);
+  $group->save();  
+
+    // Add fields to Unit group type
+  group_migrate_test_create_fields('group', $bundle_unit, group_migrate_test_unit_fields_list());    
+  
+  
+  // Add field which will record a temporary link from the User to it's Unit
+  group_migrate_test_create_fields('user', 'user', array('user_temp_unit' => array('required' => FALSE, 'cardinality' => '1', 'module' => 'text', 'type' => 'text', 'display' => 'text_default', 'widget' => 'text_textfield', 'label' => 'Temporary link to Unit')));
+}
+
+/**
+ * Implementation of hook_uninstall()
+ */
+function group_migrate_test_uninstall() {
+  // Delete "profile_test" profile and all fields related
+  if ($type = profile2_type_load('profile_test')) {
+    $fields = group_migrate_test_profile_fields_list();
+    foreach ($fields as $field_name => $field) {
+      if (field_info_field($field_name)) {
+        field_delete_field($field_name);
+      }
+    }
+    profile2_type_delete($type);
+  }
+  
+  // Delete fields attached to Unit group type
+  $fields = group_migrate_test_unit_fields_list();
+  foreach ($fields as $field_name => $field) {
+    if (field_info_field($field_name)) {
+      field_delete_field($field_name);
+    }
+  }
+  
+  // Delete Unit group type
+  $group_type = group_type_load($name);
+  group_type_delete($group_type);
+  
+  // Delete user_temp_unit field
+  field_delete_field('users', 'user_temp_unit');  
+}
+
+/**
+ * Return a list of fields for profile_test
+ */
+function group_migrate_test_profile_fields_list() {
+  return array(
+    'profile_test_gender' =>       array('required' => TRUE, 'cardinality' => '1', 'module' => 'list',   'type' => 'list_integer',   'display' => 'list_default',   'widget' => 'options_buttons', 'label' => 'Gender'),
+    'profile_test_firstname' =>    array('required' => TRUE, 'cardinality' => '1', 'module' => 'text',   'type' => 'text',           'display' => 'text_default',   'widget' => 'text_textfield',  'label' => 'First name'),
+    'profile_test_lastname' =>     array('required' => TRUE, 'cardinality' => '1', 'module' => 'text',   'type' => 'text',           'display' => 'text_default',   'widget' => 'text_textfield',  'label' => 'Last name'),
+  );
+}
+
+/**
+ * Return a list of fields for the unit group
+ */
+function group_migrate_test_unit_fields_list() {
+  return array(
+    'group_unit_code' =>       array('required' => FALSE, 'cardinality' => '1', 'module' => 'text', 'type' => 'text', 'display' => 'text_default',   'widget' => 'text_textfield', 'label' => 'Unit code'),
+    'group_temp_parent' =>     array('required' => FALSE, 'cardinality' => '1', 'module' => 'text', 'type' => 'text', 'display' => 'text_default',   'widget' => 'text_textfield', 'label' => 'Temporary parent Unit'),
+    'group_temp_manager' =>    array('required' => FALSE, 'cardinality' => '1', 'module' => 'text', 'type' => 'text', 'display' => 'text_default',   'widget' => 'text_textfield', 'label' => 'Temporary link to Manager'),
+    'group_manager' =>         array('required' => TRUE,  'cardinality' => '1', 'module' => 'entityreference', 'type' => 'entityreference',  'display' => 'entityreference_label',   'widget' => 'entityreference_autocomplete', 'label' => 'Manager'),
+  );
+}
+
+
+/**
+ * Create fields
+ */
+function group_migrate_test_create_fields($entity, $bundle, $fields) {
+  foreach ($fields as $field_name => $field) {
+    if (!field_info_field($field_name)) {
+      $new_field = array (
+        'field_name' => $field_name,
+        'module' => $field['module'],
+        'type' => $field['type'],
+        'cardinality' => $field['cardinality'],
+      );
+      if ($entity == 'profile2') $new_field['settings']['profile2_private'] = 0;
+      if ($field['module'] == 'text') $new_field['settings']['max_length'] = '255';
+      if ($field['module'] == 'list') $new_field['settings']['allowed_values'] = group_migrate_test_field_list($field_name);
+      if ($field['module'] == 'entityreference') $new_field['settings'] = array('target_type' => 'user', 'handler' => 'base', 'handler_settings' => array('target_bundles' => array('user')));
+      
+      $instance = array (
+        'field_name' => $field_name,
+        'entity_type' => $entity,
+        'bundle' => $bundle,
+        'label' => $field['label'],
+        'description' => '',
+        'required' => $field['required'],
+        'display' => array(
+          'default' => array(
+            'label' => 'above',
+            'module' => $field['module'],
+            'settings' => array(),
+            'type' => $field['display'],
+            'weight' => $i,
+          ),
+        ),
+        'widget' => array(
+          'active' => 1,
+          'module' => $field['module'] == 'list' ? 'options' : $field['module'],
+          'settings' => array(),
+          'type' => $field['widget'],
+          'weight' => $i,
+        ),
+      );
+      
+      if ($field['widget'] == 'text_textfield') $instance['widget']['settings']['size'] = '60';
+      
+      field_create_field($new_field);
+      field_create_instance($instance);
+        
+      $i++;
+    }
+  }
+}
+
+/**
+ * Fetch allowed values for a list field
+ */
+function group_migrate_test_field_list($field_name) {
+  switch($field_name) {
+    case 'profile_test_gender' :
+      return array(
+        0 => "Sir",
+        1 => "Madam",
+      );
+  }
+}

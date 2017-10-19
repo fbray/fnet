@@ -1,0 +1,12 @@
+name = "Test Group with migrate"
+
+dependencies[] = migrate (>2.5)
+dependencies[] = migrate_extras
+dependencies[] = profile2
+dependencies[] = group
+dependencies[] = entityreference
+
+files[] = group_migrate_test.migrate.inc
+
+package = Group
+core = "7.x"
