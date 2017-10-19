@@ -1,26 +1,98 @@
 <?php
+// TODO: add roles: Author  Administrator  Group Owner
+// TODO: Delete Menu
 
+/**
+ * Implementation of hook_schema().
+ *
+ * @return array
+ */
+function fextranet_schema() {
+  $schema = array();
+  return $schema;
+}
 
-//todo
+/**
+ * Implementation of hook_install().
+ */
+function fextranet_install() {
+  // Create the Extranet Menu
+  _fextranet_create_menu();
 
-// add roles: Author  Administrator  Group Owner
+  // Create the default permissions for Extranet roles.
+  _fextranet_add_role_permissions();
 
+  // Create the URL patterns for Extranet content type items.
+  variable_set('pathauto_node_extranet_news_pattern', 'extranet/news/[node:title]');
+  variable_set('pathauto_node_extranet_promotion_pattern', 'extranet/promotion/[node:title]');
+  variable_set('pathauto_node_media_gallery_pattern', 'media_gallery/[node:title]');
 
-function fextranet_enable() {
+  // Create the Group Types.
+  _fextranet_group_type_entities();
 
-	drupal_set_message('Installing Extranet Content Types and Field Settings');
+  // Create the Groups.
+  _fextranet_group_entities();
 
+  // Create the Content Types used by the FNET Extranet.
+  // Extranet News
+  // Extranet Promotions
+}
+
+/**
+ * Helper function to create the Extranet Menu.
+ */
+function _fextranet_create_menu() {
   $menu = array(
     'menu_name' =>  'extranet',
     'title' =>  'Sales Insider Extranet',
     'description'  =>  'Menu Items for Extranet',
-    );
+  );
 
-    db_merge('menu_custom')
+  db_merge('menu_custom')
     ->key( array('menu_name' => 'extranet',) )
     ->fields( $menu )
     ->execute();
+}
 
+/**
+ * Helper function to delete the Extranet Menu on uninstall.
+ */
+function _fextranet_delete_menu() {
+
+}
+
+/**
+ * Helper function to add default permissions to Extranet roles.
+ */
+function _fextranet_add_role_permissions() {
+  $role_names = array(
+    'extranet user' => array('access extranet', ),
+    'extranet admin' => array('access extranet', 'administer extranet'),
+  );
+
+  foreach ($role_names as $role_name => $permissions) {
+    $role = user_role_load_by_name( $role_name);
+    if (! $role) {
+      $new_role = new stdClass();
+      $new_role->name = $role_name;
+      user_role_save($new_role);
+      $role = $new_role;
+    }
+
+    $rid = $role->rid;
+    $permissions_to_add = array();
+
+    foreach ($permissions as $permission) {
+      $permissions_to_add[$permission] = TRUE;
+    }
+
+    user_role_change_permissions($rid, $permissions_to_add);
+}
+
+/**
+ * Implementation of hook_enable().
+ */
+function fextranet_enable() {
 
 	$nodes = _node_info();
 
@@ -37,42 +109,9 @@ function fextranet_enable() {
 			node_add_body_field($node_type);
 		}
 	}
-
-
-  variable_set('pathauto_node_extranet_news_pattern', 'extranet/news/[node:title]');
-  variable_set('pathauto_node_extranet_promotion_pattern', 'extranet/promotion/[node:title]');
-  variable_set('pathauto_node_media_gallery_pattern', 'media_gallery/[node:title]');
-
-  $role_names = array( 
-    'extranet user' => array('access extranet', ),
-    'extranet admin' => array('access extranet', 'administer extranet'),
-    );
-
-  foreach ($role_names as $role_name => $permissions) {
-    $role = user_role_load_by_name( $role_name);
-    if (! $role) {
-      $new_role = new stdClass();
-      $new_role->name = $role_name;
-      user_role_save($new_role);
-      $role = $new_role;
-    }
-
-    $rid = $role->rid;
-
-    $permissions_to_add = array();
-
-    foreach ($permissions as $permission) {
-      $permissions_to_add[$permission] = TRUE;
-    }
-
-    user_role_change_permissions($rid, $permissions_to_add);
-
   }
 
-  // Create Group Types for extranet
-  group_type_entities();
 
-  group_entities();
 
 	$field_bases = _field_default_field_bases();
 	foreach ($field_bases as $field => $settings) {
@@ -154,62 +193,16 @@ function fextranet_enable() {
 
     } //end foreach group
 
-    // create schema if necessary
-  if (db_table_exists('register_deal') == FALSE) {
-    drupal_install_schema('fextranet');
-  }
-
   create_entity_field_instances();
 
-/*
-  if ( db_table_exists('register_deal') ) {
-    // timestamp for deal reg
-    db_query('
-      ALTER TABLE register_deal}
-      MODIFY created TIMESTAMP NOT NULL 
-      DEFAULT CURRENT_TIMESTAMP'
-    );
-  }
-*/
 
-  if (! module_exists('media_gallery') ) module_enable( array('media_gallery') ) ;
+
+if (! module_exists('media_gallery') ) module_enable( array('media_gallery') ) ;
 
 	drupal_set_message('Extranet install finished.');
 
 }
 
-
-function _node_info() {
-
-  $items = array(
-    'extranet_news' => array(
-      'name' => t('Extranet News'),
-      'base' => 'node_content',
-      'description' => t('Extranet News: Sales Alerts and Announcements'),
-      'has_title' => '1',
-      'title_label' => t('Title'),
-      'help' => t('Extranet News: Sales Alerts and Announcements'),
-    ),
-    'extranet_promotion' => array(
-      'name' => t('Extranet Promotion'),
-      'base' => 'node_content',
-      'description' => t('Extranet Promotions, optional start and end date.'),
-      'has_title' => '1',
-      'title_label' => t('Title'),
-      'help' => t('Extranet Promotions, optional start and end date.'),
-    ),
-    'media_gallery' => array(
-      'name' => t('Media Gallery'),
-      'base' => 'node_content',
-      'description' => t('Media Gallery can contain one or more of numerous file types, which can be either displayed or download.'),
-      'has_title' => '1',
-      'title_label' => t('Title'),
-      'help' => t('Media Gallery can contain one or more of numerous file types, which can be either displayed or download.'),
-    ),
-  );
-
-  return $items;
-}
 
 
 
@@ -1444,44 +1437,6 @@ function _field_default_field_instances() {
     ),
   );
 
-/* May not use
-  // Exported field_instance: 'node-media_gallery-field_box_thumbnails'
-  $field_instances['node-media_gallery-field_box_thumbnails'] = array(
-    'bundle' => 'media_gallery',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 10,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_box_thumbnails',
-    'label' => 'Box Thumbnails',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 7,
-    ),
-  );
-*/
-
   // Exported field_instance: 'node-media_gallery-field_digital_assets'
   $field_instances['node-media_gallery-field_digital_assets'] = array(
     'bundle' => 'media_gallery',
@@ -2417,50 +2372,9 @@ function _get_group_countries() {
 }
 
 
-function fextranet_schema() {
-
-  $schema = array();
-
-  $schema['register_deal'] = array(
-    'description' => 'Deal Registration',
-    'fields' => array(
-      'did'       => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE, ),
-      'type'   => array('type' => 'varchar','length' => 20, 'default' => 'register_deal'),
-      'gid'       => array('type' => 'int', 'unsigned' => TRUE, 'default' => 0),
-      'submitter_uid'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
-      'email'  => array('type' => 'varchar','length' => 100, 'default' => ''),
-      'created'    => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
-      'status'    => array('type' => 'int', 'not null' => TRUE, 'default' => 1),
-      'approver_uid'       => array('type' => 'int', 'unsigned' => TRUE, 'default' => 0),
-      'updated'    => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
-      'notes'  => array('type' => 'varchar','length' => 255, 'default' => ''),
-      'approval_id'  => array('type' => 'varchar','length' => 100, 'default' => ''),
-      ),
-     'primary key' => array('did'),
-     'foreign keys' => array(
-        'group' => array(
-          'table' => 'groups',
-          'columns' => array('gid' => 'gid'),
-          ),
-        'submitter' => array(
-          'table' => 'user',
-          'columns' => array('submitter_uid' => 'uid'),
-          ),
-        'approver' => array(
-          'table' => 'user',
-          'columns' => array('approver_uid' => 'uid'),
-          ),
-      ),
-    );
-
-  return $schema;
-
-}
 
 function create_entity_field_instances() {
-
   $field_instances = _entity_field_instances();
-
   foreach ($field_instances as $key => $settings) {
     $field_name = $settings['field_name'];
     $bundle_name = $settings['bundle'];

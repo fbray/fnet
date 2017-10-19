@@ -54,7 +54,7 @@ function fextranet_default_rules_configuration() {
     "LABEL" : "Extranet: Membership request: approved..  Send email to user",
     "PLUGIN" : "reaction rule",
     "OWNER" : "rules",
-    "REQUIRES" : [ "rules", "mimemail", "group" ],
+    "REQUIRES" : [ "rules", "rules_i18n", "mimemail", "group" ],
     "ON" : { "group_membership_update" : [] },
     "IF" : [
       { "entity_is_of_type" : { "entity" : [ "group-membership" ], "type" : "group_membership" } },
@@ -68,15 +68,18 @@ function fextranet_default_rules_configuration() {
         }
       },
       { "mimemail" : {
-          "key" : "extranet_membership_approval",
-          "to" : [ "group-membership:user:mail" ],
-          "cc" : [ "" ],
-          "from_name" : "Sales Insider",
-          "from_mail" : "salesinsider@flukenetworks.com",
-          "subject" : "Sales Insider access granted!",
-          "body" : "\u003Cp\u003EYour request for access to the Fluke Networks Sales Insider has been approved!\u003C\/p\u003E\r\n\u003Cp\u003E\u003Ca href=\u0022[site:url]\/extranet\u0022\u003ESales Insider\u003C\/a\u003E\u003C\/p\u003E",
-          "plaintext" : "Your request for access to the Fluke Networks Sales Insider has been approved!\r\n\r\n[site:url]\/extranet",
-          "language" : [ "" ]
+          "USING" : {
+            "key" : "extranet_membership_approval",
+            "to" : [ "group-membership:user:mail" ],
+            "cc" : [ "" ],
+            "from_name" : "Sales Insider",
+            "from_mail" : "sales-insider@flukenetworks.com",
+            "subject" : "Sales Insider access granted!",
+            "body" : "\u003Cp\u003EYour request for access to the Fluke Networks Sales Insider has been approved!\u003C\/p\u003E\r\n\u003Cp\u003EIf you are an Authorized Channel Partner in Europe, Middle East \u0026 Africa, Sales Insider also comes with an additional service called Opportunity Insider. You will find a link to it in the top navigation bar of your Sales Insider. The same password you use for Sales Insider will also give you access to Opportunity Insider. Opportunity Insider access will be granted automatically to everyone who gets Sales Insider access.\u003C\/p\u003E\r\n\u003Cp\u003EIn the Americas and Asia Pacific, please request Opportunity Insider access separately from your Regional Sales Manager.\u003C\/p\u003E\r\n\u003Cp\u003EOpportunity Insider is the Extranet Site which allows partners to log into the Fluke Networks CRM through a secure website. Through this Portal, Partners can access Fluke Networks Customer data for the purpose of Deal Registration and Opportunity creation.\u003C\/p\u003E\r\n\u003Cp\u003EFor more information and training, please visit the \u003Ca href=\u0022[site:url]\/extranet\u0022\u003EFluke Networks website\u003C\/a\u003E\u003C\/p\u003E\r\n\u003Cp\u003ENeed additional training? If so, talk to your Fluke Networks Regional Sales Manager about Opportunity Insider.\u003C\/p\u003E\r\n\u003Cp\u003ESales Insider\u003C\/p\u003E",
+            "plaintext" : "Your request for access to the Fluke Networks Sales Insider has been approved!\r\n\r\n[site:url]\/extranet",
+            "language" : [ "" ]
+          },
+          "PROVIDE" : { "send_status" : { "send_status" : "Send status" } }
         }
       }
     ]

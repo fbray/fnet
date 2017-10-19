@@ -1,6 +1,6 @@
 name = FExtranet
 description = "Fluke Networks Extranet"
-package = FExtranet
+package = Fluke Networks
 core = 7.x
 
 files[] = views/fextranet.views.inc
