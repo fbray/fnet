@@ -1,7 +1,6 @@
 <?php
 // $Id: ems.module 2118 2016-08-30 13:01:15Z gkakade $
 require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'ems') . '/library/base62.php';
-
 include_once DRUPAL_ROOT . '/includes/locale.inc';
 
 /**
