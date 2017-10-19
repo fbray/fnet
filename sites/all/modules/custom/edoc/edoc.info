@@ -5,6 +5,6 @@ project = "edoc"
 package = "Fluke Networks"
 core = 7.x
 version = "7.x-1.1"
-;
+
 dependencies[] = "doc_links"
 
