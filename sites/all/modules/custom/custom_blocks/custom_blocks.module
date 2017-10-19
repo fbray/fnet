@@ -2,116 +2,9 @@
 /**
  * @file custom_blocks.module
  */
+// TODO: The first three are view blocks that appear only on the Products page. Move these to the Product module, along with the view definitions.
+// TODO: The Blog subscription form is, as far as I can tell, never used. I'm deprecating it. - rositis 10/10/2017
 
-//ini_set('display_errors', 1);
-//error_reporting(E_ALL);
-
-/**
- * Implements hook_block_info().
- */
-function custom_blocks_block_info() {
-  $blocks['product_list_DCI'] = array(
-    'info' => t('Product Listing: Datacom Cabling'),
-    'cache' => DRUPAL_CACHE_PER_ROLE,
-  );
-  $blocks['product_list_ITN'] = array(
-    'info' => t('Product Listing: IT Networking'),
-    'cache' => DRUPAL_CACHE_PER_ROLE,
-  );
-  $blocks['product_list_TEL'] = array(
-    'info' => t('Product Listing: Telecom'),
-    'cache' => DRUPAL_CACHE_PER_ROLE,
-  );
-  $blocks['subscribe_blog'] = array(
-		'info' => t('Subscribe Blog Article'),
-	);
-  return $blocks;
-}
-
-function product_list_contents($industryNid) {
-  $industry = node_load($industryNid);
-  $output = '';
-//  $output .= '<div class="clear_20px">&nbsp;</div>';
-  $output .= '<div class="product_industry_title">' . "\n"
-    . '<a href="' . "/" . drupal_lookup_path('alias',"node/".$industry->nid)
-    .'">' . $industry->title."</a><br>"
-    . "</div>\n";
-
-  //display family
-  $familyCount=1;
-  $familyList = views_get_view('industry_family');
-  $familyList->set_items_per_page(0);
-  $familyList->set_arguments(array($industryNid));
-  $familyList->set_display('page_1');
-  $familyList->execute();
-  $familyResult = $familyList->result;
-
-  foreach ($familyResult as $family) {
-    if ($familyCount > 1) $output .= '<div class="clear_15px">&nbsp;</div>' . "\n";
-    else $output .= '<div class="clear_5px">&nbsp;</div>' . "\n";
-    $output .= '<div class="product_family_title">' . "\n";
-
-    if ($family->field_field_family_page_active[0]['raw']['value'] == "Yes") {
-      $output .= '<a href="/' . drupal_lookup_path('alias',"node/" . $family->nid)
-        . "#family-product-list-" . $family->nid . '">' . $family->node_title . "</a>";
-    } else {
-      /*
-      $familyBookmark = str_replace(" ", "_", $family->node_title);
-      $familyBookmark = str_replace(",", "", $familyBookmark);
-      $output .= '<a href="/' . drupal_lookup_path('alias',"node/" . $industry->nid)
-        . "?td=products#" . $familyBookmark . '">' . $family->node_title . "</a>";
-      */
-      $output .= '<a href="/' . drupal_lookup_path('alias',"node/" . $industry->nid)
-        . "#family-product-list-" . $family->nid . '">' . $family->node_title . "</a>";
-    }
-    $output .= "</div>\n";
-    $suitesList = views_get_view('industry_family_suite');
-    $suitesList->set_items_per_page(0);
-    $suitesList->set_arguments(array($family->nid));
-    $suitesList->set_display('page_1');
-    $suitesList->execute();
-    $suitesListResult = $suitesList->result;
-
-    foreach ($suitesListResult as $suites) {
-      $output .= '<div class="product_item_title">' . "\n"
-        . '<a href="/' . drupal_lookup_path('alias', "node/" . $suites->nid)
-        . '">' . $suites->node_title . "</a>"
-        . "</div>\n";
-    }
-
-    $productsList = views_get_view('industry_family_products');
-    $productsList->set_items_per_page(0);
-
-    // Fetch regLang value to pass as argument to 'industry_family_products' view
-    $region = '';
-    if(isset($_COOKIE["regLang"])) {
-      $region = strtolower($_COOKIE["regLang"]);
-    }
-    // Default to US
-    if ($region == '') {
-      $region = "en-us";
-    }
-
-    $productsList->set_arguments(array($family->nid, $region));
-//    $productsList->set_arguments(array($family->nid));
-    $productsList->set_display('page_1');
-    $productsList->execute();
-    $productsListResult = $productsList->result;
-
-    foreach ($productsListResult as $product) {
-      $output .= '<div class="product_item_title">' . "\n"
-        . '<a href="/' . drupal_lookup_path('alias', "node/" . $product->nid)
-        . '">' . $product->node_title . "</a>"
-        . "</div>\n";
-    }
-
-    $familyCount++;
-  }
-//  $output .= '<div class="clear_20px;">&nbsp;</div>';
-  $output .= '<div class="clear">&nbsp;</div>';
-
-  return $output;
-}
 
 /**
  * Implements hook_block_view().
@@ -121,20 +14,8 @@ function product_list_contents($industryNid) {
 function custom_blocks_block_view($delta = '') {
   $block = array();
   switch ($delta) {
-    case 'product_list_DCI':
-      $block['subject'] = t('Product Listing (Datacom Cabling)');
-      $block['content'] = product_list_contents(6);
-      break;
-    case 'product_list_ITN':
-      $block['subject'] = t('Product Listing (IT Networking)');
-      $block['content'] = product_list_contents(7);
-      break;
-    case 'product_list_TEL':
-      $block['subject'] = t('Product Listing (Telecom)');
-      $block['content'] = product_list_contents(8);
-      break;
     case 'subscribe_blog':
-      $block['subject'] = '';
+      $block['subject'] = 'Blog Subscription';
       $block['content'] = drupal_get_form('blog_subscription_form');
       break;
     default:
