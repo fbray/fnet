@@ -11,15 +11,25 @@
  *
  * - Read the _README file in this directory, it contains useful help and other information.
  */
-
+ #footer-wrapper{
+  margin-bottom: 20px;
+ }
+/* Marketo Form  */
 .mkto-content-main {
-  width: 768px;
+  width: 100%;
 
   #mkto-content {
-    padding: 60px 25px 60px 25px;
+    padding: 60px 20px 60px 20px;
+    margin-left: 15px;
 
     #mkt-prod-details {
-      width: 430px;
+      width: 620px;
+      @media only screen and (max-width:925px) {
+        width: 520px;
+      }
+      @media only screen and (max-width:825px) {
+        width: 415px;
+      }
 
       #mkt-prod-title {
         font-size: 24px;
@@ -28,10 +38,12 @@
       #mkt-prod-img-left,
       #mkt-prod-img-right {
         width: 182px;
+        margin-right: 10px;
       }
 
       #mkt-prod-content {
-        width: 220px;
+        width: auto;
+        float: none;
       }
     }
 
@@ -44,11 +56,17 @@
     }
 
     #mkt-more-links-content {
-      margin-top: 70px;
+      margin-top: 30px;
     }
 
     #mkt-contact-info {
-      margin-top: 135px;
+      margin-top: 30px;
     }
   }
+}
+/*
+ * Footer region
+ */
+.region-footer {
+  font-size: 8px;
 }

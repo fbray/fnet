@@ -14,45 +14,62 @@ html {
 }
 
 /* line 20, ../sass/responsive.tablet.portrait.scss */
+#footer-wrapper {
+  margin-bottom: 20px;
+}
+
+/* Marketo Form page */
+/* line 25, ../sass/responsive.tablet.portrait.scss */
 .mkto-content-main {
-  width: 768px;
+  width: 100%;
 }
-/* line 23, ../sass/responsive.tablet.portrait.scss */
+/* line 28, ../sass/responsive.tablet.portrait.scss */
 .mkto-content-main #mkto-content {
-  padding: 60px 25px 60px 25px;
+  padding: 60px 20px 60px 20px;
+  margin-left: 15px;
 }
-/* line 26, ../sass/responsive.tablet.portrait.scss */
+/* line 32, ../sass/responsive.tablet.portrait.scss */
 .mkto-content-main #mkto-content #mkt-prod-details {
-  width: 430px;
+  width: 350px;
 }
-/* line 29, ../sass/responsive.tablet.portrait.scss */
+/* line 35, ../sass/responsive.tablet.portrait.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-title {
   font-size: 24px;
 }
-/* line 33, ../sass/responsive.tablet.portrait.scss */
+/* line 39, ../sass/responsive.tablet.portrait.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-left,
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-right {
-  width: 182px;
+  width: 160px;
+  margin-right: 10px;
 }
-/* line 38, ../sass/responsive.tablet.portrait.scss */
+/* line 45, ../sass/responsive.tablet.portrait.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-content {
-  width: 220px;
+  width: auto;
+  float: none;
 }
-/* line 43, ../sass/responsive.tablet.portrait.scss */
+/* line 51, ../sass/responsive.tablet.portrait.scss */
 .mkto-content-main #mkto-content #mkto-content-main-form {
   width: 255px;
 }
-/* line 46, ../sass/responsive.tablet.portrait.scss */
+/* line 54, ../sass/responsive.tablet.portrait.scss */
 .mkto-content-main #mkto-content #mkto-content-main-form #mkto-form {
   padding: 15px;
 }
-/* line 51, ../sass/responsive.tablet.portrait.scss */
+/* line 59, ../sass/responsive.tablet.portrait.scss */
 .mkto-content-main #mkto-content #mkt-more-links-content {
-  margin-top: 70px;
+  margin-top: 30px;
 }
-/* line 55, ../sass/responsive.tablet.portrait.scss */
+/* line 63, ../sass/responsive.tablet.portrait.scss */
 .mkto-content-main #mkto-content #mkt-contact-info {
-  margin-top: 135px;
+  margin-top: 30px;
+}
+
+/*
+ * Footer region
+ */
+/* line 72, ../sass/responsive.tablet.portrait.scss */
+.region-footer {
+  font-size: 8px;
 }
 
 /*# sourceMappingURL=responsive.tablet.portrait.css.map */

@@ -70,7 +70,8 @@
   ; following as a guide:
 
   ; ie_scripts[lte IE 8][] = scripts/my-script.js
-
+scripts[] = scripts/fnet_responsive.js
+scripts[] = scripts/regions.js
 
 ;----------// Regions
 

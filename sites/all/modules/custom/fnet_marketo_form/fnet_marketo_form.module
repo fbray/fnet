@@ -1,0 +1,197 @@
+<?php
+// $Id: fnet_marketo_form.module 5830 2015-04-02 18:44:38Z jcaratoz $
+
+/**
+ * Implements hook_preprocess_page().
+ *
+ * @param $variables
+ */
+function fnet_marketo_form_preprocess_page(&$variables) {
+  if (isset($variables['node']) && ($variables['node']->type == 'fnet_marketo_form')) {
+    // TODO: Deprecated. Remove when be.mobilized is turned off.
+    //setting cookie to stop be.mobilized from serving marketo form pages
+    setcookie('fullweb', 1, 0, '/');
+
+    $variables['title'] = html_entity_decode($variables['node']->title);
+  }
+}
+
+/**
+ * Implements hook_preprocess_node().
+ * @param $variables
+ */
+function fnet_marketo_form_preprocess_node(&$variables) {
+  if (isset($variables['node']) && ($variables['node']->type == 'fnet_marketo_form')) {
+    fnet_marketo_form_template_variables($variables);
+    if (isset($variables['node']->field_fnet_mkto_adtracker[LANGUAGE_NONE][0]['value'])) {
+      $variables['title_suffix'] = $variables['node']->field_fnet_mkto_adtracker[LANGUAGE_NONE][0]['value'];
+    }
+  }
+}
+
+function fnet_marketo_form_page_build(&$page) {
+	if (arg(0) == 'node' && is_numeric(arg(1))) {
+		$nodeId = arg(1);
+		$nodetype = isset($page['content']['system_main']['nodes'][$nodeId]['field_removenav']['#object']->type)?$page['content']['system_main']['nodes'][$nodeId]['field_removenav']['#object']->type:'';
+		if (isset($nodeId) && $nodetype=='fnet_marketo_form') {
+			$tracking_code = isset($page['content']['system_main']['nodes'][$nodeId]['#node']->field_fnet_mkto_adtracker[LANGUAGE_NONE][0]['value'])?trim($page['content']['system_main']['nodes'][$nodeId]['#node']->field_fnet_mkto_adtracker[LANGUAGE_NONE][0]['value']):'';
+			if ($tracking_code) {
+				$page['page_bottom']['fnet_marketo_form'] = array('#markup' => $tracking_code);
+			}
+		}
+	}
+}
+
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function fnet_marketo_form_get_form_html($iFrameUrl, $iFrameHeight) {
+  if (empty($iFrameUrl)) {
+    watchdog('fnet_marketo_form', "Empty iframe url", array(), WATCHDOG_WARNING);
+    $html = '';
+    return $html;
+  }
+  $ch = curl_init();
+  $timeout = 10;
+  $serverName = $_SERVER['HTTP_HOST'];
+  $qStr = fnet_marketo_form_build_query_string();
+  curl_setopt($ch, CURLOPT_URL, $iFrameUrl . $qStr);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+  curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+
+  // This is how we preserve the form pre-fill and progressive profiling
+  // features of Marketo:
+  if (!empty($_COOKIE['_mkto_trk'])) {
+    curl_setopt($ch, CURLOPT_COOKIE, '_mkto_trk=' . $_COOKIE['_mkto_trk']);
+  }
+  $html = curl_exec($ch);
+  $result = curl_getinfo($ch);
+  curl_close($ch);
+  if (strpos($html, "404 Not Found")) {
+    $html = '<p>Currently unavailable, please contact Fluke Networks Sales.</p>';
+  }
+  elseif ($result['http_code'] != 200) {
+    watchdog('fnet_marketo_form', "Error fetching marketo form:\n %form \nReturn code: %code", array(
+      '%form' => $iFrameUrl,
+      '%code' => $result['http_code'],
+    ), WATCHDOG_WARNING);
+    $html = '<iframe id="myFrame" src="' . $iFrameUrl . $qStr . '" width="395" scrolling="no" marginwidth="0"';
+    $html .= ' marginheight="0" frameborder="0" vspace="0" hspace="0" ';
+    $html .= 'style="overflow:hidden; height:' . $iFrameHeight . '"></iframe>';
+  }
+  else {
+    $myUrl = parse_url($iFrameUrl);
+    $html = preg_replace('/(<!DOCTYPE html PUBLIC)(.*)(>)/', '', $html);
+    $html = str_ireplace('<!DOCTYPE html>', '', $html); // Possible variation.
+    $html = str_ireplace('<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">', '', $html);
+    $html = str_ireplace('<html lang="en">', '', $html); // Possible variation.
+    $html = str_ireplace('</html>', '', $html);
+    $html = str_ireplace('<meta http-equiv="content-type" content="text/html; charset=UTF-8" />', '', $html);
+    $html = str_ireplace('<head>', '', $html);
+    $html = str_ireplace('</head>', '', $html);
+//    $html = str_ireplace('<body id="bodyId" class="mktEditable">', '', $html);
+//    $html = str_ireplace('<body id="bodyId" class="mktEditable" align="center" >', '', $html); // Possible variation.
+    $html = preg_replace('/(<body)(.*)(>)/', '', $html);
+    $html = str_ireplace('</body>', '', $html);
+    $html = preg_replace('%src="//(.*)/%mU', 'src="http://\1/', $html);
+    $html = str_ireplace('href="/', 'href="http://' . $myUrl["host"] . '/', $html);
+    $html = str_ireplace('src="/', 'src="http://' . $myUrl["host"] . '/', $html);
+    $html = preg_replace('/(name="_mkt_trk" value=")(id:[0-9A-Z]+\-[0-9A-Z]+\-[0-9A-Z]+)(")/', '${1}$3', $html);
+    //$html = preg_replace('/([a-z\-]+)(\.marketo\.com)/', $myUrl["host"], $html);
+    $html = preg_replace('/(<\!--Google -->)(.*)(urchinTracker)(.*)(-->)/s', '', $html);
+//    $html = preg_replace('%<script type="text/javascript" src="http://info.flukenetworks.com/js/public/jquery-latest.min.js"></script>%im', '', $html);
+    $html = preg_replace('%action="/%sim', 'action="http://info.flukenetworks.com/', $html);
+
+    if (function_exists('findit_local_auth_cookie')) {
+      $pattern = '%http://Support\.FlukeNetworks\.com/Find_It\.asp\?Src=FNet&Style=82&Document=(\d{0,9})%i';
+      $replacement = 'http://' . $serverName . '/findit/' . '\1';
+      $html = preg_replace($pattern, $replacement, $html);
+      $serverName = strtr($serverName, array('.' => '\.'));
+      $pattern = '%http://' . $serverName . '/findit/' . '([0-9]{0,9})%i';
+      $matches = array();
+      $found = preg_match($pattern, $html, $matches);
+      if ($found) {
+        $document_id = $matches[1];
+        findit_local_auth_cookie($document_id);
+      }
+    }
+  }
+  return $html;
+}
+
+/**
+ * @return string
+ */
+function fnet_marketo_form_build_query_string() {
+  $query_string = "";
+  $query_parameter = array();
+  if (!empty($_SERVER['QUERY_STRING'])) {
+    $pairs = explode("&", $_SERVER['QUERY_STRING']);
+    foreach ($pairs as $pair) {
+      list($variable, $value) = explode("=", $pair);
+      if (in_array(strtolower($variable), array('document', 'ls', 'lsd', 'gclid', 'epi'))) {
+        switch ($variable) {
+          case 'document':
+            if (!is_numeric($value)) {
+              $value = '';
+            }
+            break;
+          default:
+            if ((strlen($value) > 256) || (stripos($value, '/proc') !== FALSE)) {
+              $value = '';
+            }
+            break;
+        }
+        if (!empty($value)) {
+          $query_string .= ((!empty($query_string)) ? '&' : '') . $variable . '=' . $value;
+          $query_parameter[$variable] = $value;
+        }
+      }
+    }
+  }
+  if ((isset($_COOKIE['ls']) && $_COOKIE['ls']) && !isset($query_parameter["ls"])) {
+    $query_string .= ((!empty($query_string)) ? '&' : '') . "ls=" . $_COOKIE["ls"];
+  }
+  if ((isset($_COOKIE['lsd']) && $_COOKIE['lsd']) && !isset($query_parameter["lsd"])) {
+    $query_string .= ((!empty($query_string)) ? '&' : '') . "lsd=" . $_COOKIE["lsd"];
+  }
+  if (!empty($query_string)) {
+    $query_string = "?" . $query_string;
+  }
+  return $query_string;
+}
+
+/**
+ * @param $variables
+ */
+function fnet_marketo_form_template_variables(&$variables) {
+	global $language;
+	$currlang = $language->language;
+  $node = $variables['node'];
+	$iFrameHeight = '100%';
+	$iFrameUrl = $node->field_fnet_mkto_iframe_url[LANGUAGE_NONE][0]['value'];
+	if(isset($node->field_fnet_mkto_form_2_0[LANGUAGE_NONE][0]['value'])){
+		$fnet_marketo_form = $node->field_fnet_mkto_form_2_0[LANGUAGE_NONE][0]['value'];
+	}else{
+		$fnet_marketo_form = fnet_marketo_form_get_form_html($iFrameUrl, $iFrameHeight);
+	}
+  if ($node->field_fnet_mkto_export_ctrl[LANGUAGE_NONE][0]['value'] == "1") {
+		if (function_exists('findit_get_client_ip')) {
+			$ip_address = findit_get_client_ip();
+			$ip_embargoed = findit_embargoed_ip_address($ip_address);
+		}
+		else {
+			$ip_embargoed = FALSE;
+		}
+		if (strpos($fnet_marketo_form, "jQuery.noConflict")) {
+			$export_control_url = 'http://' . $_SERVER['HTTP_HOST'] . '/' . path_to_theme() . '/expctrl/?';
+			drupal_add_js('var export_control_url = "' . $export_control_url . '";', array('type' => 'inline'));
+			drupal_add_js(drupal_get_path('module', 'fnet_marketo_form') . '/fnet_marketo_form.js', array('scope' => 'footer'));
+		}
+	}else{
+		$ip_embargoed = FALSE;
+	}  
+  $variables['fnet_marketo_form'] = $fnet_marketo_form;
+  $variables['ip_embargoed'] = $ip_embargoed;
+}

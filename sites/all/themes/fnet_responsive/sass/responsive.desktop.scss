@@ -37,8 +37,7 @@
         font-weight: bold;
       }
       
-      #mkt-prod-img-left,
-      #mkt-prod-img-right {
+      #mkt-prod-img-left{
         width: 216px;
         float: left;
         margin-right: 20px;
@@ -47,12 +46,20 @@
           width: 100%;
         }
       }
+      #mkt-prod-img-right {
+        width: 216px;
+        float: right;
+
+        img {
+          width: 100%;
+        }
+      }
 
       #mkt-prod-content {
-        float: left;
+        // float: left;
         font-size: 16px;
         line-height: 21px;
-        width: 300px;
+        // width: 300px;
       }
     }
 
@@ -79,7 +86,7 @@
     #mkt-more-links-content {
       clear:left;
       float: left;
-      margin-top: 100px;
+      margin-top: 30px;
 
       a {
         font-size: 14px;
@@ -93,7 +100,7 @@
       float: left;
       font-size: 9px;
       line-height: 15px;
-      margin-top: 135px;
+      margin-top: 30px;
     }
   }
 }
