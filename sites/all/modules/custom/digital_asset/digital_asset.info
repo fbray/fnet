@@ -4,8 +4,6 @@ description = "Digital Asset Management System"
 name = "Digital Asset"
 package = "Fluke Networks"
 project = "digital_asset"
-version = "7.x-1.0"
+version = "7.x-1.1"
 
-;dependencies[] = 'findit'
-dependencies[] = 'fnet_common'
-dependencies[] = site_split
+dependencies[] = fnet_common

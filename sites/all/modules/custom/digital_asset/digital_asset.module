@@ -7,7 +7,9 @@ define('DA_CCS_UPDATE_CATALOG', 'Update catalog assignment');
 define('DA_CCS_REMOVE', 'Remove - Existing Asset');
 
 /**
- * Implements hook_menu
+ * Implements hook_menu().
+ *
+ * @return array
  */
 function digital_asset_menu() {
   $items = array();
@@ -197,7 +199,9 @@ function digital_asset_menu() {
 }
 
 /**
- * Implements hook_permission
+ * Implements hook_permission().
+ *
+ * @return array
  */
 function digital_asset_permission() {
   $perms = array(
@@ -214,7 +218,10 @@ function digital_asset_permission() {
 }
 
 /**
- * Implements hook_form_FORM_NAME_alter
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * @param $form
+ * @param $form_state
  */
 function digital_asset_form_digital_asset_node_form_alter(&$form, &$form_state) {
   global $user;
@@ -293,47 +300,56 @@ function digital_asset_form_digital_asset_node_form_alter(&$form, &$form_state) 
 
 /**
  *  Node form hook_form_after_build
- **/
+ *
+ * @param $form
+ * @param $form_state
+ * @return mixed
+ */
 function digital_asset_node_form_after_build($form, &$form_state) {
   unset($form['group_dam_ccs_printing']['field_dam_cdn_status_pod']);
   return $form;
 }
 
 /**
- * Implementation of hook_theme
+ * Implementation of hook_theme().
+ *
+ * @return array
  */
 function digital_asset_theme() {
   $hooks = array();
-  $hooks['digital_asset_node_form'] = array(
-    'template' => 'theme/digital_asset_node_form',
+  $base = array(
+    'path' => drupal_get_path('module', 'digital_asset') . '/theme',
+  );
+  $hooks['digital_asset_node_form'] = $base + array(
+    'template' => 'digital_asset_node_form',
     'render element' => 'form',
   );
-  $hooks['digital_asset_child_node_form'] = array(
-    'template' => 'theme/digital_asset_child_node_form',
+  $hooks['digital_asset_child_node_form'] = $base + array(
+    'template' => 'digital_asset_child_node_form',
     'render element' => 'form',
   );
-  $hooks['digital_asset_main_menu'] = array(
-    'template' => 'theme/digital_asset_main_menu',
+  $hooks['digital_asset_main_menu'] = $base + array(
+    'template' => 'digital_asset_main_menu',
     'variables' => array(
       'menu_items' => NULL,
     ),
   );
-  $hooks['digital_asset'] = array(
-    'template' => 'theme/digital_asset',
+  $hooks['digital_asset'] = $base + array(
+    'template' => 'digital_asset',
     'variables' => array(
       'node' => NULL,
     ),
   );
-  $hooks['digital_asset_page_view_form'] = array(
-    'template' => 'theme/digital_asset_page_view_form',
+  $hooks['digital_asset_page_view_form'] = $base + array(
+    'template' => 'digital_asset_page_view_form',
     'render element' => 'form',
   );
-  $hooks['digital_asset_asset_query_form'] = array(
+  $hooks['digital_asset_asset_query_form'] = $base + array(
     'template' => 'theme/digital_asset_asset_query_form',
     'render element' => 'form',
   );
-  $hooks['digital_asset_query_by_product_form'] = array(
-    'template' => 'theme/digital_asset_query_by_product_form',
+  $hooks['digital_asset_query_by_product_form'] = $base + array(
+    'template' => 'digital_asset_query_by_product_form',
     'render element' => 'form',
   );
   return $hooks;
@@ -1264,42 +1280,31 @@ function digital_asset_list_assets_by_type($type, $language = 'en', $industry = 
  * @return array
  */
 function digital_asset_get_products_with_assets($type) {
-  $personality = strtolower(variable_get('site_split_personality', 'Pre-split'));
   $result_set = array();
-  $sql = <<<eot
-SELECT
+  $sql = "SELECT
 	p.field_pcatid_value,
-	n.title,
-  be.field_business_entity_tid
-FROM field_data_field_pcatid AS p
-INNER JOIN node AS n ON p.revision_id = n.vid
-LEFT JOIN field_data_field_business_entity AS be ON n.nid = be.entity_id AND n.vid = be.revision_id
+	n.title
+FROM {field_data_field_pcatid} AS p
+INNER JOIN {node} n ON p.revision_id = n.vid
 WHERE
 	n.nid IN
 		(
 			SELECT DISTINCT
-				rp.field_dam_related_product_nid
+				fp.field_product_product_id
 			FROM
-				field_data_field_dam_asset_type AS a
-			INNER JOIN node AS n ON a.revision_id = n.vid
-			INNER JOIN field_data_field_dam_related_product AS rp ON n.vid = rp.revision_id
+				{field_data_field_dam_asset_type} a
+			INNER JOIN {node} AS n ON a.revision_id = n.vid
+			INNER JOIN {field_data_field_product} AS fp ON n.vid = fp.revision_id
 			WHERE
-				rp.field_dam_related_product_nid IS NOT NULL
-			AND a.field_dam_asset_type_value IN (:type)
+				fp.field_product_product_id IS NOT NULL
+			AND a.field_dam_asset_type_target_id IN (:type)
 			ORDER BY
-				rp.field_dam_related_product_nid ASC
+				fp.field_product_product_id ASC
 		)
   AND p.field_pcatid_value IS NOT NULL
 	AND n.status = 1
-ORDER BY
-	n.title
-eot;
+ORDER BY n.title";
   $result = db_query($sql, array(':type' => $type));
-  foreach ($result as $row) {
-    if (($personality == 'pre-split') || (in_array($row->field_business_entity_tid, site_split_personality_tids()))) {
-      $result_set[$row->field_pcatid_value] = $row->title;
-    }
-  }
   return $result_set;
 }
 
@@ -1546,6 +1551,10 @@ function digital_asset_purge_ftp_queue() {
   return $result;
 }
 
+/**
+ * TODO: This is hard-coded crap.
+ * @return array
+ */
 function digital_asset_languages() {
   $languages = array(
     'ar' => 'Arabic',
@@ -1553,6 +1562,7 @@ function digital_asset_languages() {
     'zh' => 'Chinese',
     'tw' => 'Traditional Chinese',
     'cs' => 'Czech',
+    'dt' => 'Dothraki',
     'en' => 'English',
     'et' => 'Estonian',
     'fr' => 'French',
@@ -1561,6 +1571,7 @@ function digital_asset_languages() {
     'hu' => 'Hungarian',
     'it' => 'Italian',
     'ja' => 'Japanese',
+    'tlh' => 'Klingon',
     'ko' => 'Korean',
     'lv' => 'Latvian',
     'lt' => 'Lithuanian',
@@ -1572,7 +1583,9 @@ function digital_asset_languages() {
     'sl' => 'Slovenian',
     'es' => 'Spanish',
     'sv' => 'Swedish',
+    'tm' => 'Thembrian',
     'tr' => 'Turkish',
+    'vi' => 'Vietnamese',
   );
   return $languages;
 }
