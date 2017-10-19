@@ -50,7 +50,7 @@ else {
        class='listing-page-helper-section'>
     <?php
     $text = variable_get('myaccount_registered_products_page_text', t('Registering your products enables you to create support incidents. You will need to have the serial number (Or enter SOFTWARE if registering software) and the purchase date of the product.'));
-    print check_markup($text, FILTER_FORMAT_DEFAULT, TRUE);
+    print check_markup($text, filter_default_format(), TRUE);
     ?>
   </div>
   <div>

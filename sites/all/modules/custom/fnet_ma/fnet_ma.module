@@ -8,6 +8,7 @@
  * and submit and view support incidents.
  */
 
+// include_once DRUPAL_ROOT . '/includes/locale.inc';
 /**
  * Implementation of hook_help().
  * Display help and module information
@@ -484,7 +485,7 @@ function fnet_ma_myaccount_home() {
   $html .= "<div class = 'full-available-width'>
                 <div id = 'downloads-and-updates-summary-section-expanding-master-key-div' Onclick=\"return toggle_sections('downloads-and-updates-summary-section');\" class='my-account-headlines my-account-header-minus-background'>" . t('Downloads and Updates') . "</div>
   </div>";
-  $html .= "<div id = 'downloads-and-updates-summary-section'>" . check_markup(variable_get('fnet_ma_download_and_updates_text', t('Click on the "Download & Updates link to view all the Assets that you can download."')), FILTER_FORMAT_DEFAULT, $langcode = '' /* TODO Set this variable. */, TRUE) . "</div>";
+  $html .= "<div id = 'downloads-and-updates-summary-section'>" . check_markup(variable_get('fnet_ma_download_and_updates_text', t('Click on the "Download & Updates link to view all the Assets that you can download."')), 'FILTER_FORMAT_DEFAULT', $langcode = '' /* TODO Set this variable. */, TRUE) . "</div>";
 
   $html .= '<br />';
   $html .= "<div class = 'full-available-width'>
@@ -928,7 +929,12 @@ function fnet_ma_display_gold_support_contact_numbers_page() {
  * @return mixed
  */
 function fnet_ma_block_info() {
-  $block['navigation']['info'] = t('My Account Navigation Links Block.');
+  $block['navigation'] = array(
+    'info' => t('My Account Navigation Links Block.'),
+    'region' => 'sidebar_first',
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages' => 'myaccount\nmyaccount/*',
+  );
   return $block;
 }
 
@@ -942,7 +948,7 @@ function fnet_ma_block_view($delta) {
   $block = array();
   switch ($delta) {
     case 'navigation':
-      $block['subject'] = t('');
+      $block['subject'] = t('My Account Navigation Links');
       $block['content'] = theme("my_account_navigation_links_block");
       break;
   }
@@ -995,7 +1001,7 @@ function fnet_ma_load_registered_products($flag = '') {
  * @return mixed
  */
 function fnet_ma_support_incident_search_form($form, &$form_state) {
-  $days = $_REQUEST['days'];
+  $days = isset($_REQUEST['days']) ? $_REQUEST['days'] : 30;
   $form['number_days_passed'] = array(
     '#title' => t('Search past days'),
     '#type' => 'select',
@@ -1007,7 +1013,7 @@ function fnet_ma_support_incident_search_form($form, &$form_state) {
       1000 => 'ALL',
     ),
     '#required' => TRUE,
-    '#default_value' => ($days) ? $days : 30,
+    '#default_value' => $days,
     '#ajax' => array('trigger_as' => array('name' => 'submit')),
   );
 
@@ -1539,7 +1545,8 @@ function fnet_ma_check_profile() {
   );
 
   // Address fields
-  $fields = $account->field_adddress[LANGUAGE_NONE][0];
+  $fields = $account->field_address[LANGUAGE_NONE][0];
+
   foreach ($fields as $key => $field) {
     // Check the required fields to see if they are empty.
     if (in_array($key, $required)) {

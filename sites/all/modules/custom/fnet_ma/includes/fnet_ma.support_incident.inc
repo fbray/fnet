@@ -380,10 +380,11 @@ function fnet_ma_display_all_support_incidents($days_history = 30, $asset_id = N
   else {
     $support_incidents = fnet_ma_fetch_support_incidents($days);
   }
-  $search_form = drupal_render(drupal_get_form('fnet_ma_support_incident_search_form'));
+  $search_form = drupal_get_form('fnet_ma_support_incident_search_form');
+  $rendered_search_form = drupal_render($search_form);
   $html .= theme("all_support_incident_display", array(
     'support_incidents' => $support_incidents,
-    'search_form' => $search_form
+    'search_form' => $rendered_search_form
   ));
   return $html;
 }

@@ -48,7 +48,7 @@ else {
        class='listing-page-helper-section'>
     <?php
     $text = variable_get('myaccount_support_incidents_page_text', t('You must register a product before opening a support incident for it. Then select the product for the support incident. You can come back at a later time to see updates to the incident.'));
-    print check_markup($text, FILTER_FORMAT_DEFAULT, TRUE);
+    print check_markup($text, 'plain_text', TRUE);
     ?>
   </div>
 
