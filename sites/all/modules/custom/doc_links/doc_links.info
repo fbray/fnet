@@ -3,7 +3,6 @@ name = Doc Links
 description = Integrates with the printer-friendly pages module and also with the Onelink translation service to provide customized PDF links
 package = "Fluke Networks"
 dependencies[] = print
-;dependencies[] = print_pdf
 version = 7.x.0.12
 core = 7.x
 
