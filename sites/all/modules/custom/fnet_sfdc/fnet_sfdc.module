@@ -4,7 +4,7 @@
 /**
  * @file
  * The MyAccount / SFDC integration module provide helper functions and wrappers for SFDC SOAP calls.
- *
+ * TODO: This may soon be deprecated by Drupal's Salesforce module.
  */
 require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'fnet_sfdc') . '/includes/FNETDataService.php';
 require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'fnet_sfdc') . '/includes/SFDCWebService.php';
@@ -146,6 +146,7 @@ function fnet_sfdc_create_asset($email, $product_code, $purchase_date, $serial_n
 
 /**
  * Get list of 'PCAT' Ids
+ * TODO: PCAT no longer used?
  *
  * @return \SFDCResponse
  */
@@ -414,6 +415,7 @@ function fnet_sfdc_get_contact($email) {
 
 /**
  * Get an array of support cases opened in last $days
+ *
  * @param string $email
  * @param int $days
  * @return SFDCResponse
@@ -605,6 +607,7 @@ function fnet_sfdc_contact_exists($email) {
 
 /**
  * Create sfdc contact object from Drupal profile
+ * TODO: Update to using user addressfield.
  *
  * @param string $email
  * @param object $account
@@ -612,17 +615,17 @@ function fnet_sfdc_contact_exists($email) {
  */
 function fnet_sfdc_create_contact_from_profile($email, $account) {
   $contact = new sfdc_Contact();
-  $contact->FirstName = fnet_common_get_field_value('user', $account, 'field_user_first_name');
-  $contact->LastName = fnet_common_get_field_value('user', $account, 'field_user_last_name');
-  $contact->MailingStreet = fnet_common_get_field_value('user', $account, 'field_user_address_line_1');
-  $contact->MailingStreet2__c = fnet_common_get_field_value('user', $account, 'field_user_address_line_2');
+  $contact->FirstName = $account->field_address[LANGUAGE_NONE][0]['first_name'];
+  $contact->LastName = $account->field_address[LANGUAGE_NONE][0]['last_name'];
+  $contact->MailingStreet = $account->field_address[LANGUAGE_NONE][0]['thoroughfare'];
+  $contact->MailingStreet2__c = $account->field_address[LANGUAGE_NONE][0]['premise'];
   $contact->MailingCity = fnet_common_get_field_value('user', $account, 'field_user_city');
   $contact->MailingState = fnet_common_get_field_value('user', $account, 'field_user_province');
-  $contact->MailingCountry = strtoupper(fnet_common_get_field_value('user', $account, 'field_user_country'));  // Needs to be uppercase.
-  $contact->MailingPostalCode = fnet_common_get_field_value('user', $account, 'field_user_postal_code');
+  $contact->MailingCountry = strtoupper($account->field_address[LANGUAGE_NONE][0]['country']);  // Needs to be uppercase.
+  $contact->MailingPostalCode = $account->field_address[LANGUAGE_NONE][0]['postal_code'];
   $contact->Phone = fnet_common_get_field_value('user', $account, 'field_user_phone');
   $contact->Email = $email;
-  $contact->Company__c = fnet_common_get_field_value('user', $account, 'field_user_company');
+  $contact->Company__c = $account->field_address[LANGUAGE_NONE][0]['organisation_name'];
   $contact->IndividualId__c = fnet_common_get_field_value('user', $account, 'field_user_onyx_id');
   if (empty($contact->MailingState)) {
     $contact->MailingState = $contact->MailingCountry;
@@ -635,20 +638,26 @@ function fnet_sfdc_create_contact_from_profile($email, $account) {
 
 /**
  * Create sfdc contact from form values
+ * TODO: Replace with Addressfield goodness
  *
  * @param string $email
  * @param array $values
  * @return sfdc_Contact
  */
 function fnet_sfdc_create_contact_from_form_values($email, $values) {
-  global $user;
-  $uid = db_query('SELECT uid FROM {users} WHERE mail = :mail', array(':mail' => $email))->fetchField();
-  if ($uid == $user->uid) {
-    $account = $user;
+  global $user; // The current user.
+  // TODO: This is weird logic.
+  $form_user = user_load_by_mail($email);
+
+  // Check if user is in system.
+  if ($form_user->uid > 0) {
+    $account = $form_user;
   }
+  // If not, user the current user as a default.
   else {
-    $account = user_load($uid);
+    $account = user_load($user->uid);
   }
+
   $contact = new sfdc_Contact();
   $contact->FirstName = check_plain(trim($values['first_name']));
   $contact->LastName = check_plain(trim($values['last_name']));
