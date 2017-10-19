@@ -6,27 +6,46 @@
  * Provides Product Assets integration functionality
  */
 
+function product_assets_help() {
+
+}
+
 /**
  * Implements hook_menu().
+ *
+ * @return mixed
  */
 function product_assets_menu() {
-  // Software downloads
-  $items['support/downloads'] = array(
-    'title' => 'Downloads',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('product_assets_download_form', 2),
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
-  );
-  $items['support/downloads/%/%'] = array(
-    'title callback' => 'product_assets_title_generator',
-    'title arguments' => array('downloads', 3),
-    'page callback' => 'product_assets_download_results_page',
-    'page arguments' => array(2),
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
-  );
+  // TODO: Create as a view! Move to product_assets module.
+  // Support homepage
 
+  $items['support'] = array(
+    'title' => 'Support',
+    'page callback' => 'support_page_page',
+    'access callback' => true,
+    'access arguments' => array(),
+    'type' => MENU_CALLBACK,
+  );
+  /*
+    // Software downloads
+    $items['support/downloads'] = array(
+      'title' => 'Downloads',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('product_assets_download_form', 2),
+      'access callback' => TRUE,
+      'type' => MENU_CALLBACK,
+    );
+
+    // TODO: Move to View. Get rid of title thingy.
+    $items['support/downloads/%/%'] = array(
+      'title callback' => 'product_assets_title_generator',
+      'title arguments' => array('downloads', 3),  // TODO: This is not acceptable!!
+      'page callback' => 'product_assets_download_results_page',
+      'page arguments' => array(2),
+      'access callback' => TRUE,
+      'type' => MENU_CALLBACK,
+    );
+  */
   // Manuals
   $items['support/manuals'] = array(
     'title' => 'Product Manuals',
@@ -35,6 +54,7 @@ function product_assets_menu() {
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
+  // TODO: Move to View. Get rid of title thingy.
   $items['support/manuals/%/%'] = array(
     'title callback' => 'product_assets_title_generator',
     'title arguments' => array('Product Manuals', 3),
@@ -52,6 +72,7 @@ function product_assets_menu() {
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
+  // TODO: Move to View. Get rid of title thingy.
   $items['support/training/%/%'] = array(
     'title callback' => 'product_assets_title_generator',
     'title arguments' => array('Training Videos', 3),
@@ -71,6 +92,8 @@ function product_assets_menu() {
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
+
+  // TODO: Move to View. Get rid of title thingy.
   $items['expertise/whitepapers/%/%'] = array(
     'title' => '',
     'title callback' => 'product_assets_title_generator',
@@ -91,6 +114,8 @@ function product_assets_menu() {
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
+
+  // TODO: Move to View. Get rid of title thingy.
   $items['support/application-notes/%/%'] = array(
     'title' => '',
     'title callback' => 'product_assets_title_generator',
@@ -111,6 +136,8 @@ function product_assets_menu() {
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
+
+  // TODO: Move to View. Get rid of title thingy.
   $items['support/datasheets/%/%'] = array(
     'title' => '',
     'title callback' => 'product_assets_title_generator',
@@ -131,6 +158,8 @@ function product_assets_menu() {
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
+
+  // TODO: Move to View. Get rid of title thingy.
   $items['expertise/webcasts/%/%'] = array(
     'title' => '',
     'title callback' => 'product_assets_title_generator',
@@ -143,6 +172,42 @@ function product_assets_menu() {
 
   return $items;
 }
+
+/**
+ * Implements hook_theme().
+ */
+function product_assets_theme() {
+  $base = array(
+    'path' => drupal_get_path('module', 'product_assets') . '/theme',
+  );
+  return array(
+    'assets_listing' => $base + array(
+      'template' => 'assets_listing',
+      'variables' => array(
+        'assets' => array()
+      )
+    ),
+    'assets_webcasts_listing' => $base + array(
+      'template' => 'assets_webcasts_listing',
+      'variables' => array(
+        'assets' => array()
+      )
+    ),
+  );
+}
+/**
+ * Implements hook_views_api().
+ *
+ * @return array
+ */
+function product_assets_views_api() {
+  return array(
+    'api' => 3.0,
+    'path' => drupal_get_path('module', 'product_assets') . '/views',
+    'template path' => drupal_get_path('module', 'product_assets') . '/theme',
+  );
+}
+
 
 
 /**
@@ -170,7 +235,7 @@ function product_assets_get_valid_products($type = NULL) {
  * Generate base form for product assets.
  */
 function product_assets_form_generator($product_id = 0, $asset_type = NULL, $title = NULL) {
-  drupal_add_css(drupal_get_path('module', 'product_assets') . '/product_assets.css');
+  drupal_add_css(drupal_get_path('module', 'product_assets') . '/css/product_assets.css');
 
   $form = array();
   if (!empty($title)) {
@@ -357,21 +422,7 @@ function product_assets_training_results_page($product_id = NULL) {
 }
 
 
-/**
- * Implements hook_theme().
- */
-function product_assets_theme() {
-  return array(
-    'assets_listing' => array(
-      'template' => 'assets_listing',
-      'variables' => array('assets' => array())
-    ),
-    'assets_webcasts_listing' => array(
-      'template' => 'assets_webcasts_listing',
-      'variables' => array('assets' => array())
-    ),
-  );
-}
+
 
 /**
  * Generate base form for product assets - Technical documents.
@@ -492,6 +543,8 @@ function _product_assets_get_asset_list($xmlObj, $download_link_base, $list_type
     $asset_list[$i]['desc'] = $asset->AssetDescription;
     switch (strtolower($asset->Locked)) {
       case 'true':
+        // Fluke and Fluke Networks employees have full access.
+        // TODO: This should be a permission-based check. Roles are important, donchaknow?
         if (preg_match('/.*(?:@flukenetworks|@fluke)\.com/i', $user->mail)) {
           // TODO: Seriously? A hard-coded URL for the server? BAD DOG. Change that.
           $asset_list[$i]['file_link'] = l($link_text, 'http://www.flukenetworks.com' . $download_link_base . $asset->AssetID);
@@ -514,5 +567,137 @@ function _product_assets_get_asset_list($xmlObj, $download_link_base, $list_type
     $i++;
   }
   return $asset_list;
+}
+
+/**
+ * Implements hook_theme()
+().
+ */
+/*
+function custom_pages_theme() {
+  return array(
+    'expertise_page' => array(
+      'template' => 'expertise_page',
+      'variables' => array('expertise' => array())),
+  );
+}
+*/
+
+/**
+ * Supplementary function providing CuRL implementation
+ */
+function do_curl_request($url) {
+
+  if (function_exists('curl_init')) {
+    //open connection
+    $ch = curl_init();
+
+    //set the url, number of POST vars, POST data
+    curl_setopt($ch, CURLOPT_URL,              $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+    //execute post
+    $result = curl_exec($ch);
+
+    //close connection
+    curl_close($ch);
+
+    //return CuRL response
+    return $result;
+  }
+  else {
+    drupal_set_message(t('CuRL library is missing. Please contact the administrator'), 'error');
+    return FALSE;
+  }
+}
+
+
+/**
+ * Implementation of preprocess hook.
+ */
+/*
+function custom_pages_preprocess_page(&$variables) {
+  if ($variables['theme_hook_suggestions'][0] == 'page__expertise') {  //$variables['template_files'][0] == 'page-expertise'
+    $expertise = variable_get('expertise_page_settings', array());
+    switch ($variables['template_files'][1]) {
+      case "page-expertise-topics":
+        $variables['head_title'] = $expertise['tpc_head_title']; // 'Expertise Topics - Network Monitoring and Testing | Fluke Networks';
+        $data = array(
+          '#type' => 'html_tag',
+          '#tag' => 'meta',
+          '#attributes' => array(
+            'name' => 'description',
+            'content' => $expertise['tpc_meta_description'],
+          ),
+        );
+        drupal_add_html_head($data, "meta_description");
+        break;
+      case "page-expertise-roles":
+        $variables['head_title'] = $expertise['rle_head_title']; // 'Expertise Roles - Network Monitoring and Testing | Fluke Networks';
+        $data = array(
+          '#type' => 'html_tag',
+          '#tag' => 'meta',
+          '#attributes' => array(
+            'name' => 'description',
+            'content' => $expertise['rle_meta_description'],
+          ),
+        );
+        drupal_add_html_head($data, "meta_description");
+        break;
+      case "page-expertise-industries":
+        $variables['head_title'] = $expertise['ind_head_title']; // 'Expertise Industries - Network Monitoring and Testing | Fluke Networks';
+        $data = array(
+          '#type' => 'html_tag',
+          '#tag' => 'meta',
+          '#attributes' => array(
+            'name' => 'description',
+            'content' => $expertise['ind_meta_description'],
+          ),
+        );
+        drupal_add_html_head($data, "meta_description");
+        break;
+      default:
+        $variables['head_title'] = $expertise['head_title']; //'Expertise - Network Monitoring and Testing | Fluke Networks';
+        $data = array(
+          '#type' => 'html_tag',
+          '#tag' => 'meta',
+          '#attributes' => array(
+            'name' => 'description',
+            'content' => $expertise['meta_description'],
+          ),
+        );
+        drupal_add_html_head($data, "meta_description");
+    }
+  }
+}
+*/
+
+
+/**
+ * Implementation of Support page view.
+ */
+// TODO: Replace with a View.
+function support_page_page() {
+  drupal_add_css(drupal_get_path('module', 'product_assets') . '/css/support_page.css');
+  drupal_add_js(drupal_get_path('module', 'product_assets') . '/css/support_page.js');
+  $output  = '';
+  $support = variable_get('support_page_settings', array());
+  $output .= theme('support_page', array('support' => $support));
+  return $output;
+}
+
+/**
+ * Implementation of Expertise page view.
+ */
+function expertise_page_page() {
+  drupal_add_css(drupal_get_path('module', 'product_assets') . '/js/expertise_page.css');
+  drupal_add_js(drupal_get_path('module', 'product_assets') . '/js/expertise_page.js');
+
+  $output                       = '';
+  $expertise                    = variable_get('expertise_page_settings', array());
+  $expertise['casestudies']     = get_top_expertise_items('cs', 3);
+  $expertise['learn_about']     = get_top_expertise_items('la', 3);
+  $output                      .= theme('expertise_page', array('expertise' => $expertise));
+  return $output;
 }
 

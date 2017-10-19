@@ -1,10 +1,11 @@
 ; $Id$
 name = Product Assets
-description = provides support pages for FNET
+description = Provides support pages for FNET
 package = Fluke Networks
-version = "7.x-1.0
+version = "7.x-1.1"
 core = 7.x
 
 dependencies[] = digital_asset
+dependencies[] = views
 
 stylesheets[all][] = product_assets.css
