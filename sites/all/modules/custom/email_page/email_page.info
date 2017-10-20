@@ -1,7 +1,0 @@
-name = "Email Page"
-description = "Display a page containing a form and email the page to an email address entered on the form"
-dependencies[] = fnet_common
-project = "email_page"
-package = "Fluke Networks"
-version = "7.x-1.0-20150520"
-core = "7.x"
