@@ -14,95 +14,68 @@ class FNETPromotionMigration extends DrupalNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
+
     // Deprecated Fields
-    $this->addFieldMapping(NULL, 'field_business_entity');
+    $this->addFieldMapping(NULL, 'field_business_entity')
+      ->description(t('No longer necessary as NetScout split is complete.'))
+      ->issueGroup(t('DNM'));
 
     // Individual Fields
-    $this->addFieldMapping('field_promo_intro_title', 'field_promo_intro_title');
-    $this->addFieldMapping('field_promo_intro', 'field_promo_intro');  // Long text field
-    $this->addFieldMapping('field_promo_intro:format', 'field_promo_intro:format');
-    $this->addFieldMapping('field_promo_priority', 'field_promo_priority');
-    $this->addFieldMapping('field_adtracker', 'field_promo_adtracker');
+    $this->addFieldMapping('field_intro_title', 'field_promo_intro_title');
+    $this->addFieldMapping('field_intro', 'field_promo_intro');  // Long text field
+    $this->addFieldMapping('field_intro:format', 'field_promo_intro:format');
+    // TODO: Move to weight field? Weight is turned on.
+    $this->addFieldMapping('weight', 'field_promo_priority');
+    $this->addFieldMapping('field_tracking_code', 'field_promo_adtracker');
+    $this->addFieldMapping('field_tracking_code:format', 'field_promo_adtracker:format');
+    $this->addFieldMapping('field_tracking_code:language', 'field_promo_adtracker:language');
 
-    // TODO: How to deal with Langreg fields?
-    $this->addFieldMapping('field_promo_langreg', 'field_promo_langreg');
+    $this->addFieldMapping('field_language_region', 'field_promo_langreg');
 
 
     // Date fields
-    $this->addFieldMapping('field_promo_expdate', 'field_promo_expdate');
+    // Set the default start date as 1/1/2010.
+    $this->addFieldMapping('field_promotion_date')
+      ->defaultValue('2010-01-01 00:00:00');
+    $timezone = variable_get('date_default_timezone', '');
+    $this->addFieldMapping('field_promotion_date:timezone')
+      ->defaultValue($timezone);
+    $this->addFieldMapping('field_promotion_date:rrule')
+      ->defaultValue(NULL);
+    // The expiration date should be in the 'to' field for the date.
+    $this->addFieldMapping('field_promotion_date:to', 'field_promo_expdate');
 
     // Link fields
-    /* Example
-    $this->addFieldMapping('field_video_url', 'field_videourl'); // Link
-    $this->addFieldMapping('field_video_url:language')
-      ->defaultValue('en');
-    $this->addFieldMapping('field_video_url:attributes')
-      ->defaultValue(NULL);
-    $this->addFieldMapping('field_video_url:title')
-      ->defaultValue(NULL);
-    */
-    $this->addFieldMapping('field_promo_extlink', 'field_promo_extlink'); // Link
-    $this->addFieldMapping('field_promo_extlink:language', 'field_promo_extlink:language')
+    $this->addFieldMapping('field_external_url', 'field_promo_extlink'); // Link
+    $this->addFieldMapping('field_external_url:language', 'field_promo_extlink:language')
       ->defaultValue(LANGUAGE_NONE);
-    $this->addFieldMapping('field_promo_extlink:attributes', 'field_promo_extlink:attributes')
+    $this->addFieldMapping('field_external_url:attributes', 'field_promo_extlink:attributes')
       ->defaultValue(NULL);
-    $this->addFieldMapping('field_promo_extlink:title', 'field_promo_extlink:title')
+    $this->addFieldMapping('field_external_url:title', 'field_promo_extlink:title')
       ->defaultValue(NULL);
 
     // Image Fields
-    /* Example
-    $this->addFieldMapping('field_device_icon:file_class')
-      ->defaultValue('migrateFileFid');
-    $this->addFieldMapping('field_device_icon:preserve_files')
-      ->defaultValue(TRUE);
-    $this->addFieldMapping('field_device_icon:language')
-      ->defaultValue('en');
-    $this->addFieldMapping('field_device_icon:alt')
-      ->defaultValue(NULL);
-    $this->addFieldMapping('field_device_icon:title')
-      ->defaultValue(NULL);
-    */
-    $this->addFieldMapping('field_promo_thumbnail', 'field_promo_thumbnail')
+    $this->addFieldMapping('field_thumbnail', 'field_promo_thumbnail')
       ->sourceMigration('Files');
-    $this->addFieldMapping('field_promo_thumbnail:preserve_files', 'field_promo_thumbnail:preserve_files')
-      ->defaultValue(TRUE);
-    $this->addFieldMapping('field_promo_thumbnail:language', 'field_promo_thumbnail:language')
-      ->defaultValue(LANGUAGE_NONE);
-    $this->addFieldMapping('field_promo_thumbnail:alt', 'field_promo_thumbnail:alt')
-      ->defaultValue(NULL);
-    $this->addFieldMapping('field_promo_thumbnail:title', 'field_promo_thumbnail:title')
-      ->defaultValue(NULL);
+    $this->addFieldMapping('field_thumbnail:file_class')
+      ->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_thumbnail:alt', 'field_promo_thumbnail:alt')
+      ->sourceMigration(NULL);
 
-    $this->addFieldMapping('field_promo_lgimage', 'field_promo_lgimage')
+    $this->addFieldMapping('field_image', 'field_promo_lgimage')
       ->sourceMigration('Files');
-    $this->addFieldMapping('field_promo_lgimage:preserve_files', 'field_promo_lgimage:preserve_files')
-      ->defaultValue(TRUE);
-    $this->addFieldMapping('field_promo_lgimage:language', 'field_promo_lgimage:language')
-      ->defaultValue(LANGUAGE_NONE);
-    $this->addFieldMapping('field_promo_lgimage:alt', 'field_promo_lgimage:alt')
-      ->defaultValue(NULL);
-    $this->addFieldMapping('field_promo_lgimage:title', 'field_promo_lgimage:title')
-      ->defaultValue(NULL);
+    $this->addFieldMapping('field_image:file_class')
+      ->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_image:alt', 'field_promo_lgimage:alt')
+      ->sourceMigration(NULL);
 
-    // Taxonomy References
-    /* Example:
-    $this->addFieldMapping('field_plugin_categories', 'field_plugin_categories')
-      ->sourceMigration('PluginCategory');
-    $this->addFieldMapping('field_plugin_categories:source_type')
-      ->defaultValue('tid');
-    $this->addFieldMapping('field_plugin_categories:create_term')
-      ->defaultValue(FALSE);
-    $this->addFieldMapping('field_plugin_categories:ignore_case')
-      ->defaultValue(TRUE);
-     */
-    $this->addFieldMapping('promotion_type', 'taxonomy_vocabulary_5')
+
+    // Entity References
+    $this->addFieldMapping('field_promotion_type', 'taxonomy_vocabulary_5')
       ->sourceMigration('PromotionType');
-    $this->addFieldMapping('promotion_type:source_type')
-      ->defaultValue('tid');
-    $this->addFieldMapping('promotion_type:create_term')
-      ->defaultValue(FALSE);
-    $this->addFieldMapping('promotion_type:ignore_case')
-      ->defaultValue(TRUE);
+
 
   }
 }
