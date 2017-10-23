@@ -90,7 +90,7 @@ function dnt_preprocess_page(&$variables) {
   if (isset($variables['node'])) {
     $enabled_node_types = variable_get('dnt_node_types', array());
     if (in_array($variables['node']->type, $enabled_node_types)) {
-      if ($variables['node']->do_not_translate) {
+      if (isset($variables['node']->do_not_translate)) {
         if (!headers_sent()) {
           $nid = $variables['node']->nid;
           header("X-ContentId: $nid");
@@ -109,7 +109,7 @@ function dnt_preprocess_page(&$variables) {
 function dnt_preprocess_print_page(&$variables) {
   $enabled_node_types = variable_get('dnt_node_types', array());
   if (in_array($variables['node']->type, $enabled_node_types)) {
-    if ($variables['node']->do_not_translate) {
+    if (isset($variables['node']->do_not_translate)) {
       if (isset($variables['title'])) {
         $variables['print']['title'] = '<div class="OneLinkNoTx">' . $variables['print']['title'] . '</div>';
       }
