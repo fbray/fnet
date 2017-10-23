@@ -20,7 +20,10 @@
  */
 function fnet_ma_product_registration_form($form, $form_state) {
   global $user;
-
+  // Unregistered users are redirected to the login page.
+  if(user_is_anonymous()) {
+    drupal_goto('/user');
+  }
   drupal_add_js(drupal_get_path('module', 'fnet_ma') . '/js/fnet_ma_helper.js');
 
   $product_category = fnet_ma_load_product_category();

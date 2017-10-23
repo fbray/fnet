@@ -181,14 +181,14 @@ function fnet_ma_menu() {
   $items['myaccount'] = array(
     'title' => 'My Account',
     'page callback' => 'fnet_ma_myaccount_home',
-    'access arguments' => array('Fluke Networks My Account Access'),
+    'access arguments' => array('access content'),
     'type' => MENU_NORMAL_ITEM,
   );
 
   $items['myaccount/registered-products'] = array(
     'title' => 'Registered Products',
     'page callback' => 'fnet_ma_display_registered_products',
-    'access arguments' => array('Fluke Networks My Account Access'),
+    'access arguments' => array('access content'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -212,7 +212,7 @@ function fnet_ma_menu() {
     'title' => 'Register Products',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('fnet_ma_product_registration_form'),
-    'access arguments' => array('Fluke Networks My Account Access'),
+    'access arguments' => array('access content'),
     'file' => 'includes/fnet_ma.register_products.inc',
     'type' => MENU_NORMAL_ITEM,
   );
@@ -289,7 +289,7 @@ function fnet_ma_menu() {
   $items['myaccount/all-support-incidents'] = array(
     'title' => 'Support Incidents',
     'page callback' => 'fnet_ma_display_all_support_incidents',
-    'access arguments' => array('Fluke Networks My Account Access'),
+    'access arguments' => array('access content'),
     'file' => 'includes/fnet_ma.support_incident.inc',
     'type' => MENU_NORMAL_ITEM,
   );
@@ -440,6 +440,9 @@ function fnet_ma_user_login(&$edit, &$account) {
  */
 function fnet_ma_myaccount_home() {
   global $user;
+  if(user_is_anonymous()) {
+    drupal_goto('/user');
+  }
   $account = user_load($user->uid);
   fnet_ma_check_profile();
   $gold_member_greeting = '';
@@ -722,7 +725,7 @@ function fnet_ma_display_helper_text_on_pages($page_name = '') {
 function fnet_ma_load_product_category() {
   $product_families = array();
   $categories = array();
-  $products = fnet_sfdc_get_web_products()->data;  // TODO: Check this function.
+  $products = fnet_sfdc_get_web_products()->data;
   foreach ($products as $key => $value) {
     if (!empty($key)) {
       $categories[] = $key;
@@ -778,6 +781,9 @@ function fnet_ma_evaluate_valid_dates($product_purchase_date = '', $text_box_num
  */
 function fnet_ma_display_registered_products($listing_displayed_on = '') {
   global $user;
+  if(user_is_anonymous()) {
+    drupal_goto('/user');
+  }
   drupal_add_js(drupal_get_path('module', 'fnet_ma') . '/js/fnet_ma_helper.js');
 
   $registered_product_list_display_page = $listing_displayed_on;

@@ -363,6 +363,9 @@ function fnet_ma_view_support_incident_form_submit($form, &$form_state) {
  */
 function fnet_ma_display_all_support_incidents($days_history = 30, $asset_id = NULL) {
   global $user;
+  if(user_is_anonymous()) {
+    drupal_goto('/user');
+  }
   $html = '';
   $days = (!empty($_REQUEST['days'])) ? $_REQUEST['days'] : $days_history;
   drupal_add_js(drupal_get_path('module', 'fnet_ma') . '/js/fnet_ma_helper.js');

@@ -13,6 +13,7 @@ define('NUMBER_OF_T2W_REDIRECT_CATEGORIES', 10);
  * This code set is triggered on the URL - "admin/config/fluke_networks_myaccount".
  */
 function fnet_ma_admin_settings($form, &$form_state) {
+
   $form = array();
 
   $form['admin_page_header'] = array(
