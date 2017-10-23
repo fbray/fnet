@@ -1,6 +1,10 @@
-; $Id: dnt.info 1014 2013-06-06 21:51:41Z ychung $
 name = Do not translate
-description = Provides content types with do-not-translated flag.
+description = Provides content types with do-not-translated flag for translations.com
 package = Fluke Networks
-version = "7.x-1.0-20150506"
+version = "7.x-1.1"
 core = 7.x
+
+configure = admin/fnet/dnt
+
+dependencies[] = views
+dependencies[] = print

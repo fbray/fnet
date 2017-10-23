@@ -15,6 +15,8 @@ function dnt_help($path, $arg) {
 
 /**
  * Implements hook_menu().
+ *
+ * @return mixed
  */
 function dnt_menu() {
 
@@ -36,6 +38,8 @@ function dnt_menu() {
 
 /**
  * Implements hook_permission().
+ *
+ * @return array
  */
 function dnt_permission() {
   return array(
@@ -48,6 +52,10 @@ function dnt_permission() {
 
 /**
  * Implementation of content specific form alteration form().
+ *
+ * @param $form
+ * @param $form_state
+ * @param $form_id
  */
 function dnt_form_alter(&$form, &$form_state, $form_id) {
   $enabled_node_types = variable_get('dnt_node_types', array());
@@ -72,6 +80,8 @@ function dnt_form_alter(&$form, &$form_state, $form_id) {
 
 /**
  * Implements hook_preprocess_page().
+ *
+ * @param $variables
  */
 function dnt_preprocess_page(&$variables) {
   //removing code that seems to be randomly sending X-OneLinkNoTx headers to t.com
@@ -93,6 +103,8 @@ function dnt_preprocess_page(&$variables) {
 
 /**
  *	Implement preprocess page for print module
+ *
+ * @param $variables
  */
 function dnt_preprocess_print_page(&$variables) {
   $enabled_node_types = variable_get('dnt_node_types', array());
@@ -112,6 +124,9 @@ function dnt_preprocess_print_page(&$variables) {
 
 /**
  * Implements hook_node_load().
+ *
+ * @param $nodes
+ * @param $type
  */
 function dnt_node_load($nodes, $type) {
 
@@ -128,6 +143,10 @@ function dnt_node_load($nodes, $type) {
 
 /**
  * Implements hook_node_view().
+ *
+ * @param $node
+ * @param $view_mode
+ * @param $langcode
  */
 function dnt_node_view($node, $view_mode, $langcode) {
   $enabled_node_types = variable_get('dnt_node_types', array());
@@ -145,6 +164,8 @@ function dnt_node_view($node, $view_mode, $langcode) {
 
 /**
  * Implements hook_node_insert().
+ *
+ * @param $node
  */
 function dnt_node_insert($node) {
   $enabled_node_types = variable_get('dnt_node_types', array());
@@ -157,6 +178,8 @@ function dnt_node_insert($node) {
 
 /**
  * Implements hook_node_update().
+ *
+ * @param $node
  */
 function dnt_node_update($node) {
   $enabled_node_types = variable_get('dnt_node_types', array());
@@ -169,6 +192,8 @@ function dnt_node_update($node) {
 
 /**
  * Implements hook_node_delete().
+ *
+ * @param $node
  */
 function dnt_node_delete($node) {
   $enabled_node_types = variable_get('dnt_node_types', array());
@@ -181,6 +206,10 @@ function dnt_node_delete($node) {
 
 /**
  * Administrator configuration form
+ *
+ * @param $form
+ * @param $form_state
+ * @return mixed
  */
 function dnt_settings_form($form, &$form_state) {
   $form = array();
@@ -200,37 +229,20 @@ function dnt_settings_form($form, &$form_state) {
     '#default_value' => variable_get('dnt_default', '0'),
     '#description' => t('Default state of do not translate checkbox for new nodes'),
   );
-  $form['node_type_options'] = array(
+  $form['dnt_node_types'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Available node types:'),
     '#default_value' => variable_get('dnt_node_types', array()),
     '#options' => $node_types_arr,
-    '#description' => '<b>' . t('Select node types for which you want to enable DNT') . '</b>',
+    '#description' => t('Select node types for which you want to enable DNT'),
   );
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save configuration'),
-  );
-  return $form;
+  return system_settings_form($form);
 }
 
-/**
- * submit function for dnt_settings_form
- */
-function dnt_settings_form_submit($form, &$form_state) {
-  $dnt_node_types = array();
-  foreach ($form_state['values']['node_type_options'] as $key => $value) {
-    if ($value) {
-      $dnt_node_types[] = $value;
-    }
-  }
-  variable_set('dnt_node_types', $dnt_node_types);
-  variable_set('dnt_default', $form_state['values']['dnt_default']);
-  drupal_set_message(t('<strong>Configuration options have been saved.</strong>'));
-}
 
 /**
  * Helper function to write dnt record to do_not_translate
+ *
  * @param $nid - node id
  * @param $dnt_status - do not translate status
  */
@@ -247,16 +259,20 @@ function _dnt_write_record($nid, $dnt_status) {
 }
 
 /**
- * Implements hook_views_api
+ * Implements hook_views_api().
+ *
+ * @return array
  */
 function dnt_views_api() {
   return array(
-    'api' => 2,
+    'api' => 3,
   );
 }
 
 /**
- * Implements hook_views_data
+ * Implements hook_views_data().
+ *
+ * @return array
  */
 function dnt_views_data() {
   $data = array();
