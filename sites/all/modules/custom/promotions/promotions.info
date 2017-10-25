@@ -2,7 +2,9 @@
 name = Promotions
 description = Promotions and Demo downloads pages
 core = 7.x
-version = 7.x
+version = 7.x-1.0
 package = "Fluke Networks"
 
-stylesheets[all][] = promotions.css
+files[] = views/promotions_handler_filter_reglang.inc
+
+dependencies[] = views
