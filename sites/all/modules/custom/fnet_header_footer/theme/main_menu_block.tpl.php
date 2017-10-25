@@ -53,6 +53,12 @@
                   <a
                     href="/content/category-8-cable-testing"><?php print t('Category 8 Cable Testing'); ?></a>
                 </div>
+								<div class="topnav_submenu_item">
+                  <a href="/Expertise/Learn-About/Twisted-Pair-Cabling-and-10-Gigabit-Cabling"><?php print t('Twisted Pair Cabling and 10 Gigabit Cabling'); ?></a>
+                </div>
+								<div class="topnav_submenu_item">
+                  <a href="/content/multi-fiber-push-mpo-connectors"><?php print t('Multi-fiber Push On (MPO) Connectors'); ?></a>
+                </div>
                 <div class="topnav_submenu_title"><a
                     href="/solutions/case-studies"><?php print t('Case Studies'); ?></a>
                 </div>
