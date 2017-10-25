@@ -2647,8 +2647,10 @@ body.node-type-edoc .field-name-body {
   padding: 0px 40px 0px 40px;
 } */
 
-/* Promotions Page */
-#promotions-page-content .page-section-title {
+/* ==========================================================================
+   Promotions Page
+   ========================================================================== */
+.view-promotions .page-section-title {
   font-family:Arial, Helvetica, sans-serif;
   font-size: 32px;
   color:#336699;
@@ -2658,46 +2660,46 @@ body.node-type-edoc .field-name-body {
   background: url(images/dot-blue.gif) 0 20px repeat-x transparent;
 }
 
-#promotions-page-content .page-section-title span {
+.view-promotions .page-section-title span {
   display: inline-block;
   position: relative;
   padding: 0 1em;
   background-color: #fff;
 }
 
-#promotions-page-content .promotion-instance {
+.view-promotions .promotion-instance {
   padding-bottom:20px;
   margin-bottom:30px;
   border-bottom:1px solid #ddd;
 }
 
-#promotions-page-content .promotion-thumbnail {
+.view-promotions .promotion-thumbnail {
   float:left;
   width:75px;
   margin-right:20px;
 }
-#promotions-page-content .promotion-thumbnail img {
+.view-promotions .promotion-thumbnail img {
   width:100%;
 }
-#promotions-page-content .promotion-details {
+.view-promotions .promotion-details {
   float:left;
   width:600px;
   font-size:125%;
 }
-#promotions-page-content .promotion-details .promotion-title,
-#promotions-page-content .promotion-details .promotion-description {
+.view-promotions .promotion-details .promotion-title,
+.view-promotions .promotion-details .promotion-description {
   margin:0 0 5px;
 }
-#promotions-page-content .promotion-details .promotion-description p {
+.view-promotions .promotion-details .promotion-description p {
   margin:0 !important;
   padding:0 !important;
 }
-#promotions-page-content .promotion-button {
+.view-promotions .promotion-button {
   text-align:center;
   float:right;
   width:auto;
 }
-#promotions-page-content .promotion-button .promotion-date {
+.view-promotions .promotion-button .promotion-date {
   margin:0 0 5px;
 }
 
