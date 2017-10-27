@@ -1,0 +1,15 @@
+diff --git a/views_expost_exposed_form_plugin.inc b/views_expost_exposed_form_plugin.inc
+index 7751040..9c94a6c 100644
+--- a/views_expost_exposed_form_plugin.inc
++++ b/views_expost_exposed_form_plugin.inc
+@@ -4,7 +4,9 @@
+  * Create a dummy class 'better_exposed_filters_exposed_form_plugin'
+  * to allow our plugin to work both with and without the better_exposed_filters plugin
+  */
+-if (!class_exists('better_exposed_filters_exposed_form_plugin')) {
++if (module_exists('better_exposed_filters')) {
++  module_load_include('inc', 'better_exposed_filters', 'better_exposed_filters_exposed_form_plugin');
++} else {
+   class better_exposed_filters_exposed_form_plugin extends views_plugin_exposed_form_basic { }
+ }
+ 
