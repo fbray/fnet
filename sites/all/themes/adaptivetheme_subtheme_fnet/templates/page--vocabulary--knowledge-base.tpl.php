@@ -100,28 +100,7 @@
  * @see adaptivetheme_preprocess_page()
  * @see adaptivetheme_process_page()
  */
-/*
-// Check to see if the Term object is set.
-if (isset($identifier)) {
-  // Is the term a TID?
-  if (is_numeric($identifier)) {
-    $term = taxonomy_term_load($identifier);
-    $term_parents = $term->tid != "all" ? array_reverse(taxonomy_get_parents_all($term->tid)) : false;
-    // Using the $term_parents array, build a "flattened" array of just the parent term ids for easier searching.
-    $term_parent_ids = array();
-    if ($term_parents) {
-      foreach($term_parents as $parent) {
-        $term_parent_ids[] = $parent->tid;
-      }
-    }
-  }
-  else {
-      // The default should be 'all'.
-  }
-}
-*/
-// TODO: Write defaults for all terms.
-$searchQuery = isset($_GET["query"]) ? $_GET["query"] : false; // Get the search string from URL if available.
+drupal_add_js(drupal_get_path('theme','adaptivetheme_subtheme_fnet').'/scripts/knowledgebase.js');
 
 ?>
 <div id="page-wrapper">
@@ -256,7 +235,8 @@ $searchQuery = isset($_GET["query"]) ? $_GET["query"] : false; // Get the search
 										<!-- START: Search Form -->
 										<?php
 											$block = block_load('views', '-exp-knowledge_base_search-page'); 
-											$output = drupal_render(_block_get_renderable_array(_block_render_blocks(array($block))));       
+											$temp = _block_get_renderable_array(_block_render_blocks(array($block)));
+											$output = render($temp);
 											print $output; 
 										?>
 										<!-- END: Search Form -->
@@ -272,7 +252,7 @@ $searchQuery = isset($_GET["query"]) ? $_GET["query"] : false; // Get the search
 										
 										<!-- START: "Back to List" link -->
 										<div id="back-button">												
-											<a href="/knowledge-base-search">
+											<a href="/knowledge-base">
 												<strong><span style="font-size:16px;">&laquo;</span>&nbsp;Back to List</strong>
 											</a>
 										</div>
