@@ -116,3 +116,6 @@ body.page-knowledge-base header#main-content-header {
 .ui-widget-content a {
     color:#336699;
 }
+.ui-widget-content a.active {
+    font-weight: bold;
+}

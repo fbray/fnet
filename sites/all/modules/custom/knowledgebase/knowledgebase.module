@@ -12,7 +12,24 @@ include_once 'knowledgebase.features.inc';
 function knowledgebase_help() {
 
 }
-
+function knowledgebase_init(){
+	$nid = isset($_GET["nid"]) ? $_GET["nid"] : false;
+	$node = $nid ? node_load($nid) : false; 
+	
+	if(!empty($node) && $node->type == 'knowledge_base_article'){
+		$newpath = drupal_get_path_alias('node/'.$nid);
+		drupal_goto($newpath, array(), 301);
+	}	
+	$termname_arg = str_replace("##","/",arg(2)); 
+	$termname = $termname_arg != ''? urldecode($termname_arg) : "all";
+  $term = $termname != "all" ? taxonomy_get_term_by_name($termname,'knowledge_base') : false; // Get term object if term id was provided in URL.
+	$term = !empty($term)?reset($term):'';
+	if(!empty($term) && $term->vocabulary_machine_name == 'knowledge_base'){
+		$tid = $term->tid;
+		$newtermpath = drupal_get_path_alias('taxonomy/term/'.$tid);
+		drupal_goto($newtermpath, array(), 301);
+	}	
+}
 /**
  * Implementation of hook_menu().
  *
@@ -115,3 +132,10 @@ function knowledgebase_views_pre_render(&$view) {
 		}
   }
 }
+
+function knowledgebase_form_views_exposed_form_alter(&$form, &$form_state) {
+	  if($form["#id"] == 'views-exposed-form-knowledge-base-search-page'){
+			unset($form['taxonomy_vocabulary_14_tid']['#options']['IT Networking']);
+		}
+}
+
