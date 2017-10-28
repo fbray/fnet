@@ -3,6 +3,7 @@
 	<!-- START: Breadcrumbs -->
 	<div id="kb-breadcrumbs">										
 		<?php 
+		echo "<pre>"; print_r($node); echo "</pre>";
 				$tid = $node->taxonomy_vocabulary_14[LANGUAGE_NONE][0]['tid'];
 				$term_parents = $tid != "all" ? array_reverse(taxonomy_get_parents_all($tid)) : false; // Build an array of the hierarchical parents of the term 
 		?>	
