@@ -3,7 +3,7 @@
 	<!-- START: Breadcrumbs -->
 	<div id="kb-breadcrumbs">										
 		<?php 
-				$tid = $node->taxonomy_vocabulary_14[LANGUAGE_NONE][0]['tid'];
+				$tid = $node->field_knowledge_base[LANGUAGE_NONE][0]['entity']->tid;
 				$term_parents = $tid != "all" ? array_reverse(taxonomy_get_parents_all($tid)) : false; // Build an array of the hierarchical parents of the term 
 		?>	
 		<a href="/knowledge-base" id="bc-link">KB Home</a>
