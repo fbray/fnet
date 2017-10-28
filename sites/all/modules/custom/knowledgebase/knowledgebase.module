@@ -118,7 +118,6 @@ function knowledgebase_metatag_page_cache_cid_parts_alter(&$cid_parts) {
  */
 function knowledgebase_views_pre_render(&$view) {
   if ($view->name == 'knowledge_base_search') {
-		echo "<pre>"; print_r($view); echo "</pre>";
 		if(isset($view->exposed_data['title']) || isset($view->exposed_data['taxonomy_vocabulary_14_tid'])){
 			$title = ($view->exposed_data['title'] == "")?"All":$view->exposed_data['title'];
 			
