@@ -4,8 +4,6 @@
  * Code for the knowledgebase feature.
  */
 
-include_once 'knowledgebase.features.inc';
-
 /**
  * Implementation of hook_help().
  */
@@ -114,7 +112,21 @@ function knowledgebase_metatag_page_cache_cid_parts_alter(&$cid_parts) {
 }
 
 /**
+ * Implements hook_views_api()
+ *
+ * @return array
+ */
+function knowledgebase_views_api() {
+  return array(
+    'api' => 3.0,
+    'path' => drupal_get_path('module', 'knowledgebase') . '/views',
+  );
+}
+
+/**
  * Implements hook_views_pre_render().
+ *
+ * @param $view
  */
 function knowledgebase_views_pre_render(&$view) {
   if ($view->name == 'knowledge_base_search') {
