@@ -513,6 +513,7 @@ function migrate_fnet_register_migrations() {
       'machine_name' => 'Homepage2013Language',
       'source_type' => 'homepage2013language',
       'destination_type' => 'homepage2013language',
+      'dependencies' => array('Homepage2013'),
     ),
 
     // Industry (Change to Product Category)
@@ -542,6 +543,7 @@ function migrate_fnet_register_migrations() {
       'machine_name' => 'KnowledgeBaseArticle',
       'source_type' => 'knowledge_base_article',
       'destination_type' => 'knowledge_base_article',
+      'dependencies' => array('KnowledgeBase'),
     ),
 
     // Localized Email - DEPRECATED
@@ -629,6 +631,7 @@ function migrate_fnet_register_migrations() {
       'machine_name' => 'ProductDisplay',
       'source_type' => 'product',
       'destination_type' => 'product_display',
+      'dependencies' => array('ProductFamily', 'ProductStatus', 'ProductAttributes', 'Files' ),
     ),
 
     // Product Language
@@ -638,6 +641,7 @@ function migrate_fnet_register_migrations() {
       'machine_name' => 'ProductLanguage',
       'source_type' => 'productlanguage',
       'destination_type' => 'product_language',
+      'dependencies' => array('ProductDisplay'),
     ),
 
     // Product Sub Type
@@ -658,6 +662,7 @@ function migrate_fnet_register_migrations() {
       'machine_name' => 'Promotion',
       'source_type' => 'promotion',
       'destination_type' => 'promotion',
+      'dependencies' => array('PromotionType', 'PromotionProductCategory'),
     ),
 
 

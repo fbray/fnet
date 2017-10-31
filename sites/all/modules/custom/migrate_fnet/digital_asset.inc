@@ -27,7 +27,8 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
       ->issueGroup(t('DNM'));
 
     // Override the language
-    $this->addFieldMapping('language', 'field_dam_language');
+    $this->addFieldMapping('language', 'field_dam_language')
+      ->defaultValue('en');
 
     // Individual Fields
     $this->addFieldMapping('field_dam_document_id', 'field_dam_document_id');

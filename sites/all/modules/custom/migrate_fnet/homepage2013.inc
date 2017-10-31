@@ -14,6 +14,9 @@ class FNETHomepage2013Migration extends FNETNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
+
     // Deprecated Fields
     $this->addFieldMapping(NULL, 'field_business_entity')
       ->description(t('No longer necessary as NetScout split is complete.'))
@@ -23,9 +26,9 @@ class FNETHomepage2013Migration extends FNETNode7Migration {
     $this->addFieldMapping('field_home13_banner_html', 'field_home13_banner_html');
     $this->addFieldMapping('field_home13_banner_html:format', 'field_home13_banner_html:format');
     $this->addFieldMapping('field_home13_ads', 'field_home13_ads');
-    $this->addFieldMapping('field_home13_ind_desc_1', 'field_home13_ind_desc_1');
-    $this->addFieldMapping('field_home13_ind_desc_2', 'field_home13_ind_desc_2');
-    $this->addFieldMapping('field_home13_ind_desc_3', 'field_home13_ind_desc_3');
+    $this->addFieldMapping('field_category_description_1', 'field_home13_ind_desc_1');
+    $this->addFieldMapping('field_category_description_2', 'field_home13_ind_desc_2');
+    $this->addFieldMapping('field_category_description_3', 'field_home13_ind_desc_3');
 
     // Move to common Adtracker field
     $this->addFieldMapping('field_tracking_code', 'field_home13_adtracker');
@@ -56,8 +59,15 @@ class FNETHomepage2013Migration extends FNETNode7Migration {
       ->defaultValue(LANGUAGE_NONE);
   }
 
-  public function complete($node, stdClass $row) {
-    // Generate URL Redirects.
-    parent::generateNodeRedirect($node, $row);
+  public function prepareRow($row) {
+    // Always include this snippet, in case our parent class decides to ignore the row
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+
+    // Check the body field. Replace and instanes of 'sites/flukenetworks.com' in URLs
+    // with 'sites/all'.
+    $row->field_home13_banner_html = str_replace('/flukenetworks.com/', '/all/', $row->field_home13_banner_html);
+
   }
 }

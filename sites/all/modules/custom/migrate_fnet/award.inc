@@ -54,8 +54,4 @@ class FNETAwardMigration extends FNETNode7Migration {
     $this->addFieldMapping('field_language_region', 'field_award_langreg'); //
   }
 
-  public function complete($node, stdClass $row) {
-    // Generate URL Redirects.
-    parent::generateNodeRedirect($node, $row);
-  }
 }

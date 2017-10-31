@@ -26,7 +26,7 @@ class FNETPromotionMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_intro_title', 'field_promo_intro_title');
     $this->addFieldMapping('field_intro', 'field_promo_intro');  // Long text field
     $this->addFieldMapping('field_intro:format', 'field_promo_intro:format');
-    // TODO: Move to weight field? Weight is turned on.
+    // Move to weight field.
     $this->addFieldMapping('weight', 'field_promo_priority');
     $this->addFieldMapping('field_tracking_code', 'field_promo_adtracker');
     $this->addFieldMapping('field_tracking_code:format', 'field_promo_adtracker:format');
