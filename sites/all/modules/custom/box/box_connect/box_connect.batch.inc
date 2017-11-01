@@ -288,9 +288,12 @@ function box_batch_update_box_galleries(&$context) {
       $context['sandbox']['progress'] = 0;
       $context['sandbox']['current'] = 0;
       $context['sandbox']['max'] = 0;  // Just in case there are no records in the table;
-      $top_id = variable_get('box_connect_parent_folder');
-      // Get a list of the existing galleries and their box_item info.
-      $query = "SELECT 
+      $total_results = array();
+      // TODO: Make this workable with multiple parent folders.
+      $top_ids = _box_connect_get_parent_folders();
+      foreach($top_ids as $top_id) {
+        // Get a list of the existing galleries and their box_item info.
+        $query = "SELECT 
           bi.box_id, 
           bi.box_name, 
           bi.box_parent_id, 
@@ -300,15 +303,18 @@ function box_batch_update_box_galleries(&$context) {
         FROM box_item bi
         LEFT JOIN box_ent_gallery beg ON beg.gid = bi.box_id
         WHERE bi.box_parent_id = :top_id";
-      $results = db_query($query, array(':top_id' => $top_id))->fetchAllAssoc('box_id');
+        $results = db_query($query, array(':top_id' => $top_id))->fetchAllAssoc('box_id');
+        $total_results = $total_results + $results;
+      }
+
 
       // Get a list of the products. NID and Title, please.
       $products = db_query("SELECT nid, title FROM node WHERE type = 'product' AND status = 1 ORDER BY title")->fetchAllKeyed(0,1);
 
-      $context['sandbox']['max'] = count($results);
+      $context['sandbox']['max'] = count($total_results);
       $context['message'] = t('Fourth sync task: Updating @count new image galleries.', array('@count' => $context['sandbox']['max']));
 
-      $context['sandbox']['galleries'] = $results; // Fill the gallery sandbox with the array of galleries to process.
+      $context['sandbox']['galleries'] = $total_results; // Fill the gallery sandbox with the array of galleries to process.
       $context['sandbox']['products'] = $products;
     }
     else {

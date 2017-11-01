@@ -6,10 +6,7 @@
 
 /*
  * TODO List:
- * 1) Check if box_item and box_item_temporary are in sync - DONE
- * 2) Write update scripts - DONE
- * 3) Destroy Cron hook and replace with Queue API
- * 4) Flesh out help hook.
+ * Flesh out help hook.
  */
 
 /**
@@ -333,12 +330,11 @@ function get_box() {
 
   try {
     $box = new Drupal_Box_API($box_array['client_id'], $box_array['client_secret'], $url);
-    // drupal_set_message(print_r($box));
     if(!$box->load_token()){
-
       // Get the authorization code from the response.
       if(isset($_GET['code'])){
         drupal_set_message('Authorization Code: ' . $_GET['code']);
+        // Doing this is probably bad. It defaults to the refresh token without checking if it is expired.
         $token = $box->get_token($_GET['code'], true);
         drupal_set_message('Token: ' . $token);
         if($box->write_token($token, 'file')){
@@ -384,6 +380,16 @@ function _get_unprocessed_ids() {
 }
 
 /**
+ * Helper function to get the list of Parent Folders to search for on Box.
+ *
+ * @return array
+ */
+function _box_connect_get_parent_folders() {
+  $folder_list = variable_get('box_connect_parent_folder', '');
+  $folders = $folder_list != '' ? explode("\n", $folder_list) : array();
+  return $folders;
+}
+/**
  * The function sets up the batch job for syncing with Box.
  *
  * @param int $parent_id
@@ -394,35 +400,48 @@ function box_batch_sync($parent_id = -1) {
   db_delete('box_item_temporary')->execute();
 
   // Fill the temporary table
-  $parent_folder = variable_get('box_connect_parent_folder', '0');
-  $box = get_box();
-  $data = $box->get_folder_details($parent_folder);
   $box_ids = array();
+  $parent_folders = _box_connect_get_parent_folders();
 
-  // This gets us the top level directories.
-  if ($data) {
-    $entries = $data['item_collection']['entries'];
-    foreach ($entries as $entry) {
-      $box_id = 0 + $entry['id'];
-      // load the box_ids array
-      $values = new stdClass();
-      $values->box_top_folder_name = $entry['name'];
-      $values->box_top_folder_id = $box_id;
-      $values->box_id = $box_id;
-      $box_ids[$box_id] = $values;
+  // $data should be an array.
+  foreach($parent_folders as $parent_folder) {
+    $box = get_box();
+    // Add the information from each folder to the data array.
+    $data = $box->get_folder_details(trim($parent_folder));
+    if(!empty($data)) {
+      if ($data['type'] == 'error') {
+        drupal_set_message(t('An error with Box occurred: @var - @detail', array(
+          '@var' => $data['message'],
+          '@detail' => $data['context_info']['errors'][0]['message'],
+        )));
+      }
+      elseif ($data['type'] == 'folder') {
+        // Add to the larger array of entries.
+        $collection = $data['item_collection']['entries'];
+        foreach($collection as $entry) {
+          $box_id = 0 + $entry['id'];
+          // load the box_ids array
+          $values = new stdClass();
+          $values->box_top_folder_name = $entry['name'];
+          $values->box_top_folder_id = $box_id;
+          $values->box_id = $box_id;
+          $box_ids[$box_id] = $values;
 
-      // write to the temp table
-      db_merge('box_item_temporary')
-        ->key(array('box_id' => $box_id))
-        ->fields(array(
-          'box_type'  => $entry['type'],
-          'box_name' => $entry['name'],
-          'box_parent_id' => $parent_folder,
-          'box_top_folder_name' => $entry['name'],
-          'box_top_folder_id' => $box_id,
-        ))
-        ->execute();
+          // write to the temp table
+          db_merge('box_item_temporary')
+            ->key(array('box_id' => $box_id))
+            ->fields(array(
+              'box_type'  => $entry['type'],
+              'box_name' => $entry['name'],
+              'box_parent_id' => $parent_folder,
+              'box_top_folder_name' => $entry['name'],
+              'box_top_folder_id' => $box_id,
+            ))
+            ->execute();
+        }
+      }
     }
+
   }
 
   if ( count($box_ids) == 0 ) {

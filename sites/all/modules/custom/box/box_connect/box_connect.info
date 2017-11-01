@@ -16,4 +16,3 @@ files[] = DrupalBoxAPI.class.php
 dependencies[] = fnet_common
 dependencies[] = bigint
 dependencies[] = entityreference
-dependencies[] = securepages

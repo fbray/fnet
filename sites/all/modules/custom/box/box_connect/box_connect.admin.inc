@@ -27,11 +27,9 @@ function box_connect_admin() {
   );
 
   $form['box_connect_parent_folder'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Top Level Folder ID'),
+    '#type' => 'textarea',
+    '#title' => t('Top Level Folder IDs'),
     '#default_value' => variable_get('box_connect_parent_folder', '0'),
-    '#size' => 40,
-    '#maxlength' => 40,
     '#required' => TRUE,
   );
 

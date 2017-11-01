@@ -8,13 +8,28 @@ if (!class_exists('Box_API')) {
 class Drupal_Box_API extends Box_API {
 
 		public function read_token($type = 'file', $json = false) {
-			$content = variable_get('box_token', FALSE);
-
-			if($json){
-				return $content;
-			} else {
-				return json_decode($content, true);
-			}
+          $content = variable_get('box_token', FALSE); // Content is stored as a BLOB, but it's just a JSON string.
+          if (!$content) {
+            // No token currently saved.
+            return FALSE;
+          }
+          // Check to see if the Refresh Token is expired.
+          $array = json_decode($content, TRUE);
+          $expires = $array['timestamp'];
+          $now = time();
+          if (($now - $expires) > 5184000 ) {  // Sixty days (in seconds)
+            // The refresh token has expired.
+            return FALSE;
+          }
+          // If the desired format is JSON
+          if($json) {
+            // Return as a JSON string.
+            return $content;
+          }
+          else {
+            // Return as an array.
+            return json_decode($content, true);
+          }
 		}
 
 
