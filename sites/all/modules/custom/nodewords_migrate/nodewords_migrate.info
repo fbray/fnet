@@ -1,7 +1,0 @@
-name = Nodewords Migrate
-description = Migrate D6 Nodewords data to the D7 Meta tags module.
-core = 7.x
-package = FNET Migration
-files[] = nodewords_migrate.module
-files[] = nodewords_migrate.admin.inc
-files[] = nodewords_migrate.drush.inc
