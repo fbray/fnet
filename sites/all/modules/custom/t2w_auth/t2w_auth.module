@@ -76,20 +76,11 @@ function t2w_auth_authenticate($user_email, $password) {
   }
 
   if ($user->uid) {
-    if (!empty($user->field_user_onyx_id[LANGUAGE_NONE][0]['value'])) {
-      $response = new stdClass();
-      $response->is_error = FALSE;
-      $response->code = $user->field_user_onyx_id[LANGUAGE_NONE][0]['value'];
-      $response->message = t('Successful');
-      return $response;
-    }
-    else {
-      $response = new stdClass();
-      $response->is_error = FALSE;
-      $response->code = 1;
-      $response->message = t('Onyx id is not available');
-      return $response;
-    }
+    $response = new stdClass();
+    $response->is_error = FALSE;
+    $response->code = 1;
+    $response->message = t('Onyx id is not available');
+    return $response;
   }
   $response = new stdClass();
   $response->is_error = TRUE;
