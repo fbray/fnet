@@ -23,15 +23,14 @@ class FNETHomepage2013LanguageMigration extends FNETNode7Migration {
       ->issueGroup(t('DNM'));
 
     // Individual Fields
+    $this->addFieldMapping('field_language_region', 'field_home13lng_lng');
     $this->addFieldMapping('field_home13_banner_html', 'field_home13lng_banner_html');
     $this->addFieldMapping('field_home13_banner_html:format', 'field_home13lng_banner_html:format');
     $this->addFieldMapping('field_home13_ads', 'field_home13lng_ads');
+    $this->addFieldMapping('field_home13_ads:format', 'field_home13lng_ads:format');
     $this->addFieldMapping('field_category_description_1', 'field_home13lng_ind_desc_1');
-    $this->addFieldMapping('field_category_description_1:format', 'field_home13lng_ind_desc_1:format');
     $this->addFieldMapping('field_category_description_2', 'field_home13lng_ind_desc_2');
-    $this->addFieldMapping('field_category_description_2:format', 'field_home13lng_ind_desc_2:format');
     $this->addFieldMapping('field_category_description_3', 'field_home13lng_ind_desc_3');
-    $this->addFieldMapping('field_category_description_3:format', 'field_home13lng_ind_desc_3:format');
 
     // Link Fields
     $this->addFieldMapping('field_home13_exptpc', 'field_home13lng_exptpc');  // Link
@@ -53,7 +52,7 @@ class FNETHomepage2013LanguageMigration extends FNETNode7Migration {
       ->defaultValue(NULL);
 
     // Entity References
-    $this->addFieldMapping('field_home13lng_homepage', 'field_home13lng_homepage')
+    $this->addFieldMapping('field_homepage', 'field_home13lng_homepage')
       ->sourceMigration('homepage2013');
 
   }
@@ -67,6 +66,10 @@ class FNETHomepage2013LanguageMigration extends FNETNode7Migration {
     // Check the body field. Replace and instanes of 'sites/flukenetworks.com' in URLs
     // with 'sites/all'.
     $row->field_home13lng_banner_html = str_replace('/flukenetworks.com/', '/all/', $row->field_home13lng_banner_html);
+
+    // The language/region thing seems to be problematic with the allowed values.
+    // Let's trim it down to just the first five characters.
+    $row->field_home13lng_lng[0] = substr($row->field_home13lng_lng[0], 0, 5);
 
   }
 }
