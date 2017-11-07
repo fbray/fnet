@@ -34,7 +34,7 @@
   </div>
 <?php endif; ?>
 <div id="footer_nav">
-  <a href="http://www.danaherintegrity.com/" target="_blank">Integrity and
+  <a href="http://www.fortive.com/integrity-compliance" target="_blank">Integrity and
     Compliance Program</a>&nbsp;&nbsp;|&nbsp;&nbsp;
   <a href="/about/privacy">Privacy Policy</a>&nbsp;&nbsp;|&nbsp;&nbsp;
   <a href="/about/terms-of-use">Terms of Use</a>&nbsp;&nbsp;|&nbsp;&nbsp;
