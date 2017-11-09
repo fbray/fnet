@@ -400,7 +400,7 @@ function migrate_fnet_register_migrations() {
        'description' => t('Migration of eDoc Language nodes from Drupal.'),
        'machine_name' => 'eDocLanguage',
        'source_type' => 'edoclanguage',
-       'destination_type' => 'edoclanguage',
+       'destination_type' => 'edoc_language',
        'dependencies' => array('eDoc'),
     ),
 
@@ -448,8 +448,9 @@ function migrate_fnet_register_migrations() {
       'class_name' => 'FNETExpertiseRoleLanguageMigration',
       'description' =>  t('Migration of Expertise Role Language nodes from Drupal.'),
       'machine_name' => 'ExpertiseRoleLanguage',
-      'source_type' => 'exp_rle',
+      'source_type' => 'exp_rle_lng',
       'destination_type' => 'expertise_role_language',  // more verbose naming improvement
+      'dependencies' => array('ExpertiseRole'),
     ),
 
     // Extranet News
@@ -512,7 +513,7 @@ function migrate_fnet_register_migrations() {
       'description' =>  t('Migration of the Homepage 2013 Language nodes from Drupal.'),
       'machine_name' => 'Homepage2013Language',
       'source_type' => 'homepage2013language',
-      'destination_type' => 'homepage2013language',
+      'destination_type' => 'homepage2013_language',
       'dependencies' => array('Homepage2013'),
     ),
 
