@@ -22,6 +22,10 @@ class FNETeDocMigration extends FNETNode7Migration {
       ->description(t('No longer necessary as NetScout split is complete.'))
       ->issueGroup(t('DNM'));
 
+    $this->addFieldMapping(NULL, 'taxonomy_vocabulary_12')
+      ->description(t('Only the Fluke Networks brand is used.'))
+      ->issueGroup(t('DNM'));
+
     // Individal fields
     $this->addFieldMapping('field_subtitle', 'field_edoc_subtitle');
 
@@ -38,8 +42,6 @@ class FNETeDocMigration extends FNETNode7Migration {
     // Entity References
     $this->addFieldMapping('field_edoc_type', 'taxonomy_vocabulary_13')
       ->sourceMigration('eDocType');
-    $this->addFieldMapping('field_brand', 'taxonomy_vocabulary_12')
-      ->sourceMigration('Brand');
     $this->addFieldMapping('field_products', 'field_edoc_prod')
       ->sourceMigration('ProductDisplay');
 

@@ -14,17 +14,22 @@ class FNETProductFeatureMigration extends DrupalNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
+
     // Deprecated Fields
-    $this->addFieldMapping(NULL, 'field_business_entity');
+    $this->addFieldMapping(NULL, 'field_business_entity')
+      ->description(t('No longer necessary as NetScout split is complete.'))
+      ->issueGroup(t('DNM'));
 
     // Individual Fields
     // Move to a common Sort Order field using an integer
-    $this->addFieldMapping('field_sortorder', 'field_feature_sortorder');
+    $this->addFieldMapping('weight', 'field_feature_sortorder');
 
     // Entity References
     // Move to a common Product field
     $this->addFieldMapping('field_product', 'field_feature_product')
-      ->sourceMigration('FNETProductMigration'); // TODO: Find migration - Uses checkboxes/radio
+      ->sourceMigration('ProductDisplay');
 
   }
 }
