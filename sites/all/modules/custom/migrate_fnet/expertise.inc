@@ -14,6 +14,9 @@ class FNETExpertiseMigration extends FNETNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
+
     // Deprecated Fields
     $this->addFieldMapping(NULL, 'field_business_entity')
       ->description(t('No longer necessary as NetScout split is complete.'))
@@ -33,6 +36,8 @@ class FNETExpertiseMigration extends FNETNode7Migration {
     // Image Fields
     $this->addFieldMapping('field_expertise_image', 'field_expertise_image')
       ->sourceMigration('Files');
+    $this->addFieldMapping('field_expertise_image:preserve_files')
+      ->defaultValue(TRUE);
     $this->addFieldMapping('field_expertise_image:file_class')
       ->defaultValue('MigrateFileFid');
     $this->addFieldMapping('field_expertise_image:alt', 'field_expertise_image:alt');
@@ -60,11 +65,9 @@ class FNETExpertiseMigration extends FNETNode7Migration {
       return FALSE;
     }
     // Remove the extra zero off of the sort order field to accomodate the weight field.
-    $row->field_expertise_sortorder = ($row->field_expertise_sortorder / 10);
+    if (!is_null($row->field_expertise_sortorder)) {
+      $row->field_expertise_sortorder[0] = ($row->field_expertise_sortorder[0] / 10);
+    }
   }
 
-  public function complete($node, stdClass $row) {
-    // Generate URL Redirects.
-    parent::generateNodeRedirect($node, $row);
-  }
 }

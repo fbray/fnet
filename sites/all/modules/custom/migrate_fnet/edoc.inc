@@ -41,7 +41,7 @@ class FNETeDocMigration extends FNETNode7Migration {
 
     // Entity References
     $this->addFieldMapping('field_edoc_type', 'taxonomy_vocabulary_13')
-      ->sourceMigration('eDocType');
+      ->sourceMigration('eDocTypes');
     $this->addFieldMapping('field_products', 'field_edoc_prod')
       ->sourceMigration('ProductDisplay');
 

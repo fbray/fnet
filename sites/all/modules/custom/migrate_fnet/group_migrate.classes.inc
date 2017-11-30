@@ -50,7 +50,7 @@ class MigrateDestinationGroup extends MigrateDestinationEntity {
     // Then add in anything provided by handlers
     $fields += migrate_handler_invoke_all('Entity', 'fields', $this->entityType, $this->bundle, $migration);
     $fields += migrate_handler_invoke_all('Group', 'fields', $this->entityType, $this->bundle, $migration);
-    print_r($fields);
+    // print_r($fields);
     return $fields;
   }
 
@@ -82,6 +82,7 @@ class MigrateDestinationGroup extends MigrateDestinationEntity {
   public function import(stdClass $group, stdClass $row) {
     // Updating previously-migrated content?
     $migration = Migration::currentMigration();
+    $old_group = new stdClass();
     if (isset($row->migrate_map_destid1)) {
       if (isset($group->gid)) {
         if ($group->gid != $row->migrate_map_destid1) {
@@ -135,9 +136,15 @@ class MigrateDestinationGroup extends MigrateDestinationEntity {
       $updating = FALSE;
     }
 
-    migrate_instrument_start('entity_save');
-    entity_save('group', $group);
-    migrate_instrument_stop('entity_save');
+    // migrate_instrument_start('entity_save');
+    /* TODO: Doing the entity_save causes an error: Call to undefined method stdClass::addMember() in GroupController->invoke().
+     * TODO: Without it, we get the following error:
+     * Error: Call to undefined method stdClass::uri() in entity_class_uri() (line 1146 of                                                   [error]
+     * /webdev/fluke-networks-pantheon/sites/all/modules/contrib/entity/entity.module).
+     *
+     */
+    // entity_save('group', $group);
+    // migrate_instrument_stop('entity_save');
 
     if (isset($group->gid)) {
       if ($updating) {
@@ -222,22 +229,13 @@ class MigrateDestinationGroupMembership extends MigrateDestination {
 
     $this->prepare($group_membership, $row);
 
-    // WARNING !!!! This part needs to be checked
-    $roles = array();
-    if (isset($group_membership->roles)) {
-      foreach ($group_membership->roles as $role_name) {
-        $roles[] = user_role_load_by_name($role_name);
-      }
-      //$group_membership->grantRoles($roles);
-      $group_membership->roles = $roles;
-    } else {
+    // Group roles are NOT the same as Drupal roles.
+    if (!isset($group_membership->roles)) {
       $group_membership->roles = array();
     }
 
     entity_save('group_membership', $group_membership);
-
     $this->complete($group_membership, $row);
-
     return array($group_membership->mid);
   }
 
@@ -407,5 +405,108 @@ abstract class DrupalGroupMigration extends DrupalMigration {
     }
 
     $this->version->getSourceValues($row, $row->gid);
+  }
+}
+
+/**
+ * Base class for all node migrations - handles commonalities across all
+ * supported source Drupal versions.
+ *
+ * In addition to the arguments supported by DrupalMigration, the following
+ * must be passed in the $arguments array:
+ *
+ * source_type - Drupal 6 content type machine name.
+ * destination_type - Drupal 7 content type machine name (bundle).
+ *
+ * The following optional arguments may be passed:
+ *
+ * user_migration - Machine name of a user migration, used to establish
+ *   dependencies and a sourceMigration for the uid mapping.
+ * default_uid - Drupal 7 (destination) uid of the user account to use as
+ *   the default.
+ * default_language - Default language for the node and node body. Defaults
+ *   to LANGUAGE_NONE.
+ */
+abstract class DrupalGroupMembershipMigration extends DrupalMigration {
+  /**
+   * The source and destination content types (bundles) we're dealing with.
+   */
+  // protected $destinationType;
+
+  /**
+   * Default language to apply to the node and it's body field.
+   *
+   * @var string
+   */
+  protected $defaultLanguage = LANGUAGE_NONE;
+
+  /**
+   * @param array $arguments
+   */
+  public function __construct(array $arguments) {
+    // $this->destinationType = $arguments['destination_type'];
+    // $this->sourceType = $arguments['source_type'];
+    if (!empty($arguments['user_migration'])) {
+      $user_migration = $arguments['user_migration'];
+      $this->dependencies[] = $user_migration;
+    }
+    if (!empty($arguments['default_language'])) {
+      $this->defaultLanguage = $arguments['default_language'];
+    }
+    parent::__construct($arguments);
+
+    // Document known group membership fields
+    $this->sourceFields += [
+      'mid' => t('Membership ID'),
+      'gid' => t('Group ID'),
+      'uid' => t('User ID'),
+      'status' => t('Membership Status'),
+      'blocked_status' => t('Blocked Status'),
+      'blocked_on' => t('Blocked On'),
+      'blocked_by' => t('Blocked By'),
+      'joined_on' => t('Joined On'),
+      'requested_on' => t('Requested On'),
+      'approved_on' => t('Approved On'),
+      'added_on' => t('Added On'),
+      'added_by' => t('Added By'),
+      'parent_mid' => t('Parent Membership ID'),
+      'heritage' => t('Heritage'),
+    ];
+
+    // The source fields here are for membership, not group.
+    // TODO: Set manually.
+    //$this->sourceFields += $this->version->getSourceFields('group_membership');
+
+    $this->destination = new MigrateDestinationGroupMembership();
+
+    // TODO: Finish map.
+    $this->map = new MigrateSQLMap($this->machineName,
+      array(
+        'mid' => array('type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'description' => 'Source Group ID',
+          'alias' => 'g',
+        ),
+      ),
+      MigrateDestinationGroupMembership::getKeySchema()
+    );
+
+    // Setup common mappings
+    // $this->addSimpleMappings(array('title'));
+    // $this->addFieldMapping('type')->defaultValue($this->destinationType);
+
+  }
+
+  /**
+   * Called after the query data is fetched - we'll use this to populate the
+   * source row with the fields.
+   */
+  public function prepareRow($row) {
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+
+    $this->version->getSourceValues($row, $row->mid);
   }
 }

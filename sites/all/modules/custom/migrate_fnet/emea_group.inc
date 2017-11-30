@@ -1,4 +1,4 @@
-dr<?php
+<?php
 /**
  * Created by PhpStorm.
  * User: rositis
@@ -7,14 +7,14 @@ dr<?php
  */
 
 /*
- *  Asia-Pacific Group Migration Class
+ *  Europe/Middle East Group Migration Class
 */
 class EMEAGroupMigration extends DrupalGroup7Migration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
-    $this->addFieldMapping('field_extranet_field_countries', 'field_extranet_group_countries');
+    $this->addFieldMapping('field_extranet_group_countries', 'field_extranet_group_countries');
 
   }
 }

@@ -17,7 +17,7 @@ class FNETProductLanguageMigration extends DrupalNode7Migration {
     // Redirects
     $this->addFieldMapping('migrate_redirects', 'path');
     $this->addFieldMapping('migrate_redirects_language')
-      ->defaultValue(LANGUAGE_NODE);
+      ->defaultValue(LANGUAGE_NONE);
 
     // Deprecated Fields
     $this->addFieldMapping(NULL, 'field_business_entity')

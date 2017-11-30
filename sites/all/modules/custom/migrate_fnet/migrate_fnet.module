@@ -92,6 +92,7 @@ function migrate_fnet_register_migrations() {
   // and destination_type are required arguments.
   $group_arguments = array(
     // Asia-Pacific Group
+    /* TODO: Barfs an error when you run it. Tries to create the group, but Group module needs current user to become Group Admin.
     array(
       'class_name' => 'APACGroupMigration',
       'description' => t('Migration of the Asia-Pacific group'),
@@ -113,7 +114,7 @@ function migrate_fnet_register_migrations() {
     array(
       'class_name' => 'LatAmGroupMigration',
       'description' => t('Migration of the Latin America group'),
-      'machine_name' => 'EMEAGroup',
+      'machine_name' => 'LATAMGroup',
       'source_type' => 'extranet_latam',  // D7 Vocabulary ID
       'destination_type' => 'sales_insider_region',
     ),
@@ -135,6 +136,22 @@ function migrate_fnet_register_migrations() {
       'source_type' => 'sales_insider_subgroup',  // D7 Vocabulary ID
       'destination_type' => 'sales_insider_subgroup',
     ),
+
+    // Group Membership
+    /* TODO: Throws a bunch of errors within the Migrate module.
+    Illegal offset type migrate.module:374                                                                                                        [warning]
+Illegal offset type migrate.module:383                                                                                                        [warning]
+Illegal offset type in isset or empty migrate.module:384                                                                                      [warning]
+Illegal offset type migrate.module:390
+
+    array(
+      'class_name' => 'DrupalGroupMembership7Migration',
+      'description' => t('Migration of Group Membership'),
+      'machine_name' => 'GroupMembership',
+      'user_migration' => 'FNETUser',
+      // 'dependencies' => array('APACGroup', 'EMEAGroup', 'LATAMGroup', 'NorthAmericaGroup', 'SalesInsiderSubGroup'),
+    ),
+    */
   );
 
   $common_group_arguments = $common_arguments + array('user_migration' => 'FNETUser');
@@ -149,7 +166,7 @@ function migrate_fnet_register_migrations() {
    // For vocabulary migrations, source_vocabulary and destination_vocabulary are
   // required arguments. Note that in Drupal 6 vocabularies did not have machine
   // names, so we use the vocabulary ID to uniquely identify them.
-  // TODO: Is the machine_name necessary?
+
   $vocabulary_arguments = array(
     // eDoc Type
     array(
@@ -179,22 +196,9 @@ function migrate_fnet_register_migrations() {
 
     // Business Entity - DEPRECATED
 
+    // Distributor Delivery Type - DEPRECATED
 
-    // Distributor Delivery Type
-    array(
-      'description' => t('Migration of Distributor Delivery Type terms from Drupal'),
-      'machine_name' => 'DistributorDeliveryTypes',
-      'source_vocabulary' => 'vocabulary_4',  // D7 Vocabulary ID
-      'destination_vocabulary' => 'distributor_delivery_types',
-    ),
-
-    // Distributor Type
-    array(
-      'description' => t('Migration of Distributor Type terms from Drupal'),
-      'machine_name' => 'DistributorType',
-      'source_vocabulary' => 'vocabulary_3',  // D7 Vocabulary ID
-      'destination_vocabulary' => 'distributor_type',
-    ),
+    // Distributor Type - DEPRECATED
 
     // Event Types
     array(
@@ -481,6 +485,7 @@ function migrate_fnet_register_migrations() {
       'machine_name' => 'ProductFamily',
       'source_type' => 'family',
       'destination_type' => 'product_family', // changed to be more accurate
+      'dependencies' => array('ProductCategory'),
     ),
 
     // Feature (Change to Product Feature)
@@ -571,6 +576,7 @@ function migrate_fnet_register_migrations() {
       'machine_name' => 'MicrositePage',
       'source_type' => 'microsite_page',
       'destination_type' => 'microsite_page',
+      'dependencies' => array('Microsites'),
     ),
 
     // Microsite Story
@@ -580,6 +586,7 @@ function migrate_fnet_register_migrations() {
       'machine_name' => 'MicrositeStory',
       'source_type' => 'microsite_story',
       'destination_type' => 'microsite_story',
+      'dependencies' => array('Microsites'),
     ),
 
     // Page
@@ -684,15 +691,10 @@ function migrate_fnet_register_migrations() {
     'user_migration' => 'FNETUser',
     'default_uid' => 1,
     'destination_dir' => 'public://',  // Maybe comment this out to force default.
+    'source_dir' => '/webdev/flukenetworks/flukenetworks/sites/flukenetworks.com/files/',
     'file_replace' => FILE_EXISTS_REPLACE,
+
   );
-  // TODO: Set this up for local and Pantheon.
-  if (variable_get('environment') == 'local') {
-    $file_arguments['source_dir'] = '/webdev/playon.tv/drupal-6.30/sites/default/files/';
-  }
-  else {
-    $file_arguments['source_dir'] = '/home/dev/playon-import-files/';
-  }
   Migration::registerMigration('FNETFileMigration', $file_arguments['machine_name'], $file_arguments);
 
   /*

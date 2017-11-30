@@ -14,6 +14,9 @@ class FNETEventMigration extends FNETNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
+
     // Deprecated Fields
     $this->addFieldMapping(NULL, 'field_business_entity')
       ->description(t('No longer necessary as NetScout split is complete.'))
@@ -57,8 +60,4 @@ class FNETEventMigration extends FNETNode7Migration {
     $this->addFieldMapping('field_language_region', 'field_event_langreg');
   }
 
-  public function complete($node, stdClass $row) {
-    // Generate URL Redirects.
-    parent::generateNodeRedirect($node, $row);
-  }
 }
