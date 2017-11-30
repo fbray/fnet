@@ -170,13 +170,17 @@ function fnet_marketo_form_template_variables(&$variables) {
 	$currlang = $language->language;
   $node = $variables['node'];
 	$iFrameHeight = '100%';
-	$iFrameUrl = $node->field_fnet_mkto_iframe_url[LANGUAGE_NONE][0]['value'];
-	if(isset($node->field_fnet_mkto_form_2_0[LANGUAGE_NONE][0]['value'])){
-		$fnet_marketo_form = $node->field_fnet_mkto_form_2_0[LANGUAGE_NONE][0]['value'];
-	}else{
+	$iFrameUrl = $node->field_fnet_mkto_iframe_url[$currlang][0]['value'];
+	if(isset($node->field_fnet_mkto_form_2_0[$currlang][0]['value'])){ 
+		$fnet_marketo_form = $node->field_fnet_mkto_form_2_0[$currlang][0]['value'];
+	}else if(isset($node->field_fnet_mkto_iframe_url[$currlang][0]['value'])){ 
+		$fnet_marketo_form = fnet_marketo_form_get_form_html($iFrameUrl, $iFrameHeight);
+	}else if(isset($node->field_fnet_mkto_form_2_0['en'][0]['value'])){ 
+		$fnet_marketo_form = $node->field_fnet_mkto_form_2_0['en'][0]['value'];
+	}else if(isset($node->field_fnet_mkto_iframe_url['en'][0]['value'])){ 
 		$fnet_marketo_form = fnet_marketo_form_get_form_html($iFrameUrl, $iFrameHeight);
 	}
-  if ($node->field_fnet_mkto_export_ctrl[LANGUAGE_NONE][0]['value'] == "1") {
+  if ($node->field_fnet_mkto_export_ctrl[$currlang][0]['value'] == "1") {
 		if (function_exists('findit_get_client_ip')) {
 			$ip_address = findit_get_client_ip();
 			$ip_embargoed = findit_embargoed_ip_address($ip_address);
