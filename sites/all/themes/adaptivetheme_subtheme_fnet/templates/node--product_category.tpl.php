@@ -109,20 +109,18 @@ hide($content['links']);
 
 ?>
 
-<?php if (fnet_common_safe_get($field_ind_background_img, 0, 'uri')) {
-
-  $bgimgpath = file_create_url(fnet_common_safe_get($field_ind_background_img, 0, 'uri')); ?>
+<?php if (fnet_common_safe_get($field_background_image, 0, 'uri')): ?>
+  <?php $bgimgpath = file_create_url(fnet_common_safe_get($field_background_image, 0, 'uri')); ?>
 
   <style>
     #page { background-image:url(<?php print $bgimgpath; ?>); }
   </style>
 
-<?php } else { ?>
+<?php else: ?>
   <style>
     #page { background-image:url('/<?php print drupal_get_path("module", "industries_families"); ?>/css/images/industry_hub_Blank.jpg'); }
   </style>
-
-<?php } ?>
+<?php endif; ?>
 
 <article id="node-<?php print $node->nid; ?>" class="<?php print $classes; ?> clearfix"<?php print $attributes; ?>>
   <?php print render($title_prefix); ?>
@@ -146,13 +144,12 @@ hide($content['links']);
 
           <?php 
           // $banners is created in industries_families
-
-          foreach ($banners as $banner_slide) { 
-            if ($banner_slide) {             ?>
+          // TODO: WHAT?! ?>
+          <?php foreach ($banners as $banner_slide): ?>
+            <?php if ($banner_slide): ?>
               <li><?php print $banner_slide; ?></li>
-            <?php } 
-          }
-          ?>
+            <?php endif; ?>
+          <?php endforeach; ?>
 
         </ul>
       </div>
@@ -217,17 +214,17 @@ hide($content['links']);
               <div class="column-grid">
                 <div class="col-1-3">
                   <div style="padding:1em;">
-                    <img src="<?php print file_create_url(  fnet_common_get_field_value('family', $family, 'field_family_hub_img', 'uri')   ); ?>" style="width:auto; max-width:100%;" alt="<?php print fnet_common_get_field_value('family', $family, 'field_family_hub_img', 'alt') ?>" />
+                    <img src="<?php print file_create_url(  fnet_common_get_field_value('family', $family, 'field_hub_image', 'uri')   ); ?>" style="width:auto; max-width:100%;" alt="<?php print fnet_common_get_field_value('family', $family, 'field_hub_image', 'alt') ?>" />
                   </div>
                 </div>
                 <div class="col-2-3">
                   <h4><?php print $family->title; ?></h4>
-                  <?php print fnet_common_get_field_value('family', $family, 'field_family_shortdesc', 'value'); ?>
+                  <?php print fnet_common_get_field_value('family', $family, 'field_description', 'value'); ?>
                   <div class="btn_143w"><a class="show-products" href="#family-product-list-<?php print $family->nid; ?>">See Products &#187;</a></div>
                 </div>
               </div>
               <div class='clear_15px'>&nbsp;</div>
-              <div class='clear_1px'><img src='/sites/flukenetworks.com/themes/adaptivetheme_subtheme_fnet/images/hub_product_divider.gif' width='650' height='1' border='0'></div>
+              <div class='clear_1px'><img src='/sites/all/themes/adaptivetheme_subtheme_fnet/images/hub_product_divider.gif' width='650' height='1' border='0'></div>
               <div class='clear_15px'>&nbsp;</div>
 
             <?php } ?>
@@ -238,66 +235,66 @@ hide($content['links']);
           <div class="col-1-3">
             <div style="margin-left: 25px;padding-top: 15px;">
 
-              <?php if (fnet_common_safe_get($field_industry_box_title_1, 0, 'value')) { ?>
-                <h5><?php print fnet_common_safe_get($field_industry_box_title_1, 0, 'value'); ?></h5>
+              <?php if (fnet_common_safe_get($field_overview_box_1_title, 0, 'value')) { ?>
+                <h5><?php print fnet_common_safe_get($field_overview_box_1_title, 0, 'value'); ?></h5>
               <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_box_img_1, 0, 'uri')) { ?>
+              <?php if (fnet_common_safe_get($field_overview_box_1_image, 0, 'uri')) { ?>
                 <p><img
-                    src="<?php print file_create_url(fnet_common_safe_get($field_industry_box_img_1, 0, 'uri')); ?>"
-                    style="width:auto; max-width:100%;" alt="<?php print fnet_common_safe_get($field_industry_box_img_1, 0, 'alt') ?>" /></p>
+                    src="<?php print file_create_url(fnet_common_safe_get($field_overview_box_1_image, 0, 'uri')); ?>"
+                    style="width:auto; max-width:100%;" alt="<?php print fnet_common_safe_get($field_overview_box_1_image, 0, 'alt') ?>" /></p>
               <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_box_desc_1, 0, 'value')) { ?>
-                <p><?php print fnet_common_safe_get($field_industry_box_desc_1, 0, 'value'); ?></p>
+              <?php if (fnet_common_safe_get($field_overview_box_1_description, 0, 'value')) { ?>
+                <p><?php print fnet_common_safe_get($field_overview_box_1_description, 0, 'value'); ?></p>
               <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_box_url_1, 0, 'title')) { ?>
+              <?php if (fnet_common_safe_get($field_overview_box_1_link, 0, 'title')) { ?>
                 <p><a
-                    href="<?php print fnet_common_safe_get($field_industry_box_url_1, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_box_url_1, 0, 'title'); ?></a>
+                    href="<?php print fnet_common_safe_get($field_overview_box_1_link, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_overview_box_1_link, 0, 'title'); ?></a>
                 </p>
               <?php } ?>
 
-              <?php if (fnet_common_safe_get($field_industry_box_desc_1, 0, 'value')) { ?>
+              <?php if (fnet_common_safe_get($field_overview_box_1_description, 0, 'value')) { ?>
                 <hr style="margin:2em 0; border:0; height:1px; background-color:#eee;" />
               <?php } ?>
 
-              <?php if (fnet_common_safe_get($field_industry_box_title_2, 0, 'value')) { ?>
-                <h5><?php print fnet_common_safe_get($field_industry_box_title_2, 0, 'value'); ?></h5>
+              <?php if (fnet_common_safe_get($field_overview_box_2_title, 0, 'value')) { ?>
+                <h5><?php print fnet_common_safe_get($field_overview_box_2_title, 0, 'value'); ?></h5>
               <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_box_img_2, 0, 'uri')) { ?>
+              <?php if (fnet_common_safe_get($field_overview_box_2_image, 0, 'uri')) { ?>
                 <p><img
-                    src="<?php print file_create_url(fnet_common_safe_get($field_industry_box_img_2, 0, 'uri')); ?>"
-                    style="width:auto; max-width:100%;" alt="<?php print fnet_common_safe_get($field_industry_box_img_2, 0, 'alt') ?>" /></p>
+                    src="<?php print file_create_url(fnet_common_safe_get($field_overview_box_2_image, 0, 'uri')); ?>"
+                    style="width:auto; max-width:100%;" alt="<?php print fnet_common_safe_get($field_overview_box_2_image, 0, 'alt') ?>" /></p>
               <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_box_desc_2, 0, 'value')) { ?>
-                <p><?php print fnet_common_safe_get($field_industry_box_desc_2, 0, 'value'); ?></p>
+              <?php if (fnet_common_safe_get($field_overview_box_2_description, 0, 'value')) { ?>
+                <p><?php print fnet_common_safe_get($field_overview_box_2_description, 0, 'value'); ?></p>
               <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_box_url_2, 0, 'title')) { ?>
+              <?php if (fnet_common_safe_get($field_overview_box_2_link, 0, 'title')) { ?>
                 <p><a
-                    href="<?php print fnet_common_safe_get($field_industry_box_url_2, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_box_url_2, 0, 'title'); ?></a>
+                    href="<?php print fnet_common_safe_get($field_overview_box_2_link, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_overview_box_2_link, 0, 'title'); ?></a>
                 </p>
               <?php } ?>
 
-              <?php if (fnet_common_safe_get($field_industry_box_desc_2, 0, 'value')) { ?>
+              <?php if (fnet_common_safe_get($field_overview_box_2_description, 0, 'value')) { ?>
                 <hr style="margin:2em 0; border:0; height:1px; background-color:#eee;" />
               <?php } ?>
 
-              <?php if (fnet_common_safe_get($field_industry_box_title_3, 0, 'value')) { ?>
-                <h5><?php print fnet_common_safe_get($field_industry_box_title_3, 0, 'value'); ?></h5>
+              <?php if (fnet_common_safe_get($field_overview_box_3_title, 0, 'value')) { ?>
+                <h5><?php print fnet_common_safe_get($field_overview_box_3_title, 0, 'value'); ?></h5>
               <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_box_img_3, 0, 'uri')) { ?>
+              <?php if (fnet_common_safe_get($field_overview_box_3_image, 0, 'uri')) { ?>
                 <p><img
-                    src="<?php print file_create_url(fnet_common_safe_get($field_industry_box_img_3, 0, 'uri')); ?>"
-                    style="width:auto; max-width:100%;" alt="<?php print fnet_common_safe_get($field_industry_box_img_3, 0, 'alt') ?>" /></p>
+                    src="<?php print file_create_url(fnet_common_safe_get($field_overview_box_3_image, 0, 'uri')); ?>"
+                    style="width:auto; max-width:100%;" alt="<?php print fnet_common_safe_get($field_overview_box_3_image, 0, 'alt') ?>" /></p>
               <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_box_desc_3, 0, 'value')) { ?>
-                <p><?php print fnet_common_safe_get($field_industry_box_desc_3, 0, 'value'); ?></p>
+              <?php if (fnet_common_safe_get($field_overview_box_3_description, 0, 'value')) { ?>
+                <p><?php print fnet_common_safe_get($field_overview_box_3_description, 0, 'value'); ?></p>
               <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_box_url_3, 0, 'title')) { ?>
+              <?php if (fnet_common_safe_get($field_overview_box_3_link, 0, 'title')) { ?>
                 <p><a
-                    href="<?php print fnet_common_safe_get($field_industry_box_url_3, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_box_url_3, 0, 'title'); ?></a>
+                    href="<?php print fnet_common_safe_get($field_overview_box_3_link, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_overview_box_3_link, 0, 'title'); ?></a>
                 </p>
               <?php } ?>
 
-              <?php if (fnet_common_safe_get($field_industry_box_desc_3, 0, 'value')) { ?>
+              <?php if (fnet_common_safe_get($field_overview_box_3_description, 0, 'value')) { ?>
                 <hr style="margin:2em 0; border:0; height:1px; background-color:#eee;" />
               <?php } ?>
 
@@ -312,57 +309,57 @@ hide($content['links']);
             <div class="grid-inner-padding">
 
               <h5>POPULAR RESOURCES</h5>
-              <?php if (fnet_common_safe_get($field_industry_pop_res_1, 0, 'title')) { ?>
+              <?php if (fnet_common_safe_get($field_popular_resources_1, 0, 'title')): ?>
                 <p><a
-                    href="<?php print fnet_common_safe_get($field_industry_pop_res_1, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_pop_res_1, 0, 'title'); ?></a>
+                    href="<?php print fnet_common_safe_get($field_popular_resources_1, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_popular_resources_1, 0, 'title'); ?></a>
                 </p>
-              <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_pop_res_2, 0, 'title')) { ?>
+              <?php endif; ?>
+              <?php if (fnet_common_safe_get($field_popular_resources_2, 0, 'title')): ?>
                 <p><a
-                    href="<?php print fnet_common_safe_get($field_industry_pop_res_2, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_pop_res_2, 0, 'title'); ?></a>
+                    href="<?php print fnet_common_safe_get($field_popular_resources_2, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_popular_resources_2, 0, 'title'); ?></a>
                 </p>
-              <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_pop_res_3, 0, 'title')) { ?>
+              <?php endif; ?>
+              <?php if (fnet_common_safe_get($field_popular_resources_3, 0, 'title')): ?>
                 <p><a
-                    href="<?php print fnet_common_safe_get($field_industry_pop_res_3, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_pop_res_3, 0, 'title'); ?></a>
+                    href="<?php print fnet_common_safe_get($field_popular_resources_3, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_popular_resources_3, 0, 'title'); ?></a>
                 </p>
-              <?php } ?>
+              <?php endif; ?>
 
               <hr style="margin:2em 0; border:0; height:1px; background-color:#eee;" />
 
               <h5>LEARN ABOUT</h5>
-              <?php if (fnet_common_safe_get($field_industry_learn_abt_1, 0, 'title')) { ?>
+              <?php if (fnet_common_safe_get($field_learn_about_1, 0, 'title')): ?>
                 <p><a
-                    href="<?php print fnet_common_safe_get($field_industry_learn_abt_1, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_learn_abt_1, 0, 'title'); ?></a>
+                    href="<?php print fnet_common_safe_get($field_learn_about_1, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_learn_about_1, 0, 'title'); ?></a>
                 </p>
-              <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_learn_abt_2, 0, 'title')) { ?>
+              <?php endif; ?>
+              <?php if (fnet_common_safe_get($field_learn_about_2, 0, 'title')): ?>
                 <p><a
-                    href="<?php print fnet_common_safe_get($field_industry_learn_abt_2, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_learn_abt_2, 0, 'title'); ?></a>
+                    href="<?php print fnet_common_safe_get($field_learn_about_2, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_learn_about_2, 0, 'title'); ?></a>
                 </p>
-              <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_learn_abt_3, 0, 'title')) { ?>
+              <?php endif; ?>
+              <?php if (fnet_common_safe_get($field_learn_about_3, 0, 'title')): ?>
                 <p><a
-                    href="<?php print fnet_common_safe_get($field_industry_learn_abt_3, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_learn_abt_3, 0, 'title'); ?></a>
+                    href="<?php print fnet_common_safe_get($field_learn_about_3, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_learn_about_3, 0, 'title'); ?></a>
                 </p>
-              <?php } ?>
+              <?php endif; ?>
 
               <hr style="margin:2em 0; border:0; height:1px; background-color:#eee;" />
 
               <h5>FEATURED TOPICS</h5>
-              <?php if (fnet_common_safe_get($field_industry_fea_top_1, 0, 'title')) { ?>
+              <?php if (fnet_common_safe_get($field_featured_topic_1, 0, 'title')) { ?>
                 <p><a
-                    href="<?php print fnet_common_safe_get($field_industry_fea_top_1, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_fea_top_1, 0, 'title'); ?></a>
+                    href="<?php print fnet_common_safe_get($field_featured_topic_1, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_featured_topic_1, 0, 'title'); ?></a>
                 </p>
               <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_fea_top_2, 0, 'title')) { ?>
+              <?php if (fnet_common_safe_get($field_featured_topic_2, 0, 'title')) { ?>
                 <p><a
-                    href="<?php print fnet_common_safe_get($field_industry_fea_top_2, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_fea_top_2, 0, 'title'); ?></a>
+                    href="<?php print fnet_common_safe_get($field_featured_topic_2, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_featured_topic_2, 0, 'title'); ?></a>
                 </p>
               <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_fea_top_3, 0, 'title')) { ?>
+              <?php if (fnet_common_safe_get($field_featured_topic_3, 0, 'title')) { ?>
                 <p><a
-                    href="<?php print fnet_common_safe_get($field_industry_fea_top_3, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_fea_top_3, 0, 'title'); ?></a>
+                    href="<?php print fnet_common_safe_get($field_featured_topic_3, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_featured_topic_3, 0, 'title'); ?></a>
                 </p>
               <?php } ?>
 
@@ -407,15 +404,14 @@ hide($content['links']);
           <!-- List Products By Family -->
           <div class="col-2-3">
 
-            <?php foreach ($products_by_family as $family_list) { ?>
+            <?php foreach ($products_by_family as $family_list): ?>
 
               <a name="family-product-list-<?php print $family_list[0]; ?>"
                  id="family-product-list-<?php print $family_list[0]; ?>"></a>
               <h2><?php print $family_list[1]; ?></h2>
               <div class="clear_10px;">&nbsp;</div>
 
-              <?php foreach ($family_list[2] as $product) { ?>
-
+              <?php foreach ($family_list[2] as $product): ?>
                 <div class="column-grid">
                   <div class="col-1-3">
                     <div style="padding:1em;">
@@ -427,24 +423,24 @@ hide($content['links']);
                   <div class="col-2-3">
                     <h5 class="hub_product_title"><a href="/<?php print drupal_lookup_path('alias', 'node/'.$product->nid); ?>"><?php print $product->node_title; ?></a></h5>
                     <div class="hub_product_desc">
-                      <?php if (isset($product->field_field_product_desc[0]['raw']['value'])): ?>
-                        <?php print $product->field_field_product_desc[0]['raw']['value']; ?>
+                      <?php if (isset($product->field_field_description[0]['raw']['value'])): ?>
+                        <?php print $product->field_field_description[0]['raw']['value']; ?>
                       <?php endif; ?></div>
                     <div class="hub_product_desc"><div class="btn_143w"><a href="/<?php print drupal_lookup_path('alias', 'node/'.$product->nid); ?>">Learn More</a></div></div>
                   </div>
                 </div>
 
                 <div class='clear_15px'>&nbsp;</div>
-                <div class='clear_1px'><img src='/sites/flukenetworks.com/themes/adaptivetheme_subtheme_fnet/images/hub_product_divider.gif' width='650' height='1' border='0'></div>
+                <div class='clear_1px'><img src='/sites/all/themes/adaptivetheme_subtheme_fnet/images/hub_product_divider.gif' width='650' height='1' border='0'></div>
                 <div class='clear_15px'>&nbsp;</div>
 
-              <?php } ?>
+              <?php endforeach; ?>
               
               <div style='text-align:right;'><a href='#top'>Back to top</a></div>
               <div class='clear_15px'>&nbsp;</div>
-              <div class='clear_1px'><img src='/sites/flukenetworks.com/themes/adaptivetheme_subtheme_fnet/images/hub_product_divider.gif' width='650' height='1' border='0'></div>
+              <div class='clear_1px'><img src='/sites/all/themes/adaptivetheme_subtheme_fnet/images/hub_product_divider.gif' width='650' height='1' border='0'></div>
               <div class='clear_15px'>&nbsp;</div>
-            <?php } ?>
+            <?php endforeach; ?>
 
           </div>
 
@@ -452,79 +448,79 @@ hide($content['links']);
 					<div style="margin-left: 25px;padding-top: 15px;">
 
 							<h5>PROMOTIONS</h5>
-              <?php if (fnet_common_safe_get($field_industry_promo_1, 0, 'title')) { ?>
+              <?php if (fnet_common_safe_get($field_promotion_1, 0, 'title')): ?>
                 <p>
                   <strong>
 										<a
-                      href="<?php print fnet_common_safe_get($field_industry_promo_1, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_promo_1, 0, 'title'); ?></a></strong>
+                      href="<?php print fnet_common_safe_get($field_promotion_1, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_promotion_1, 0, 'title'); ?></a></strong>
                 </p>
-              <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_promo_2, 0, 'title')) { ?>
+              <?php endif; ?>
+              <?php if (fnet_common_safe_get($field_promotion_2, 0, 'title')): ?>
                 <p>
                   <strong>
 										<a
-                      href="<?php print fnet_common_safe_get($field_industry_promo_2, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_promo_2, 0, 'title'); ?></a></strong>
+                      href="<?php print fnet_common_safe_get($field_promotion_2, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_promotion_2, 0, 'title'); ?></a></strong>
                 </p>
-              <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_promo_3, 0, 'title')) { ?>
+              <?php endif; ?>
+              <?php if (fnet_common_safe_get($field_promotion_3, 0, 'title')): ?>
                 <p>
                   <strong>
 										<a
-                      href="<?php print fnet_common_safe_get($field_industry_promo_3, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_promo_3, 0, 'title'); ?></a></strong>
+                      href="<?php print fnet_common_safe_get($field_promotion_3, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_promotion_3, 0, 'title'); ?></a></strong>
                 </p>
-              <?php } ?>
+              <?php endif; ?>
 
             </div>						
             <div style="margin-left: 25px;padding-top: 15px;">
 
-              <?php if (fnet_common_safe_get($field_industry_demo_1, 0, 'title')) { ?>
+              <?php if (fnet_common_safe_get($field_demo_1, 0, 'title')): ?>
                 <h5>VIDEOS &amp; DEMOS</h5>
                 <p>
-                  <strong><?php print fnet_common_safe_get($field_industry_demo_type_1, 0, 'value'); ?>
+                  <strong><?php print fnet_common_safe_get($field_demo_type_1, 0, 'value'); ?>
                     :<br/><a
-                      href="<?php print fnet_common_safe_get($field_industry_demo_1, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_demo_1, 0, 'title'); ?></a></strong>
+                      href="<?php print fnet_common_safe_get($field_demo_1, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_demo_1, 0, 'title'); ?></a></strong>
                 </p>
-              <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_demo_2, 0, 'title')) { ?>
+              <?php endif; ?>
+              <?php if (fnet_common_safe_get($field_demo_2, 0, 'title')): ?>
                 <p>
-                  <strong><?php print fnet_common_safe_get($field_industry_demo_type_2, 0, 'value'); ?>
+                  <strong><?php print fnet_common_safe_get($field_demo_type_2, 0, 'value'); ?>
                     :<br/><a
-                      href="<?php print fnet_common_safe_get($field_industry_demo_2, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_demo_2, 0, 'title'); ?></a></strong>
+                      href="<?php print fnet_common_safe_get($field_demo_2, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_demo_2, 0, 'title'); ?></a></strong>
                 </p>
-              <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_demo_3, 0, 'title')) { ?>
+              <?php endif; ?>
+              <?php if (fnet_common_safe_get($field_demo_3, 0, 'title')): ?>
                 <p>
-                  <strong><?php print fnet_common_safe_get($field_industry_demo_type_3, 0, 'value'); ?>
+                  <strong><?php print fnet_common_safe_get($field_demo_type_3, 0, 'value'); ?>
                     :<br/><a
-                      href="<?php print fnet_common_safe_get($field_industry_demo_3, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_demo_3, 0, 'title'); ?></a></strong>
+                      href="<?php print fnet_common_safe_get($field_demo_3, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_demo_3, 0, 'title'); ?></a></strong>
                 </p>
-              <?php } ?>
+              <?php endif; ?>
 
             </div>
 						<div style="margin-left: 25px;padding-top: 15px;">
 
-              <?php if (fnet_common_safe_get($field_industry_trial_1, 0, 'title')) { ?>
+              <?php if (fnet_common_safe_get($field_trial_1, 0, 'title')): ?>
                 <h5>TRIALS</h5>
                 <p>
-                  <strong><?php print fnet_common_safe_get($field_industry_trial_type_1, 0, 'value'); ?>
+                  <strong><?php print fnet_common_safe_get($field_trial_type_1, 0, 'value'); ?>
                     :<br/><a
-                      href="<?php print fnet_common_safe_get($field_industry_trial_1, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_trial_1, 0, 'title'); ?></a></strong>
+                      href="<?php print fnet_common_safe_get($field_trial_1, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_trial_1, 0, 'title'); ?></a></strong>
                 </p>
-              <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_trial_2, 0, 'title')) { ?>
+              <?php endif; ?>
+              <?php if (fnet_common_safe_get($field_trial_2, 0, 'title')): ?>
                 <p>
-                  <strong><?php print fnet_common_safe_get($field_industry_trial_type_2, 0, 'value'); ?>
+                  <strong><?php print fnet_common_safe_get($field_trial_type_2, 0, 'value'); ?>
                     :<br/><a
-                      href="<?php print fnet_common_safe_get($field_industry_trial_2, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_trial_2, 0, 'title'); ?></a></strong>
+                      href="<?php print fnet_common_safe_get($field_trial_2, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_trial_2, 0, 'title'); ?></a></strong>
                 </p>
-              <?php } ?>
-              <?php if (fnet_common_safe_get($field_industry_trial_3, 0, 'title')) { ?>
+              <?php endif; ?>
+              <?php if (fnet_common_safe_get($field_trial_3, 0, 'title')): ?>
                 <p>
-                  <strong><?php print fnet_common_safe_get($field_industry_trial_type_3, 0, 'value'); ?>
+                  <strong><?php print fnet_common_safe_get($field_trial_type_3, 0, 'value'); ?>
                     :<br/><a
-                      href="<?php print fnet_common_safe_get($field_industry_trial_3, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_industry_trial_3, 0, 'title'); ?></a></strong>
+                      href="<?php print fnet_common_safe_get($field_trial_3, 0, 'url'); ?>"><?php print fnet_common_safe_get($field_trial_3, 0, 'title'); ?></a></strong>
                 </p>
-              <?php } ?>
+              <?php endif; ?>
 
             </div>
           

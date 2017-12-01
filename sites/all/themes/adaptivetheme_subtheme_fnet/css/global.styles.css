@@ -1098,7 +1098,7 @@ ul.action-links {
 
 #search-block-form #edit-actions {
   padding: 0 11px 0 0;
-  background: transparent url("/sites/flukenetworks.com/themes/fluke_networks_garland/images/css-sprites.png") no-repeat scroll 43px -64px; 
+  background: transparent url("images/css-sprites.png") no-repeat scroll 43px -64px;
 }
 
 #search-block-form input[type = 'submit'] {
@@ -1135,7 +1135,7 @@ ul.action-links {
 
 #views-exposed-form-main-site-search-page .views-submit-button {
   padding: 0 11px 0 0;
-  background: transparent url("/sites/flukenetworks.com/themes/fluke_networks_garland/images/css-sprites.png") no-repeat scroll 43px -64px;
+  background: transparent url("images/css-sprites.png") no-repeat scroll 43px -64px;
 }
 
 #views-exposed-form-main-site-search-page input[type="submit"] {
