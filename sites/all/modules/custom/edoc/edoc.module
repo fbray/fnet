@@ -41,6 +41,9 @@ function edoc_menu() {
 }
 
 /**
+ * The administrative form for footers.
+ * TODO: Rework this for Entity Translation.
+ * TODO: We only need one field and then translate.
  * @param $form
  * @param $form_values
  * @return array
@@ -191,13 +194,13 @@ function edoc_footer_form($form, &$form_values) {
     '#required' => FALSE,
     '#default_value' => variable_get('edoc_ru_ru_footer', ''),
   );
-  // Duplicate the above array entry for each region/language.
-  $form = system_settings_form($form);
-  return $form;
+
+  return system_settings_form($form);
 }
 
 /**
  * Module configuration admin form.
+ * TODO: This admin form is silly. Why have these as settings?
  *
  * @param $form
  * @param $form_state
@@ -216,17 +219,8 @@ function edoc_admin_form($form, &$form_state) {
     '#options' => $vocab_selector,
     '#default_value' => variable_get('edoc_type_vocab', 0),
   );
-  $form['edoc_brands_vocab'] = array(
-    '#type' => 'select',
-    '#title' => t('eDoc brands vocabulary'),
-    '#description' => t('Select the eDoc brands vocabulary.'),
-    '#options' => $vocab_selector,
-    '#default_value' => variable_get('edoc_brands_vocab', 0),
-  );
 
-  $form = system_settings_form($form);
-
-  return $form;
+  return system_settings_form($form);
 }
 
 /**
@@ -249,41 +243,17 @@ function edoc_theme() {
  * @param $variables
  * @return string
  */
-function theme_edoc_print_banner($variables) {
-  $taxonomy = $variables['taxonomy'];
+function theme_edoc_print_banner() {
   $brand_banner = '';
-  $edoc_brand = '';
-  $edoc_type_vocab = variable_get('edoc_type_vocab', 0);
-  $edoc_brands_vocab = variable_get('edoc_brands_vocab', 0);
-
-  foreach ($taxonomy as $term_data) {
-    switch ($term_data->vid) {
-      case $edoc_type_vocab:
-        $edoc_type = $term_data->name;
-        break;
-      case $edoc_brands_vocab:
-        $edoc_brand = $term_data->name;
-        break;
-      default:
-        break;
-    }
-  }
-
   // prepare page logo
-  $base_dir = drupal_get_path('module', 'edoc') . '/images';
-  if (strlen($edoc_brand) > 0) {
-    $filename = strtolower(str_replace(' ', '_', $edoc_brand));
-    $image_path = $base_dir . '/' . $filename . '.jpg';
-
-    if (file_exists($image_path)) {
-      $brand_banner = theme('image', array('path' => $image_path));
-    }
-    else {
-      watchdog('fnet_helper', __LINE__ . ': Missing print logo for brand <em>!brand</em>: !logo', array(
-          '!brand' => $edoc_brand,
-          '!logo' => $image_path
-        ));
-    }
+  $image_path = drupal_get_path('module', 'edoc') . '/images/fluke_networks.jpg';
+  if (file_exists($image_path)) {
+    $brand_banner = theme('image', array('path' => $image_path));
+  }
+  else {
+    watchdog('fnet_helper', __LINE__ . ': Missing print logo for <em>Fluke Networks</em>: !logo', array(
+      '!logo' => $image_path
+    ));
   }
 
   return $brand_banner;
@@ -295,33 +265,18 @@ function theme_edoc_print_banner($variables) {
  * @param $taxonomy
  * @return string
  */
-function edoc_brand_header($taxonomy, &$variables) {
-  $brand_header = '';
-  $term_id = $taxonomy[LANGUAGE_NONE][0]['tid'];
-  $term = taxonomy_term_load($term_id);
-  $edoc_brand = $term->name;
-
+function edoc_brand_header() {
   // prepare page logo
-  if (strlen($edoc_brand) > 0) {
-    $filename = strtolower(str_replace(' ', '_', $edoc_brand));
-
-    // TODO: WHAT?! No, we can't use the domain in hard code!!!
-    $image_url = "http://www.flukenetworks.com/".drupal_get_path('module','edoc')."/images/$filename.png";
-    $brand_header = "\n<style>\n";
-    $brand_header .= "#print_view .edocs_page_header, #print_view .edocs_page_wrapper, \n";
-    $brand_header .= "#print_view .edocs_page_wrapper_last {\n";
-    $brand_header .= "background-image: url('$image_url');\n";
-    $brand_header .= "background-position: top left;\n";
-    $brand_header .= "background-repeat: no-repeat;\n";
-    $brand_header .= "}\n";
-    $brand_header .= "</style>\n";
-
-    if (strtolower($edoc_brand) == 'netscout') {
-      $edoc_type_vocab = variable_get('edoc_type_vocab', 0);
-      $vocabulary = 'taxonomy_vocabulary_' . $edoc_type_vocab;
-      $variables['edoc_type'] = edoc_type_header($variables['node']->$vocabulary);
-    }
-  }
+  // TODO: Test the path to see if the background-image loads.
+  $image_path = drupal_get_path('module', 'edoc') . '/images/fluke_networks.png';
+  $brand_header = "\n<style>\n";
+  $brand_header .= "#print_view .edocs_page_header, #print_view .edocs_page_wrapper, \n";
+  $brand_header .= "#print_view .edocs_page_wrapper_last {\n";
+  $brand_header .= "background-image: url('$image_path');\n";
+  $brand_header .= "background-position: top left;\n";
+  $brand_header .= "background-repeat: no-repeat;\n";
+  $brand_header .= "}\n";
+  $brand_header .= "</style>\n";
 
   return $brand_header;
 }
@@ -355,10 +310,10 @@ function edoc_preprocess_node(&$variables) {
   if ($variables['type'] == 'edoc' || $variables['node']->type == 'edoc') {
     // This is the only CCK value other than body that we need to display
 
-    if (isset($variables['field_edoc_subtitle'][LANGUAGE_NONE][0]['value'])) {
-      $variables['subtitle'] = $variables['field_edoc_subtitle'][LANGUAGE_NONE][0]['value'];
+    if (isset($variables['field_subtitle'][LANGUAGE_NONE][0]['value'])) {
+      $variables['subtitle'] = $variables['field_subtitle'][LANGUAGE_NONE][0]['value'];
     }
-    if (isset($variables['node']->do_no_translate) && $variables['node']->do_not_translate) {
+    if (isset($variables['node']->do_not_translate) && $variables['node']->do_not_translate) {
       $variables['subtitle'] = '<div class="OneLinkNoTx">' . $variables['subtitle'] . '</div>';
     }
   }
@@ -378,7 +333,7 @@ if ((isset($variables['type']) && $variables['type'] == 'edoc') || $variables['n
     $variables['ds_footer'] = _edoc_generate_footer($variables['node']);
     $edoc_brands_vocab = variable_get('edoc_brands_vocab', 0);
     $vocabulary = 'taxonomy_vocabulary_' . $edoc_brands_vocab;
-    $variables['edoc_brand_header'] = edoc_brand_header($variables['node']->$vocabulary, $variables);
+    $variables['edoc_brand_header'] = edoc_brand_header();
   }
 }
 
@@ -387,7 +342,7 @@ if ((isset($variables['type']) && $variables['type'] == 'edoc') || $variables['n
  */
 function _edoc_generate_footer(&$node) {
   $footer = '';
-  $literatureId = isset($node->field_literature_id_en[LANGUAGE_NONE][0]['value'])?$node->field_literature_id_en[LANGUAGE_NONE][0]['value']:"";
+  $literatureId = isset($node->field_literature_id_en[LANGUAGE_NONE][0]['value']) ? $node->field_literature_id_en[LANGUAGE_NONE][0]['value'] : "";
 
   $siteReg = module_invoke('fnet_helper', 'site_region');
   $siteLangReg = $siteReg["regLang"]; // Even though we access "regLang" the string is arranged language-region like "en-us".
@@ -395,130 +350,118 @@ function _edoc_generate_footer(&$node) {
   $formatCurrentRev = 'm/d/Y g:i a';
   $outputCurrentRev = date($formatCurrentRev, $node->changed);
 
-  // TODO: No, no, no! NO hard-coded domains! Do a work-around!
-  $footerImg = "http://www.flukenetworks.com/".drupal_get_path('module','edoc')."/images/fnet_logo_footer.jpg";
-  $brandTermId = $node->taxonomy_vocabulary_12[LANGUAGE_NONE][0]['tid'];
-  $brandName = '';
-  if ($brandTermId) {
-    $brandTerm = taxonomy_term_load($brandTermId);
-    $brandName = $brandTerm->name;
+  $footerImg = drupal_get_path('module', 'edoc') . '/images/fnet_logo_footer.jpg';
 
-    // prepare footer logo
-    if (strlen($brandName) > 0) {
-      $brandName = strtolower(str_replace(' ', '_', $brandName));
-    }
+  $footer .= "<img src=\"" . $footerImg . "\" width=\"150\" height=\"42\" align=\"left\" style=\"margin:0 10px 10px 0;\" /><div class='DS_Footer_TXT'><div class='OneLinkNoTx'>";
+
+
+  switch (strtolower($siteLangReg)) {
+    case "en-us": // English/US
+      $footer .= variable_get('edoc_en_us_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      break;
+
+    case "en-au": // English/Australia
+      $footer .= variable_get('edoc_en_au_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      break;
+
+    case "en-ca": // English/Canada
+      $footer .= variable_get('edoc_en_ca_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      break;
+
+    case "en-eu": // English/Europe
+      $footer .= variable_get('edoc_en_eu_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      break;
+
+    case "en-in": // English/India
+      $footer .= variable_get('edoc_en_in_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      break;
+
+    case "en-ln": // English/Latin America
+      $footer .= variable_get('edoc_en_ln_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      break;
+
+    case "en-su": // English/Southeast Asia
+      $footer .= variable_get('edoc_en_su_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      break;
+
+    case "fr-eu": // French/Europe
+      $footer .= variable_get('edoc_fr_eu_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      if ($node->field_literature_id_fr[LANGUAGE_NONE][0]['value']) {
+        $literatureId = $node->field_literature_id_fr[LANGUAGE_NONE][0]['value'];
+      }
+      break;
+
+    case "fr-ca": // French/Canada
+      $footer .= variable_get('edoc_fr_ca_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      if ($node->field_literature_id_fr[LANGUAGE_NONE][0]['value']) {
+        $literatureId = $node->field_literature_id_fr[LANGUAGE_NONE][0]['value'];
+      }
+      break;
+
+    case "de-eu": // German/Europe
+      $footer .= variable_get('edoc_de_eu_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      if ($node->field_literature_id_de[LANGUAGE_NONE][0]['value']) {
+        $literatureId = $node->field_literature_id_de[LANGUAGE_NONE][0]['value'];
+      }
+      break;
+
+    case "es-eu": // Spanish/Europe
+      $footer .= variable_get('edoc_es_eu_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      if ($node->field_literature_id_es[LANGUAGE_NONE][0]['value']) {
+        $literatureId = $node->field_literature_id_es[LANGUAGE_NONE][0]['value'];
+      }
+      break;
+
+    case "es-ln": // Spanish/Latin America
+      $footer .= variable_get('edoc_es_ln_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      if ($node->field_literature_id_es[LANGUAGE_NONE][0]['value']) {
+        $literatureId = $node->field_literature_id_es[LANGUAGE_NONE][0]['value'];
+      }
+      break;
+
+    case "pt-eu": // Portuguese/Europe
+      $footer .= variable_get('edoc_pt_eu_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      break;
+
+    case "pt-br": // Portuguese/Brazil
+      $footer .= variable_get('edoc_pt_br_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      if ($node->field_literature_id_pt[LANGUAGE_NONE][0]['value']) {
+        $literatureId = $node->field_literature_id_pt[LANGUAGE_NONE][0]['value'];
+      }
+      break;
+
+    case "cn-zh": // Chinese/China
+      $footer .= variable_get('edoc_cn_zh_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      if ($node->field_literature_id_cn[LANGUAGE_NONE][0]['value']) {
+        $literatureId = $node->field_literature_id_cn[LANGUAGE_NONE][0]['value'];
+      }
+      break;
+
+    case "jp-ja": // Japanese/Japan
+      $footer .= variable_get('edoc_jp_ja_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      if ($node->field_literature_id_jp[LANGUAGE_NONE][0]['value']) {
+        $literatureId = $node->field_literature_id_jp[LANGUAGE_NONE][0]['value'];
+      }
+      break;
+
+    case "ko-kr": // Korean/Korea
+      $footer .= variable_get('edoc_ko_kr_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      if ($node->field_literature_id_ko[LANGUAGE_NONE][0]['value']) {
+        $literatureId = $node->field_literature_id_ko[LANGUAGE_NONE][0]['value'];
+      }
+      break;
+
+    case "ru-ru":
+      $footer .= variable_get('edoc_ru_ru_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
+      if ($node->field_literature_id_ru[LANGUAGE_NONE][0]['value']) {
+        $literatureId = $node->field_literature_id_ru[LANGUAGE_NONE][0]['value'];
+      }
+      break;
+
+    default:
+      $footer .= variable_get('edoc_en_us_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
   }
 
-  $footer .= "<img src=\"" . $footerImg . "\" width=\"150\" height=\"42\" align=\"left\" style=\"margin:0px 10px 10px 0px;\" /><div class='DS_Footer_TXT'><div class='OneLinkNoTx'>";
-
-  if ($brandName != 'netscout') {
-    switch (strtolower($siteLangReg)) {
-      case "en-us": // English/US
-        $footer .= variable_get('edoc_en_us_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        break;
-
-      case "en-au": // English/Australia
-        $footer .= variable_get('edoc_en_au_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        break;
-
-      case "en-ca": // English/Canada
-        $footer .= variable_get('edoc_en_ca_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        break;
-
-      case "en-eu": // English/Europe
-        $footer .= variable_get('edoc_en_eu_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        break;
-
-      case "en-in": // English/India
-        $footer .= variable_get('edoc_en_in_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        break;
-
-      case "en-ln": // English/Latin America
-        $footer .= variable_get('edoc_en_ln_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        break;
-
-      case "en-su": // English/Southeast Asia
-        $footer .= variable_get('edoc_en_su_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        break;
-
-      case "fr-eu": // French/Europe
-        $footer .= variable_get('edoc_fr_eu_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_literature_id_fr[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_literature_id_fr[LANGUAGE_NONE][0]['value'];
-        }
-        break;
-
-      case "fr-ca": // French/Canada
-        $footer .= variable_get('edoc_fr_ca_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_literature_id_fr[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_literature_id_fr[LANGUAGE_NONE][0]['value'];
-        }
-        break;
-
-      case "de-eu": // German/Europe
-        $footer .= variable_get('edoc_de_eu_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_literature_id_de[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_literature_id_de[LANGUAGE_NONE][0]['value'];
-        }
-        break;
-
-      case "es-eu": // Spanish/Europe
-        $footer .= variable_get('edoc_es_eu_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_literature_id_es[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_literature_id_es[LANGUAGE_NONE][0]['value'];
-        }
-        break;
-
-      case "es-ln": // Spanish/Latin America
-        $footer .= variable_get('edoc_es_ln_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_literature_id_es[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_literature_id_es[LANGUAGE_NONE][0]['value'];
-        }
-        break;
-
-      case "pt-eu": // Portuguese/Europe
-        $footer .= variable_get('edoc_pt_eu_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        break;
-
-      case "pt-br": // Portuguese/Brazil
-        $footer .= variable_get('edoc_pt_br_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_literature_id_pt[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_literature_id_pt[LANGUAGE_NONE][0]['value'];
-        }
-        break;
-
-      case "cn-zh": // Chinese/China
-        $footer .= variable_get('edoc_cn_zh_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_literature_id_cn[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_literature_id_cn[LANGUAGE_NONE][0]['value'];
-        }
-        break;
-
-      case "jp-ja": // Japanese/Japan
-        $footer .= variable_get('edoc_jp_ja_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_literature_id_jp[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_literature_id_jp[LANGUAGE_NONE][0]['value'];
-        }
-        break;
-
-      case "ko-kr": // Korean/Korea
-        $footer .= variable_get('edoc_ko_kr_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_literature_id_ko[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_literature_id_ko[LANGUAGE_NONE][0]['value'];
-        }
-        break;
-
-      case "ru-ru":
-        $footer .= variable_get('edoc_ru_ru_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-        if ($node->field_literature_id_ru[LANGUAGE_NONE][0]['value']) {
-          $literatureId = $node->field_literature_id_ru[LANGUAGE_NONE][0]['value'];
-        }
-        break;
-
-      default:
-        $footer .= variable_get('edoc_en_us_footer', ''); // Get the language/region specific footer content saved in the eDoc module settings
-    }
-  }
   $footer .= "</div>";
   if (strlen($outputCurrentRev) > 0) {
     $footer .= t("Rev: " . $outputCurrentRev . "&nbsp;&nbsp;");
@@ -647,8 +590,8 @@ function edoc_get_language_override_id($node) {
   $langNodeId = NULL;
 
   $validLangNode = array();
-  if ((is_array($node->field_edoc_langreg)) && (isset($node->field_edoc_langreg[LANGUAGE_NONE]))){
-    foreach ($node->field_edoc_langreg[LANGUAGE_NONE] as $key => $val) {
+  if ((is_array($node->field_language_override)) && (isset($node->field_language_override[LANGUAGE_NONE]))){
+    foreach ($node->field_language_override[LANGUAGE_NONE] as $key => $val) {
       foreach ($val as $k => $v) {
         if ($k == "nid") {
           $validLangNode[$v] = 1;
@@ -659,16 +602,16 @@ function edoc_get_language_override_id($node) {
 
   if (count($validLangNode) > 0) {
     $langNodeId = "";
-    $edocLang = views_get_view('admin_edoc_language'); // Get Drupal view by name.
+    $edocLang = views_get_view('translations_hack'); // Get Drupal view by name.
     $edocLang->set_arguments((array) $node->nid); // Set eDoc node id as view argument.
-    $edocLang->init_display();
+    $edocLang->set_display('edoc_reference');
     $edocLang->pre_execute();
     $edocLang->execute();
     $edocLang = $edocLang->result;
 
     if (count($edocLang) > 0) {
       foreach ($edocLang as $lang) {
-        if (isset($validLangNode[$lang->nid]) && substr($lang->field_field_edoc_lang_lng[0]['raw']['value'], 0, 5) == $regLang) {
+        if (isset($validLangNode[$lang->nid]) && substr($lang->field_field_language_region[0]['raw']['value'], 0, 5) == $regLang) {
           $langNodeId = $lang->nid;
           break;
         }

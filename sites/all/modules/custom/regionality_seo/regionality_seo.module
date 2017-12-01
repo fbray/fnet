@@ -2,6 +2,9 @@
 // $Id$
 
 /**
+ * TODO: This module is essentially deprecated by Entity Translation.
+ * It is included only for preserving current site state on Pantheon.
+ *
  * @file
  * Regionality_seo alters metatag module meta tag output based on regionality overrides.
  *
@@ -24,6 +27,7 @@ function regionality_seo_metatags($tag_name, &$pattern, $node) {
   $type = $node->type;
   $cookie_reglang = isset( $_COOKIE['regLang'] ) ? $_COOKIE['regLang'] : '';
 
+  // TODO: These are those stupid checkbox fields used for language. They suck hard.
   switch ($type) {
     case 'homepage2013':
       if (isset($node->field_home13_langreg[LANGUAGE_NONE])) {
@@ -39,7 +43,8 @@ function regionality_seo_metatags($tag_name, &$pattern, $node) {
         }
       }
       break;
-    case 'industry':
+    case 'product_category':
+      // TODO: Surprise! I didn't use this field.
       if (isset($node->field_industry_language[LANGUAGE_NONE])) {
         foreach ($node->field_industry_language[LANGUAGE_NONE] as $language) {
           $language_node = node_load($language['nid']);
@@ -53,7 +58,8 @@ function regionality_seo_metatags($tag_name, &$pattern, $node) {
         }
       }
       break;
-    case 'product':
+    case 'product_display':
+      // TODO: Surprise! I didn't use this one, either.
       if (isset($node->field_prod_language[LANGUAGE_NONE])) {
         foreach ($node->field_prod_language[LANGUAGE_NONE] as $language) {
           $language_node = node_load($language['nid']);
@@ -67,40 +73,13 @@ function regionality_seo_metatags($tag_name, &$pattern, $node) {
         }
       }
       break;
-    case 'exp_ind':
-      if (isset($node->field_exp_ind_lng[LANGUAGE_NONE])) {
-        foreach ($node->field_exp_ind_lng[LANGUAGE_NONE] as $language) {
-          $language_node = node_load($language['nid']);
-          if (!empty($language_node->field_exp_ind_lng_lng)) {
-            $regLang = strtoupper(substr($language_node->field_exp_ind_lng_lng[LANGUAGE_NONE][0]['value'], 0, 5));
-            if ($cookie_reglang == $regLang) {
-              _regionality_seo_replace_output($tag_name, $pattern, $language_node);
-              break;
-            }
-          }
-        }
-      }
-      break;
-    case 'exp_rle':
+    case 'expertise_role':
+      // TODO: Surprise! This one isn't here, either.
       if (isset($node->field_exp_rle_lng[LANGUAGE_NONE])) {
         foreach ($node->field_exp_rle_lng[LANGUAGE_NONE] as $language) {
           $language_node = node_load($language['nid']);
           if (!empty($language_node->field_exp_rle_lng_lng)) {
             $regLang = strtoupper(substr($language_node->field_exp_rle_lng_lng[LANGUAGE_NONE][0]['value'], 0, 5));
-            if ($cookie_reglang == $regLang) {
-              _regionality_seo_replace_output($tag_name, $pattern, $language_node);
-              break;
-            }
-          }
-        }
-      }
-      break;
-    case 'exp_tpc':
-      if (isset($node->field_exp_tpc_lng[LANGUAGE_NONE])) {
-        foreach ($node->field_exp_tpc_lng[LANGUAGE_NONE] as $language) {
-          $language_node = node_load($language['nid']);
-          if (!empty($language_node->field_exp_tpc_lng_lng)) {
-            $regLang = strtoupper(substr($language_node->field_exp_tpc_lng_lng[LANGUAGE_NONE][0]['value'], 0, 5));
             if ($cookie_reglang == $regLang) {
               _regionality_seo_replace_output($tag_name, $pattern, $language_node);
               break;
@@ -116,6 +95,11 @@ function regionality_seo_metatags($tag_name, &$pattern, $node) {
   }
 }
 
+/**
+ * @param $tag_name
+ * @param $pattern
+ * @param $language_node
+ */
 function _regionality_seo_replace_output($tag_name, &$pattern, $language_node) {
   if (isset($language_node->metatags[LANGUAGE_NONE][$tag_name]['value'])) {
     $pattern = $language_node->metatags[LANGUAGE_NONE][$tag_name]['value'];
@@ -135,6 +119,11 @@ function _regionality_seo_replace_output($tag_name, &$pattern, $language_node) {
   }
 }
 
+/**
+ * @param $pattern
+ * @param $types
+ * @param $tag_name
+ */
 function regionality_seo_metatag_pattern_alter(&$pattern, &$types, $tag_name) {
   if (!isset($types['node'])) {
     return;
@@ -151,7 +140,7 @@ function regionality_seo_metatag_pattern_alter(&$pattern, &$types, $tag_name) {
 }
 
 /**
- *
+ * @param $cid_parts
  */
 function regionality_seo_metatag_page_cache_cid_parts_alter(&$cid_parts) {
   if (isset( $_COOKIE['regLang'] )) {

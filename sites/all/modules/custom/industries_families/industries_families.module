@@ -28,7 +28,7 @@ function industries_families_views_api() {
  * @param $variables
  */
 function industries_families_preprocess_page(&$variables) {
-  if (isset($variables['node']) && ($variables['node']->type == 'product_industry' || $variables['node']->type == 'product_family')) {
+  if (isset($variables['node']) && ($variables['node']->type == 'product_category' || $variables['node']->type == 'product_family')) {
 
     // Add necessary JavaScript and CSS for the industry page.
     drupal_add_js(drupal_get_path('module', 'industries_families') . '/javascript/script.js');
@@ -44,39 +44,41 @@ function industries_families_preprocess_page(&$variables) {
 
 /**
  * Implementation of hook_preprocess_node().
+ * These variables will be processed through the node--product_category.tpl.php.
  *
  * @param $variables
  */
 function industries_families_preprocess_node(&$variables) {
   if ($variables['view_mode'] != 'full') return;
-  if (isset($variables['node']) && $variables['node']->type == 'industry') {
+  if (isset($variables['node']) && $variables['node']->type == 'product_category') {
 
     // Fetch the current user's region/language.
     $siteReg = module_invoke('fnet_helper', 'site_region');
     $regLang = $siteReg["regLang"];
-    if (! isset($regLang)) $regLang = "en-us";
-
+    if (!isset($regLang)) {
+      $regLang = "en-us";
+    }
+    $nid = $variables['node']->nid;
     $variables['industry_families'] = array();
-    $query = new EntityFieldQuery();
-    $query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'product_family')
-      ->propertyCondition('status', NODE_PUBLISHED)
-      ->addTag('draggableviews')
-      ->fieldCondition('field_product_category', 'entity_id', $variables['node']->nid , '=');
+    // Get the family nodes that are associated with a product category.
+    $query = "SELECT n.nid 
+      FROM node n
+      JOIN field_data_field_product_category category ON category.entity_id = n.nid
+      WHERE n.type = 'product_family'
+      AND n.status = :published";
+    $result = db_query($query, array(':published' => NODE_PUBLISHED))->fetchAllAssoc('nid');
 
-    $result = $query->execute();
     if (count($result) > 0) {
-      $variables['industry_families'] = node_load_multiple(array_keys($result['node']));
+      $variables['industry_families'] = node_load_multiple(array_keys($result));
     }
 
     // Get list of products by family related to this industry
     $products_by_family = array();
-    foreach (array_keys($variables['industry_families']) as $family_nid) {
-      $family = node_load($family_nid);
-      $product_list = views_get_view('industry_family_products');
+    foreach ($variables['industry_families'] as $family) {
+      $product_list = views_get_view('product_family');
       $product_list->set_items_per_page(0);
       $product_list->set_arguments(array($family->nid, strtolower($regLang)));
-      $product_list->set_display('page_1');
+      $product_list->set_display('products_by_family');
       $product_list->execute();
       $products_by_family[] = array($family->nid, $family->title, $product_list->result);
     }
@@ -114,11 +116,13 @@ function industries_families_preprocess_node(&$variables) {
     $banners_lng = array();
 
     for ($i = 1; $i <= 5 ; $i++) {
-      $banner_txt = fnet_common_get_field_value('node', $variables['node'], 'field_industry_banner_txt_' . $i);
+      $banner_txt = fnet_common_get_field_value('node', $variables['node'], 'field_family_banner_txt_' . $i);
+      dpm($banner_txt);
       if ( $banner_txt) $banners[] = $banner_txt;
     }
 
     // get industry_lang
+    // TODO: Great. This crap again.
     $nodes_refs = fnet_common_get_field_values('node', $variables['node'], 'field_industry_language');
 
     $lang_nids = array();
@@ -128,6 +132,7 @@ function industries_families_preprocess_node(&$variables) {
 
     $field_industry_language_nodes = node_load_multiple($lang_nids);
 
+    // TODO: The fields are named the same.
     if ($field_industry_language_nodes) {
        $sub_fields = _get_field_substitution_array();
     }
@@ -140,7 +145,7 @@ function industries_families_preprocess_node(&$variables) {
 
             // build hero banner array
             for ($i = 1; $i <= 5 ; $i++) {
-                $fieldname='field_indlang_banner_txt_' . $i;
+                $fieldname='field_banner_txt_' . $i;
                 $bannerval = fnet_common_get_field_value('node', $field_industry_language_node, $fieldname);
                 if ($bannerval)  $banners_lng[] = $bannerval;
             }
@@ -169,7 +174,7 @@ function industries_families_preprocess_node(&$variables) {
 
   } // end type = industry
 
-  if (isset($variables['node']) && $variables['node']->type == 'family') {
+  if (isset($variables['node']) && $variables['node']->type == 'product_family') {
 
     // Fetch the current user's region/language.
     $siteReg = module_invoke('fnet_helper', 'site_region');
@@ -202,24 +207,66 @@ function industries_families_preprocess_node(&$variables) {
 /**
  *  Helper function that returns array mapping industry field names to industry_lang's
  *
- * @param string $type
  * @return array
  */
-function _get_field_substitution_array($type = 'industry') {
-
-    $return = array();
-
-    if ($type=='industry') {
-      $all_field_names = array('field_industry_banner_srt_1', 'field_industry_banner_srt_2', 'field_industry_banner_srt_3', 'field_industry_banner_srt_4', 'field_industry_banner_srt_5', 'field_industry_banner_txt_1', 'field_industry_banner_txt_2', 'field_industry_banner_txt_3', 'field_industry_banner_txt_4', 'field_industry_banner_txt_5', 'field_industry_box_desc_1', 'field_industry_box_desc_2', 'field_industry_box_desc_3', 'field_industry_box_img_1', 'field_industry_box_img_2', 'field_industry_box_img_3', 'field_industry_box_title_1', 'field_industry_box_title_2', 'field_industry_box_title_3', 'field_industry_box_url_1', 'field_industry_box_url_2', 'field_industry_box_url_3', 'field_industry_demo_1', 'field_industry_demo_2', 'field_industry_demo_3', 'field_industry_demo_type_1', 'field_industry_demo_type_2', 'field_industry_demo_type_3', 'field_industry_expertise_box', 'field_industry_fea_top_1', 'field_industry_fea_top_2', 'field_industry_fea_top_3', 'field_industry_image', 'field_industry_language', 'field_industry_learn_abt_1', 'field_industry_learn_abt_2', 'field_industry_learn_abt_3', 'field_industry_overview_intro', 'field_industry_pop_res_1', 'field_industry_pop_res_2', 'field_industry_pop_res_3', 'field_industry_product_box', 'field_industry_promo_1', 'field_industry_promo_2', 'field_industry_promo_3', 'field_industry_shortdesc', 'field_industry_trial_1', 'field_industry_trial_2', 'field_industry_trial_3', 'field_industry_trial_type_1', 'field_industry_trial_type_2', 'field_industry_trial_type_3', 'field_ind_background_img', );
-
-      foreach ($all_field_names as $original_field) {
-        $translated_field = str_replace('field_industry_', 'field_indlang_', $original_field);
-        $return[$original_field] = $translated_field;
-      }
-    }
-
-    return $return;
-
+function _get_field_substitution_array() {
+  // This might be unnecessary. The field names are the same in both Product Category and Product Category Language!
+  $all_field_names = array(
+    'field_family_banner_srt_1' => '',
+    'field_family_banner_srt_2' => '',
+    'field_family_banner_srt_3' => '',
+    'field_family_banner_srt_4' => '',
+    'field_family_banner_srt_5' => '',
+    'field_family_banner_txt_1' => '',
+    'field_family_banner_txt_2' => '',
+    'field_family_banner_txt_3' => '',
+    'field_family_banner_txt_4' => '',
+    'field_family_banner_txt_5' => '',
+    'field_industry_box_desc_1' => '',
+    'field_industry_box_desc_2' => '',
+    'field_industry_box_desc_3' => '',
+    'field_industry_box_img_1' => '',
+    'field_industry_box_img_2' => '',
+    'field_industry_box_img_3' => '',
+    'field_industry_box_title_1' => '',
+    'field_industry_box_title_2' => '',
+    'field_industry_box_title_3' => '',
+    'field_industry_box_url_1' => '',
+    'field_industry_box_url_2' => '',
+    'field_industry_box_url_3' => '',
+    'field_industry_demo_1' => '',
+    'field_industry_demo_2' => '',
+    'field_industry_demo_3' => '',
+    'field_industry_demo_type_1' => '',
+    'field_industry_demo_type_2' => '',
+    'field_industry_demo_type_3' => '',
+    'field_industry_expertise_box' => '',
+    'field_featured_topic_1' => '',
+    'field_featured_topic_2' => '',
+    'field_featured_topic_3' => '',
+    'field_industry_image' => '',
+    'field_industry_language' => '',
+    'field_learn_about_1' => '',
+    'field_learn_about_2' => '',
+    'field_learn_about_3' => '',
+    'field_industry_overview_intro' => '',
+    'field_popular_resources_1' => '',
+    'field_popular_resources_2' => '',
+    'field_popular_resources_3' => '',
+    'field_industry_product_box' => '',
+    'field_industry_promo_1' => '',
+    'field_industry_promo_2' => '',
+    'field_industry_promo_3' => '',
+    'field_industry_shortdesc' => '',
+    'field_industry_trial_1' => '',
+    'field_industry_trial_2' => '',
+    'field_industry_trial_3' => '',
+    'field_industry_trial_type_1' => '',
+    'field_industry_trial_type_2' => '',
+    'field_industry_trial_type_3' => '',
+    'field_ind_background_img' => '',
+  );
+  return $all_field_names;
 }
 
 
@@ -243,7 +290,6 @@ function industries_families_digital_assets($language, $product_category, $type)
 }
 
 function industries_families_case_studies($industry_nid) {
-  // TODO: Use Product Category view
   $case_studies = views_get_view('product_category');
   $case_studies->set_display('case_studies');
   $case_studies->set_arguments($industry_nid);

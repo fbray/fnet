@@ -123,6 +123,7 @@ class FnetRestServer {
       }
       $this->parameters = array_merge($this->parameters, $parameters);
     }
+    // This is where it calls a given controller.
     $controller_name = ucfirst($this->resource) . 'Controller';
     if (class_exists($controller_name)) {
       $this->controller = new $controller_name;
@@ -181,13 +182,13 @@ class UsersController extends ResourceController {
     }
     $data = new stdClass();
     $data->code = 200;
-    if ($account) {
+    if (isset($account)) {
       $data->data = fnet_bedrock_make_bedrock_user($account->mail, '');
       $data->data->uid = $account->uid;
       $data->data->id = $bedrock_user->id;
       return $data;
     }
-    elseif ($bedrock_user->id) {
+    elseif (isset($bedrock_user) && ($bedrock_user->id)) {
       $data->data = $bedrock_user;
       return $data;
     }
@@ -477,11 +478,15 @@ class LoginController extends ResourceController {
   }
 }
 
+// TODO: Rewrite to use new Addressfield info.
 class AddressesController extends ResourceController {
   const NAME = 'addresses';
 
   public function get($element, $parameters) {
     $data = new stdClass();
+    // Address id (aid) and User ID (uid) are now useless in Pantheon due to migration.
+    // Look this up by email!
+
     if (!empty($element) && is_numeric($element)) {
       $result = db_select('user_address', 'a')
         ->fields('a')
@@ -512,6 +517,7 @@ class AddressesController extends ResourceController {
     }
   }
 
+  // TODO: Rewrite to use new Addressfield info.
   public function post($parameters) {
     $data = new stdClass();
     $address = $parameters['address'];
@@ -532,6 +538,9 @@ class AddressesController extends ResourceController {
 
   public function put($element, $parameters) {
     $data = new stdClass();
+
+    // TODO: Why are we keeping user address information in a separate table?
+    // TODO: Why not update the address of the user in the user fields? Weird.
     $address = $parameters['address'];
     if ($element) {
       $aid = $element;

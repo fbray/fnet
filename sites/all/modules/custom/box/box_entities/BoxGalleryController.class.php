@@ -1,20 +1,15 @@
 <?php
 class BoxGalleryController extends BoxControllerBase {
 
-
   public function __construct($entityType='box_gallery') {
     parent::__construct($entityType);
   }
 
 
   public function load($ids = array(), $conditions = array()) {
-
     $return = array();
-
     $entity_array = parent::load($ids, $conditions);
-
     return $entity_array;
-
   }
 
 
@@ -54,13 +49,10 @@ class BoxGalleryController extends BoxControllerBase {
       return $built;
   }
 
-	public function view($entities, $view_mode = 'full', $langcode = NULL, $page = NULL) {
-
-    $parent = parent::view($entities, $view_mode  ); 
-
-	 	return $parent;
-
-	}
+  public function view($entities, $view_mode = 'full', $langcode = NULL, $page = NULL) {
+    $parent = parent::view($entities, $view_mode);
+    return $parent;
+  }
 
 
 }

@@ -6,15 +6,6 @@ function box_entities_access_cb_funk() {
     return TRUE;
 }
 
-// cheat to call drush enable during dev
-// HACK HACK HACK
-include_once('box_entities.batch.php');
-
-/*
- * Module hooks
- * ----------------------------------------
- */
-
 /*
  * Implementation of hook_help().
  */
@@ -92,25 +83,6 @@ function box_entities_menu() {
   );
   */
   return $items;
-}
-
-function box_galleries_thumbnail_form($form, &$form_state) {
-  $form = array();
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Download a batch of up to 200 images from Box'),
-  );
-  return $form;
-}
-
-function box_galleries_thumbnail_form_submit($form, &$form_state) {
-  include_once('box_entities.batch.php');
-  try {
-    create_pngs();
-  }
-  catch (Exception $e) {
-    drupal_set_message($e->getMessage());
-  }
 }
 
 /*
@@ -233,13 +205,13 @@ function box_image_size_render_entity($box_image_size) {
  * @return string
  */
 function box_thumbnail_render_entity($box_thumbnail) {
-    $sizes = array(
+  $sizes = array(
       'Large' => 'High Resolution (TIF)',
       'Medium'  => 'Medium Resolution (JPG)',
       'Small' => 'Low Resolution (JPG)',
       'CMYK'  => 'CMYK (TIF)',
       'Web' => 'For web or presentations (PNG)',
-      );
+  );
 
   $prepared = _box_entities_prepare_entity_content($box_thumbnail, 'box_thumbnail', 'box_thumbnail_single');
   $prepared->content['elements'] = $box_thumbnail;
@@ -341,254 +313,107 @@ function box_gallery_callback_passthru($variables) {
 *  hook_theme()
 */
 function box_entities_theme() {
-    $themes = array (
-        'box_gallery' => array(
-            'template' => 'box_gallery',
-            'variables' =>  array('element' => NULL),
-        ),
-        'box_gallery_full' => array(
-            'template' => 'box_gallery_full',
-            'variables' =>  array('element' => NULL),
-        ),
-        'box_gallery_single' => array(
-            'template' => 'box_gallery_single',
-            'variables' =>  array('element' => NULL),
-        ),
-        'box_gallery_paged' => array(
-            'template' => 'box_gallery_paged',
-            'variables' =>  array('element' => NULL),
-        ),
-        'box_gallery_thumbnails' => array(
-            'template' => 'box_gallery_thumbnails',
-            'variables' =>  array('element' => NULL),
-        ),
-        'box_gallery_carousel' => array(
-            'template' => 'box_gallery_carousel',
-            'variables' =>  array('element' => NULL),
-        ),
-        'box_gallery_carousel_rows' => array(
-            'template' => 'box_gallery_carousel_rows',
-            'variables' =>  array('element' => NULL, 'view_mode' => NULL, ),
-        ),
-        'box_image_size' => array(
-            'template' => 'box_image_size',
-            'variables' =>  array('element' => NULL),
-        ),
-        'box_thumbnail' => array(
-            'function'  => 'box_thumbnail_callback_passthru',
-            'render element' => 'box_thumbnail',
-           'variables' =>  array('element' => NULL),
-        ),
-        'box_gallery' => array(
-            'function'  => 'box_gallery_callback_passthru',
-            'render element' => 'box_gallery',
-           'variables' =>  array('element' => NULL),
-        ),
-       'box_thumbnail_single' => array(
-            'template' => 'box_thumbnail_single',
-            'variables' =>  array('element' => NULL),
-        ),
-    );
-    return $themes;
+  $themes = array(
+    'box_gallery' => array(
+      'function' => 'box_gallery_callback_passthru',
+      'render element' => 'box_gallery',
+      'template' => 'box_gallery',
+      'variables' => array('element' => NULL),
+    ),
+    'box_gallery_full' => array(
+      'template' => 'box_gallery_full',
+      'variables' => array('element' => NULL),
+    ),
+    'box_gallery_single' => array(
+      'template' => 'box_gallery_single',
+      'variables' => array('element' => NULL),
+    ),
+    'box_gallery_paged' => array(
+      'template' => 'box_gallery_paged',
+      'variables' => array('element' => NULL),
+    ),
+    'box_gallery_thumbnails' => array(
+      'template' => 'box_gallery_thumbnails',
+      'variables' => array('element' => NULL),
+    ),
+    'box_gallery_carousel' => array(
+      'template' => 'box_gallery_carousel',
+      'variables' => array('element' => NULL),
+    ),
+    'box_gallery_carousel_rows' => array(
+      'template' => 'box_gallery_carousel_rows',
+      'variables' => array('element' => NULL, 'view_mode' => NULL,),
+    ),
+    'box_image_size' => array(
+      'template' => 'box_image_size',
+      'variables' => array('element' => NULL),
+    ),
+    'box_thumbnail' => array(
+      'function' => 'box_thumbnail_callback_passthru',
+      'render element' => 'box_thumbnail',
+      'variables' => array('element' => NULL),
+    ),
+    'box_thumbnail_single' => array(
+      'template' => 'box_thumbnail_single',
+      'variables' => array('element' => NULL),
+    ),
+  );
+  return $themes;
 }
-
-
 
 /**
  * Implements hook_entity_view($entity, $type, $view_mode, $langcode)
+ *
+ * @param $entity
+ * @param $type
+ * @param $view_mode
+ * @param $langcode
  */
 function box_entities_entity_view($entity, $type, $view_mode, $langcode) {
-    // Media Gallery
-    if ( ($type=='node') && ($entity->type== 'media_gallery') )  {
-      $node_view_mode = fnet_common_get_field_value('node', $entity, 'field_media_gallery_display_type');
-
-/*
-      if ( isset( $entity->content['field_box_gallery_id']['#items']) ) {
-        foreach ($entity->content['field_box_gallery_id']['#items'] as $count => $item) {
-              $gid = $item['target_id'];
-              $content = box_gallery_page_callback($gid, $node_view_mode);
-
-              $entity->content['gallery_' . $gid] = $content;
-
-        }
-
-      }
-*/
- //     $entity->content['field_box_gallery_id']['#theme'] = 'hidden';
-
-    } // end gallery
-
-
-    /*                                                      */
-    // Media Gallery
-    /*                                                      */
-
-    if ( isset($entity->type) && ($entity->type == 'media_gallery') ) {
-
-    }
-
-
-    if ($type=='box_thumbnail') {
-    }
-
-    if ($type=='box_image_size') {
-
-    }
-
-    if ($type=='box_gallery') {
-
-    }
-
-} // end function
-
-
-// Start of update functions
-/**
- * @param int $iter
- * @return string
- */
-function _update_box_entities($iter = 0) {
-
- // box_ent_thumb  1446750070
- // 1446750070
-
- $now = new DateTime();
- $timestamp = $now->getTimeStamp();
-
-/*
- $query = db_update('box_item');
- $query->condition('box_type', 'file', '!=');
- $query->fields(array(
-    'original_file_name' =>'',
-    'last_checked' => $timestamp,
-    )
-  );
- $query->execute();
-
-
-  $query = db_delete('box_ent_thumb');
-  $query->condition('checked',  1447036349, '<');
-  $query->execute();
-   
-  $query = db_delete('box_ent_image_size');
-  $query->condition('checked',  1447036349, '<');
-  $query->execute();
-
-
-  $query = db_select('box_item', 'bi');
-  $query->fields('bi', array( 'box_id', 'box_name' ) );
-  $query->condition('last_checked', 1447041699, '<');
-  $query->condition('box_type', 'file', '=');
-  $query->range(0,700);
-
-  $results = $query->execute()->fetchAll();
-
-  if ($results) {
-
-      foreach ($results as $result) {
-
-          $box_id = $result->box_id;
-          $name = $result->box_name;
-
-         $original_a =_box_get_name_size($result->box_name) ;
-         if ( ($original_a) && is_array($original_a) ) {
-             $original = array_shift($original_a) ;
-          } else {
-              $original = $result->box_name;
-          }
-
-           $query = db_update('box_item');
-           $query->fields(array(
-              'original_file_name' => $original,
-              'last_checked' => $timestamp,
-              )
-            );
-           $query->condition('box_id', $box_id, '=');
-           $query->execute();
-    }
-
-      drupal_set_message('Updated: ' . count($results) );
-
+  // Media Gallery
+  if (($type == 'node') && ($entity->type == 'media_gallery')) {
+    $node_view_mode = fnet_common_get_field_value('node', $entity, 'field_media_gallery_display_type');
   }
-
-  return 'done';
-*/
-  // make this drupal
-  //THIS IS GARBAGE AS IT SITS. -rositis
-  include_once('box_entities.batch.php');
-
-  $remaining=0;
-
-  $remaining = _update_box_galleries();
-
-  if ($remaining < 1) {
-    $iter++;
-    $remaining = _update_box_thumbnails();
-
-    if ($remaining < 1) $remaining = create_pngs() ;
-
-    // called via drush
-    if ( !drupal_is_cli() ) {
-        // web
-        if ($remaining > 5) {
-         drupal_goto('admin/fnet/extranet/box_gallery_init/' . $iter);
-        } else {
-          drupal_goto('admin');
-        }
-    }
-  }
-
-  return 'Done ' . $remaining;
 }
 
 
 
-function _get_product_name_array() {
 
+/**
+ * @return mixed
+ */
+function _get_product_name_array() {
   $query = db_select('node', 'n');
-  $query->fields('n', array('nid', 'title', ) );
+  $query->fields('n', array('nid', 'title',));
   $query->condition('n.status', 1, '=');
   $query->condition('n.type', 'product', '=');
   $query->orderBy('n.title', 'ASC');
-
-  $results=$query->execute()->fetchAllKeyed(0,1);
+  $results = $query->execute()->fetchAllKeyed(0, 1);
 
   foreach ($results as $nid => $title) {
-    $results[$nid] = _fnet_content_remove_sup($title);
+    $results[$nid] = $title;
   }
 
   return $results;
 
 }
 
+/**
+ * @param $gid
+ * @return array|mixed
+ */
 function box_gallery_edit_page ($gid) {
+  $gallery_array = entity_load('box_gallery', array($gid));
+  $box_gallery = array_shift($gallery_array);
+  $form_state = array();
+  $edit_box_gallery = entity_ui_get_form('box_gallery', $box_gallery, 'edit', $form_state);
 
-    $gallery_array = entity_load('box_gallery', array($gid) );
-
-    $box_gallery = array_shift($gallery_array);
-
-    $form_state = array();
-
-    $edit_box_gallery = entity_ui_get_form('box_gallery', $box_gallery, 'edit', $form_state );
-
-    return $edit_box_gallery;
-
+  return $edit_box_gallery;
 }
 
 function box_gallery_form($form, $form_state) {
-
   $title = '';
-
   $box_gallery = $form_state['build_info']['args'][0];
-
-/*
-  $nid = $box_gallery->content_nid;
-
-  if ($nid) {
-    $node=node_load($nid);
-    $title = 'Product: ' . $node->title;
-  }
-*/
 
   $nid_values = fnet_common_get_field_values('box_gallery', $box_gallery, 'field_dam_related_product');
 
@@ -648,16 +473,12 @@ function box_gallery_form($form, $form_state) {
 // to-do:  update box_ent_thumb where content_nid match
 
 function box_gallery_form_submit($form, $form_state) {
-
   $entity = $form_state['box_gallery'];
 
   $delta = 0;
   foreach ($form_state['values']['field_dam_related_product'] as $value) {
     fnet_common_set_field_value($value, 'box_gallery', $entity, 'field_dam_related_product', 'nid', $delta++);
   }
-
-//  $entity->field_dam_related_product = $form_state['values']['field_dam_related_product'];
-
   $entity->save();
 
   drupal_set_message('Saved.');
@@ -680,80 +501,53 @@ function box_entities_entity_info() {
       'base table' => 'box_ent_gallery',
       'fieldable' => TRUE,
       'entity keys' => array(
-        'id' =>  'gid',
+        'id' => 'gid',
         'label' => 'box_title',
-        ),
+      ),
       'configuration' => TRUE,
       'exportable' => FALSE,
-      'metatags'  => TRUE,
+      'metatags' => TRUE,
       'entity class' => 'Entity',
       'label callback' => 'entity_class_label',
-      'module'  => 'box_entities',
-      'admin ui' => array( 'path' => 'box_gallery', ),
-      'default path'  => 'admin/content/box_gallery/%box_gallery',
+      'module' => 'box_entities',
+      'admin ui' => array('path' => 'box_gallery',),
+      'default path' => 'admin/content/box_gallery/%box_gallery',
       'controller class' => 'BoxGalleryController',
       'views controller class' => 'EntityDefaultViewsController',
       'access callback' => 'box_entities_access_cb_funk',
-/*      'access callback' => 'user_access',
-      'access arguments' => array('administer site configuration'),*/
       'view modes' => array(
-          'full' => array(
-            'label' => t('Full content'),
-            'custom settings' => FALSE,
-          ),
-          'node_settings' => array(
-            'label' => t('Set the display per node, rather than per field'),
-            'custom settings' => FALSE,
-          ),
-          'gallery_paged' => array(
-            'label' => t('Gallery Paged (12)'),
-            'custom settings' => FALSE,
-          ),
-          // other possible view modes/templates
-          /*
-          'carousel' => array(
-            'label' => t('Carousel View Single Row'),
-            'custom settings' => FALSE,
-          ),
-          'carousel_rows' => array(
-            'label' => t('Carousel View Multiple Row'),
-            'custom settings' => FALSE,
-          ),  
-          'all_thumbs' => array(
-            'label' => t('Show all thumbnails'),
-            'custom settings' => FALSE,
-          ),
-          'preview' => array(
-            'label' => t('Preview (Max 3 thumbnails)'),
-            'custom settings' => FALSE,
-          ),
-          'do_not_display' => array(
-            'label' => t('Do not display'),
-            'custom settings' => FALSE,
-          ), 
-*/
+        'full' => array(
+          'label' => t('Full content'),
+          'custom settings' => FALSE,
+        ),
+        'node_settings' => array(
+          'label' => t('Set the display per node, rather than per field'),
+          'custom settings' => FALSE,
+        ),
+        'gallery_paged' => array(
+          'label' => t('Gallery Paged (12)'),
+          'custom settings' => FALSE,
         ),
       ),
-//    ),
+    ),
+
 
     'box_thumbnail' => array(
       'label' => 'Box Image Thumb',
       'base table' => 'box_ent_thumb',
       'fieldable' => TRUE,
-      'metatags'  => TRUE,
+      'metatags' => TRUE,
       'entity keys' => array(
-        'id' =>  'tid',
+        'id' => 'tid',
         'label' => 'original_file_name',
-        ),
+      ),
       'entity class' => 'Entity',
-      'module'  => 'box_entities',
-      'admin ui' => array( 'path' => 'box_thumbnail', ),
-      'default path'  => 'admin/content/box_thumbnail/%box_thumbnail',
+      'module' => 'box_entities',
+      'admin ui' => array('path' => 'box_thumbnail',),
+      'default path' => 'admin/content/box_thumbnail/%box_thumbnail',
       'controller class' => 'BoxThumbnailController',
       'views controller class' => 'EntityDefaultViewsController',
       'access callback' => 'box_entities_access_cb_funk',
-/*      'access callback' => 'user_access',
-      'access arguments' => array('administer site configuration'),*/
 
       'view modes' => array(
         'full' => array(
@@ -772,22 +566,19 @@ function box_entities_entity_info() {
       'label' => 'Box Image Size',
       'base table' => 'box_ent_image_size',
       'fieldable' => TRUE,
-      'metatags'  => FALSE,
+      'metatags' => FALSE,
       'entity keys' => array(
-        'id' =>  'box_file_id',
-        'label' =>  'size_name',
-        ),
+        'id' => 'box_file_id',
+        'label' => 'size_name',
+      ),
 
       'entity class' => 'Entity',
-      'module'  => 'box_entities',
-      'admin ui' => array( 'path' => 'box_image_size', ),
-      'default path'  => 'admin/content/image_size/%box_image_size',
+      'module' => 'box_entities',
+      'admin ui' => array('path' => 'box_image_size',),
+      'default path' => 'admin/content/image_size/%box_image_size',
       'controller class' => 'BoxImageSizeController',
       'views controller class' => 'EntityDefaultViewsController',
-
       'access callback' => 'box_entities_access_cb_funk',
-/*      'access callback' => 'user_access',
-      'access arguments' => array('administer site configuration'),*/
 
       'view modes' => array(
         'full' => array(
@@ -796,17 +587,16 @@ function box_entities_entity_info() {
         ),
       ),
     ),
+  );
 
-
-);
-
-return $return;
+  return $return;
 
 }
 
-
-
-
+/**
+ * @param $field_info
+ * @return array
+ */
 function box_entities_get_view_modes($field_info) {
   $info = box_entities_entity_info();
   $image_styles = image_styles();
@@ -819,56 +609,104 @@ function box_entities_get_view_modes($field_info) {
       $modes['thumbnail.' . $id] = $is['label'];
     }
     return $modes;
-  } else {
+  }
+  else {
     return array();
   }
-
 }
 
-
-function _box_entities_entity_property_info_alter(&$info) {
-
-}
-
-
-
-
-/*
-*   hook_entity_property_info()
-*/
+/**
+ * Implementation of hook_entity_property_info().
+ *
+ * @return array
+ */
 function box_entities_entity_property_info() {
 
   $info = array();
 
   $info['box_gallery']['properties'] = array(
-    'gid' => array('label' => 'Gallery ID', 'help' => '', 'schema field' => 'gid', 'type' => 'integer', 'description' => 'ID of the folder from Box',),
-  'box_title' => array('label' => 'Title', 'help' => '', 'type' => 'text', 'schema field' => 'box_title', 'description' => 'Name of the folder from Box.', ), 
-  'checked' => array('label' => 'Last Checked', 'help' => '', 'type' => 'date', 'schema field' => 'checked', 'description' => 'When Info Was Refreshed.', ), 
-  'content_nid' => array('label' => 'Product Node', 'help' => '', 'type' => 'node', 'schema field' => 'content_nid', 'description' => 'Node ID for associated product.', ), 
-    );
+    'gid' => array(
+      'label' => 'Gallery ID',
+      'help' => '',
+      'schema field' => 'gid',
+      'type' => 'integer',
+      'description' => 'ID of the folder from Box',
+    ),
+    'box_title' => array(
+      'label' => 'Title',
+      'help' => '',
+      'type' => 'text',
+      'schema field' => 'box_title',
+      'description' => 'Name of the folder from Box.',
+    ),
+    'checked' => array(
+      'label' => 'Last Checked',
+      'help' => '',
+      'type' => 'date',
+      'schema field' => 'checked',
+      'description' => 'When Info Was Refreshed.',
+    ),
+    'content_nid' => array(
+      'label' => 'Product Node',
+      'help' => '',
+      'type' => 'node',
+      'schema field' => 'content_nid',
+      'description' => 'Node ID for associated product.',
+    ),
+  );
 
-  
 
   $info['box_thumbnail']['properties'] = array(
-    'tid' => array('label' => 'Thumb ID (tid)', 'schema field' => 'tid', 'type' => 'integer',   ),
-    'gallery_id' => array('label' => 'Gallery ID', 'schema field' => 'gallery_id', 'type' => 'box_gallery',  ),
-    'original_file_name' => array('label' => 'File Name', 'type' => 'text', 'schema field' => 'original_file_name', ), 
-    'thumbnail' => array('label' => 'Image', 'type' => 'uri', 'schema field' => 'thumbnail',  )
-    );
+    'tid' => array(
+      'label' => 'Thumb ID (tid)',
+      'schema field' => 'tid',
+      'type' => 'integer',
+    ),
+    'gallery_id' => array(
+      'label' => 'Gallery ID',
+      'schema field' => 'gallery_id',
+      'type' => 'box_gallery',
+    ),
+    'original_file_name' => array(
+      'label' => 'File Name',
+      'type' => 'text',
+      'schema field' => 'original_file_name',
+    ),
+    'thumbnail' => array(
+      'label' => 'Image',
+      'type' => 'uri',
+      'schema field' => 'thumbnail',
+    )
+  );
 
-  $info['box_image_size']['properties']= array(
+  $info['box_image_size']['properties'] = array(
 
-    'box_file_id' => array('label' => 'Box File ID', 'schema field' => 'box_file_id', 'type' => 'integer', 'entity views field'  => TRUE, ),
-    'thumb_id' => array('label' => 'Thumbnail ID (tid)', 'schema field' => 'thumb_id', 'type' => 'box_thumbnail', 'entity views field'  => TRUE, ),
-    'size_name' => array('type' => 'text', 'label' => 'Size Name', 'schema field' => 'size_name', 'entity views field' => TRUE), 
+    'box_file_id' => array(
+      'label' => 'Box File ID',
+      'schema field' => 'box_file_id',
+      'type' => 'integer',
+      'entity views field' => TRUE,
+    ),
+    'thumb_id' => array(
+      'label' => 'Thumbnail ID (tid)',
+      'schema field' => 'thumb_id',
+      'type' => 'box_thumbnail',
+      'entity views field' => TRUE,
+    ),
+    'size_name' => array(
+      'type' => 'text',
+      'label' => 'Size Name',
+      'schema field' => 'size_name',
+      'entity views field' => TRUE
+    ),
 
-    );
+  );
 
   $bundles = array(
-    'box_gallery' => array('label' => 'Box Gallery', ), 
-    'box_thumbnail' => array('label' => 'Box Thumbnails', ),
-    'box_image_size' => array('label' => 'Box Image Size', ),    
-    );
+    'box_gallery' => array('label' => 'Box Gallery',),
+    'box_thumbnail' => array('label' => 'Box Thumbnails',),
+    'box_image_size' => array('label' => 'Box Image Size',),
+  );
 
   $info['box_gallery']['bundles'] = $bundles;
   $info['box_thumbnail']['bundles'] = $bundles;

@@ -1,23 +1,10 @@
 <?php
 
-
 /**
-  * Implement hook_enable()
-  */
-function box_entities_enable() {
-  //Check if table exists, if not install the schema.
-  if(db_table_exists('box_ent_gallery') == FALSE) {
-    drupal_install_schema('box_entities');
-  }
-}
-
-
-// todo:  rename schema fields to match entities
-
-
-/**
-  * Implement hook_schema()
-  */
+ * Implement hook_schema().
+ *
+ * @return array
+ */
 function box_entities_schema() {
 
   $schema = array();
@@ -163,8 +150,4 @@ function box_entities_schema() {
 
 }
 
-function box_entities_install() {
-
-
-}
 

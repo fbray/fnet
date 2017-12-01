@@ -2,9 +2,10 @@ name = edoc fix
 description = Temp Feature to fix field
 core = 7.x
 package = Features
-features[features_api][] = api:2
-features[field_instance][] = node-edoc-field_edoc_langreg
-features_exclude[dependencies][features] = features
-features_exclude[dependencies][node_reference] = node_reference
-features_exclude[dependencies][options] = options
-features_exclude[field_base][field_edoc_langreg] = field_edoc_langreg
+
+;features[features_api][] = api:2
+;features[field_instance][] = node-edoc-field_edoc_langreg
+;features_exclude[dependencies][features] = features
+;features_exclude[dependencies][node_reference] = node_reference
+;features_exclude[dependencies][options] = options
+;features_exclude[field_base][field_edoc_langreg] = field_edoc_langreg

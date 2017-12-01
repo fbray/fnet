@@ -16,8 +16,25 @@ function fextranet_schema() {
  * Implementation of hook_install().
  */
 function fextranet_install() {
+  $t = get_t();
+
+  // Create the Content Types used by the FNET Extranet.
+  // Extranet Page
+  _fextranet_create_extranet_page_type();
+  
+  // Extranet News
+  _fextranet_create_extranet_news_type();
+  
+  // Extranet Promotion
+  _fextranet_create_extranet_promotion_type();
+
   // Create the Extranet Menu
-  _fextranet_create_menu();
+  $menu = array(
+    'menu_name' =>  'extranet',
+    'title' =>  'Sales Insider Extranet',
+    'description'  =>  'Menu Items for Extranet',
+  );
+  menu_save($menu);
 
   // Create the default permissions for Extranet roles.
   _fextranet_add_role_permissions();
@@ -27,38 +44,129 @@ function fextranet_install() {
   variable_set('pathauto_node_extranet_promotion_pattern', 'extranet/promotion/[node:title]');
   variable_set('pathauto_node_media_gallery_pattern', 'media_gallery/[node:title]');
 
-  // Create the Group Types.
-  _fextranet_group_type_entities();
+  // TODO: Create the Group Types.
+  // _fextranet_group_type_entities();
 
-  // Create the Groups.
-  _fextranet_group_entities();
+  // TODO: Create the Groups.
+  // _fextranet_group_entities();
 
-  // Create the Content Types used by the FNET Extranet.
-  // Extranet News
-  // Extranet Promotions
+  // TODO: Create Group Roles.
+
+
 }
 
 /**
- * Helper function to create the Extranet Menu.
+ * Implementation of hook_uninstall().
  */
-function _fextranet_create_menu() {
-  $menu = array(
-    'menu_name' =>  'extranet',
-    'title' =>  'Sales Insider Extranet',
-    'description'  =>  'Menu Items for Extranet',
+function fextranet_uninstall() {
+  // Delete the Extranet Menu.
+  $menu = menu_load('extranet');
+  menu_delete($menu);
+
+  // TODO: Delete the content types.
+  _fextranet_delete_content_types();
+
+  // TODO: Delete the URL patterns.
+
+  // TODO: Remove the Group Types
+
+  // TODO: Remove the Groups.
+
+
+}
+
+/* =============================================================================
+ *   Helper Functions
+ * ========================================================================== */
+
+/**
+ * Helper function to create the Extranet Page content type.
+ */
+function _fextranet_create_extranet_page_type() {
+  //  The machine name of the content type can contain only lowercase alphanumeric
+  //  characters and underscores.
+  $extranet_page = 'extranet_page';
+
+  //  Verify the content type does not already exist. To instead get the node types
+  //  as objects, use node_type_get_types().
+  if ( in_array( $extranet_page, node_type_get_names() ) ) {
+    return;
+  }
+
+//  Create the type definition array.
+  $type = array(
+    'type' => $extranet_page,
+    'name' => st( 'Extranet Page' ),
+    'base' => 'node_content',
+    'description' => st( 'A static page that lives in the Extranet.' ),
+    'custom' => 1,
+    'modified' => 1,
+    'locked' => 0,
   );
-
-  db_merge('menu_custom')
-    ->key( array('menu_name' => 'extranet',) )
-    ->fields( $menu )
-    ->execute();
+  $type = node_type_set_defaults( $type );
+  node_type_save( $type );
+  //  Add a body field.
+  node_add_body_field( $type );
 }
 
 /**
- * Helper function to delete the Extranet Menu on uninstall.
+ * Helper function to create the Extranet News content type.
  */
-function _fextranet_delete_menu() {
+function _fextranet_create_extranet_news_type() {
+  //  The machine name of the content type can contain only lowercase alphanumeric
+  //  characters and underscores.
+  $extranet_news = 'extranet_news';
 
+  //  Verify the content type does not already exist. To instead get the node types
+  //  as objects, use node_type_get_types().
+  if ( in_array( $extranet_news, node_type_get_names() ) ) {
+    return;
+  }
+
+//  Create the type definition array.
+  $type = array(
+    'type' => $extranet_news,
+    'name' => st( 'Extranet News' ),
+    'base' => 'node_content',
+    'description' => st( 'Extranet News: Sales Alerts and Announcements.' ),
+    'custom' => 1,
+    'modified' => 1,
+    'locked' => 0,
+  );
+  $type = node_type_set_defaults( $type );
+  node_type_save( $type );
+  //  Add a body field.
+  node_add_body_field( $type );
+}
+
+/**
+ * Helper function to create the Extranet Promotion content type.
+ */
+function _fextranet_create_extranet_promotion_type() {
+  //  The machine name of the content type can contain only lowercase alphanumeric
+  //  characters and underscores.
+  $extranet_promotion = 'extranet_promotion';
+
+  //  Verify the content type does not already exist. To instead get the node types
+  //  as objects, use node_type_get_types().
+  if ( in_array( $extranet_promotion, node_type_get_names() ) ) {
+    return;
+  }
+
+//  Create the type definition array.
+  $type = array(
+    'type' => $extranet_promotion,
+    'name' => st( 'Extranet Promotion' ),
+    'base' => 'node_content',
+    'description' => st( 'Extranet Promotions, optional start and end date.' ),
+    'custom' => 1,
+    'modified' => 1,
+    'locked' => 0,
+  );
+  $type = node_type_set_defaults( $type );
+  node_type_save( $type );
+  //  Add a body field.
+  node_add_body_field( $type );
 }
 
 /**
@@ -66,13 +174,13 @@ function _fextranet_delete_menu() {
  */
 function _fextranet_add_role_permissions() {
   $role_names = array(
-    'extranet user' => array('access extranet', ),
+    'extranet user' => array('access extranet',),
     'extranet admin' => array('access extranet', 'administer extranet'),
   );
 
   foreach ($role_names as $role_name => $permissions) {
-    $role = user_role_load_by_name( $role_name);
-    if (! $role) {
+    $role = user_role_load_by_name($role_name);
+    if (!$role) {
       $new_role = new stdClass();
       $new_role->name = $role_name;
       user_role_save($new_role);
@@ -87,862 +195,894 @@ function _fextranet_add_role_permissions() {
     }
 
     user_role_change_permissions($rid, $permissions_to_add);
+  }
+}
+
+/**
+ * Helper function to delete the content types.
+ */
+function _fextranet_delete_content_types() {
+  $types = array(
+    'extranet_page',
+    'extranet_news',
+    'extranet_promotion'
+  );
+  foreach($types as $type) {
+    // First, delete nodes
+    $results = db_select('node', 'n')
+      ->fields('n', array('nid'))
+      ->condition('type', $type)
+      ->execute();
+    foreach ($results as $result) {
+      $nids[] = $result->nid;
+    }
+    if (!empty($nids)) {
+      node_delete_multiple($nids);
+      drupal_set_message(t('%count nodes has been deleted.', array('%count' => count($nids))));
+    }
+    // Then, delete content type
+    if (node_type_load($type)) {
+      node_type_delete($type);
+      variable_del('node_preview_' . $type);
+      drupal_set_message(t('%type content type has been deleted.', array('%type' => $type)));
+    }
+  }
+  node_types_rebuild();
+  menu_rebuild();
 }
 
 /**
  * Implementation of hook_enable().
  */
 function fextranet_enable() {
+  /*
+      $nodes = _node_info();
 
-	$nodes = _node_info();
+      $entity = entity_get_info('node');
+      $node_types = array_keys( $entity['bundles'] );
 
-	$entity = entity_get_info('node');
-	$node_types = array_keys( $entity['bundles'] );
+      foreach ($nodes as $node => $settings) {
+          $settings['type'] = $node;
 
-	foreach ($nodes as $node => $settings) {
-		$settings['type'] = $node;
-		
-		if (! in_array($node, $node_types) ) {
-			drupal_set_message('Creating node type ' . $node );
-			$node_type = node_type_set_defaults($settings);
-			node_type_save($node_type);
-			node_add_body_field($node_type);
-		}
-	}
-  }
-
-
-
-	$field_bases = _field_default_field_bases();
-	foreach ($field_bases as $field => $settings) {
-		if (!field_info_field($field) ) {
-			drupal_set_message('Creating field ' . $field );
-			field_create_field($settings);
-		}
-	}
-
-	$field_instances = _field_default_field_instances();
-
-	foreach ($field_instances as $key => $settings) {
-		$field_name = $settings['field_name'];
-		$bundle_name = $settings['bundle'];
-    $entity_type = $settings['entity_type'];
-
-		if (! field_info_instance($entity_type, $field_name, $bundle_name) ) {
-			drupal_set_message('Creating field instance ' . $field_name . ' for ' . $bundle_name );
-			field_create_instance($settings);
-		}
-	}	
-
-  $field_groups = _field_default_field_groups();
-
-  foreach ($field_groups as $key => $field_group) {
-    //objects, not arrays
-
-    $group_name = $field_group->group_name;
-    $entity_type = $field_group->entity_type;
-    $bundle = $field_group->bundle;
-    $mode = $field_group->mode;
-
-    $info = field_group_info_groups($entity_type, $bundle, $mode);
-
-    if (! field_group_info_groups($entity_type, $bundle, $mode) ) {
-
-      drupal_set_message('Creating field group ' . $key );
-
-        $fields = array(
-          'group_name'  =>   $group_name,
-          'entity_type'  =>   $entity_type,
-          'bundle'  =>   $bundle,
-          'mode'  =>   $mode,
-          'data'  =>   serialize($field_group->data),
-          );
-
-          db_merge('field_group')
-          ->key( array('identifier' => $key,) )
-          ->fields( $fields )
-          ->execute();
+          if (! in_array($node, $node_types) ) {
+              drupal_set_message('Creating node type ' . $node );
+              $node_type = node_type_set_defaults($settings);
+              node_type_save($node_type);
+              node_add_body_field($node_type);
+          }
+      }
     }
-  }   
-
-    $group_types = _get_group_countries() ; // array
-
-    foreach ($group_types as $type => $countries) {
-      $max_delta = 0;
-      $group_array = group_load_by_type($type);
-      $group = reset($group_array);
 
 
-      $current_list = array();
-      $current_deltas = fnet_common_get_field_values('group', $group, 'field_extranet_group_countries');
 
-      foreach ($current_deltas as $delta => $value) {
-         $max_delta = $delta;
-         $current_list[] = $value['value'];
+      $field_bases = _field_default_field_bases();
+      foreach ($field_bases as $field => $settings) {
+          if (!field_info_field($field) ) {
+              drupal_set_message('Creating field ' . $field );
+              field_create_field($settings);
+          }
       }
 
-      foreach ($countries as $code) {
-        if (! in_array($code, $current_list) ) {
-          $max_delta++;
-          fnet_common_set_field_value($code, 'group', $group, 'field_extranet_group_countries', 'value', $max_delta );
-        } // end if
+      $field_instances = _field_default_field_instances();
 
-      } // end foreach
+      foreach ($field_instances as $key => $settings) {
+          $field_name = $settings['field_name'];
+          $bundle_name = $settings['bundle'];
+      $entity_type = $settings['entity_type'];
 
-      entity_save('group', $group);
+          if (! field_info_instance($entity_type, $field_name, $bundle_name) ) {
+              drupal_set_message('Creating field instance ' . $field_name . ' for ' . $bundle_name );
+              field_create_instance($settings);
+          }
+      }
 
-    } //end foreach group
+    $field_groups = _field_default_field_groups();
 
-  create_entity_field_instances();
+    foreach ($field_groups as $key => $field_group) {
+      //objects, not arrays
+
+      $group_name = $field_group->group_name;
+      $entity_type = $field_group->entity_type;
+      $bundle = $field_group->bundle;
+      $mode = $field_group->mode;
+
+      $info = field_group_info_groups($entity_type, $bundle, $mode);
+
+      if (! field_group_info_groups($entity_type, $bundle, $mode) ) {
+
+        drupal_set_message('Creating field group ' . $key );
+
+          $fields = array(
+            'group_name'  =>   $group_name,
+            'entity_type'  =>   $entity_type,
+            'bundle'  =>   $bundle,
+            'mode'  =>   $mode,
+            'data'  =>   serialize($field_group->data),
+            );
+
+            db_merge('field_group')
+            ->key( array('identifier' => $key,) )
+            ->fields( $fields )
+            ->execute();
+      }
+    }
+
+      $group_types = _get_group_countries() ; // array
+
+      foreach ($group_types as $type => $countries) {
+        $max_delta = 0;
+        $group_array = group_load_by_type($type);
+        $group = reset($group_array);
+
+
+        $current_list = array();
+        $current_deltas = fnet_common_get_field_values('group', $group, 'field_extranet_group_countries');
+
+        foreach ($current_deltas as $delta => $value) {
+           $max_delta = $delta;
+           $current_list[] = $value['value'];
+        }
+
+        foreach ($countries as $code) {
+          if (! in_array($code, $current_list) ) {
+            $max_delta++;
+            fnet_common_set_field_value($code, 'group', $group, 'field_extranet_group_countries', 'value', $max_delta );
+          } // end if
+
+        } // end foreach
+
+        entity_save('group', $group);
+
+      } //end foreach group
+
+    create_entity_field_instances();
 
 
 
-if (! module_exists('media_gallery') ) module_enable( array('media_gallery') ) ;
+  if (! module_exists('media_gallery') ) module_enable( array('media_gallery') ) ;
 
-	drupal_set_message('Extranet install finished.');
+      drupal_set_message('Extranet install finished.');
 
+  }
+  */
 }
 
 
+  /*
+  *  Returns array to use in initial content type setup
+  */
+  function _field_default_field_bases() {
+    $field_bases = array();
 
-
-/*
-*  Returns array to use in initial content type setup
-*/
-function _field_default_field_bases() {
-  $field_bases = array();
-
-  // Exported field_base: 'field_extranet_distributor_group'
-  $field_bases['field_extranet_distributor_group'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_extranet_distributor_group',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
+    // Exported field_base: 'field_extranet_distributor_group'
+    $field_bases['field_extranet_distributor_group'] = array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_extranet_distributor_group',
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
       ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(),
-      'allowed_values_function' => 'fextranet_get_country_distributors',
-      'allowed_values_php' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
-  );
-
-  // Exported field_base: 'field_box_thumbnails'
-  $field_bases['field_box_thumbnails'] = array(
-    'active' => 1,
-    'cardinality' => -1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_box_thumbnails',
-    'indexes' => array(
-      'target_id' => array(
-        0 => 'target_id',
+      'locked' => 0,
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => 'fextranet_get_country_distributors',
+        'allowed_values_php' => '',
       ),
-    ),
-    'locked' => 0,
-    'module' => 'entityreference',
-    'settings' => array(
-      'handler' => 'base',
-      'handler_settings' => array(
-        'behaviors' => array(
-          'views-select-list' => array(
-            'status' => 0,
+      'translatable' => 0,
+      'type' => 'list_text',
+    );
+
+    // Exported field_base: 'field_box_thumbnails'
+    $field_bases['field_box_thumbnails'] = array(
+      'active' => 1,
+      'cardinality' => -1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_box_thumbnails',
+      'indexes' => array(
+        'target_id' => array(
+          0 => 'target_id',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'entityreference',
+      'settings' => array(
+        'handler' => 'base',
+        'handler_settings' => array(
+          'behaviors' => array(
+            'views-select-list' => array(
+              'status' => 0,
+            ),
           ),
+          'sort' => array(
+            'type' => 'none',
+          ),
+          'target_bundles' => array(),
         ),
-        'sort' => array(
-          'type' => 'none',
+        'target_type' => 'box_thumbnail',
+      ),
+      'translatable' => 0,
+      'type' => 'entityreference',
+    );
+
+    // Exported field_base: 'field_date_range'
+    $field_bases['field_date_range'] = array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_date_range',
+      'indexes' => array(),
+      'locked' => 0,
+      'module' => 'date',
+      'settings' => array(
+        'cache_count' => 4,
+        'cache_enabled' => 0,
+        'granularity' => array(
+          'day' => 'day',
+          'hour' => 0,
+          'minute' => 0,
+          'month' => 'month',
+          'second' => 0,
+          'year' => 'year',
         ),
-        'target_bundles' => array(),
+        'timezone_db' => '',
+        'todate' => 'optional',
+        'tz_handling' => 'none',
       ),
-      'target_type' => 'box_thumbnail',
-    ),
-    'translatable' => 0,
-    'type' => 'entityreference',
-  );
+      'translatable' => 0,
+      'type' => 'datetime',
+    );
 
-  // Exported field_base: 'field_date_range'
-  $field_bases['field_date_range'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_date_range',
-    'indexes' => array(),
-    'locked' => 0,
-    'module' => 'date',
-    'settings' => array(
-      'cache_count' => 4,
-      'cache_enabled' => 0,
-      'granularity' => array(
-        'day' => 'day',
-        'hour' => 0,
-        'minute' => 0,
-        'month' => 'month',
-        'second' => 0,
-        'year' => 'year',
+    // Exported field_base: 'field_digital_assets'
+    $field_bases['field_digital_assets'] = array(
+      'active' => 1,
+      'cardinality' => -1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_digital_assets',
+      'indexes' => array(
+        'nid' => array(
+          0 => 'nid',
+        ),
       ),
-      'timezone_db' => '',
-      'todate' => 'optional',
-      'tz_handling' => 'none',
-    ),
-    'translatable' => 0,
-    'type' => 'datetime',
-  );
+      'locked' => 0,
+      'module' => 'node_reference',
+      'settings' => array(
+        'referenceable_types' => array(
+          'asset_gateway' => 0,
+          'award' => 0,
+          'blog_article' => 0,
+          'cio_brief' => 0,
+          'digital_asset' => 'digital_asset',
+          'distributor' => 0,
+          'edoc' => 0,
+          'edoclanguage' => 0,
+          'email_page' => 0,
+          'event' => 0,
+          'event_occurrence' => 0,
+          'exp_ind' => 0,
+          'exp_ind_lng' => 0,
+          'exp_rle' => 0,
+          'exp_rle_lng' => 0,
+          'exp_tpc' => 0,
+          'exp_tpc_lng' => 0,
+          'expertise' => 0,
+          'extranet_news' => 0,
+          'extranet_promotion' => 0,
+          'family' => 0,
+          'feature' => 0,
+          'homepage2013' => 0,
+          'homepage2013language' => 0,
+          'industry' => 0,
+          'industrylanguage' => 0,
+          'knowledge_base_article' => 0,
+          'localized_email' => 0,
+          'marketo_form' => 0,
+          'media_gallery' => 0,
+          'microsite_page' => 0,
+          'microsite_page_language' => 0,
+          'microsite_story' => 0,
+          'microsite_story_language' => 0,
+          'page' => 0,
+          'page_reg' => 0,
+          'page_reg_lang' => 0,
+          'pressrelease' => 0,
+          'product' => 0,
+          'product_distributor_group' => 0,
+          'productlanguage' => 0,
+          'productsubtype' => 0,
+          'profile' => 0,
+          'promotion' => 0,
+          'promotion_fulfillment' => 0,
+          'promotion_product' => 0,
+          'software_notifications' => 0,
+          'story' => 0,
+          'suite' => 0,
+          'translation_text' => 0,
+        ),
+        'view' => array(
+          'args' => array(),
+          'display_name' => '',
+          'view_name' => '',
+        ),
+      ),
+      'translatable' => 0,
+      'type' => 'node_reference',
+    );
 
-  // Exported field_base: 'field_digital_assets'
-  $field_bases['field_digital_assets'] = array(
-    'active' => 1,
-    'cardinality' => -1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_digital_assets',
-    'indexes' => array(
-      'nid' => array(
-        0 => 'nid',
+    // Exported field_base: 'field_display_title'
+    $field_bases['field_display_title'] = array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_display_title',
+      'indexes' => array(
+        'format' => array(
+          0 => 'format',
+        ),
       ),
-    ),
-    'locked' => 0,
-    'module' => 'node_reference',
-    'settings' => array(
-      'referenceable_types' => array(
-        'asset_gateway' => 0,
-        'award' => 0,
-        'blog_article' => 0,
-        'cio_brief' => 0,
-        'digital_asset' => 'digital_asset',
-        'distributor' => 0,
-        'edoc' => 0,
-        'edoclanguage' => 0,
-        'email_page' => 0,
-        'event' => 0,
-        'event_occurrence' => 0,
-        'exp_ind' => 0,
-        'exp_ind_lng' => 0,
-        'exp_rle' => 0,
-        'exp_rle_lng' => 0,
-        'exp_tpc' => 0,
-        'exp_tpc_lng' => 0,
-        'expertise' => 0,
-        'extranet_news' => 0,
-        'extranet_promotion' => 0,
-        'family' => 0,
-        'feature' => 0,
-        'homepage2013' => 0,
-        'homepage2013language' => 0,
-        'industry' => 0,
-        'industrylanguage' => 0,
-        'knowledge_base_article' => 0,
-        'localized_email' => 0,
-        'marketo_form' => 0,
-        'media_gallery' => 0,
-        'microsite_page' => 0,
-        'microsite_page_language' => 0,
-        'microsite_story' => 0,
-        'microsite_story_language' => 0,
-        'page' => 0,
-        'page_reg' => 0,
-        'page_reg_lang' => 0,
-        'pressrelease' => 0,
-        'product' => 0,
-        'product_distributor_group' => 0,
-        'productlanguage' => 0,
-        'productsubtype' => 0,
-        'profile' => 0,
-        'promotion' => 0,
-        'promotion_fulfillment' => 0,
-        'promotion_product' => 0,
-        'software_notifications' => 0,
-        'story' => 0,
-        'suite' => 0,
-        'translation_text' => 0,
+      'locked' => 0,
+      'module' => 'text',
+      'settings' => array(
+        'allowed_values' => '',
+        'allowed_values_php' => '',
+        'max_length' => 255,
+        'text_processing' => 0,
       ),
-      'view' => array(
-        'args' => array(),
-        'display_name' => '',
-        'view_name' => '',
-      ),
-    ),
-    'translatable' => 0,
-    'type' => 'node_reference',
-  );
+      'translatable' => 0,
+      'type' => 'text',
+      'type_name' => 'microsite_story',
+    );
 
-  // Exported field_base: 'field_display_title'
-  $field_bases['field_display_title'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_display_title',
-    'indexes' => array(
-      'format' => array(
-        0 => 'format',
+    // Exported field_base: 'field_extranet_group_countries'
+    $field_bases['field_extranet_group_countries'] = array(
+      'active' => 1,
+      'cardinality' => -1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_extranet_group_countries',
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
       ),
-    ),
-    'locked' => 0,
-    'module' => 'text',
-    'settings' => array(
-      'allowed_values' => '',
-      'allowed_values_php' => '',
-      'max_length' => 255,
-      'text_processing' => 0,
-    ),
-    'translatable' => 0,
-    'type' => 'text',
-    'type_name' => 'microsite_story',
-  );
+      'locked' => 0,
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => 'fextranet_get_region_countries',
+        'allowed_values_php' => '',
+      ),
+      'translatable' => 0,
+      'type' => 'list_text',
+    );
 
-  // Exported field_base: 'field_extranet_group_countries'
-  $field_bases['field_extranet_group_countries'] = array(
-    'active' => 1,
-    'cardinality' => -1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_extranet_group_countries',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
+    // Exported field_base: 'field_extranet_permissions'
+    $field_bases['field_extranet_permissions'] = array(
+      'active' => 1,
+      'cardinality' => -1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_extranet_permissions',
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
       ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(),
-      'allowed_values_function' => 'fextranet_get_region_countries',
-      'allowed_values_php' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
-  );
+      'locked' => 0,
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => 'fextranet_get_content_roles',
+        'allowed_values_php' => '',
+      ),
+      'translatable' => 0,
+      'type' => 'list_integer',
+    );
 
-  // Exported field_base: 'field_extranet_permissions'
-  $field_bases['field_extranet_permissions'] = array(
-    'active' => 1,
-    'cardinality' => -1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_extranet_permissions',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
+    // Exported field_base: 'field_extranet_product_link'
+    $field_bases['field_extranet_product_link'] = array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_extranet_product_link',
+      'indexes' => array(
+        'nid' => array(
+          0 => 'nid',
+        ),
       ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(),
-      'allowed_values_function' => 'fextranet_get_content_roles',
-      'allowed_values_php' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_integer',
-  );
+      'locked' => 0,
+      'module' => 'node_reference',
+      'settings' => array(
+        'referenceable_types' => array(
+          'asset_gateway' => 0,
+          'award' => 0,
+          'blog_article' => 0,
+          'cio_brief' => 0,
+          'digital_asset' => 0,
+          'distributor' => 0,
+          'edoc' => 0,
+          'edoclanguage' => 0,
+          'email_page' => 0,
+          'event' => 0,
+          'event_occurrence' => 0,
+          'exp_ind' => 0,
+          'exp_ind_lng' => 0,
+          'exp_rle' => 0,
+          'exp_rle_lng' => 0,
+          'exp_tpc' => 0,
+          'exp_tpc_lng' => 0,
+          'expertise' => 0,
+          'extranet_news' => 0,
+          'extranet_promotion' => 0,
+          'family' => 0,
+          'feature' => 0,
+          'homepage2013' => 0,
+          'homepage2013language' => 0,
+          'industry' => 0,
+          'industrylanguage' => 0,
+          'knowledge_base_article' => 0,
+          'localized_email' => 0,
+          'marketo_form' => 0,
+          'media_gallery' => 0,
+          'microsite_page' => 0,
+          'microsite_page_language' => 0,
+          'microsite_story' => 0,
+          'microsite_story_language' => 0,
+          'page' => 0,
+          'page_reg' => 0,
+          'page_reg_lang' => 0,
+          'pressrelease' => 0,
+          'product' => 'product',
+          'product_distributor_group' => 0,
+          'productlanguage' => 0,
+          'productsubtype' => 0,
+          'profile' => 0,
+          'promotion' => 0,
+          'promotion_fulfillment' => 0,
+          'promotion_product' => 0,
+          'software_notifications' => 0,
+          'story' => 0,
+          'suite' => 0,
+          'translation_text' => 0,
+        ),
+        'view' => array(
+          'args' => array(),
+          'display_name' => '',
+          'view_name' => '',
+        ),
+      ),
+      'translatable' => 0,
+      'type' => 'node_reference',
+    );
 
-  // Exported field_base: 'field_extranet_product_link'
-  $field_bases['field_extranet_product_link'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_extranet_product_link',
-    'indexes' => array(
-      'nid' => array(
-        0 => 'nid',
+    // Exported field_base: 'field_field_gallery_video_url'
+    $field_bases['field_field_gallery_video_url'] = array(
+      'active' => 1,
+      'cardinality' => -1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_field_gallery_video_url',
+      'indexes' => array(),
+      'locked' => 0,
+      'module' => 'link',
+      'settings' => array(
+        'attributes' => array(
+          'class' => '',
+          'rel' => '',
+          'target' => 'default',
+        ),
+        'display' => array(
+          'url_cutoff' => 80,
+        ),
+        'enable_tokens' => 1,
+        'title' => 'optional',
+        'title_maxlength' => 128,
+        'title_value' => '',
+        'url' => 0,
       ),
-    ),
-    'locked' => 0,
-    'module' => 'node_reference',
-    'settings' => array(
-      'referenceable_types' => array(
-        'asset_gateway' => 0,
-        'award' => 0,
-        'blog_article' => 0,
-        'cio_brief' => 0,
-        'digital_asset' => 0,
-        'distributor' => 0,
-        'edoc' => 0,
-        'edoclanguage' => 0,
-        'email_page' => 0,
-        'event' => 0,
-        'event_occurrence' => 0,
-        'exp_ind' => 0,
-        'exp_ind_lng' => 0,
-        'exp_rle' => 0,
-        'exp_rle_lng' => 0,
-        'exp_tpc' => 0,
-        'exp_tpc_lng' => 0,
-        'expertise' => 0,
-        'extranet_news' => 0,
-        'extranet_promotion' => 0,
-        'family' => 0,
-        'feature' => 0,
-        'homepage2013' => 0,
-        'homepage2013language' => 0,
-        'industry' => 0,
-        'industrylanguage' => 0,
-        'knowledge_base_article' => 0,
-        'localized_email' => 0,
-        'marketo_form' => 0,
-        'media_gallery' => 0,
-        'microsite_page' => 0,
-        'microsite_page_language' => 0,
-        'microsite_story' => 0,
-        'microsite_story_language' => 0,
-        'page' => 0,
-        'page_reg' => 0,
-        'page_reg_lang' => 0,
-        'pressrelease' => 0,
-        'product' => 'product',
-        'product_distributor_group' => 0,
-        'productlanguage' => 0,
-        'productsubtype' => 0,
-        'profile' => 0,
-        'promotion' => 0,
-        'promotion_fulfillment' => 0,
-        'promotion_product' => 0,
-        'software_notifications' => 0,
-        'story' => 0,
-        'suite' => 0,
-        'translation_text' => 0,
-      ),
-      'view' => array(
-        'args' => array(),
-        'display_name' => '',
-        'view_name' => '',
-      ),
-    ),
-    'translatable' => 0,
-    'type' => 'node_reference',
-  );
+      'translatable' => 0,
+      'type' => 'link_field',
+    );
 
-  // Exported field_base: 'field_field_gallery_video_url'
-  $field_bases['field_field_gallery_video_url'] = array(
-    'active' => 1,
-    'cardinality' => -1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_field_gallery_video_url',
-    'indexes' => array(),
-    'locked' => 0,
-    'module' => 'link',
-    'settings' => array(
-      'attributes' => array(
-        'class' => '',
-        'rel' => '',
-        'target' => 'default',
+    // Exported field_base: 'field_media_gallery'
+    $field_bases['field_media_gallery'] = array(
+      'active' => 1,
+      'cardinality' => -1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_media_gallery',
+      'indexes' => array(
+        'nid' => array(
+          0 => 'nid',
+        ),
       ),
+      'locked' => 0,
+      'module' => 'node_reference',
+      'settings' => array(
+        'referenceable_types' => array(
+          'asset_gateway' => 0,
+          'award' => 0,
+          'blog_article' => 0,
+          'cio_brief' => 0,
+          'digital_asset' => 0,
+          'distributor' => 0,
+          'edoc' => 0,
+          'edoclanguage' => 0,
+          'email_page' => 0,
+          'event' => 0,
+          'event_occurrence' => 0,
+          'exp_ind' => 0,
+          'exp_ind_lng' => 0,
+          'exp_rle' => 0,
+          'exp_rle_lng' => 0,
+          'exp_tpc' => 0,
+          'exp_tpc_lng' => 0,
+          'expertise' => 0,
+          'extranet_news' => 0,
+          'extranet_promotion' => 0,
+          'family' => 0,
+          'feature' => 0,
+          'homepage2013' => 0,
+          'homepage2013language' => 0,
+          'industry' => 0,
+          'industrylanguage' => 0,
+          'knowledge_base_article' => 0,
+          'localized_email' => 0,
+          'marketo_form' => 0,
+          'media_gallery' => 'media_gallery',
+          'microsite_page' => 0,
+          'microsite_page_language' => 0,
+          'microsite_story' => 0,
+          'microsite_story_language' => 0,
+          'page' => 0,
+          'page_reg' => 0,
+          'page_reg_lang' => 0,
+          'pressrelease' => 0,
+          'product' => 0,
+          'product_distributor_group' => 0,
+          'productlanguage' => 0,
+          'productsubtype' => 0,
+          'profile' => 0,
+          'promotion' => 0,
+          'promotion_fulfillment' => 0,
+          'promotion_product' => 0,
+          'software_notifications' => 0,
+          'story' => 0,
+          'suite' => 0,
+          'translation_text' => 0,
+        ),
+        'view' => array(
+          'args' => array(),
+          'display_name' => '',
+          'view_name' => '',
+        ),
+      ),
+      'translatable' => 0,
+      'type' => 'node_reference',
+    );
+
+    // Exported field_base: 'field_media_gallery_display_type'
+    $field_bases['field_media_gallery_display_type'] = array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_media_gallery_display_type',
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => 'box_entities_get_view_modes',
+        'allowed_values_php' => '',
+      ),
+      'translatable' => 0,
+      'type' => 'list_text',
+    );
+
+    // Exported field_base: 'field_media_image_display'
+    $field_bases['field_media_image_display'] = array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_media_image_display',
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => 'media_gallery_image_render_modes',
+        'allowed_values_php' => '',
+      ),
+      'translatable' => 0,
+      'type' => 'list_text',
+    );
+
+    // Exported field_base: 'field_product_name'
+    $field_bases['field_product_name'] = array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_product_name',
+      'indexes' => array(
+        'format' => array(
+          0 => 'format',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => 100,
+      ),
+      'translatable' => 0,
+      'type' => 'text',
+    );
+
+    // Exported field_base: 'field_quantity'
+    $field_bases['field_quantity'] = array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_quantity',
+      'indexes' => array(),
+      'locked' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'translatable' => 0,
+      'type' => 'number_integer',
+    );
+
+
+    $field_bases['field_deal_reg_item'] = array(
+      'active' => 1,
+      'cardinality' => -1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_deal_reg_item',
+      'indexes' => array(
+        'format' => array(
+          0 => 'format',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => 60,
+      ),
+      'translatable' => 0,
+      'type' => 'text',
+    );
+
+    // Exported field_base: 'field_box_gallery_id'
+    $field_bases['field_box_gallery_id'] = array(
+      'active' => 1,
+      'cardinality' => -1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_box_gallery_id',
+      'indexes' => array(
+        'target_id' => array(
+          0 => 'target_id',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'entityreference',
+      'settings' => array(
+        'handler' => 'base',
+        'handler_settings' => array(
+          'behaviors' => array(
+            'views-select-list' => array(
+              'status' => 0,
+            ),
+          ),
+          'sort' => array(
+            'type' => 'none',
+          ),
+          'target_bundles' => array(),
+        ),
+        'target_type' => 'box_gallery',
+      ),
+      'translatable' => 0,
+      'type' => 'entityreference',
+    );
+
+    // Exported field_base: 'field_gallery_file'
+    $field_bases['field_gallery_file'] = array(
+      'active' => 1,
+      'cardinality' => -1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_gallery_file',
+      'indexes' => array(
+        'fid' => array(
+          0 => 'fid',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'file',
+      'settings' => array(
+        'display_default' => 0,
+        'display_field' => 1,
+        'uri_scheme' => 'public',
+      ),
+      'translatable' => 0,
+      'type' => 'file',
+    );
+
+    // Exported field_base: 'field_media_images'
+    $field_bases['field_media_images'] = array(
+      'active' => 1,
+      'cardinality' => -1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_media_images',
+      'indexes' => array(
+        'fid' => array(
+          0 => 'fid',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'image',
+      'settings' => array(
+        'default_image' => 0,
+        'uri_scheme' => 'public',
+      ),
+      'translatable' => 0,
+      'type' => 'image',
+    );
+
+
+    return $field_bases;
+  }
+
+  /*
+  *  Returns array to use in initial content type setup
+  */
+  function _field_default_field_instances() {
+    $field_instances = array();
+
+    // Exported field_instance:
+    // 'group_membership-group_membership-field_extranet_distributor_group'
+    $field_instances['group_membership-group_membership-field_extranet_distributor_group'] = array(
+      'bundle' => 'group_membership',
+      'default_value' => NULL,
+      'default_value_function' => '',
+      'default_value_php' => '',
+      'deleted' => 0,
+      'description' => 'Select the user\'s Distributor. In order to appear on this list, the Distributor must have a Location which matches the user\'s country.',
       'display' => array(
-        'url_cutoff' => 80,
-      ),
-      'enable_tokens' => 1,
-      'title' => 'optional',
-      'title_maxlength' => 128,
-      'title_value' => '',
-      'url' => 0,
-    ),
-    'translatable' => 0,
-    'type' => 'link_field',
-  );
-
-  // Exported field_base: 'field_media_gallery'
-  $field_bases['field_media_gallery'] = array(
-    'active' => 1,
-    'cardinality' => -1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_media_gallery',
-    'indexes' => array(
-      'nid' => array(
-        0 => 'nid',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'node_reference',
-    'settings' => array(
-      'referenceable_types' => array(
-        'asset_gateway' => 0,
-        'award' => 0,
-        'blog_article' => 0,
-        'cio_brief' => 0,
-        'digital_asset' => 0,
-        'distributor' => 0,
-        'edoc' => 0,
-        'edoclanguage' => 0,
-        'email_page' => 0,
-        'event' => 0,
-        'event_occurrence' => 0,
-        'exp_ind' => 0,
-        'exp_ind_lng' => 0,
-        'exp_rle' => 0,
-        'exp_rle_lng' => 0,
-        'exp_tpc' => 0,
-        'exp_tpc_lng' => 0,
-        'expertise' => 0,
-        'extranet_news' => 0,
-        'extranet_promotion' => 0,
-        'family' => 0,
-        'feature' => 0,
-        'homepage2013' => 0,
-        'homepage2013language' => 0,
-        'industry' => 0,
-        'industrylanguage' => 0,
-        'knowledge_base_article' => 0,
-        'localized_email' => 0,
-        'marketo_form' => 0,
-        'media_gallery' => 'media_gallery',
-        'microsite_page' => 0,
-        'microsite_page_language' => 0,
-        'microsite_story' => 0,
-        'microsite_story_language' => 0,
-        'page' => 0,
-        'page_reg' => 0,
-        'page_reg_lang' => 0,
-        'pressrelease' => 0,
-        'product' => 0,
-        'product_distributor_group' => 0,
-        'productlanguage' => 0,
-        'productsubtype' => 0,
-        'profile' => 0,
-        'promotion' => 0,
-        'promotion_fulfillment' => 0,
-        'promotion_product' => 0,
-        'software_notifications' => 0,
-        'story' => 0,
-        'suite' => 0,
-        'translation_text' => 0,
-      ),
-      'view' => array(
-        'args' => array(),
-        'display_name' => '',
-        'view_name' => '',
-      ),
-    ),
-    'translatable' => 0,
-    'type' => 'node_reference',
-  );
-
-  // Exported field_base: 'field_media_gallery_display_type'
-  $field_bases['field_media_gallery_display_type'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_media_gallery_display_type',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(),
-      'allowed_values_function' => 'box_entities_get_view_modes',
-      'allowed_values_php' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
-  );
-
-  // Exported field_base: 'field_media_image_display'
-  $field_bases['field_media_image_display'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_media_image_display',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(),
-      'allowed_values_function' => 'media_gallery_image_render_modes',
-      'allowed_values_php' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
-  );
-
-  // Exported field_base: 'field_product_name'
-  $field_bases['field_product_name'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_product_name',
-    'indexes' => array(
-      'format' => array(
-        0 => 'format',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'text',
-    'settings' => array(
-      'max_length' => 100,
-    ),
-    'translatable' => 0,
-    'type' => 'text',
-  );
-
-  // Exported field_base: 'field_quantity'
-  $field_bases['field_quantity'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_quantity',
-    'indexes' => array(),
-    'locked' => 0,
-    'module' => 'number',
-    'settings' => array(),
-    'translatable' => 0,
-    'type' => 'number_integer',
-  );
-
-
-
-  $field_bases['field_deal_reg_item'] = array(
-    'active' => 1,
-    'cardinality' => -1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_deal_reg_item',
-    'indexes' => array(
-      'format' => array(
-        0 => 'format',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'text',
-    'settings' => array(
-      'max_length' => 60,
-    ),
-    'translatable' => 0,
-    'type' => 'text',
-  );
-
-  // Exported field_base: 'field_box_gallery_id'
-  $field_bases['field_box_gallery_id'] = array(
-    'active' => 1,
-    'cardinality' => -1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_box_gallery_id',
-    'indexes' => array(
-      'target_id' => array(
-        0 => 'target_id',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'entityreference',
-    'settings' => array(
-      'handler' => 'base',
-      'handler_settings' => array(
-        'behaviors' => array(
-          'views-select-list' => array(
-            'status' => 0,
-          ),
+        'default' => array(
+          'label' => 'above',
+          'module' => 'list',
+          'settings' => array(),
+          'type' => 'list_default',
+          'weight' => 0,
         ),
-        'sort' => array(
-          'type' => 'none',
-        ),
-        'target_bundles' => array(),
       ),
-      'target_type' => 'box_gallery',
-    ),
-    'translatable' => 0,
-    'type' => 'entityreference',
-  );
-
-  // Exported field_base: 'field_gallery_file'
-  $field_bases['field_gallery_file'] = array(
-    'active' => 1,
-    'cardinality' => -1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_gallery_file',
-    'indexes' => array(
-      'fid' => array(
-        0 => 'fid',
+      'entity_type' => 'group_membership',
+      'field_name' => 'field_extranet_distributor_group',
+      'label' => 'Extranet Distributor Group',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
       ),
-    ),
-    'locked' => 0,
-    'module' => 'file',
-    'settings' => array(
-      'display_default' => 0,
-      'display_field' => 1,
-      'uri_scheme' => 'public',
-    ),
-    'translatable' => 0,
-    'type' => 'file',
-  );
-
-  // Exported field_base: 'field_media_images'
-  $field_bases['field_media_images'] = array(
-    'active' => 1,
-    'cardinality' => -1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_media_images',
-    'indexes' => array(
-      'fid' => array(
-        0 => 'fid',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'image',
-    'settings' => array(
-      'default_image' => 0,
-      'uri_scheme' => 'public',
-    ),
-    'translatable' => 0,
-    'type' => 'image',
-  );
-
-
-
-  return $field_bases;
-}
-
-/*
-*  Returns array to use in initial content type setup
-*/
-function _field_default_field_instances() {
-  $field_instances = array();
-
-  // Exported field_instance:
-  // 'group_membership-group_membership-field_extranet_distributor_group'
-  $field_instances['group_membership-group_membership-field_extranet_distributor_group'] = array(
-    'bundle' => 'group_membership',
-    'default_value' => NULL,
-    'default_value_function' => '',
-    'default_value_php' => '',
-    'deleted' => 0,
-    'description' => 'Select the user\'s Distributor. In order to appear on this list, the Distributor must have a Location which matches the user\'s country.',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
+      'widget' => array(
+        'active' => 1,
+        'module' => 'options',
         'settings' => array(),
-        'type' => 'list_default',
+        'type' => 'options_select',
         'weight' => 0,
       ),
-    ),
-    'entity_type' => 'group_membership',
-    'field_name' => 'field_extranet_distributor_group',
-    'label' => 'Extranet Distributor Group',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 0,
-    ),
-  );
+    );
 
-  // Exported field_instance: 'node-extranet_news-body'
-  $field_instances['node-extranet_news-body'] = array(
-    'bundle' => 'extranet_news',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'module' => 'text',
-        'settings' => array(),
-        'type' => 'text_default',
-        'weight' => 1,
+    // Exported field_instance: 'node-extranet_news-body'
+    $field_instances['node-extranet_news-body'] = array(
+      'bundle' => 'extranet_news',
+      'default_value' => NULL,
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'module' => 'text',
+          'settings' => array(),
+          'type' => 'text_default',
+          'weight' => 1,
+        ),
+        'teaser' => array(
+          'label' => 'hidden',
+          'module' => 'text',
+          'settings' => array(
+            'trim_length' => 600,
+          ),
+          'type' => 'text_summary_or_trimmed',
+          'weight' => 0,
+        ),
       ),
-      'teaser' => array(
-        'label' => 'hidden',
+      'entity_type' => 'node',
+      'field_name' => 'body',
+      'label' => 'Body',
+      'required' => FALSE,
+      'settings' => array(
+        'display_summary' => TRUE,
+        'text_processing' => 1,
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
         'module' => 'text',
         'settings' => array(
-          'trim_length' => 600,
+          'rows' => 20,
+          'summary_rows' => 5,
         ),
-        'type' => 'text_summary_or_trimmed',
-        'weight' => 0,
+        'type' => 'text_textarea_with_summary',
+        'weight' => 3,
       ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'body',
-    'label' => 'Body',
-    'required' => FALSE,
-    'settings' => array(
-      'display_summary' => TRUE,
-      'text_processing' => 1,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'module' => 'text',
-      'settings' => array(
-        'rows' => 20,
-        'summary_rows' => 5,
-      ),
-      'type' => 'text_textarea_with_summary',
-      'weight' => 3,
-    ),
-  );
+    );
 
-  // Exported field_instance: 'node-extranet_news-field_display_title'
-  $field_instances['node-extranet_news-field_display_title'] = array(
-    'bundle' => 'extranet_news',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
+    // Exported field_instance: 'node-extranet_news-field_display_title'
+    $field_instances['node-extranet_news-field_display_title'] = array(
+      'bundle' => 'extranet_news',
+      'default_value' => NULL,
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'module' => 'text',
+          'settings' => array(),
+          'type' => 'text_default',
+          'weight' => 0,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'field_display_title',
+      'label' => 'Display Title',
+      'required' => 0,
+      'settings' => array(
+        'text_processing' => 0,
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
         'module' => 'text',
-        'settings' => array(),
-        'type' => 'text_default',
-        'weight' => 0,
+        'settings' => array(
+          'size' => 30,
+        ),
+        'type' => 'text_textfield',
+        'weight' => 1,
       ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_display_title',
-    'label' => 'Display Title',
-    'required' => 0,
-    'settings' => array(
-      'text_processing' => 0,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'text',
-      'settings' => array(
-        'size' => 30,
-      ),
-      'type' => 'text_textfield',
-      'weight' => 1,
-    ),
-  );
+    );
 
-  $group_types = fex_get_groups();
+    $group_types = fex_get_groups();
 
-  foreach ($group_types as $type) {
-    $instance_key = 'group-' . $type . '-field_extranet_group_countries';
+    foreach ($group_types as $type) {
+      $instance_key = 'group-' . $type . '-field_extranet_group_countries';
 
       $field_instances[$instance_key] = array(
         'bundle' => $type,
@@ -982,1286 +1122,1274 @@ function _field_default_field_instances() {
       );
 
 
+    } // end foreach group
 
 
-
-
-  } // end foreach group
-
-
-  // Exported field_instance:
-  // '(group)-extranet_news-field_extranet_group_countries'
-  $field_instances['node-extranet_news-field_extranet_group_countries'] = array(
-    'bundle' => 'extranet_news',
-    'default_value' => NULL,
-    'default_value_function' => '',
-    'default_value_php' => '',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 5,
+    // Exported field_instance:
+    // '(group)-extranet_news-field_extranet_group_countries'
+    $field_instances['node-extranet_news-field_extranet_group_countries'] = array(
+      'bundle' => 'extranet_news',
+      'default_value' => NULL,
+      'default_value_function' => '',
+      'default_value_php' => '',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 5,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
       ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
+      'entity_type' => 'node',
+      'field_name' => 'field_extranet_group_countries',
+      'label' => 'Extranet Group Countries',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
       ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_extranet_group_countries',
-    'label' => 'Extranet Group Countries',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_buttons',
-      'weight' => 7,
-    ),
-  );
+      'widget' => array(
+        'active' => 1,
+        'module' => 'options',
+        'settings' => array(),
+        'type' => 'options_buttons',
+        'weight' => 7,
+      ),
+    );
 
 
-  // Exported field_instance:
-  // 'node-extranet_news-field_extranet_group_countries'
-  $field_instances['node-extranet_news-field_extranet_group_countries'] = array(
-    'bundle' => 'extranet_news',
-    'default_value' => NULL,
-    'default_value_function' => '',
-    'default_value_php' => '',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 5,
+    // Exported field_instance:
+    // 'node-extranet_news-field_extranet_group_countries'
+    $field_instances['node-extranet_news-field_extranet_group_countries'] = array(
+      'bundle' => 'extranet_news',
+      'default_value' => NULL,
+      'default_value_function' => '',
+      'default_value_php' => '',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 5,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
       ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
+      'entity_type' => 'node',
+      'field_name' => 'field_extranet_group_countries',
+      'label' => 'Extranet Group Countries',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
       ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_extranet_group_countries',
-    'label' => 'Extranet Group Countries',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_buttons',
-      'weight' => 7,
-    ),
-  );
+      'widget' => array(
+        'active' => 1,
+        'module' => 'options',
+        'settings' => array(),
+        'type' => 'options_buttons',
+        'weight' => 7,
+      ),
+    );
 
-  // Exported field_instance: 'node-extranet_news-field_extranet_permissions'
-  $field_instances['node-extranet_news-field_extranet_permissions'] = array(
-    'bundle' => 'extranet_news',
-    'default_value' => NULL,
-    'default_value_function' => '',
-    'default_value_php' => '',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 4,
+    // Exported field_instance: 'node-extranet_news-field_extranet_permissions'
+    $field_instances['node-extranet_news-field_extranet_permissions'] = array(
+      'bundle' => 'extranet_news',
+      'default_value' => NULL,
+      'default_value_function' => '',
+      'default_value_php' => '',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 4,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
       ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
+      'entity_type' => 'node',
+      'field_name' => 'field_extranet_permissions',
+      'label' => 'Extranet Permissions',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
       ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_extranet_permissions',
-    'label' => 'Extranet Permissions',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_buttons',
-      'weight' => 6,
-    ),
-  );
+      'widget' => array(
+        'active' => 1,
+        'module' => 'options',
+        'settings' => array(),
+        'type' => 'options_buttons',
+        'weight' => 6,
+      ),
+    );
 
-  // Exported field_instance: 'node-extranet_news-field_extranet_product_link'
-  $field_instances['node-extranet_news-field_extranet_product_link'] = array(
-    'bundle' => 'extranet_news',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => 'Restrict access to this item to its Distributors.  In order for this to work, you need:
+    // Exported field_instance: 'node-extranet_news-field_extranet_product_link'
+    $field_instances['node-extranet_news-field_extranet_product_link'] = array(
+      'bundle' => 'extranet_news',
+      'default_value' => NULL,
+      'deleted' => 0,
+      'description' => 'Restrict access to this item to its Distributors.  In order for this to work, you need:
 <li>Select a  product here
 <li>Make sure a Distributor has that product in its list
 <li>Make sure users have that Distributor attached to the Extranet profile',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 6,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_extranet_product_link',
-    'label' => 'Extranet Product Link',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 8,
-    ),
-  );
-
-  // Exported field_instance: 'node-extranet_news-field_media_gallery'
-  $field_instances['node-extranet_news-field_media_gallery'] = array(
-    'bundle' => 'extranet_news',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'module' => 'node_reference',
-        'settings' => array(
-          'node_reference_view_mode' => 'full',
-        ),
-        'type' => 'node_reference_node',
-        'weight' => 2,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_media_gallery',
-    'label' => 'Media Gallery',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 0,
-      'module' => 'multiselect',
-      'settings' => array(),
-      'type' => 'multiselect',
-      'weight' => 4,
-    ),
-  );
-
-  // Exported field_instance: 'node-extranet_promotion-body'
-  $field_instances['node-extranet_promotion-body'] = array(
-    'bundle' => 'extranet_promotion',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'module' => 'text',
-        'settings' => array(),
-        'type' => 'text_default',
-        'weight' => 2,
-      ),
-      'teaser' => array(
-        'label' => 'hidden',
-        'module' => 'text',
-        'settings' => array(
-          'trim_length' => 600,
-        ),
-        'type' => 'text_summary_or_trimmed',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'body',
-    'label' => 'Body',
-    'required' => FALSE,
-    'settings' => array(
-      'display_summary' => TRUE,
-      'text_processing' => 1,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'module' => 'text',
-      'settings' => array(
-        'rows' => 20,
-        'summary_rows' => 5,
-      ),
-      'type' => 'text_textarea_with_summary',
-      'weight' => 3,
-    ),
-  );
-
-  // Exported field_instance: 'node-extranet_promotion-field_date_range'
-  $field_instances['node-extranet_promotion-field_date_range'] = array(
-    'bundle' => 'extranet_promotion',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'module' => 'date',
-        'settings' => array(
-          'format_type' => 'default',
-          'fromto' => 'both',
-          'multiple_from' => '',
-          'multiple_number' => '',
-          'multiple_to' => '',
-        ),
-        'type' => 'date_default',
-        'weight' => 1,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_date_range',
-    'label' => 'Date Range',
-    'required' => 0,
-    'settings' => array(
-      'default_value' => 'now',
-      'default_value2' => 'same',
-      'default_value_code' => '',
-      'default_value_code2' => '',
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'date',
-      'settings' => array(
-        'display_all_day' => 0,
-        'increment' => 15,
-        'input_format' => 'Y-m-d H:i:s',
-        'input_format_custom' => '',
-        'label_position' => 'above',
-        'text_parts' => array(),
-        'year_range' => '-3:+3',
-      ),
-      'type' => 'date_popup',
-      'weight' => 4,
-    ),
-  );
-
-  // Exported field_instance: 'node-extranet_promotion-field_display_title'
-  $field_instances['node-extranet_promotion-field_display_title'] = array(
-    'bundle' => 'extranet_promotion',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => 'The Title for this content which will appear to the public.  The Title field will not appear.  ',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'module' => 'text',
-        'settings' => array(),
-        'type' => 'text_default',
-        'weight' => 0,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_display_title',
-    'label' => 'Display Title',
-    'required' => 0,
-    'settings' => array(
-      'text_processing' => 0,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'text',
-      'settings' => array(
-        'size' => 30,
-      ),
-      'type' => 'text_textfield',
-      'weight' => 1,
-    ),
-  );
-
-  // Exported field_instance:
-  // 'node-extranet_promotion-field_extranet_group_countries'
-  $field_instances['node-extranet_promotion-field_extranet_group_countries'] = array(
-    'bundle' => 'extranet_promotion',
-    'default_value' => NULL,
-    'default_value_function' => '',
-    'default_value_php' => '',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 5,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_extranet_group_countries',
-    'label' => 'Extranet Group Countries',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_buttons',
-      'weight' => 7,
-    ),
-  );
-
-  // Exported field_instance:
-  // 'node-extranet_promotion-field_extranet_permissions'
-  $field_instances['node-extranet_promotion-field_extranet_permissions'] = array(
-    'bundle' => 'extranet_promotion',
-    'default_value' => NULL,
-    'default_value_function' => '',
-    'default_value_php' => '',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 6,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_extranet_permissions',
-    'label' => 'Extranet Permissions',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_buttons',
-      'weight' => 6,
-    ),
-  );
-
-  // Exported field_instance: 'node-extranet_promotion-field_media_gallery'
-  $field_instances['node-extranet_promotion-field_media_gallery'] = array(
-    'bundle' => 'extranet_promotion',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'module' => 'node_reference',
-        'settings' => array(
-          'node_reference_view_mode' => 'full',
-        ),
-        'type' => 'node_reference_node',
-        'weight' => 3,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_media_gallery',
-    'label' => 'Media Gallery',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 0,
-      'module' => 'multiselect',
-      'settings' => array(),
-      'type' => 'multiselect',
-      'weight' => 5,
-    ),
-  );
-
-  // Exported field_instance: 'node-media_gallery-field_digital_assets'
-  $field_instances['node-media_gallery-field_digital_assets'] = array(
-    'bundle' => 'media_gallery',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'module' => 'node_reference',
-        'settings' => array(),
-        'type' => 'node_reference_default',
-        'weight' => 6,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_digital_assets',
-    'label' => 'Digital Assets',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 0,
-      'module' => 'multiselect',
-      'settings' => array(),
-      'type' => 'multiselect',
-      'weight' => 7,
-    ),
-  );
-
-  // Exported field_instance: 'node-media_gallery-field_display_title'
-  $field_instances['node-media_gallery-field_display_title'] = array(
-    'bundle' => 'media_gallery',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'module' => 'text',
-        'settings' => array(),
-        'type' => 'text_default',
-        'weight' => 0,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_display_title',
-    'label' => 'Display Title',
-    'required' => 0,
-    'settings' => array(
-      'text_processing' => 0,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'text',
-      'settings' => array(
-        'size' => 30,
-      ),
-      'type' => 'text_textfield',
-      'weight' => 1,
-    ),
-  );
-
-  // Exported field_instance: 'node-media_gallery-field_field_gallery_video_url'
-  $field_instances['node-media_gallery-field_field_gallery_video_url'] = array(
-    'bundle' => 'media_gallery',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'link',
-        'settings' => array(),
-        'type' => 'link_default',
-        'weight' => 11,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_field_gallery_video_url',
-    'label' => 'field_gallery_video_url',
-    'required' => 0,
-    'settings' => array(
-      'absolute_url' => 1,
-      'attributes' => array(
-        'class' => '',
-        'configurable_class' => 0,
-        'configurable_title' => 0,
-        'rel' => '',
-        'target' => 'default',
-        'title' => '',
-      ),
       'display' => array(
-        'url_cutoff' => 80,
+        'default' => array(
+          'label' => 'hidden',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 6,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
       ),
-      'enable_tokens' => 1,
-      'rel_remove' => 'default',
-      'title' => 'optional',
-      'title_label_use_field_label' => 0,
-      'title_maxlength' => 128,
-      'title_value' => '',
-      'url' => 0,
-      'user_register_form' => FALSE,
-      'validate_url' => 0,
-    ),
-    'widget' => array(
-      'active' => 0,
-      'module' => 'link',
-      'settings' => array(),
-      'type' => 'link_field',
-      'weight' => 8,
-    ),
-  );
-
-  // Exported field_instance:
-  // 'node-media_gallery-field_media_gallery_display_type'
-  $field_instances['node-media_gallery-field_media_gallery_display_type'] = array(
-    'bundle' => 'media_gallery',
-    'default_value' => array(
-      0 => array(
-        'value' => 'full',
+      'entity_type' => 'node',
+      'field_name' => 'field_extranet_product_link',
+      'label' => 'Extranet Product Link',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
       ),
-    ),
-    'default_value_function' => '',
-    'default_value_php' => '',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
+      'widget' => array(
+        'active' => 1,
+        'module' => 'options',
         'settings' => array(),
-        'type' => 'hidden',
+        'type' => 'options_select',
         'weight' => 8,
       ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_media_gallery_display_type',
-    'label' => 'Media Gallery Display Type',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 5,
-    ),
-  );
+    );
 
-  // Exported field_instance: 'node-media_gallery-field_media_image_display'
-  $field_instances['node-media_gallery-field_media_image_display'] = array(
-    'bundle' => 'media_gallery',
-    'default_value' => NULL,
-    'default_value_function' => '',
-    'default_value_php' => '',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 9,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_media_image_display',
-    'label' => 'Media Image Display',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 3,
-    ),
-  );
-
-  // Exported field_instance: 'node-media_gallery-field_box_gallery_id'
-  $field_instances['node-media_gallery-field_box_gallery_id'] = array(
-    'bundle' => 'media_gallery',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'entityreference',
-        'settings' => array(
-          'link' => FALSE,
+    // Exported field_instance: 'node-extranet_news-field_media_gallery'
+    $field_instances['node-extranet_news-field_media_gallery'] = array(
+      'bundle' => 'extranet_news',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'module' => 'node_reference',
+          'settings' => array(
+            'node_reference_view_mode' => 'full',
+          ),
+          'type' => 'node_reference_node',
+          'weight' => 2,
         ),
-        'type' => 'entityreference_label',
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'field_media_gallery',
+      'label' => 'Media Gallery',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 0,
+        'module' => 'multiselect',
+        'settings' => array(),
+        'type' => 'multiselect',
         'weight' => 4,
       ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_box_gallery_id',
-    'label' => 'Box Gallery',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 46,
-    ),
-  );
+    );
 
-  // Exported field_instance: 'node-media_gallery-field_gallery_file'
-  $field_instances['node-media_gallery-field_gallery_file'] = array(
-    'bundle' => 'media_gallery',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'file',
-        'settings' => array(),
-        'type' => 'file_default',
+    // Exported field_instance: 'node-extranet_promotion-body'
+    $field_instances['node-extranet_promotion-body'] = array(
+      'bundle' => 'extranet_promotion',
+      'default_value' => NULL,
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'module' => 'text',
+          'settings' => array(),
+          'type' => 'text_default',
+          'weight' => 2,
+        ),
+        'teaser' => array(
+          'label' => 'hidden',
+          'module' => 'text',
+          'settings' => array(
+            'trim_length' => 600,
+          ),
+          'type' => 'text_summary_or_trimmed',
+          'weight' => 0,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'body',
+      'label' => 'Body',
+      'required' => FALSE,
+      'settings' => array(
+        'display_summary' => TRUE,
+        'text_processing' => 1,
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'module' => 'text',
+        'settings' => array(
+          'rows' => 20,
+          'summary_rows' => 5,
+        ),
+        'type' => 'text_textarea_with_summary',
         'weight' => 3,
       ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_gallery_file',
-    'label' => 'Gallery File',
-    'required' => 0,
-    'settings' => array(
-      'description_field' => 1,
-      'file_directory' => '',
-      'file_extensions' => 'txt doc docx pdf avi ppt csv swf xml xls',
-      'max_filesize' => '',
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'media',
-      'settings' => array(
-        'allowed_schemes' => array(
-          'public' => 'public',
+    );
+
+    // Exported field_instance: 'node-extranet_promotion-field_date_range'
+    $field_instances['node-extranet_promotion-field_date_range'] = array(
+      'bundle' => 'extranet_promotion',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'module' => 'date',
+          'settings' => array(
+            'format_type' => 'default',
+            'fromto' => 'both',
+            'multiple_from' => '',
+            'multiple_number' => '',
+            'multiple_to' => '',
+          ),
+          'type' => 'date_default',
+          'weight' => 1,
         ),
-        'allowed_types' => array(
-          'audio' => 'audio',
-          'document' => 'document',
-          'image' => 0,
-          'video' => 'video',
-        ),
-        'browser_plugins' => array(
-          'media_default--media_browser_1' => 0,
-          'media_default--media_browser_my_files' => 0,
-          'upload' => 0,
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
         ),
       ),
-      'type' => 'media_generic',
-      'weight' => 44,
-    ),
-  );
-
-  // Exported field_instance: 'node-media_gallery-field_media_images'
-  $field_instances['node-media_gallery-field_media_images'] = array(
-    'bundle' => 'media_gallery',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'image',
+      'entity_type' => 'node',
+      'field_name' => 'field_date_range',
+      'label' => 'Date Range',
+      'required' => 0,
+      'settings' => array(
+        'default_value' => 'now',
+        'default_value2' => 'same',
+        'default_value_code' => '',
+        'default_value_code2' => '',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'date',
         'settings' => array(
-          'image_link' => '',
-          'image_style' => '',
+          'display_all_day' => 0,
+          'increment' => 15,
+          'input_format' => 'Y-m-d H:i:s',
+          'input_format_custom' => '',
+          'label_position' => 'above',
+          'text_parts' => array(),
+          'year_range' => '-3:+3',
         ),
-        'type' => 'image',
+        'type' => 'date_popup',
+        'weight' => 4,
+      ),
+    );
+
+    // Exported field_instance: 'node-extranet_promotion-field_display_title'
+    $field_instances['node-extranet_promotion-field_display_title'] = array(
+      'bundle' => 'extranet_promotion',
+      'default_value' => NULL,
+      'deleted' => 0,
+      'description' => 'The Title for this content which will appear to the public.  The Title field will not appear.  ',
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'module' => 'text',
+          'settings' => array(),
+          'type' => 'text_default',
+          'weight' => 0,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'field_display_title',
+      'label' => 'Display Title',
+      'required' => 0,
+      'settings' => array(
+        'text_processing' => 0,
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => 30,
+        ),
+        'type' => 'text_textfield',
         'weight' => 1,
       ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_media_images',
-    'label' => 'Media Images',
-    'required' => 0,
-    'settings' => array(
-      'alt_field' => 0,
-      'default_image' => 0,
-      'file_directory' => '',
-      'file_extensions' => 'png gif jpg jpeg',
-      'max_filesize' => '',
-      'max_resolution' => '',
-      'min_resolution' => '',
-      'title_field' => 0,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'media',
+    );
+
+    // Exported field_instance:
+    // 'node-extranet_promotion-field_extranet_group_countries'
+    $field_instances['node-extranet_promotion-field_extranet_group_countries'] = array(
+      'bundle' => 'extranet_promotion',
+      'default_value' => NULL,
+      'default_value_function' => '',
+      'default_value_php' => '',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 5,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'field_extranet_group_countries',
+      'label' => 'Extranet Group Countries',
+      'required' => 0,
       'settings' => array(
-        'allowed_schemes' => array(
-          'public' => 'public',
-        ),
-        'allowed_types' => array(
-          'audio' => 0,
-          'document' => 0,
-          'image' => 'image',
-          'video' => 0,
-        ),
-        'browser_plugins' => array(
-          'media_default--media_browser_1' => 0,
-          'media_default--media_browser_my_files' => 0,
-          'upload' => 0,
-        ),
+        'user_register_form' => FALSE,
       ),
-      'type' => 'media_generic',
-      'weight' => 42,
-    ),
-  );
-
-
-
-  $field_instances['node-extranet_news-field_dam_related_product'] = array(
-    'bundle' => 'extranet_news',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-
-      'default' => array(
-        'label' => 'none',
+      'widget' => array(
+        'active' => 1,
+        'module' => 'options',
         'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_dam_related_product',
-    'label' => 'Related product(s)',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 0,
-      'module' => 'multiselect',
-      'settings' => array(),
-      'type' => 'multiselect',
-      'weight' => 43,
-    ),
-  );
-
-
-  $field_instances['node-media_gallery-field_dam_related_product'] = array(
-    'bundle' => 'media_gallery',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-
-      'default' => array(
-        'label' => 'none',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_dam_related_product',
-    'label' => 'Related product(s)',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 0,
-      'module' => 'multiselect',
-      'settings' => array(),
-      'type' => 'multiselect',
-      'weight' => 43,
-    ),
-  );
-
-
-
-  $field_instances['node-extranet_promotion-field_dam_related_product'] = array(
-    'bundle' => 'extranet_promotion',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-
-      'default' => array(
-        'label' => 'none',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_dam_related_product',
-    'label' => 'Related product(s)',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 0,
-      'module' => 'multiselect',
-      'settings' => array(),
-      'type' => 'multiselect',
-      'weight' => 43,
-    ),
-  );
-
-
-
-
-
-
-
-  $field_instances['box_gallery-box_gallery-field_dam_related_product'] = array(
-    'bundle' => 'box_gallery',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'none',
-        'module' => 'box_gallery_reference',
-        'settings' => array(),
-        'type' => 'box_gallery_reference_default',
+        'type' => 'options_buttons',
         'weight' => 7,
       ),
-      'default' => array(
-        'label' => 'none',
+    );
+
+    // Exported field_instance:
+    // 'node-extranet_promotion-field_extranet_permissions'
+    $field_instances['node-extranet_promotion-field_extranet_permissions'] = array(
+      'bundle' => 'extranet_promotion',
+      'default_value' => NULL,
+      'default_value_function' => '',
+      'default_value_php' => '',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 6,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'field_extranet_permissions',
+      'label' => 'Extranet Permissions',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'options',
         'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
+        'type' => 'options_buttons',
+        'weight' => 6,
       ),
-    ),
-    'entity_type' => 'box_gallery',
-    'field_name' => 'field_dam_related_product',
-    'label' => 'Related product(s)',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 0,
-      'module' => 'multiselect',
-      'settings' => array(),
-      'type' => 'multiselect',
-      'weight' => 43,
-    ),
-  );
+    );
 
-
-
-
-
-  return $field_instances;
-}
-
-/*
-*  Returns array to use in initial content type setup
-*/
-function _field_default_field_groups() {
-  $export = array();
-
-  $field_group = new stdClass();
-  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
-  $field_group->api_version = 1;
-  $field_group->identifier = 'group_access_restrictions|node|extranet_news|form';
-  $field_group->group_name = 'group_access_restrictions';
-  $field_group->entity_type = 'node';
-  $field_group->bundle = 'extranet_news';
-  $field_group->mode = 'form';
-  $field_group->parent_name = '';
-  $field_group->data = array(
-    'label' => 'Access Restrictions',
-    'weight' => '5',
-    'children' => array(
-      0 => 'field_extranet_permissions',
-      1 => 'field_extranet_group_countries',
-      2 => 'field_extranet_product_link',
-    ),
-    'format_type' => 'fieldset',
-    'format_settings' => array(
-      'label' => 'Access Restrictions',
-      'instance_settings' => array(
-        'required_fields' => 0,
-        'classes' => 'group-access-restrictions field-group-fieldset',
-        'description' => 'If you are not adding additional restrictions to this node, you do not need to check any checkboxes.  Having none selected is the same as having them all selected.',
+    // Exported field_instance: 'node-extranet_promotion-field_media_gallery'
+    $field_instances['node-extranet_promotion-field_media_gallery'] = array(
+      'bundle' => 'extranet_promotion',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'module' => 'node_reference',
+          'settings' => array(
+            'node_reference_view_mode' => 'full',
+          ),
+          'type' => 'node_reference_node',
+          'weight' => 3,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
       ),
-      'formatter' => 'collapsed',
-    ),
-  );
-  $export['group_access_restrictions|node|extranet_news|form'] = $field_group;
-
-  $field_group = new stdClass();
-  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
-  $field_group->api_version = 1;
-  $field_group->identifier = 'group_access_restrictions|node|extranet_promotion|form';
-  $field_group->group_name = 'group_access_restrictions';
-  $field_group->entity_type = 'node';
-  $field_group->bundle = 'extranet_promotion';
-  $field_group->mode = 'form';
-  $field_group->parent_name = '';
-  $field_group->data = array(
-    'label' => 'Access Restrictions',
-    'weight' => '8',
-    'children' => array(
-      0 => 'field_extranet_group_countries',
-      1 => 'field_extranet_permissions',
-    ),
-    'format_type' => 'fieldset',
-    'format_settings' => array(
-      'label' => 'Access Restrictions',
-      'instance_settings' => array(
-        'required_fields' => 0,
-        'classes' => 'group-access-restrictions field-group-fieldset',
-        'description' => '',
+      'entity_type' => 'node',
+      'field_name' => 'field_media_gallery',
+      'label' => 'Media Gallery',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
       ),
-      'formatter' => 'collapsed',
-    ),
-  );
-  $export['group_access_restrictions|node|extranet_promotion|form'] = $field_group;
+      'widget' => array(
+        'active' => 0,
+        'module' => 'multiselect',
+        'settings' => array(),
+        'type' => 'multiselect',
+        'weight' => 5,
+      ),
+    );
 
-  $field_group = new stdClass();
-  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
-  $field_group->api_version = 1;
-  $field_group->identifier = 'group_digital_assets|node|media_gallery|form';
-  $field_group->group_name = 'group_digital_assets';
-  $field_group->entity_type = 'node';
-  $field_group->bundle = 'media_gallery';
-  $field_group->mode = 'form';
-  $field_group->parent_name = '';
-  $field_group->data = array(
-    'label' => 'Digital Assets',
-    'weight' => '7',
-    'children' => array(
-      0 => 'field_digital_assets',
-    ),
-    'format_type' => 'fieldset',
-    'format_settings' => array(
+    // Exported field_instance: 'node-media_gallery-field_digital_assets'
+    $field_instances['node-media_gallery-field_digital_assets'] = array(
+      'bundle' => 'media_gallery',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'module' => 'node_reference',
+          'settings' => array(),
+          'type' => 'node_reference_default',
+          'weight' => 6,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'field_digital_assets',
       'label' => 'Digital Assets',
-      'instance_settings' => array(
-        'required_fields' => 0,
-        'classes' => 'group-digital-assets field-group-fieldset',
-        'description' => '',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
       ),
-      'formatter' => 'collapsed',
-    ),
-  );
-  $export['group_digital_assets|node|media_gallery|form'] = $field_group;
-
-  $field_group = new stdClass();
-  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
-  $field_group->api_version = 1;
-  $field_group->identifier = 'group_media_box|node|media_gallery|form';
-  $field_group->group_name = 'group_media_box';
-  $field_group->entity_type = 'node';
-  $field_group->bundle = 'media_gallery';
-  $field_group->mode = 'form';
-  $field_group->parent_name = '';
-  $field_group->data = array(
-    'label' => 'Images from BOX',
-    'weight' => '5',
-    'children' => array(
-      0 => 'field_box_gallery_id',
-      1 => 'field_media_gallery_display_type',
-      2 => 'field_box_thumbnails',
-    ),
-    'format_type' => 'fieldset',
-    'format_settings' => array(
-      'label' => 'Images from BOX',
-      'instance_settings' => array(
-        'required_fields' => 0,
-        'classes' => 'group-media-box field-group-fieldset',
-        'description' => '',
+      'widget' => array(
+        'active' => 0,
+        'module' => 'multiselect',
+        'settings' => array(),
+        'type' => 'multiselect',
+        'weight' => 7,
       ),
-      'formatter' => 'collapsed',
-    ),
-  );
-  $export['group_media_box|node|media_gallery|form'] = $field_group;
+    );
 
-  $field_group = new stdClass();
-  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
-  $field_group->api_version = 1;
-  $field_group->identifier = 'group_media_images|node|media_gallery|form';
-  $field_group->group_name = 'group_media_images';
-  $field_group->entity_type = 'node';
-  $field_group->bundle = 'media_gallery';
-  $field_group->mode = 'form';
-  $field_group->parent_name = '';
-  $field_group->data = array(
-    'label' => 'Media Images',
-    'weight' => '4',
-    'children' => array(
-      0 => 'field_media_images',
-      1 => 'field_media_image_display',
-    ),
-    'format_type' => 'fieldset',
-    'format_settings' => array(
+    // Exported field_instance: 'node-media_gallery-field_display_title'
+    $field_instances['node-media_gallery-field_display_title'] = array(
+      'bundle' => 'media_gallery',
+      'default_value' => NULL,
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'module' => 'text',
+          'settings' => array(),
+          'type' => 'text_default',
+          'weight' => 0,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'field_display_title',
+      'label' => 'Display Title',
+      'required' => 0,
+      'settings' => array(
+        'text_processing' => 0,
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => 30,
+        ),
+        'type' => 'text_textfield',
+        'weight' => 1,
+      ),
+    );
+
+    // Exported field_instance: 'node-media_gallery-field_field_gallery_video_url'
+    $field_instances['node-media_gallery-field_field_gallery_video_url'] = array(
+      'bundle' => 'media_gallery',
+      'default_value' => NULL,
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'link',
+          'settings' => array(),
+          'type' => 'link_default',
+          'weight' => 11,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'field_field_gallery_video_url',
+      'label' => 'field_gallery_video_url',
+      'required' => 0,
+      'settings' => array(
+        'absolute_url' => 1,
+        'attributes' => array(
+          'class' => '',
+          'configurable_class' => 0,
+          'configurable_title' => 0,
+          'rel' => '',
+          'target' => 'default',
+          'title' => '',
+        ),
+        'display' => array(
+          'url_cutoff' => 80,
+        ),
+        'enable_tokens' => 1,
+        'rel_remove' => 'default',
+        'title' => 'optional',
+        'title_label_use_field_label' => 0,
+        'title_maxlength' => 128,
+        'title_value' => '',
+        'url' => 0,
+        'user_register_form' => FALSE,
+        'validate_url' => 0,
+      ),
+      'widget' => array(
+        'active' => 0,
+        'module' => 'link',
+        'settings' => array(),
+        'type' => 'link_field',
+        'weight' => 8,
+      ),
+    );
+
+    // Exported field_instance:
+    // 'node-media_gallery-field_media_gallery_display_type'
+    $field_instances['node-media_gallery-field_media_gallery_display_type'] = array(
+      'bundle' => 'media_gallery',
+      'default_value' => array(
+        0 => array(
+          'value' => 'full',
+        ),
+      ),
+      'default_value_function' => '',
+      'default_value_php' => '',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 8,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'field_media_gallery_display_type',
+      'label' => 'Media Gallery Display Type',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'options',
+        'settings' => array(),
+        'type' => 'options_select',
+        'weight' => 5,
+      ),
+    );
+
+    // Exported field_instance: 'node-media_gallery-field_media_image_display'
+    $field_instances['node-media_gallery-field_media_image_display'] = array(
+      'bundle' => 'media_gallery',
+      'default_value' => NULL,
+      'default_value_function' => '',
+      'default_value_php' => '',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 9,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'field_media_image_display',
+      'label' => 'Media Image Display',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'options',
+        'settings' => array(),
+        'type' => 'options_select',
+        'weight' => 3,
+      ),
+    );
+
+    // Exported field_instance: 'node-media_gallery-field_box_gallery_id'
+    $field_instances['node-media_gallery-field_box_gallery_id'] = array(
+      'bundle' => 'media_gallery',
+      'default_value' => NULL,
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'entityreference',
+          'settings' => array(
+            'link' => FALSE,
+          ),
+          'type' => 'entityreference_label',
+          'weight' => 4,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'field_box_gallery_id',
+      'label' => 'Box Gallery',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'options',
+        'settings' => array(),
+        'type' => 'options_select',
+        'weight' => 46,
+      ),
+    );
+
+    // Exported field_instance: 'node-media_gallery-field_gallery_file'
+    $field_instances['node-media_gallery-field_gallery_file'] = array(
+      'bundle' => 'media_gallery',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'file',
+          'settings' => array(),
+          'type' => 'file_default',
+          'weight' => 3,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'field_gallery_file',
+      'label' => 'Gallery File',
+      'required' => 0,
+      'settings' => array(
+        'description_field' => 1,
+        'file_directory' => '',
+        'file_extensions' => 'txt doc docx pdf avi ppt csv swf xml xls',
+        'max_filesize' => '',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'media',
+        'settings' => array(
+          'allowed_schemes' => array(
+            'public' => 'public',
+          ),
+          'allowed_types' => array(
+            'audio' => 'audio',
+            'document' => 'document',
+            'image' => 0,
+            'video' => 'video',
+          ),
+          'browser_plugins' => array(
+            'media_default--media_browser_1' => 0,
+            'media_default--media_browser_my_files' => 0,
+            'upload' => 0,
+          ),
+        ),
+        'type' => 'media_generic',
+        'weight' => 44,
+      ),
+    );
+
+    // Exported field_instance: 'node-media_gallery-field_media_images'
+    $field_instances['node-media_gallery-field_media_images'] = array(
+      'bundle' => 'media_gallery',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'image',
+          'settings' => array(
+            'image_link' => '',
+            'image_style' => '',
+          ),
+          'type' => 'image',
+          'weight' => 1,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'field_media_images',
       'label' => 'Media Images',
-      'instance_settings' => array(
-        'required_fields' => 0,
-        'classes' => 'group-media-images field-group-fieldset',
-        'description' => '',
+      'required' => 0,
+      'settings' => array(
+        'alt_field' => 0,
+        'default_image' => 0,
+        'file_directory' => '',
+        'file_extensions' => 'png gif jpg jpeg',
+        'max_filesize' => '',
+        'max_resolution' => '',
+        'min_resolution' => '',
+        'title_field' => 0,
+        'user_register_form' => FALSE,
       ),
-      'formatter' => 'collapsed',
-    ),
-  );
-  $export['group_media_images|node|media_gallery|form'] = $field_group;
-
-  $field_group = new stdClass();
-  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
-  $field_group->api_version = 1;
-  $field_group->identifier = 'group_other|node|media_gallery|form';
-  $field_group->group_name = 'group_other';
-  $field_group->entity_type = 'node';
-  $field_group->bundle = 'media_gallery';
-  $field_group->mode = 'form';
-  $field_group->parent_name = '';
-  $field_group->data = array(
-    'label' => 'Other Files',
-    'weight' => '6',
-    'children' => array(
-      0 => 'field_gallery_file',
-    ),
-    'format_type' => 'fieldset',
-    'format_settings' => array(
-      'label' => 'Other Files',
-      'instance_settings' => array(
-        'required_fields' => 0,
-        'classes' => 'group-other field-group-fieldset',
-        'description' => '',
+      'widget' => array(
+        'active' => 1,
+        'module' => 'media',
+        'settings' => array(
+          'allowed_schemes' => array(
+            'public' => 'public',
+          ),
+          'allowed_types' => array(
+            'audio' => 0,
+            'document' => 0,
+            'image' => 'image',
+            'video' => 0,
+          ),
+          'browser_plugins' => array(
+            'media_default--media_browser_1' => 0,
+            'media_default--media_browser_my_files' => 0,
+            'upload' => 0,
+          ),
+        ),
+        'type' => 'media_generic',
+        'weight' => 42,
       ),
-      'formatter' => 'collapsed',
-    ),
-  );
-  $export['group_other|node|media_gallery|form'] = $field_group;
+    );
 
-  $field_group = new stdClass();
-  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
-  $field_group->api_version = 1;
-  $field_group->identifier = 'group_unused|node|extranet_promotion|form';
-  $field_group->group_name = 'group_unused';
-  $field_group->entity_type = 'node';
-  $field_group->bundle = 'extranet_promotion';
-  $field_group->mode = 'form';
-  $field_group->parent_name = '';
-  $field_group->data = array(
-    'label' => 'Unused elements',
-    'weight' => '11',
-    'children' => array(
-      0 => 'locations',
-      1 => 'path',
-    ),
-    'format_type' => 'fieldset',
-    'format_settings' => array(
-      'formatter' => 'collapsible',
-      'instance_settings' => array(
-        'description' => '',
-        'classes' => 'group-unused field-group-fieldset',
-        'required_fields' => 1,
+
+    $field_instances['node-extranet_news-field_dam_related_product'] = array(
+      'bundle' => 'extranet_news',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+
+        'default' => array(
+          'label' => 'none',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
       ),
-    ),
-  );
-  $export['group_unused|node|extranet_promotion|form'] = $field_group;
-
-  $field_group = new stdClass();
-  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
-  $field_group->api_version = 1;
-  $field_group->identifier = 'group_unused|node|media_gallery|form';
-  $field_group->group_name = 'group_unused';
-  $field_group->entity_type = 'node';
-  $field_group->bundle = 'media_gallery';
-  $field_group->mode = 'form';
-  $field_group->parent_name = '';
-  $field_group->data = array(
-    'label' => 'Unused elements',
-    'weight' => '10',
-    'children' => array(
-      0 => 'locations',
-      1 => 'metatags',
-      2 => 'path',
-      3 => 'xmlsitemap',
-    ),
-    'format_type' => 'fieldset',
-    'format_settings' => array(
-      'label' => 'Unused elements',
-      'instance_settings' => array(
-        'required_fields' => 0,
-        'classes' => '',
-        'description' => '',
+      'entity_type' => 'node',
+      'field_name' => 'field_dam_related_product',
+      'label' => 'Related product(s)',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
       ),
-      'formatter' => 'collapsed',
-    ),
-  );
-  $export['group_unused|node|media_gallery|form'] = $field_group;
-
-  $field_group = new stdClass();
-  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
-  $field_group->api_version = 1;
-  $field_group->identifier = 'group_videos|node|media_gallery|form';
-  $field_group->group_name = 'group_videos';
-  $field_group->entity_type = 'node';
-  $field_group->bundle = 'media_gallery';
-  $field_group->mode = 'form';
-  $field_group->parent_name = '';
-  $field_group->data = array(
-    'label' => 'Videos',
-    'weight' => '8',
-    'children' => array(),
-    'format_type' => 'fieldset',
-    'format_settings' => array(
-      'label' => 'Videos',
-      'instance_settings' => array(
-        'required_fields' => 0,
-        'classes' => 'group-videos field-group-fieldset',
-        'description' => 'YouTube URLs',
+      'widget' => array(
+        'active' => 0,
+        'module' => 'multiselect',
+        'settings' => array(),
+        'type' => 'multiselect',
+        'weight' => 43,
       ),
-      'formatter' => 'collapsible',
-    ),
-  );
-  $export['group_videos|node|media_gallery|form'] = $field_group;
+    );
 
 
-  $export['group_unused|node|extranet_news|form'] = $field_group;
+    $field_instances['node-media_gallery-field_dam_related_product'] = array(
+      'bundle' => 'media_gallery',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
 
-  $field_group = new stdClass();
-  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
-  $field_group->api_version = 1;
-  $field_group->identifier = 'group_unused|node|media_gallery|form';
-  $field_group->group_name = 'group_unused';
-  $field_group->entity_type = 'node';
-  $field_group->bundle = 'media_gallery';
-  $field_group->mode = 'form';
-  $field_group->parent_name = '';
-  $field_group->data = array(
-    'label' => 'Unused elements',
-    'weight' => '10',
-    'children' => array(
-      0 => 'locations',
-      1 => 'metatags',
-      2 => 'path',
-      3 => 'xmlsitemap',
-    ),
-    'format_type' => 'fieldset',
-    'format_settings' => array(
-      'label' => 'Unused elements',
-      'instance_settings' => array(
-        'required_fields' => 0,
-        'classes' => '',
-        'description' => '',
+        'default' => array(
+          'label' => 'none',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
       ),
-      'formatter' => 'collapsed',
-    ),
-  );
-  $export['group_unused|node|media_gallery|form'] = $field_group;
+      'entity_type' => 'node',
+      'field_name' => 'field_dam_related_product',
+      'label' => 'Related product(s)',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 0,
+        'module' => 'multiselect',
+        'settings' => array(),
+        'type' => 'multiselect',
+        'weight' => 43,
+      ),
+    );
 
-  return $export;
-}
+
+    $field_instances['node-extranet_promotion-field_dam_related_product'] = array(
+      'bundle' => 'extranet_promotion',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+
+        'default' => array(
+          'label' => 'none',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'field_dam_related_product',
+      'label' => 'Related product(s)',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 0,
+        'module' => 'multiselect',
+        'settings' => array(),
+        'type' => 'multiselect',
+        'weight' => 43,
+      ),
+    );
 
 
-function group_type_entities() {
+    $field_instances['box_gallery-box_gallery-field_dam_related_product'] = array(
+      'bundle' => 'box_gallery',
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'none',
+          'module' => 'box_gallery_reference',
+          'settings' => array(),
+          'type' => 'box_gallery_reference_default',
+          'weight' => 7,
+        ),
+        'default' => array(
+          'label' => 'none',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
+      'entity_type' => 'box_gallery',
+      'field_name' => 'field_dam_related_product',
+      'label' => 'Related product(s)',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 0,
+        'module' => 'multiselect',
+        'settings' => array(),
+        'type' => 'multiselect',
+        'weight' => 43,
+      ),
+    );
 
-  $group_types = get_group_type_entities();
 
-  $info = entity_load_multiple_by_name('group_type', array_keys($group_types) );
-
-  foreach ($group_types as $name => $group_type) {
-    if (! isset($info[$name] ) )  entity_save('group_type', $group_type);
+    return $field_instances;
   }
 
-}
+  /*
+  *  Returns array to use in initial content type setup
+  */
+  function _field_default_field_groups() {
+    $export = array();
 
-function group_entities() {
+    $field_group = new stdClass();
+    $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+    $field_group->api_version = 1;
+    $field_group->identifier = 'group_access_restrictions|node|extranet_news|form';
+    $field_group->group_name = 'group_access_restrictions';
+    $field_group->entity_type = 'node';
+    $field_group->bundle = 'extranet_news';
+    $field_group->mode = 'form';
+    $field_group->parent_name = '';
+    $field_group->data = array(
+      'label' => 'Access Restrictions',
+      'weight' => '5',
+      'children' => array(
+        0 => 'field_extranet_permissions',
+        1 => 'field_extranet_group_countries',
+        2 => 'field_extranet_product_link',
+      ),
+      'format_type' => 'fieldset',
+      'format_settings' => array(
+        'label' => 'Access Restrictions',
+        'instance_settings' => array(
+          'required_fields' => 0,
+          'classes' => 'group-access-restrictions field-group-fieldset',
+          'description' => 'If you are not adding additional restrictions to this node, you do not need to check any checkboxes.  Having none selected is the same as having them all selected.',
+        ),
+        'formatter' => 'collapsed',
+      ),
+    );
+    $export['group_access_restrictions|node|extranet_news|form'] = $field_group;
 
-  $groups = get_group_entities();
-  foreach ($groups as $type => $name) {
+    $field_group = new stdClass();
+    $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+    $field_group->api_version = 1;
+    $field_group->identifier = 'group_access_restrictions|node|extranet_promotion|form';
+    $field_group->group_name = 'group_access_restrictions';
+    $field_group->entity_type = 'node';
+    $field_group->bundle = 'extranet_promotion';
+    $field_group->mode = 'form';
+    $field_group->parent_name = '';
+    $field_group->data = array(
+      'label' => 'Access Restrictions',
+      'weight' => '8',
+      'children' => array(
+        0 => 'field_extranet_group_countries',
+        1 => 'field_extranet_permissions',
+      ),
+      'format_type' => 'fieldset',
+      'format_settings' => array(
+        'label' => 'Access Restrictions',
+        'instance_settings' => array(
+          'required_fields' => 0,
+          'classes' => 'group-access-restrictions field-group-fieldset',
+          'description' => '',
+        ),
+        'formatter' => 'collapsed',
+      ),
+    );
+    $export['group_access_restrictions|node|extranet_promotion|form'] = $field_group;
 
-    if (! group_load_by_type($type) ) {
+    $field_group = new stdClass();
+    $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+    $field_group->api_version = 1;
+    $field_group->identifier = 'group_digital_assets|node|media_gallery|form';
+    $field_group->group_name = 'group_digital_assets';
+    $field_group->entity_type = 'node';
+    $field_group->bundle = 'media_gallery';
+    $field_group->mode = 'form';
+    $field_group->parent_name = '';
+    $field_group->data = array(
+      'label' => 'Digital Assets',
+      'weight' => '7',
+      'children' => array(
+        0 => 'field_digital_assets',
+      ),
+      'format_type' => 'fieldset',
+      'format_settings' => array(
+        'label' => 'Digital Assets',
+        'instance_settings' => array(
+          'required_fields' => 0,
+          'classes' => 'group-digital-assets field-group-fieldset',
+          'description' => '',
+        ),
+        'formatter' => 'collapsed',
+      ),
+    );
+    $export['group_digital_assets|node|media_gallery|form'] = $field_group;
+
+    $field_group = new stdClass();
+    $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+    $field_group->api_version = 1;
+    $field_group->identifier = 'group_media_box|node|media_gallery|form';
+    $field_group->group_name = 'group_media_box';
+    $field_group->entity_type = 'node';
+    $field_group->bundle = 'media_gallery';
+    $field_group->mode = 'form';
+    $field_group->parent_name = '';
+    $field_group->data = array(
+      'label' => 'Images from BOX',
+      'weight' => '5',
+      'children' => array(
+        0 => 'field_box_gallery_id',
+        1 => 'field_media_gallery_display_type',
+        2 => 'field_box_thumbnails',
+      ),
+      'format_type' => 'fieldset',
+      'format_settings' => array(
+        'label' => 'Images from BOX',
+        'instance_settings' => array(
+          'required_fields' => 0,
+          'classes' => 'group-media-box field-group-fieldset',
+          'description' => '',
+        ),
+        'formatter' => 'collapsed',
+      ),
+    );
+    $export['group_media_box|node|media_gallery|form'] = $field_group;
+
+    $field_group = new stdClass();
+    $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+    $field_group->api_version = 1;
+    $field_group->identifier = 'group_media_images|node|media_gallery|form';
+    $field_group->group_name = 'group_media_images';
+    $field_group->entity_type = 'node';
+    $field_group->bundle = 'media_gallery';
+    $field_group->mode = 'form';
+    $field_group->parent_name = '';
+    $field_group->data = array(
+      'label' => 'Media Images',
+      'weight' => '4',
+      'children' => array(
+        0 => 'field_media_images',
+        1 => 'field_media_image_display',
+      ),
+      'format_type' => 'fieldset',
+      'format_settings' => array(
+        'label' => 'Media Images',
+        'instance_settings' => array(
+          'required_fields' => 0,
+          'classes' => 'group-media-images field-group-fieldset',
+          'description' => '',
+        ),
+        'formatter' => 'collapsed',
+      ),
+    );
+    $export['group_media_images|node|media_gallery|form'] = $field_group;
+
+    $field_group = new stdClass();
+    $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+    $field_group->api_version = 1;
+    $field_group->identifier = 'group_other|node|media_gallery|form';
+    $field_group->group_name = 'group_other';
+    $field_group->entity_type = 'node';
+    $field_group->bundle = 'media_gallery';
+    $field_group->mode = 'form';
+    $field_group->parent_name = '';
+    $field_group->data = array(
+      'label' => 'Other Files',
+      'weight' => '6',
+      'children' => array(
+        0 => 'field_gallery_file',
+      ),
+      'format_type' => 'fieldset',
+      'format_settings' => array(
+        'label' => 'Other Files',
+        'instance_settings' => array(
+          'required_fields' => 0,
+          'classes' => 'group-other field-group-fieldset',
+          'description' => '',
+        ),
+        'formatter' => 'collapsed',
+      ),
+    );
+    $export['group_other|node|media_gallery|form'] = $field_group;
+
+    $field_group = new stdClass();
+    $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+    $field_group->api_version = 1;
+    $field_group->identifier = 'group_unused|node|extranet_promotion|form';
+    $field_group->group_name = 'group_unused';
+    $field_group->entity_type = 'node';
+    $field_group->bundle = 'extranet_promotion';
+    $field_group->mode = 'form';
+    $field_group->parent_name = '';
+    $field_group->data = array(
+      'label' => 'Unused elements',
+      'weight' => '11',
+      'children' => array(
+        0 => 'locations',
+        1 => 'path',
+      ),
+      'format_type' => 'fieldset',
+      'format_settings' => array(
+        'formatter' => 'collapsible',
+        'instance_settings' => array(
+          'description' => '',
+          'classes' => 'group-unused field-group-fieldset',
+          'required_fields' => 1,
+        ),
+      ),
+    );
+    $export['group_unused|node|extranet_promotion|form'] = $field_group;
+
+    $field_group = new stdClass();
+    $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+    $field_group->api_version = 1;
+    $field_group->identifier = 'group_unused|node|media_gallery|form';
+    $field_group->group_name = 'group_unused';
+    $field_group->entity_type = 'node';
+    $field_group->bundle = 'media_gallery';
+    $field_group->mode = 'form';
+    $field_group->parent_name = '';
+    $field_group->data = array(
+      'label' => 'Unused elements',
+      'weight' => '10',
+      'children' => array(
+        0 => 'locations',
+        1 => 'metatags',
+        2 => 'path',
+        3 => 'xmlsitemap',
+      ),
+      'format_type' => 'fieldset',
+      'format_settings' => array(
+        'label' => 'Unused elements',
+        'instance_settings' => array(
+          'required_fields' => 0,
+          'classes' => '',
+          'description' => '',
+        ),
+        'formatter' => 'collapsed',
+      ),
+    );
+    $export['group_unused|node|media_gallery|form'] = $field_group;
+
+    $field_group = new stdClass();
+    $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+    $field_group->api_version = 1;
+    $field_group->identifier = 'group_videos|node|media_gallery|form';
+    $field_group->group_name = 'group_videos';
+    $field_group->entity_type = 'node';
+    $field_group->bundle = 'media_gallery';
+    $field_group->mode = 'form';
+    $field_group->parent_name = '';
+    $field_group->data = array(
+      'label' => 'Videos',
+      'weight' => '8',
+      'children' => array(),
+      'format_type' => 'fieldset',
+      'format_settings' => array(
+        'label' => 'Videos',
+        'instance_settings' => array(
+          'required_fields' => 0,
+          'classes' => 'group-videos field-group-fieldset',
+          'description' => 'YouTube URLs',
+        ),
+        'formatter' => 'collapsible',
+      ),
+    );
+    $export['group_videos|node|media_gallery|form'] = $field_group;
+
+
+    $export['group_unused|node|extranet_news|form'] = $field_group;
+
+    $field_group = new stdClass();
+    $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+    $field_group->api_version = 1;
+    $field_group->identifier = 'group_unused|node|media_gallery|form';
+    $field_group->group_name = 'group_unused';
+    $field_group->entity_type = 'node';
+    $field_group->bundle = 'media_gallery';
+    $field_group->mode = 'form';
+    $field_group->parent_name = '';
+    $field_group->data = array(
+      'label' => 'Unused elements',
+      'weight' => '10',
+      'children' => array(
+        0 => 'locations',
+        1 => 'metatags',
+        2 => 'path',
+        3 => 'xmlsitemap',
+      ),
+      'format_type' => 'fieldset',
+      'format_settings' => array(
+        'label' => 'Unused elements',
+        'instance_settings' => array(
+          'required_fields' => 0,
+          'classes' => '',
+          'description' => '',
+        ),
+        'formatter' => 'collapsed',
+      ),
+    );
+    $export['group_unused|node|media_gallery|form'] = $field_group;
+
+    return $export;
+  }
+
+
+  function group_type_entities() {
+
+    $group_types = get_group_type_entities();
+
+    $info = entity_load_multiple_by_name('group_type', array_keys($group_types));
+
+    foreach ($group_types as $name => $group_type) {
+      if (!isset($info[$name])) {
+        entity_save('group_type', $group_type);
+      }
+    }
+
+  }
+
+  function group_entities() {
+
+    $groups = get_group_entities();
+    foreach ($groups as $type => $name) {
+
+      if (!group_load_by_type($type)) {
         $values = array(
           'type' => $type,
           'title' => $name,
-          );
+        );
         $new_group = entity_create('group', $values);
         $new_group->save();
-        drupal_set_message('Created group ' . $name );
-     }
+        drupal_set_message('Created group ' . $name);
+      }
+    }
+
+
   }
-
-
-}
 
 function get_group_entities() {
   $items = array();
@@ -2273,12 +2401,10 @@ function get_group_entities() {
 }
 
 
+  function get_group_type_entities() {
 
-
-function get_group_type_entities() {
-
-$items = array();
-$items['extranet_asia'] = entity_import('group_type', '{
+    $items = array();
+    $items['extranet_asia'] = entity_import('group_type', '{
 "name" : "extranet_asia",
 "label" : "Extranet Asia-Pacific",
 "anonymous_permissions" : [],
@@ -2291,7 +2417,7 @@ $items['extranet_asia'] = entity_import('group_type', '{
 "weight" : "0",
 "roles" : []
 }');
-$items['extranet_europe'] = entity_import('group_type', '{
+    $items['extranet_europe'] = entity_import('group_type', '{
 "name" : "extranet_europe",
 "label" : "Extranet EMEA",
 "anonymous_permissions" : [],
@@ -2304,7 +2430,7 @@ $items['extranet_europe'] = entity_import('group_type', '{
 "weight" : "0",
 "roles" : []
 }');
-$items['extranet_latam'] = entity_import('group_type', '{
+    $items['extranet_latam'] = entity_import('group_type', '{
 "name" : "extranet_latam",
 "label" : "Extranet Latin America",
 "anonymous_permissions" : [],
@@ -2319,7 +2445,7 @@ $items['extranet_latam'] = entity_import('group_type', '{
 }');
 
 
-$items['extranet_north_america'] = entity_import('group_type', '{
+    $items['extranet_north_america'] = entity_import('group_type', '{
 "name" : "extranet_north_america",
 "label" : "Extranet North America",
 "anonymous_permissions" : [],
@@ -2333,95 +2459,266 @@ $items['extranet_north_america'] = entity_import('group_type', '{
 "roles" : []
 }');
 
-return $items;
+    return $items;
 
 
-}
+  }
 
-function fex_get_groups() {
+  function fex_get_groups() {
 
     $group_types = array();
 
     $query = db_select('groups', 'g');
     $query->fields('g', array('gid', 'type'));
-    $results = $query->execute()->fetchAllKeyed(0,1);
+    $results = $query->execute()->fetchAllKeyed(0, 1);
 
     if ($results) {
       return $results;
-    } else {
+    }
+    else {
       return array();
     }
 
-}
+  }
 
-function _get_group_countries() {
+  function _get_group_countries() {
 
     $countries = array();
 
-    $countries['extranet_north_america'] = array('us', 'ca', );
+    $countries['extranet_north_america'] = array('us', 'ca',);
 
-    $countries['extranet_europe'] = array('af', 'al', 'dz', 'dz', 'ad', 'ad', 'ao', 'am', 'at', 'at', 'az', 'bh', 'by', 'be', 'be', 'bj', 'bj', 'ba', 'bw', 'bg', 'bf', 'bf', 'bi', 'bi', 'cm', 'cm', 'cv', 'cf', 'cf', 'td', 'td', 'km', 'km', 'cg', 'cg', 'cd', 'cd', 'ci', 'ci', 'hr', 'cy', 'cz', 'dk', 'dk', 'dj', 'dj', 'eg', 'eg', 'gq', 'gq', 'gq', 'er', 'ee', 'et', 'fi', 'fr', 'ga', 'ga', 'gm', 'ge', 'de', 'gh', 'gr', 'gn', 'gn', 'gw', 'gw', 'hu', 'is', 'iq', 'ie', 'il', 'it', 'jo', 'kz', 'ke', 'xk', 'kw', 'kg', 'lv', 'lb', 'lb', 'ls', 'lr', 'ly', 'li', 'li', 'lt', 'lu', 'lu', 'mk', 'mg', 'mg', 'mw', 'ml', 'ml', 'mt', 'mr', 'mr', 'mu', 'mu', 'md', 'mc', 'mc', 'mn', 'me', 'ma', 'ma', 'mz', 'na', 'nl', 'ne', 'ne', 'ng', 'no', 'pk', 'pl', 'pt', 'pt', 'qa', 'ro', 'ru', 'rw', 'rw', 'sm', 'st', 'sa', 'sn', 'sn', 'rs', 'sc', 'sl', 'sk', 'si', 'so', 'za', 'es', 'sd', 'sz', 'se', 'ch', 'ch', 'ch', 'tj', 'tz', 'tg', 'tg', 'tn', 'tn', 'tr', 'tm', 'ug', 'ua', 'ae', 'gb', 'uz', 'uk', 'va', 'ye', 'zm', 'zw', );
+    $countries['extranet_europe'] = array(
+      'af',
+      'al',
+      'dz',
+      'dz',
+      'ad',
+      'ad',
+      'ao',
+      'am',
+      'at',
+      'at',
+      'az',
+      'bh',
+      'by',
+      'be',
+      'be',
+      'bj',
+      'bj',
+      'ba',
+      'bw',
+      'bg',
+      'bf',
+      'bf',
+      'bi',
+      'bi',
+      'cm',
+      'cm',
+      'cv',
+      'cf',
+      'cf',
+      'td',
+      'td',
+      'km',
+      'km',
+      'cg',
+      'cg',
+      'cd',
+      'cd',
+      'ci',
+      'ci',
+      'hr',
+      'cy',
+      'cz',
+      'dk',
+      'dk',
+      'dj',
+      'dj',
+      'eg',
+      'eg',
+      'gq',
+      'gq',
+      'gq',
+      'er',
+      'ee',
+      'et',
+      'fi',
+      'fr',
+      'ga',
+      'ga',
+      'gm',
+      'ge',
+      'de',
+      'gh',
+      'gr',
+      'gn',
+      'gn',
+      'gw',
+      'gw',
+      'hu',
+      'is',
+      'iq',
+      'ie',
+      'il',
+      'it',
+      'jo',
+      'kz',
+      'ke',
+      'xk',
+      'kw',
+      'kg',
+      'lv',
+      'lb',
+      'lb',
+      'ls',
+      'lr',
+      'ly',
+      'li',
+      'li',
+      'lt',
+      'lu',
+      'lu',
+      'mk',
+      'mg',
+      'mg',
+      'mw',
+      'ml',
+      'ml',
+      'mt',
+      'mr',
+      'mr',
+      'mu',
+      'mu',
+      'md',
+      'mc',
+      'mc',
+      'mn',
+      'me',
+      'ma',
+      'ma',
+      'mz',
+      'na',
+      'nl',
+      'ne',
+      'ne',
+      'ng',
+      'no',
+      'pk',
+      'pl',
+      'pt',
+      'pt',
+      'qa',
+      'ro',
+      'ru',
+      'rw',
+      'rw',
+      'sm',
+      'st',
+      'sa',
+      'sn',
+      'sn',
+      'rs',
+      'sc',
+      'sl',
+      'sk',
+      'si',
+      'so',
+      'za',
+      'es',
+      'sd',
+      'sz',
+      'se',
+      'ch',
+      'ch',
+      'ch',
+      'tj',
+      'tz',
+      'tg',
+      'tg',
+      'tn',
+      'tn',
+      'tr',
+      'tm',
+      'ug',
+      'ua',
+      'ae',
+      'gb',
+      'uz',
+      'uk',
+      'va',
+      'ye',
+      'zm',
+      'zw',
+    );
 
-    $countries['extranet_latam'] = array('ar', 'cl', 'co', 'cr', 'ec', 'gt', 'jm', 'mx', 'pa', 'pe', 've', );
+    $countries['extranet_latam'] = array(
+      'ar',
+      'cl',
+      'co',
+      'cr',
+      'ec',
+      'gt',
+      'jm',
+      'mx',
+      'pa',
+      'pe',
+      've',
+    );
 
-    $countries['extranet_asia'] = array('jp', 'cn', 'kr', 'vn', );
+    $countries['extranet_asia'] = array('jp', 'cn', 'kr', 'vn',);
 
 
     return $countries;
 
-}
+  }
 
 
+  function create_entity_field_instances() {
+    $field_instances = _entity_field_instances();
+    foreach ($field_instances as $key => $settings) {
+      $field_name = $settings['field_name'];
+      $bundle_name = $settings['bundle'];
+      $entity_type = $settings['entity_type'];
 
-function create_entity_field_instances() {
-  $field_instances = _entity_field_instances();
-  foreach ($field_instances as $key => $settings) {
-    $field_name = $settings['field_name'];
-    $bundle_name = $settings['bundle'];
-    $entity_type = $settings['entity_type'];
-
-    if (! field_info_instance($entity_type, $field_name, $bundle_name) ) {
-      drupal_set_message('Creating field instance ' . $field_name . ' for ' . $bundle_name );
-      try {
-        field_create_instance($settings);
-      } catch (Exception $e) {
-        drupal_set_message('Could not create field instance ' . $field_name . ' for ' . $bundle_name );
+      if (!field_info_instance($entity_type, $field_name, $bundle_name)) {
+        drupal_set_message('Creating field instance ' . $field_name . ' for ' . $bundle_name);
+        try {
+          field_create_instance($settings);
+        } catch (Exception $e) {
+          drupal_set_message('Could not create field instance ' . $field_name . ' for ' . $bundle_name);
+        }
       }
     }
-  } 
 
 
-  _create_entity_field_groups();
+    _create_entity_field_groups();
 
-}
-
-
+  }
 
 
+  function _entity_field_instances() {
 
-function _entity_field_instances() {
-
-  $fields = array(
-    'field_user_company' => 'Company', 
-    'field_user_first_name' => 'First Name', 
-    'field_user_last_name' => 'Last Name', 
-    'field_user_job_role' => 'Job Title', 
-    'field_email_contact' => 'Email', 
-    'field_user_phone' => 'Phone', 
-    'field_user_address_line_1' => 'Street Address', 
-    'field_user_address_line_2' => 'Street Address 2', 
-    'field_user_city' => 'City', 
-    'field_user_province' => 'State/Province', 
-    'field_user_postal_code' => 'Zip/Postal Code', 
-    'field_user_country' => 'Country',
-    'field_product_name' => 'Product',
+    $fields = array(
+      'field_user_company' => 'Company',
+      'field_user_first_name' => 'First Name',
+      'field_user_last_name' => 'Last Name',
+      'field_user_job_role' => 'Job Title',
+      'field_email_contact' => 'Email',
+      'field_user_phone' => 'Phone',
+      'field_user_address_line_1' => 'Street Address',
+      'field_user_address_line_2' => 'Street Address 2',
+      'field_user_city' => 'City',
+      'field_user_province' => 'State/Province',
+      'field_user_postal_code' => 'Zip/Postal Code',
+      'field_user_country' => 'Country',
+      'field_product_name' => 'Product',
 //    'field_quantity' => 'Quantity',
 
-  );
+    );
 
-  $field_instances = array();
-  $weight=1;
-  foreach ($fields as $field => $label) {
+    $field_instances = array();
+    $weight = 1;
+    foreach ($fields as $field => $label) {
 
       $field_instances['register_deal-register_deal-' . $field] = array(
         'bundle' => 'register_deal',
@@ -2456,213 +2753,171 @@ function _entity_field_instances() {
         ),
       );
 
-  } // end foreach
+    } // end foreach
 
-/*
-  $field_instances['register_deal_products-register_deal_products-field_product_name'] = array(
-    'bundle' => 'register_deal_products',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'text',
-        'settings' => array(),
-        'type' => 'text_default',
-        'weight' => 12,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'register_deal_products',
-    'field_name' => 'field_product_name',
-    'label' => 'Product Name',
-    'required' => 0,
-    'settings' => array(
-      'text_processing' => 0,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'text',
-      'settings' => array(
-        'size' => 60,
-      ),
-      'type' => 'text_textfield',
-      'weight' => 42,
-    ),
-  );
-  */
-
-  $field_instances['register_deal-register_deal-field_quantity'] = array(
-    'bundle' => 'register_deal',
-    'default_value' => 0,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'number',
-        'settings' => array(
-          'decimal_separator' => '.',
-          'prefix_suffix' => TRUE,
-          'scale' => 0,
-          'thousand_separator' => ' ',
+    /*
+      $field_instances['register_deal_products-register_deal_products-field_product_name'] = array(
+        'bundle' => 'register_deal_products',
+        'default_value' => NULL,
+        'deleted' => 0,
+        'description' => '',
+        'display' => array(
+          'default' => array(
+            'label' => 'above',
+            'module' => 'text',
+            'settings' => array(),
+            'type' => 'text_default',
+            'weight' => 12,
+          ),
+          'teaser' => array(
+            'label' => 'above',
+            'settings' => array(),
+            'type' => 'hidden',
+            'weight' => 0,
+          ),
         ),
-        'type' => 'number_integer',
-        'weight' => 13,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'register_deal',
-    'field_name' => 'field_quantity',
-    'label' => 'Quantity',
-    'required' => 0,
-    'settings' => array(
-      'max' => '',
-      'min' => 0,
-      'prefix' => '',
-      'suffix' => '',
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 0,
-      'module' => 'number',
-      'settings' => array(),
-      'type' => 'number',
-      'weight' => 43,
-    ),
-  );
+        'entity_type' => 'register_deal_products',
+        'field_name' => 'field_product_name',
+        'label' => 'Product Name',
+        'required' => 0,
+        'settings' => array(
+          'text_processing' => 0,
+          'user_register_form' => FALSE,
+        ),
+        'widget' => array(
+          'active' => 1,
+          'module' => 'text',
+          'settings' => array(
+            'size' => 60,
+          ),
+          'type' => 'text_textfield',
+          'weight' => 42,
+        ),
+      );
+      */
 
-/*
-$field_instances['register_deal_products-register_deal_products-field_deal_reg_item'] = array(
-    'bundle' => 'register_deal_products',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'module' => 'text',
-        'settings' => array(),
-        'type' => 'text_default',
-        'weight' => 16,
+    $field_instances['register_deal-register_deal-field_quantity'] = array(
+      'bundle' => 'register_deal',
+      'default_value' => 0,
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'number',
+          'settings' => array(
+            'decimal_separator' => '.',
+            'prefix_suffix' => TRUE,
+            'scale' => 0,
+            'thousand_separator' => ' ',
+          ),
+          'type' => 'number_integer',
+          'weight' => 13,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
       ),
-      'full' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-
-    ),
-    'entity_type' => 'register_deal_products',
-    'field_name' => 'field_deal_reg_item',
-    'label' => 'Deal Reg Item',
-    'required' => 0,
-    'settings' => array(
-      'text_processing' => 0,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'text',
+      'entity_type' => 'register_deal',
+      'field_name' => 'field_quantity',
+      'label' => 'Quantity',
+      'required' => 0,
       'settings' => array(
-        'size' => 60,
+        'max' => '',
+        'min' => 0,
+        'prefix' => '',
+        'suffix' => '',
+        'user_register_form' => FALSE,
       ),
-      'type' => 'text_textfield',
-      'weight' => 15,
-    ),
-  );
-*/
+      'widget' => array(
+        'active' => 0,
+        'module' => 'number',
+        'settings' => array(),
+        'type' => 'number',
+        'weight' => 43,
+      ),
+    );
 
-  return $field_instances;
 
-}
+    return $field_instances;
+
+  }
 
 
-function _create_entity_field_groups() {
+  function _create_entity_field_groups() {
 
-  $field_groups = _entity_field_groups();
+    $field_groups = _entity_field_groups();
 
     foreach ($field_groups as $key => $field_group) {
-        //objects, not arrays
+      //objects, not arrays
 
-        $group_name = $field_group->group_name;
-        $entity_type = $field_group->entity_type;
-        $bundle = $field_group->bundle;
-        $mode = $field_group->mode;
+      $group_name = $field_group->group_name;
+      $entity_type = $field_group->entity_type;
+      $bundle = $field_group->bundle;
+      $mode = $field_group->mode;
 
-        $info = field_group_info_groups($entity_type, $bundle, $mode);
+      $info = field_group_info_groups($entity_type, $bundle, $mode);
 
-        if (! field_group_info_groups($entity_type, $bundle, $mode) ) {
+      if (!field_group_info_groups($entity_type, $bundle, $mode)) {
 
-          drupal_set_message('Creating field group ' . $key );
+        drupal_set_message('Creating field group ' . $key);
 
-            $fields = array(
-              'group_name'  =>   $group_name,
-              'entity_type'  =>   $entity_type,
-              'bundle'  =>   $bundle,
-              'mode'  =>   $mode,
-              'data'  =>   serialize($field_group->data),
-              );
+        $fields = array(
+          'group_name' => $group_name,
+          'entity_type' => $entity_type,
+          'bundle' => $bundle,
+          'mode' => $mode,
+          'data' => serialize($field_group->data),
+        );
 
-              db_merge('field_group')
-              ->key( array('identifier' => $key,) )
-              ->fields( $fields )
-              ->execute();
-        }
+        db_merge('field_group')
+          ->key(array('identifier' => $key,))
+          ->fields($fields)
+          ->execute();
       }
+    }
 
 
-
-}
-
+  }
 
 
-function _entity_field_groups() {
+  function _entity_field_groups() {
 
 
-$export = array();
+    $export = array();
 
-  $field_group = new stdClass();
-  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
-  $field_group->api_version = 1;
-  $field_group->identifier = 'group_items|register_deal_products|register_deal_products|form';
-  $field_group->group_name = 'group_items';
-  $field_group->entity_type = 'register_deal_products';
-  $field_group->bundle = 'register_deal_products';
-  $field_group->mode = 'form';
-  $field_group->parent_name = '';
-  $field_group->data = array(
-    'label' => 'Items and Quantities',
-    'weight' => '14',
-    'children' => array(
-      0 => 'field_deal_reg_item',
-    ),
-    'format_type' => 'fieldset',
-    'format_settings' => array(
-      'formatter' => 'collapsible',
-      'instance_settings' => array(
-        'description' => '',
-        'classes' => 'group-items field-group-fieldset',
-        'required_fields' => 1,
+    $field_group = new stdClass();
+    $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+    $field_group->api_version = 1;
+    $field_group->identifier = 'group_items|register_deal_products|register_deal_products|form';
+    $field_group->group_name = 'group_items';
+    $field_group->entity_type = 'register_deal_products';
+    $field_group->bundle = 'register_deal_products';
+    $field_group->mode = 'form';
+    $field_group->parent_name = '';
+    $field_group->data = array(
+      'label' => 'Items and Quantities',
+      'weight' => '14',
+      'children' => array(
+        0 => 'field_deal_reg_item',
       ),
-    ),
-  );
-  $export['group_items|register_deal_products|register_deal_products|form'] = $field_group;
+      'format_type' => 'fieldset',
+      'format_settings' => array(
+        'formatter' => 'collapsible',
+        'instance_settings' => array(
+          'description' => '',
+          'classes' => 'group-items field-group-fieldset',
+          'required_fields' => 1,
+        ),
+      ),
+    );
+    $export['group_items|register_deal_products|register_deal_products|form'] = $field_group;
 
-  return $export;
+    return $export;
+
+  }
 
 
-}

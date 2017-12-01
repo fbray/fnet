@@ -21,13 +21,13 @@ function products_views_api() {
  */
 function products_theme($existing, $type, $theme, $path) {
   $base = array(
-    'path' => drupal_get_path('module', 'fextranet') . '/theme',
+    'path' => drupal_get_path('module', 'products') . '/theme',
   );
   return array(
-    'node__product' => $base + array(
+    'node__product_display' => $base + array(
       'render element' => 'content',
       'base hook' => 'node',
-      'template' => 'node--product',
+      'template' => 'node--product_display',
     ),
   );
 }
@@ -41,17 +41,23 @@ function products_theme($existing, $type, $theme, $path) {
  * @return mixed
  */
 function products_block_info() {
-  $blocks['product_list_DCI'] = array(
+  $blocks['product_list_datacom'] = array(
     'info' => t('Product Listing: Datacom Cabling'),
     'cache' => DRUPAL_CACHE_PER_ROLE,
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages' => 'products',
   );
-  $blocks['product_list_ITN'] = array(
-    'info' => t('Product Listing: IT Networking'),
+  $blocks['product_list_installation'] = array(
+    'info' => t('Product Listing: Installation and Test'),
     'cache' => DRUPAL_CACHE_PER_ROLE,
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages' => 'products',
   );
-  $blocks['product_list_TEL'] = array(
-    'info' => t('Product Listing: Telecom'),
+  $blocks['product_list_telecom'] = array(
+    'info' => t('Product Listing: Telecom Test'),
     'cache' => DRUPAL_CACHE_PER_ROLE,
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages' => 'products',
   );
   return $blocks;
 }
@@ -65,17 +71,17 @@ function products_block_info() {
 function products_block_view($delta = '') {
   $block = array();
   switch ($delta) {
-    case 'product_list_DCI':
+    case 'product_list_datacom':
       $block['subject'] = t('Product Listing (Datacom Cabling)');
-      $block['content'] = _product_list_contents(6);
+      $block['content'] = _product_list_contents('cabling-certification');
       break;
-    case 'product_list_ITN':
+    case 'product_list_installation':
       $block['subject'] = t('Product Listing (IT Networking)');
-      $block['content'] = _product_list_contents(7);
+      $block['content'] = _product_list_contents('installation-and-test');
       break;
-    case 'product_list_TEL':
+    case 'product_list_telecom':
       $block['subject'] = t('Product Listing (Telecom)');
-      $block['content'] = _product_list_contents(8);
+      $block['content'] = _product_list_contents('telecom-test');
       break;
     default:
       break;
@@ -89,19 +95,18 @@ function products_block_view($delta = '') {
  * @param $industryNid
  * @return string
  */
-function _product_list_contents($industryNid) {
-  $industry = node_load($industryNid);
-  $output = '';
-  $output .= '<div class="product_industry_title">' . "\n"
-    . '<a href="' . "/" . drupal_lookup_path('alias',"node/".$industry->nid)
-    .'">' . $industry->title."</a><br>"
-    . "</div>\n";
+function _product_list_contents($path_alias) {
+  $path = drupal_get_normal_path($path_alias);
+  $category = menu_get_object('node', 1, $path);
+
+  $output = '<div class="product_industry_title">' . "\n"
+    . '<a href="/' . $path_alias .'">' . $category->title . "</a><br></div>\n";
 
   //display family
   $familyCount=1;
   $familyList = views_get_view('product_family');
   $familyList->set_items_per_page(0);
-  $familyList->set_arguments(array($industryNid));
+  $familyList->set_arguments(array($category->nid));
   $familyList->set_display('families_by_product_category');
   $familyList->execute();
   $familyResult = $familyList->result;
@@ -116,7 +121,7 @@ function _product_list_contents($industryNid) {
         . "#family-product-list-" . $family->nid . '">' . $family->node_title . "</a>";
     }
     else {
-      $output .= '<a href="/' . drupal_lookup_path('alias',"node/" . $industry->nid)
+      $output .= '<a href="/' . drupal_lookup_path('alias',"node/" . $category->nid)
         . "#family-product-list-" . $family->nid . '">' . $family->node_title . "</a>";
     }
     $output .= "</div>\n";
@@ -180,54 +185,6 @@ function products_preprocess_page(&$variables) {
   }
 }
 
-
-/* =============================================================================
- *   Features functions
- * ========================================================================== */
-/**
- * Implements hook_node_info().
- */
-function products_node_info() {
-  $items = array(
-    'product' => array(
-      'name' => t('Product'),
-      'base' => 'node_content',
-      'description' => t('Use this content type for all product pages.'),
-      'has_title' => '1',
-      'title_label' => t('Title'),
-      'help' => '',
-    ),
-  );
-  drupal_alter('node_info', $items);
-  return $items;
-}
-
-/**
- * Implements hook_weight_features_default_settings().
- */
-function products_weight_features_default_settings() {
-  $settings = array();
-
-  $settings['family'] = array(
-    'enabled' => 1,
-    'range' => 20,
-    'menu_weight' => 0,
-    'default' => 0,
-    'sync_translations' => 0,
-  );
-
-  return $settings;
-}
-
-/**
- * Implements hook_ctools_plugin_api().
- */
-function products_ctools_plugin_api($module = NULL, $api = NULL) {
-  if ($module == "field_group" && $api == "field_group") {
-    return array("version" => "1");
-  }
-}
-
 /**
  * Implements hook_node_view().
  */
@@ -238,22 +195,22 @@ function products_node_view($node, $view_mode) {
   }
 
   // Substitute language/region content if necessary
-  if ($node->type == 'product') {
+  if ($node->type == 'product_display') {
 
     products_language_override($node);
 
     // Get product features information.
-    $product_features = views_get_view_result('product_feature', NULL, $node->nid);
+    $product_features = views_get_view_result('product_content', 'product_features', $node->nid);
     $node->content['product_features'] = $product_features;
 
     // Get product models and accessories information.
     if(isset( $node->field_prod_hide_models_accessory[LANGUAGE_NONE][0]['value'] ) && $node->field_prod_hide_models_accessory[LANGUAGE_NONE][0]['value']) {
       $product_moa = array();
     } else {
-      $product_moa = views_get_view_result('product_moa', NULL, $node->nid);
+      $product_moa = views_get_view_result('product_content', 'product_moa', $node->nid);
     }
     $node->content['product_moa'] = $product_moa;
-
+    // dpm($product_moa);
     $tempArray = array();
     for($i=0; $i<count($product_moa); $i++){
       $tempArray[$product_moa[$i]->taxonomy_term_data_node_name][] = $product_moa[$i];
@@ -599,15 +556,10 @@ function products_language_override(&$node) {
   }
 }
 
-
-define('NODE_PRODUCT_SUB_TYPE_SUPPORT_TID', 56);
-define('NODE_PRODUCT_SUB_TYPE_MODEL_TID', 4);
-define('NODE_PRODUCT_SUB_TYPE_GENERAL_CACHE_EXPIRE', 12 * 60 * 60);
-
 /**
  * Find support contracts that apply to specific product moas.
  *
- * "MOA" refers to "models and/or accessories". These are things like models,
+ * "MOA" refers to "models/options/accessories". These are things like models,
  * bundles, kits and so on.
  *
  * This code compensates for the fact that there is no real relationship
@@ -622,129 +574,75 @@ define('NODE_PRODUCT_SUB_TYPE_GENERAL_CACHE_EXPIRE', 12 * 60 * 60);
  *   given product moa.
  */
 function products_support_by_moa($moa_nid) {
-  $drupal_cache_enabled = variable_get('cache', 0);
-  $cache_moa_list_id = 'products:support_by_product:moas';
-  $cache_support_list_id = 'products:support_by_product:support';
-  $cache_id = 'products:support_by_product:' . $moa_nid;
-
-  // contains list of available support plans per each moa nid
-  $moa_plans_list_cache = cache_get($cache_moa_list_id);
-  if (!empty($moa_plans_list_cache)) {
-    $moa_plans_list_cache = $moa_plans_list_cache->data;
-  }
-  // contains the title and description of each support plan
-  $support_details_list_cache = cache_get($cache_support_list_id);
-  if (!empty($support_details_list_cache)) {
-    $support_details_list_cache = $support_details_list_cache->data;
-  }
-  // contains the formatted markup displayed per product then moa
-  $product_cache = cache_get($cache_id);
-  if (isset($product_cache->data)) {
-    $product_cache = $product_cache->data;
-  }
-
-  if (!$drupal_cache_enabled || !$moa_plans_list_cache) {
-    $moa_plans_list_cache = array();
+    $moa_plans_list = array();
+    $moa_name = '';
+    $product = FALSE;
+    $support_tid = 0;
+    $tids = taxonomy_get_term_by_name('Support', 'product_sub_types');
+    foreach($tids as $tid) {
+      $support_tid = $tid->tid;
+    }
 
     // A list of all support options available for each MOA
-    // TODO: Move to using db_query for better performance.
     $sql = "
-      SELECT n.nid AS moa_nid, n.title AS moa_name, so.field_support_options_nid AS support_option
+      SELECT n.nid AS moa_nid, n.title AS moa_name, so.field_available_support_options_target_id AS support_option
       FROM {node} n
-      LEFT JOIN {node_revisions} nr
+      LEFT JOIN {node_revision} nr
         ON n.vid = nr.vid
-      INNER JOIN {content_field_support_options} so
-        ON n.vid = so.vid
-      LEFT JOIN {term_node} tn
-        ON n.vid = tn.vid
-      WHERE tn.tid != %s
+      INNER JOIN {field_data_field_available_support_options} so
+        ON n.vid = so.revision_id
+      LEFT JOIN {taxonomy_index} t
+        ON n.nid = t.nid
+      WHERE t.tid != :support_tid
         AND n.status > 0
-        AND so.field_support_options_nid IS NOT NULL
+        AND so.field_available_support_options_target_id IS NOT NULL
       ORDER BY moa_nid ASC, delta ASC
     ";
-    $query = db_select('node', 'n');
-    $query->fields('n', array('nid'));
-    $query->addJoin('LEFT', 'node_revision', 'nr', 'n.vid = nr.vid');
-    $query->fields('nr', array('title'));
-    $query->addJoin('INNER', 'field_data_field_support_options', 'so', 'n.vid = so.revision_id');
-    $query->fields('so', array('field_support_options_nid'));
-    $query->addJoin('LEFT', 'taxonomy_index', 't', 'n.nid = t.nid');
-    $query->condition('t.tid', NODE_PRODUCT_SUB_TYPE_SUPPORT_TID, '!=');
-    $query->condition('n.status', 0, '!=');
-    $query->condition('so.field_support_options_nid', NULL, 'IS NOT NULL');
-    $query->orderBy('n.nid');
-    $query->orderBy('so.delta');
-    $result = $query->execute();
+    $result = db_query($sql, array(':support_tid' => $support_tid));
 
     foreach ($result as $row) {
-      $nid = $row->nid;
-      $moa_name = $row->title;
-      $support_option = $row->field_support_options_nid;
-      $moa_plans_list_cache[$nid]['moa_name'] = $moa_name;
-      $moa_plans_list_cache[$nid]['support_options'][$support_option] = TRUE;
+      $moa_plans_list[$row->moa_nid]['moa_name'] = $row->moa_name;
+      $moa_plans_list[$row->moa_nid]['support_options'][$row->support_option] = TRUE;
     }
 
-    cache_set($cache_moa_list_id, $moa_plans_list_cache, 'cache', REQUEST_TIME + NODE_PRODUCT_SUB_TYPE_GENERAL_CACHE_EXPIRE);
-  }
-
-  if (!$drupal_cache_enabled || !$support_details_list_cache) {
-    $support_details_list_cache = array();
-    // TODO: Move to using db_query for better performance.
+    $support_details_list = array();
     $sql = "
-      SELECT n.nid, n.title AS support_name, nr.body support_desc
+      SELECT n.nid, n.title AS support_name, body.body_value as description
       FROM {node} n
-      LEFT JOIN {node_revisions} nr
-        ON n.vid = nr.vid
-      LEFT JOIN {term_node} tn
-        ON n.vid = tn.vid
-      WHERE tn.tid = %s
-      AND n.status > 0
-    ";
-    $query = db_select('node', 'n');
-    $query->fields('n', array('nid', 'title'));
-    $query->addJoin('INNER', 'field_data_body', 'b', 'n.vid = b.revision_id');
-    $query->fields('b', array('body_value'));
-    $query->addJoin('LEFT', 'taxonomy_index', 't', 'n.nid = t.nid');
-    $query->condition('t.tid', NODE_PRODUCT_SUB_TYPE_SUPPORT_TID);
-    $query->condition('n.status', 0, '!=');
-    $result = $query->execute();
-    foreach ($result as $row) {
-      $nid = $row->nid;
-      $name = $row->title;
-      $description = $row->body_value;
-      $support_details_list_cache[$nid]['name'] = $name;
-      $support_details_list_cache[$nid]['description'] = $description;
-    }
-    cache_set($cache_support_list_id, $support_details_list_cache, 'cache', REQUEST_TIME + NODE_PRODUCT_SUB_TYPE_GENERAL_CACHE_EXPIRE);
-  }
+      LEFT JOIN {field_data_body} body
+        ON n.vid = body.revision_id
+      LEFT JOIN {taxonomy_index} t
+        ON n.nid = t.nid
+      WHERE t.tid = :support_tid
+      AND n.status > 0";
+    $result = db_query($sql, array(':support_tid' => $support_tid));
 
-  if (!$drupal_cache_enabled || !$product_cache) {
+    foreach ($result as $row) {
+      $support_details_list[$row->nid]['name'] = $row->support_name;
+      $support_details_list[$row->nid]['description'] = $row->description;
+    }
+
     $rows = array();
     $moa_plans = array();
 
-    if (!is_array($moa_plans_list_cache)) {
-      watchdog('node_product_sub_type', 'Got empty cache values. Are models/support configured properly?', array(), WATCHDOG_WARNING);
-      return;
+    if (isset($moa_plans_list[$moa_nid])) {
+      $moa_plans = $moa_plans_list[$moa_nid]['support_options'];
+      $moa_name = $moa_plans_list[$moa_nid]['moa_name'];
     }
 
-    if (isset($moa_plans_list_cache[$moa_nid])) {
-      $moa_plans = $moa_plans_list_cache[$moa_nid]['support_options'];
-      $moa_name = $moa_plans_list_cache[$moa_nid]['moa_name'];
-    }
     // There may be no plans configured for this MOA
     if (!is_array($moa_plans) || empty($moa_name)) {
-      return;
+      return FALSE;
     }
-
     foreach (array_keys($moa_plans) as $plan) {
-      $product_cache = FALSE;
+      $product = FALSE;
       $row = array();
       $row[] = array(
-        'data' => $support_details_list_cache[$plan]['name'],
+        'data' => $support_details_list[$plan]['name'],
         'class' => 'plan'
       );
       $row[] = array(
-        'data' => $support_details_list_cache[$plan]['description'],
+        'data' => $support_details_list[$plan]['description'],
         'class' => 'description'
       );
       $rows[] = $row;
@@ -756,15 +654,12 @@ function products_support_by_moa($moa_nid) {
       $table_attributes = array(
         'class' => 'gold-support-plans',
       );
-      $product_cache = $plans_label . theme('table', array(
+      $product = $plans_label . theme('table', array(
           'rows' => $rows,
           'attributes' => $table_attributes
         ));
     }
-    cache_set($cache_id, $product_cache, 'cache', REQUEST_TIME + NODE_PRODUCT_SUB_TYPE_GENERAL_CACHE_EXPIRE);
-  }
-
-  return $product_cache;
+  return $product;
 }
 
 /**

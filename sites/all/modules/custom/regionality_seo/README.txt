@@ -9,3 +9,10 @@ X-OneLinkNoTx header for overridden titles and meta tags.
 This module also uses the API of the page_title module to alter page title based on regionality.  In order for this to
 work the page_title configuration need to be changed to enable the page title field on all of the 'language' sub types.
 
+Ryan's note:
+The above is not good. Use of the Page Title module causes a conflict, so it has been disabled and declared deprecated.
+We use the Metatag module for this functionality now.
+https://www.drupal.org/project/page_title
+
+
+

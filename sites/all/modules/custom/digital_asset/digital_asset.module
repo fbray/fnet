@@ -1338,9 +1338,9 @@ function digital_asset_list_by_product($pcat_id, $language = 'en', $asset_type =
     $query->fields('doc_id', array('field_dam_document_id_value'));
     $query->addJoin('INNER', 'node_revision', 'r', 'n.vid = r.vid');
     $query->fields('r', array('title'));
-    $query->addJoin('INNER', 'field_data_field_dam_related_product', 'rp', 'n.vid = rp.revision_id');
+    $query->addJoin('INNER', 'field_data_field_products', 'rp', 'n.vid = rp.revision_id');
     $query->addJoin('INNER', 'field_data_field_dam_asset_type', 'type', 'n.nid = type.entity_id');
-    $query->fields('type', array('field_dam_asset_type_value'));
+    $query->fields('type', array('field_dam_asset_type_target_id'));
     $query->addJoin('INNER', 'field_data_field_dam_language', 'lang', 'n.nid = lang.entity_id');
     $query->fields('lang', array('field_dam_language_value'));
     $query->addJoin('LEFT', 'field_data_field_dam_file_size', 'size', 'n.nid = size.entity_id');
@@ -1350,15 +1350,15 @@ function digital_asset_list_by_product($pcat_id, $language = 'en', $asset_type =
     $query->addJoin('INNER', 'field_data_field_dam_document_status', 'status', 'n.nid = status.entity_id');
     $query->fields('status', array('field_dam_document_status_value'));
     $query->addJoin('LEFT OUTER', 'weight_weights', 'weight', 'n.nid = weight.entity_id');
-    $query->condition('field_dam_related_product_nid', $product_nid);
+    $query->condition('field_products_target_id', $product_nid);
     $query->condition('field_dam_language_value', $language);
     $query->condition('field_dam_document_status_value', 'live');
     $query->condition('field_dam_entitlement_level_value', 'do_not_display', '<>');
     if (!empty($asset_type)) {
-      $query->condition('field_dam_asset_type_value', $asset_type, 'IN');
+      $query->condition('field_dam_asset_type_target_id', $asset_type, 'IN');
     }
     $query->orderBy('weight.weight', 'ASC');
-    $query->orderBy('field_dam_asset_type_value');
+    $query->orderBy('field_dam_asset_type_target_id');
     $query->orderBy('r.title');
     $result = $query->distinct()->execute();
     foreach ($result as $row) {
