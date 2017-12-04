@@ -234,6 +234,9 @@
                   <a href="/support/manuals"><?php print t('Manuals'); ?></a>
                 </div>
                 <div class="topnav_submenu_item">
+                  <a href="/expertise/whitepapers"><?php print t('Whitepapers'); ?></a>
+                </div>
+                <div class="topnav_submenu_item">
                   <a href="/support/service-centers"><?php print t('Service Centers'); ?></a>
                 </div>
               </div>
