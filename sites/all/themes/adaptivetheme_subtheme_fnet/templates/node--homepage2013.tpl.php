@@ -165,7 +165,7 @@ hide($content['links']);
           <li class="content_hp_expertise_box_link"><a href="<?php print !empty($field_home13_expind[0]['url']) ? $field_home13_expind[0]['url'] : ''; ?>"><?php print !empty($field_home13_expind[0]['title']) ? $field_home13_expind[0]['title'].' &raquo;' : ''; ?></a></li>
           <li class="content_hp_expertise_box_link"><a href="<?php print !empty($field_home13_expind[1]['url']) ? $field_home13_expind[1]['url'] : ''; ?>"><?php print !empty($field_home13_expind[1]['title']) ? $field_home13_expind[1]['title'].' &raquo;' : ''; ?></a></li>
           <li class="content_hp_expertise_box_link"><a href="<?php print !empty($field_home13_expind[2]['url']) ? $field_home13_expind[2]['url'] : ''; ?>"><?php print !empty($field_home13_expind[2]['title']) ? $field_home13_expind[2]['title'].' &raquo;' : ''; ?></a></li>
-          <li class="content_hp_expertise_box_link"><a href="/solutions/industries">More &raquo;</a></li>
+          <li class="content_hp_expertise_box_link"><a href="/support">More &raquo;</a></li>
         </ul>
       </div>
     </div>
