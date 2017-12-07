@@ -154,12 +154,13 @@
       </div>
     </div>
 
-    <?php if (($page['menu_bar'] || $primary_navigation || $secondary_navigation) && $show_nav): ?>
+    <?php if (($page['menu_bar'] || $primary_navigation || $secondary_navigation || $main_menu_expanded) && $show_nav): ?>
       <div id="nav-wrapper">
         <div class="container clearfix">
           <?php print render($page['menu_bar']); ?>
           <?php if ($primary_navigation): print $primary_navigation; endif; ?>
           <?php if ($secondary_navigation): print $secondary_navigation; endif; ?>
+          <?php if ($main_menu_expanded): print render($main_menu_expanded); endif; ?>
         </div>
       </div>
     <?php endif; ?>

@@ -11,7 +11,10 @@
  *
  * - Read the _README file in this directory, it contains useful help and other information.
  */
-
+// #content {
+//   margin-right: 30px;
+//   margin-left: 35px;
+// }
 .mkto-content-main {
   margin: 0 auto;
   width: 1024px;
@@ -26,11 +29,10 @@
   }
 
   #mkto-content {
-    padding: 60px 40px 60px 50px;
 
     #mkt-prod-details {
       float: left;
-      width: 536px;
+      width: 62%
 
       #mkt-prod-title {
         font-size: 32px;
@@ -65,7 +67,7 @@
 
     #mkto-content-main-form {
       float: right;
-      width: 320px;
+      width: 35%;
       border: 2px solid #DDD;
 
       #mkto-form-header {
@@ -75,11 +77,6 @@
         font-weight: bold;
         color: #FFFFFF;
         background-color: #293F6A;
-      }
-
-      #mkto-form {
-        padding: 20px;
-        overflow: hidden;
       }
     }
 

@@ -14,8 +14,15 @@
 
 /* Increase the default font size on small touch devices */
 body {
-  font-size: 100%;
+  text-align: justify;
+  font-size: 81.3%; 
 }
+.container {width: 100%;}
+
+// #content {
+//   margin-right: 20px;
+//   margin-left: 20px;
+// }
 
 /* =============================================================================
  *   Mobile Menu Toggle
@@ -88,12 +95,12 @@ body {
     }
 
     #mkt-more-links-content {
-      margin-top: 40px;
+      margin-top: 20px;
       width: 100%;
     }
 
     #mkt-contact-info {
-      margin-top: 40px;
+      margin-top: 20px;
       width: 100%;
     }
   }

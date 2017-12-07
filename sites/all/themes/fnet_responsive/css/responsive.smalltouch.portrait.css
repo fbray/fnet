@@ -10,7 +10,13 @@
 /* Increase the default font size on small touch devices */
 /* line 16, ../sass/responsive.smalltouch.portrait.scss */
 body {
-  font-size: 100%;
+  text-align: justify;
+  font-size: 81.3%;
+}
+
+/* line 20, ../sass/responsive.smalltouch.portrait.scss */
+.container {
+  width: 100%;
 }
 
 /* =============================================================================
@@ -19,112 +25,112 @@ body {
  *   These are example styles for the menu toggle menu, you can use these in the
  *   relevant responsive stylesheets as required. Modify to suit your design.
  * ========================================================================== */
-/* line 26, ../sass/responsive.smalltouch.portrait.scss */
+/* line 33, ../sass/responsive.smalltouch.portrait.scss */
 .at-mt .at-menu-toggle {
   /* The toggle link */
   /* Menu items */
 }
-/* line 28, ../sass/responsive.smalltouch.portrait.scss */
+/* line 35, ../sass/responsive.smalltouch.portrait.scss */
 .at-mt .at-menu-toggle h2 {
   margin-bottom: 5px;
 }
-/* line 31, ../sass/responsive.smalltouch.portrait.scss */
+/* line 38, ../sass/responsive.smalltouch.portrait.scss */
 .at-mt .at-menu-toggle h2 a {
   background: #eee;
   border: 2px solid #ccc;
   padding: 2px 10px;
 }
-/* line 39, ../sass/responsive.smalltouch.portrait.scss */
+/* line 46, ../sass/responsive.smalltouch.portrait.scss */
 .at-mt .at-menu-toggle ul.menu li a {
   background: #eee;
   border-bottom: 1px solid #fff;
 }
 
-/* line 45, ../sass/responsive.smalltouch.portrait.scss */
+/* line 52, ../sass/responsive.smalltouch.portrait.scss */
 #footer-wrapper {
   margin-bottom: 20px;
 }
 
 /* Marketo Form  */
-/* line 50, ../sass/responsive.smalltouch.portrait.scss */
+/* line 57, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main {
   text-align: center;
   width: 100%;
 }
-/* line 54, ../sass/responsive.smalltouch.portrait.scss */
+/* line 61, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main #mkto-content {
   padding: 15px 30px 60px 30px;
 }
-/* line 57, ../sass/responsive.smalltouch.portrait.scss */
+/* line 64, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main #mkto-content #mkt-prod-details {
   width: 100%;
 }
-/* line 60, ../sass/responsive.smalltouch.portrait.scss */
+/* line 67, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-title {
   font-size: 18px;
 }
 @media only screen and (max-width: 275px) {
-  /* line 64, ../sass/responsive.smalltouch.portrait.scss */
+  /* line 71, ../sass/responsive.smalltouch.portrait.scss */
   .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-left,
   .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-right {
     display: none;
   }
 }
-/* line 71, ../sass/responsive.smalltouch.portrait.scss */
+/* line 78, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-content {
   font-size: 12px;
   line-height: 16px;
   width: 100%;
   text-align: justify;
 }
-/* line 79, ../sass/responsive.smalltouch.portrait.scss */
+/* line 86, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main #mkto-content #mkto-content-main-form {
   float: left;
   width: 100%;
   border: 2px solid #DDD;
   margin-top: 20px;
 }
-/* line 85, ../sass/responsive.smalltouch.portrait.scss */
+/* line 92, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main #mkto-content #mkto-content-main-form #mkto-form-header {
   padding: 5px;
 }
-/* line 90, ../sass/responsive.smalltouch.portrait.scss */
+/* line 97, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main #mkto-content #mkt-more-links-content {
-  margin-top: 40px;
+  margin-top: 20px;
   width: 100%;
 }
-/* line 95, ../sass/responsive.smalltouch.portrait.scss */
+/* line 102, ../sass/responsive.smalltouch.portrait.scss */
 .mkto-content-main #mkto-content #mkt-contact-info {
-  margin-top: 40px;
+  margin-top: 20px;
   width: 100%;
 }
 
 /*
  * Footer region
  */
-/* line 104, ../sass/responsive.smalltouch.portrait.scss */
+/* line 111, ../sass/responsive.smalltouch.portrait.scss */
 .region-footer {
   font-size: 7px;
 }
-/* line 107, ../sass/responsive.smalltouch.portrait.scss */
+/* line 114, ../sass/responsive.smalltouch.portrait.scss */
 .region-footer #block-menu-menu-footer-main-menu {
   float: none;
   width: 315px;
   margin: 0 auto;
 }
 @media only screen and (max-width: 320px) {
-  /* line 107, ../sass/responsive.smalltouch.portrait.scss */
+  /* line 114, ../sass/responsive.smalltouch.portrait.scss */
   .region-footer #block-menu-menu-footer-main-menu {
     width: 70%;
   }
 }
-/* line 116, ../sass/responsive.smalltouch.portrait.scss */
+/* line 123, ../sass/responsive.smalltouch.portrait.scss */
 .region-footer #block-block-11 {
   float: none;
   width: 200px;
   margin: 0 auto;
 }
-/* line 122, ../sass/responsive.smalltouch.portrait.scss */
+/* line 129, ../sass/responsive.smalltouch.portrait.scss */
 .region-footer #block-menu-menu-footer-social-links {
   float: none;
   width: 135px;

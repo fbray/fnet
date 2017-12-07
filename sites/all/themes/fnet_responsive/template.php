@@ -92,3 +92,17 @@ function adaptivetheme_subtheme_preprocess_block(&$vars) {
 function adaptivetheme_subtheme_process_block(&$vars) {
 }
 // */
+
+
+function fnet_responsive_preprocess_page(&$variables) {
+	// Get the entire main menu tree
+	$main_menu_tree = menu_tree_all_data('menu-main-header-menu');
+
+	// Add the rendered output to the $main_menu_expanded variable
+	$variables['main_menu_expanded'] = menu_tree_output($main_menu_tree);
+}
+
+function fnet_responsive_menu_tree__menu_main_header_menu(&$variables) {
+	// echo "<pre>"; print_r($variables);echo "</pre>";
+  return '<ul class="menu nav navbar-nav" id="fnet-main-menu">' . $variables['tree'] . '</ul>';
+}

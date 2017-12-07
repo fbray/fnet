@@ -14,9 +14,15 @@
 
 /* Increase the body font size on small touch devices */
 body {
-  font-size: 100%;
+  text-align: justify;
+  font-size: 81.3%; 
 }
+.container {width: 100%;}
 
+// #content {
+//   margin-right: 20px;
+//   margin-left: 20px;
+// }
 /* =============================================================================
  *   Mobile Menu Toggle
  *   See your theme settings extensions for how to enable the menu toggle.
@@ -49,15 +55,18 @@ body {
   width: 100%;
 
   #mkto-content {
-    padding: 15px 30px 60px 30px;
+    padding: 0px 30px 60px 30px;
 
     #mkt-prod-details {
-      width: 47%;
+      width: 30%;
+      @media only screen and (max-width:470px) {
+        width: 100%;
+      }
       margin-right: 10px;
 
       #mkt-prod-title {
         font-size: 18px;
-        margin-top: 45px;
+        margin-top: 20px;
       }
       
       #mkt-prod-img-left,
@@ -78,23 +87,29 @@ body {
 
     #mkto-content-main-form {
       float: right;
-      width: 49%;
+      width: 65%;
+      @media only screen and (max-width:470px) {
+        width: 100%;
+      }
       border: 2px solid #DDD;
       margin-top: 45px;
 
       #mkto-form-header {
         padding: 5px;
       }
+      #mkto-form {
+        padding: 20px 0;
+      }
     }
 
     #mkt-more-links-content {
-      margin-top: 55px;
-      width: 45%;
+      margin-top: 20px;
+      // width: 45%;
     }
 
     #mkt-contact-info {
-      margin-top: 40px;
-      width: 45%;
+      margin-top: 20px;
+      // width: 45%;
     }
   }
 }

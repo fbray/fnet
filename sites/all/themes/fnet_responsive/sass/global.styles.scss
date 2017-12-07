@@ -45,6 +45,7 @@ html {
 body {
   font-family: $fnet-font; // Set from _custom.scss font variables
   font-size: 87.5%;
+  color: #4A4A4A;
 }
 
 
@@ -58,7 +59,11 @@ h1 {}
 h2 {}
 
 
-h3 {}
+h3 {
+  font-size: 20px;
+  font-weight: bold;
+  color: #293F6A;
+}
 
 
 h4 {}
@@ -235,6 +240,7 @@ var {
 #header-wrapper {
   /* Debug styles, is this working 
   background: $debug;*/
+  background-color: $fnet_dark_blue;
   .container {}
 }
 
@@ -243,9 +249,134 @@ var {
  * Wraps the nav elements
  */
 #nav-wrapper {
-  .container {}
+      background-color: #293F6A;
+  .container {
+
+    ul.menu{
+      float: left;
+      margin: 0;
+      border-top: 1px solid #FFF;
+      padding: 0;
+
+      & > li{
+        width: 165px;
+        padding: 10px 0;
+        position: relative;
+
+        &.multi-level ul{
+          width: 840px;
+        }
+
+        &.single-level ul{
+          width: 180px;
+          padding: 10px;
+        }
+
+        &:hover{
+          background-color: $fnet_yellow;
+
+          & > a{                
+            color: #000;
+          }
+
+          & > li{
+            background: none;
+          }
+
+          & > ul.menu{
+            display: block;
+          }
+        }
+
+        & > a{
+          text-decoration: none;
+          color: #FFF;
+          text-transform: uppercase;
+          font-size: 14px;
+          line-height: 21px;
+          font-weight: bold;
+
+        }
+
+        & > ul.menu{
+          display: none;
+          border: none;
+          background-color: #EEE;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          // width: 840px;
+          z-index: 999;
+
+          & > li{
+            width: 235px;
+            padding: 20px;
+            background: none;
+
+            ul.menu{
+              display: block;
+              position: relative;
+              width: inherit;
+            }
+          }
+
+          .topnav_submenu_item {
+            background: none;
+            text-align: left;
+            line-height: 14px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            font-weight: normal;
+            padding: 0 0 7px 0;
+            text-transform: uppercase;
+            margin: 10px 0 auto;
+            
+            a{
+              width: 100%;
+              white-space: normal;
+              color: #303030;
+              text-decoration: none;
+              font-weight: normal;
+              font-size: 12px;
+              line-height: 14px;
+
+              &:hover{
+                color: #336699;
+              }
+            }            
+          }
+
+          .topnav_submenu_title {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: left;
+            color: #293f6a;
+            line-height: 16px;
+            padding-bottom: 10px;
+            width: 100%;
+            border-bottom: 1px solid #888;
+            text-transform: uppercase;
+          }
+        }
+      }
+    }
+  }
 }
 
+.solutions-tab-menu-block .view-footer{
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: bold;
+  
+  a{
+    color: #293F6A;
+
+    &:hover{
+      text-decoration: none;
+    }  
+  }  
+}
 
 /*
  * Wraps breadcrumb
@@ -1328,7 +1459,7 @@ ul.action-links {
  * Main wrapper for most blocks, block_system_main does not have it
  */
 .block {
-  margin-bottom: 20px;
+  // margin-bottom: 20px;
 }
 
 
@@ -1804,6 +1935,28 @@ a.button {
   @include appearance(button);
 }
 
+a.request-button{
+  background-color: #293F6A;
+  color: #FFF;
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 20px;
+  width: 348px;
+  height: 60px;
+  border-radius: 10px;
+  text-decoration: none;
+  padding: 15px;
+  word-wrap: break-word;
+}
+
+a.view-more-link{
+  font-style: italic;
+  font-size: 13px;
+  line-height: 15px;
+  color: #293F6A;
+  text-decoration: none;
+  font-weight: bold;
+}
 
 /*
  * Password confirmation
@@ -2078,11 +2231,11 @@ tr.error {
   }
 
   #mkto-content {
-    padding: 60px 40px 60px 50px;
+    padding: 30px 40px 60px 50px;
 
     #mkt-prod-details {
       float: left;
-      width: 536px;
+      width: 62%;
 
       #mkt-prod-title {
         font-size: 32px;
@@ -2119,7 +2272,7 @@ tr.error {
 
     #mkto-content-main-form {
       float: right;
-      width: 320px;
+      width: 35%;
       border: 2px solid #DDD;
 
       #mkto-form-header {
@@ -2316,3 +2469,9 @@ tr.error {
 .btn_143w a:hover{
   background: url(images/button-gradient-grey.gif) 0 0 repeat-x #a2a2a2;
   background-image: linear-gradient(180deg, #c3c3c3, #a2a2a2 75%); }
+
+#block-responsive-share-buttons-share{
+  margin-top: 100px;
+}
+
+#block-fnet-header-footer-fnet-header-footer-top-menu-b .block-inner{float: right;}

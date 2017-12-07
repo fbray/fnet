@@ -7,63 +7,56 @@
  *
  * - Read the _README file in this directory, it contains useful help and other information.
  */
-/* line 15, ../sass/responsive.desktop.scss */
+/* line 18, ../sass/responsive.desktop.scss */
 .mkto-content-main {
   margin: 0 auto;
   width: 1024px;
   font-family: Arial;
   color: #4A4A4A;
 }
-/* line 22, ../sass/responsive.desktop.scss */
+/* line 25, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkt-prod-banner img {
   width: 100% !important;
   height: auto !important;
 }
-/* line 28, ../sass/responsive.desktop.scss */
-.mkto-content-main #mkto-content {
-  padding: 60px 40px 60px 50px;
-}
-/* line 31, ../sass/responsive.desktop.scss */
+/* line 33, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-prod-details {
   float: left;
-  width: 536px;
+  width: 62% #mkt-prod-title;
+  width-font-size: 32px;
+  width-font-weight: bold;
 }
-/* line 35, ../sass/responsive.desktop.scss */
-.mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-title {
-  font-size: 32px;
-  font-weight: bold;
-}
-/* line 40, ../sass/responsive.desktop.scss */
+/* line 42, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-left {
   width: 216px;
   float: left;
   margin-right: 20px;
 }
-/* line 45, ../sass/responsive.desktop.scss */
+/* line 47, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-left img {
   width: 100%;
 }
-/* line 49, ../sass/responsive.desktop.scss */
+/* line 51, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-right {
   width: 216px;
   float: right;
 }
-/* line 53, ../sass/responsive.desktop.scss */
+/* line 55, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-right img {
   width: 100%;
 }
-/* line 58, ../sass/responsive.desktop.scss */
+/* line 60, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-content {
   font-size: 16px;
   line-height: 21px;
 }
-/* line 66, ../sass/responsive.desktop.scss */
+/* line 68, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkto-content-main-form {
   float: right;
-  width: 320px;
+  width: 35%;
   border: 2px solid #DDD;
 }
-/* line 71, ../sass/responsive.desktop.scss */
+/* line 73, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkto-content-main-form #mkto-form-header {
   padding: 10px;
   text-align: center;
@@ -72,24 +65,19 @@
   color: #FFFFFF;
   background-color: #293F6A;
 }
-/* line 80, ../sass/responsive.desktop.scss */
-.mkto-content-main #mkto-content #mkto-content-main-form #mkto-form {
-  padding: 20px;
-  overflow: hidden;
-}
-/* line 86, ../sass/responsive.desktop.scss */
+/* line 83, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-more-links-content {
   clear: left;
   float: left;
   margin-top: 30px;
 }
-/* line 91, ../sass/responsive.desktop.scss */
+/* line 88, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-more-links-content a {
   font-size: 14px;
   color: #293F6A;
   text-decoration: none;
 }
-/* line 98, ../sass/responsive.desktop.scss */
+/* line 95, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-contact-info {
   clear: left;
   float: left;

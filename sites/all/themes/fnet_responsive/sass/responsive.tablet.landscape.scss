@@ -11,6 +11,16 @@
  *
  * - Read the _README file in this directory, it contains useful help and other information.
  */
+ body {
+  font-size: 100%; 
+}
+.container {
+  width: 100%;
+}
+// #content {
+//   margin-right: 30px;
+//   margin-left: 35px;
+// }
  #footer-wrapper{
   margin-bottom: 20px;
  }
@@ -19,17 +29,18 @@
   width: 100%;
 
   #mkto-content {
-    padding: 60px 20px 60px 20px;
+    padding: 30px 20px 60px 20px;
     margin-left: 15px;
 
     #mkt-prod-details {
-      width: 620px;
-      @media only screen and (max-width:925px) {
-        width: 520px;
-      }
-      @media only screen and (max-width:825px) {
-        width: 415px;
-      }
+      width: 55%;
+      // width: 620px;
+      // @media only screen and (max-width:935px) {
+      //   width: 520px;
+      // }
+      // @media only screen and (max-width:835px) {
+      //   width: 415px;
+      // }
 
       #mkt-prod-title {
         font-size: 24px;
@@ -48,7 +59,7 @@
     }
 
     #mkto-content-main-form {
-      width: 255px;
+      width: 40%;
 
       #mkto-form {
         padding: 15px;
