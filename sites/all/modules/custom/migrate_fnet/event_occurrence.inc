@@ -18,13 +18,19 @@ class FNETEventOccurrenceMigration extends FNETNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
+
     // Deprecated Fields
-    $this->addFieldMapping(NULL, 'field_business_entity');
+    $this->addFieldMapping(NULL, 'field_business_entity')
+      ->description(t('No longer necessary as NetScout split is complete.'))
+      ->issueGroup(t('DNM'));
 
     // Individual Fields
     $this->addFieldMapping('field_event_occ_cost', 'field_evnt_occ_cost');
+    $this->addFieldMapping('field_marketo_program', 'field_evnt_occ_marketo_program');
     $this->addFieldMapping('field_event_occ_req_gold_number', 'field_evnt_occ_req_gold_number');
-    $this->addFieldMapping('field_event_occ_req_address', 'field_evnt_req_address');
+    $this->addFieldMapping('field_event_occ_req_address', 'field_evnt_occ_req_address');
     $this->addFieldMapping('field_event_occ_capacity', 'field_evnt_occ_capacity');
     $this->addFieldMapping('field_event_occ_waitlist', 'field_evnt_occ_waitlist');
     $this->addFieldMapping('field_event_occ_accommodations', 'field_evnt_occ_accommodations')
@@ -40,6 +46,7 @@ class FNETEventOccurrenceMigration extends FNETNode7Migration {
     $this->addFieldMapping('field_notes:format', 'field_evnt_occ_notes:format');
     $this->addFieldMapping('field_event_occ_thank_you', 'field_evnt_occ_thank_you');
     $this->addFieldMapping('field_event_occ_thank_you:format', 'field_evnt_occ_thank_you:format');
+
 
     // Convert Location data to Address field
     // Country
@@ -85,9 +92,9 @@ class FNETEventOccurrenceMigration extends FNETNode7Migration {
     // Date fields
     $this->addFieldMapping('field_event_date', 'parsed_event_date');
     $timezone = variable_get('date_default_timezone', '');
-    $this->addFieldMapping('field_event_date:timezone', 'parsed_event_date:timezone')
+    $this->addFieldMapping('field_event_date:timezone')
       ->defaultValue($timezone);
-    $this->addFieldMapping('field_event_date:rrule', 'parsed_event_date:rrule')
+    $this->addFieldMapping('field_event_date:rrule')
       ->defaultValue(NULL);
     $this->addFieldMapping('field_event_date:to', 'parsed_event_date_end');
 
@@ -109,15 +116,16 @@ class FNETEventOccurrenceMigration extends FNETNode7Migration {
       return FALSE;
     }
     // TODO: Put the date and time fields together.
-    $date = $row->field_evnt_occ_date;
+    $date = $row->field_evnt_occ_date[0];
 
     // Extract the start and end times.
-    $times = $this->parseEventTime($row->field_evnt_occ_time);
+    $times = $this->parseEventTime($row->field_evnt_occ_time[0]);
 
-    // Glom the two together
-    // TODO: Figure this out.
-
-    // $row->source_article_date = $row->field_article_year . '-' . $row->field_article_month . '-'. $row->field_article_day . ' 00:00:00'; // Format the date here. YYYY-MM-DD HH:MM:SS
+    // Format should be YYYY-MM-DDTHH:MM:SS (ex. 2013-05-06T00:00:00)
+    $row->parsed_event_date = str_replace('00:00:00', $times->start, $date);
+    if (isset($times->end)) {
+      $row->parsed_event_date_end = str_replace('00:00:00', $times->end, $date);
+    }
   }
 
   /**
@@ -149,26 +157,56 @@ class FNETEventOccurrenceMigration extends FNETNode7Migration {
    * @return \stdClass
    */
   protected function parseEventTime($time) {
+    // Output should be formatted in 24hr style as HH:MM:SS. (Ex. 13:30:00)
     $parsed = new stdClass;
     // Extract the start value
-    // Is it a 24hr value? Use that if available.
-    // Noon means 12:00
-    // look for AM/PM
-    // Start numbers without AM/PM tend to be in the morning. Values between 7 and 12 are generally AM.
+    $thing = explode(' ', $time);
+
+    $parsed->start = $this->figureOutTime($thing[0]);
 
     // Extract the end value
-    // Is it a 24hr value? Use that if available.
-    // Noon means 12:00
-    // look for AM/PM
-    // End numbers without AM/PM tend to be in the evening. Values
-
-    // format to 24hr time - HH:MM:SS
-
+    if (isset($thing[2])) {
+      $parsed->end = $this->figureOutTime($thing[2]);
+    }
     return $parsed;
   }
 
-  public function complete($node, stdClass $row) {
-    // Generate URL Redirects.
-    parent::generateNodeRedirect($node, $row);
+  protected function figureOutTime($time = '00:00:00') {
+    $meridiem = '';
+    // If value is Noon
+    if (strtolower($time) == 'noon') {
+      return '12:00:00';
+    }
+
+    // Replace periods with colons.
+    $figured = str_replace('.', ':', $time);
+
+    // Strip off any 'am' or 'pm', but make note of it.
+    $pattern = '/(AM|am|PM|pm)/';
+    // do a preg_match to see if is in there
+    if (preg_match($pattern, $time, $matches) == 1) {
+      // if so, find out which one it is
+      $meridiem = strtolower($matches[0]);
+      // Then remove it.
+      $time = str_replace($meridiem, '', $time);
+    }
+
+
+    // Split the value into hours and minutes.
+    $split = explode(':', $time);
+    $hour = $split[0];
+    $minutes = $split[1];
+    // Process the hour
+    // If hour is greater than 12, it's already in 24hr format.
+    // Otherwise, look for AM/PM
+    if ($hour < 12) {
+      // If PM, convert to 24hr time: Hour + 12
+      if ($meridiem == 'pm') {
+        $hour = $hour + 12;
+      }
+
+    }
+    return sprintf("%02d:%02d:%02d", $hour, $minutes, '00');
   }
+
 }
