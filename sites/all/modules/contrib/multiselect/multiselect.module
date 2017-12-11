@@ -266,12 +266,7 @@ function _multiselect_build_widget_code($options, $items, $element, $required = 
         $selected_options[$value['uid']] = $value['uid'];
       }
       elseif (isset($value['target_id'])) { // Handle Entity Reference.
-        if (is_array($value['target_id']) && array_key_exists('target_id', $value['target_id'])) {
-          $selected_options[$value['target_id']['target_id']] = $value['target_id'];
-        }
-        else {
-          $selected_options[$value['target_id']] = $value['target_id'];
-        }
+        $selected_options[$value['target_id']] = $value['target_id'];
       }
       elseif (isset($options[$value])) { // With FAPI, it's not.
         $selected_options[$value] = $options[$value];
