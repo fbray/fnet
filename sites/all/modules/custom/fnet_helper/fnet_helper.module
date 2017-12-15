@@ -94,6 +94,7 @@ function fnet_helper_preprocess_html(&$variables) {
 /**
  * Implements hook_preprocess_page().
  */
+/* DEPRECATED
 function fnet_helper_preprocess_page(&$variables) {
 
   // Need to get the following scripts in early...
@@ -107,6 +108,7 @@ function fnet_helper_preprocess_page(&$variables) {
     setcookie('fullweb', 1, 0, '/');
   }
 }
+*/
 
 /**
  * Implements hook_form_alter().
