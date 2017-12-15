@@ -26,6 +26,8 @@ function product_assets_menu() {
     'access arguments' => array(),
     'type' => MENU_CALLBACK,
   );
+
+  // TODO: Build an Admin page for settings! - rositis 12/11/2017
   /*
     // Software downloads
     $items['support/downloads'] = array(
@@ -190,11 +192,34 @@ function product_assets_theme() {
     'assets_webcasts_listing' => $base + array(
       'template' => 'assets_webcasts_listing',
       'variables' => array(
-        'assets' => array()
+        'assets' => array(),
       )
+    ),
+    'expertise_page' => $base + array(
+      'template' => 'expertise_page',
+      'variables' => array(
+        'expertise' => array(),
+      ),
+    ),
+    'support_page' => $base + array(
+      'template' => 'support_page',
+      'variables' => array(
+        'support' => array(),
+      ),
     ),
   );
 }
+
+/**
+ * Implements hook_theme()
+ */
+
+function custom_pages_theme() {
+  return array(
+
+  );
+}
+
 /**
  * Implements hook_views_api().
  *
@@ -207,8 +232,6 @@ function product_assets_views_api() {
     'template path' => drupal_get_path('module', 'product_assets') . '/theme',
   );
 }
-
-
 
 /**
  * Title pre-processor for technical document page view.
@@ -569,19 +592,6 @@ function _product_assets_get_asset_list($xmlObj, $download_link_base, $list_type
   return $asset_list;
 }
 
-/**
- * Implements hook_theme()
-().
- */
-/*
-function custom_pages_theme() {
-  return array(
-    'expertise_page' => array(
-      'template' => 'expertise_page',
-      'variables' => array('expertise' => array())),
-  );
-}
-*/
 
 /**
  * Supplementary function providing CuRL implementation
@@ -676,12 +686,13 @@ function custom_pages_preprocess_page(&$variables) {
 /**
  * Implementation of Support page view.
  */
-// TODO: Replace with a View.
 function support_page_page() {
   drupal_add_css(drupal_get_path('module', 'product_assets') . '/css/support_page.css');
-  drupal_add_js(drupal_get_path('module', 'product_assets') . '/css/support_page.js');
+  drupal_add_js(drupal_get_path('module', 'product_assets') . '/js/support_page.js');
   $output  = '';
+  // TODO: What the hell is this doing here? There is no longer a settings page.
   $support = variable_get('support_page_settings', array());
+  dpm($support);
   $output .= theme('support_page', array('support' => $support));
   return $output;
 }
@@ -690,7 +701,7 @@ function support_page_page() {
  * Implementation of Expertise page view.
  */
 function expertise_page_page() {
-  drupal_add_css(drupal_get_path('module', 'product_assets') . '/js/expertise_page.css');
+  drupal_add_css(drupal_get_path('module', 'product_assets') . '/css/expertise_page.css');
   drupal_add_js(drupal_get_path('module', 'product_assets') . '/js/expertise_page.js');
 
   $output                       = '';
