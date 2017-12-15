@@ -1415,8 +1415,8 @@ function digital_asset_rebuild_owners_table() {
   $result = db_query("SELECT DISTINCT uid FROM node WHERE type = 'digital_asset'");
   foreach ($result as $row) {
     $account = user_load($row->uid);
-    $first_name = $account->field_user_first_name[LANGUAGE_NONE][0]['value'];
-    $last_name = $account->field_user_last_name[LANGUAGE_NONE][0]['value'];
+    $first_name = $account->field_address[LANGUAGE_NONE][0]['first_name'];
+    $last_name = $account->field_address[LANGUAGE_NONE][0]['last_name'];
     $full_name = $first_name . ' ' . $last_name;
     $query = db_insert('digital_asset_owners')
       ->fields(array(
