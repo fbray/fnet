@@ -411,7 +411,7 @@ function fnet_ma_set_user_gold_role($gold_number, $gold_pin) {
  */
 function fnet_ma_user_login(&$edit, &$account) {
   // If this is a one-time login for resetting the password, $edit is empty. Check that.
-  if ((!empty($edit)) || ($_POST['form_id'] == 'user_pass_reset')) {
+  if ((!empty($edit)) && ($_POST['form_id'] == 'user_pass_reset')) {
     // Not empty? Shoot them over to myaccount.
     $edit['redirect'] = 'myaccount';
     $gold_pin = check_plain(trim(fnet_common_get_field_value('user', $account, 'field_user_gold_pin')));
