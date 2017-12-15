@@ -81,6 +81,17 @@ class MigrateDestinationGroup extends MigrateDestinationEntity {
    */
   public function import(stdClass $group, stdClass $row) {
     // Updating previously-migrated content?
+    print_r($group);
+    print_r($row);
+    print_r($this);
+    // TODO: Path ID? What the hell is it expecting it to be?
+    $new_group = entity_create('group', array(
+      'field_extranet_group_countries' => $group->field_extranet_group_countries,
+      'url' => array('alias' => $row->path),
+      'type' => $group->type,
+    ));
+    $wrapper = entity_metadata_wrapper('group', $new_group);
+    print_r($wrapper->getPropertyInfo());
     $migration = Migration::currentMigration();
     $old_group = new stdClass();
     if (isset($row->migrate_map_destid1)) {
@@ -135,16 +146,19 @@ class MigrateDestinationGroup extends MigrateDestinationEntity {
     else {
       $updating = FALSE;
     }
-
-    // migrate_instrument_start('entity_save');
+    // migrate_instrument is to measure time and memory usage.
+    migrate_instrument_start('entity_save');
     /* TODO: Doing the entity_save causes an error: Call to undefined method stdClass::addMember() in GroupController->invoke().
      * TODO: Without it, we get the following error:
      * Error: Call to undefined method stdClass::uri() in entity_class_uri() (line 1146 of                                                   [error]
      * /webdev/fluke-networks-pantheon/sites/all/modules/contrib/entity/entity.module).
-     *
+     * The problem here is that we're using a stdClass object instead of a Group Entity object.
      */
-    // entity_save('group', $group);
-    // migrate_instrument_stop('entity_save');
+    // group_entity_save($group, 'group');
+
+    $group->save(); // Fastest, cleanest
+    // entity_save('group', $new_group);
+    migrate_instrument_stop('entity_save');
 
     if (isset($group->gid)) {
       if ($updating) {
