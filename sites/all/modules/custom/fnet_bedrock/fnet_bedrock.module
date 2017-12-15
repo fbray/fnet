@@ -226,7 +226,10 @@ function fnet_bedrock_create_drupal_user(fnet_bedrock_user $bedrock_user) {
  */
 function fnet_bedrock_log_failure($result, $data = NULL) {
   if (!empty($data)) {
-    dpm($data);
+    if (module_exists('devel')) {
+      dpm($data);
+    }
+    // TODO: What if the response is an array?
     $payload = json_decode($data);
     if (($payload) && ($payload->user)) {
       $payload->user->password = '*******';
