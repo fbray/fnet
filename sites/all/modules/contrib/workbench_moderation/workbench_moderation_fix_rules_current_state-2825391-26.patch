@@ -2,7 +2,7 @@ diff --git a/workbench_moderation.module b/workbench_moderation.module
 index f7aa74a..25c23ca 100644
 --- a/workbench_moderation.module
 +++ b/workbench_moderation.module
-@@ -826,6 +826,11 @@ function workbench_moderation_save($node) {
+@@ -825,6 +825,11 @@ function workbench_moderation_save($node) {
    // Save the node history record.
    drupal_write_record('workbench_moderation_node_history', $new_revision);
  
