@@ -1,12 +1,9 @@
-Index: sites/all/modules/draggableviews/views/draggableviews_join_handler.inc
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- views/draggableviews_join_handler.inc	(revision 39)
-+++ views/draggableviews_join_handler.inc	(revision )
+diff --git a/views/draggableviews_join_handler.inc b/views/draggableviews_join_handler.inc
+index dd7c0c46c..aa4d66ee9 100644
+--- a/views/draggableviews_join_handler.inc
++++ b/views/draggableviews_join_handler.inc
 @@ -54,7 +54,7 @@
- 
+
        // Arguments passed to view (including exposed filters).
        $view_arguments = isset($view->args) ? $view->args : array();
 -      if (isset($view->exposed_raw_input)) {
