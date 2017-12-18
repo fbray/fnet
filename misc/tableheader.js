@@ -5,9 +5,6 @@
  */
 Drupal.behaviors.tableHeader = {
   attach: function (context, settings) {
-    if (!$.support.positionFixed) {
-      return;
-    }
 
     $('table.sticky-enabled', context).once('tableheader', function () {
       $(this).data("drupal-tableheader", new Drupal.tableHeader(this));
