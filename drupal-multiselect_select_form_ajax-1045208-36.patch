@@ -1,0 +1,23 @@
+diff --git a/misc/ajax.js b/misc/ajax.js
+index c944ebbf24..c91e6860af 100644
+--- a/misc/ajax.js
++++ b/misc/ajax.js
+@@ -375,8 +375,17 @@ Drupal.ajax.prototype.beforeSend = function (xmlhttprequest, options) {
+     // $.ajax() are already serialized prior to the element being disabled, so
+     // this is only needed for IFRAME submissions.
+     var v = $.fieldValue(this.element);
+-    if (v !== null) {
+-      options.extraData[this.element.name] = Drupal.checkPlain(v);
++    if (v !== null && typeof v === 'object') {
++      var name = this.element.name;
++      $.each(v, function (i, value) {
++        var key = name.replace(/\[\]/, '[' + value + ']');
++        options.extraData[key] = value;
++      });
++    }
++    else {
++      if (v !== null) {
++        options.extraData[this.element.name] = Drupal.checkPlain(v);
++      }
+     }
+   }
