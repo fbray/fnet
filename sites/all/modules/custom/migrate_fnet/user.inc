@@ -57,4 +57,27 @@ class FNETUserMigration extends DrupalUser7Migration {
     $this->addFieldMapping('field_address:data', 'field_user_address_line_2')
       ->defaultValue(NULL);
   }
+
+  public function prepareRow($row) {
+    // Always include this snippet, in case our parent class decides to ignore the row
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+
+    // Data import rules to filter out junk users.
+    // First Name and Last Name the same? NOPE.
+    if ($row->field_user_first_name[0] == $row->field_user_last_name[0]) {
+      return FALSE;
+    }
+    // User has never logged in? TOAST.
+    if ($row->login[0] == 0) {
+      return FALSE;
+    }
+
+    // Blocked user? BYE, FELICIA.
+    if($row->status[0] == 0) {
+      return FALSE;
+    }
+
+  }
 }
