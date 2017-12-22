@@ -122,6 +122,7 @@ class FNETProductFamilyMigration extends DrupalNode7Migration {
       ->defaultValue(NULL);
 
     // Image Fields
+    // TODO: Come up with generic default alt text for images to better SEO results.
     $this->addFieldMapping('field_image', 'field_family_image')
       ->sourceMigration('Files');
     $this->addFieldMapping('field_image:alt')
@@ -261,5 +262,13 @@ class FNETProductFamilyMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_product_category', 'field_family_industry')
       ->sourceMigration('ProductCategory');
 
+  }
+
+  public function prepareRow($row) {
+    // Always include this snippet, in case our parent class decides to ignore the row
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+    // TODO: Do some sort of check for existing data for references. Try to cut down on the stubs.
   }
 }

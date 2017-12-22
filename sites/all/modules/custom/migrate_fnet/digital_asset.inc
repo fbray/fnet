@@ -25,11 +25,8 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
       ->description(t('No longer necessary as NetScout split is complete.'))
       ->issueGroup(t('DNM'));
 
-    // Override the language
-    $this->addFieldMapping('language', 'field_dam_language')
-      ->defaultValue('en');
-
     // Individual Fields
+    $this->addFieldMapping('field_dam_language', 'field_dam_language');
     $this->addFieldMapping('field_dam_document_id', 'field_dam_document_id');
     $this->addFieldMapping('field_dam_ams_id', 'field_dam_ams_id');
     $this->addFieldMapping('field_dam_revision_letter', 'field_dam_revision_letter');
@@ -95,10 +92,10 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
 
     $this->addFieldMapping('field_asset_tags', 'taxonomy_vocabulary_19')
       ->sourceMigration('AssetTags');
-/* TODO: WTF did I do this? Product Category is the former Industry content type, but I don't see anything in the original Digital Asset for this. Did I fuck up?
+
     $this->addFieldMapping('field_product_category', 'consolidated_industry')
       ->sourceMigration('ProductCategory');
-*/
+
     // File Fields
     $this->addFieldMapping('field_asset_file', 'field_dam_asset_file')
       ->sourceMigration('Files');
@@ -158,6 +155,7 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
     $row->consolidated_industry = $consolidated;
 
     // Correct the language field.
+    /*
     // Traditional Chinese
     if ($row->field_dam_language == 'tw') {
       $row->field_dam_language = 'zh-hant';
@@ -166,6 +164,7 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
     if ($row->field_dam_language == 'zh') {
       $row->field_dam_language = 'zh-hans';
     }
+    */
 
     // Remove the absolute URL in the Form URL and eDoc URL fields.
     // Check the body field. Replace and instanes of 'sites/flukenetworks.com' in URLs
@@ -173,5 +172,35 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
     $row->field_dam_form_url = str_replace('http://flukenetworks.com/', '/', $row->field_dam_form_url);
     $row->field_dam_edoc_url = str_replace('http://flukenetworks.com/', '/', $row->field_dam_edoc_url);
   }
+
+  /**
+   * @return \QueryConditionInterface
+   */
+  protected function query() {
+    $query = parent::query();
+
+    // TODO: This probably is adding lots of duplicate rows. Find another way. -rositis
+    // Join the Groups Membership table
+    $query->leftJoin('group_entity', 'ge', 'ge.entity_id = n.nid');
+    $query->fields('ge', array(
+      'gid',
+      'entity_id',
+      'entity_type',
+      'bundle'
+    ));
+
+    return $query;
+  }
+
+  public function complete($entity, stdClass $row) {
+    // TODO: this is where we update the group_entity table with the following:
+    /*
+     * Group ID (gid)
+     * Entity ID (entity_id)
+     * Entity Type (entity_type) ex. group -OR- node
+     * Bundle (bundle) ex. sales_insider_subgroup -OR- digital_asset
+     */
+  }
+
 
 }

@@ -485,7 +485,7 @@ Illegal offset type migrate.module:390
       'machine_name' => 'ProductFamily',
       'source_type' => 'family',
       'destination_type' => 'product_family', // changed to be more accurate
-      'dependencies' => array('ProductCategory'),
+      'dependencies' => array('ProductCategory', 'Files'),
     ),
 
     // Feature (Change to Product Feature)

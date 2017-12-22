@@ -236,7 +236,5 @@ class FNETProductCategoryMigration extends DrupalNode7Migration {
     $this->addFieldMapping('product_attributes', 'taxonomy_vocabulary_6')
       ->sourceMigration('ProductAttributes');
 
-
-
   }
 }

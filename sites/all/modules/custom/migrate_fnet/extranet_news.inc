@@ -13,13 +13,28 @@ class FNETExtranetNewsMigration extends FNETNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
 
     // Individual Fields
     $this->addFieldMapping('field_display_title', 'field_display_title');
   }
 
-  public function complete($node, stdClass $row) {
-    // Generate URL Redirects.
-    parent::generateNodeRedirect($node, $row);
+  /**
+   * @return \QueryConditionInterface
+   */
+  protected function query() {
+    $query = parent::query();
+
+    // Join the Groups Membership table
+    $query->leftJoin('group_entity', 'ge', 'ge.entity_id = n.nid');
+    $query->fields('ge', array(
+      'gid',
+      'entity_id',
+      'entity_type',
+      'bundle'
+    ));
+
+    return $query;
   }
 }
