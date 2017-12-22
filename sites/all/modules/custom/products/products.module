@@ -165,7 +165,7 @@ function _product_list_contents($path_alias) {
  */
 function products_preprocess_page(&$variables) {
   // Add Accordion UI library for the Product pages.
-  if (isset($variables['node']) && ($variables['node']->type == 'product')) {
+  if (isset($variables['node']) && ($variables['node']->type == 'product_display')) {
 
     // Adds the Accordion UI library for this content type.
     drupal_add_library('system', 'ui.accordion');
