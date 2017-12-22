@@ -106,7 +106,6 @@
  */
 hide($content['comments']);
 hide($content['links']);
-
 ?>
 
 <?php if (fnet_common_safe_get($field_background_image, 0, 'uri')): ?>
@@ -208,13 +207,19 @@ hide($content['links']);
 
           <!-- List Families -->
           <div class="col-2-3">
+            <?php dpm($industry_families); ?>
 
-            <?php foreach ($industry_families as $family) { ?>
+            <?php foreach ($industry_families as $family): ?>
 
               <div class="column-grid">
                 <div class="col-1-3">
-                  <div style="padding:1em;">
-                    <img src="<?php print file_create_url(  fnet_common_get_field_value('family', $family, 'field_hub_image', 'uri')   ); ?>" style="width:auto; max-width:100%;" alt="<?php print fnet_common_get_field_value('family', $family, 'field_hub_image', 'alt') ?>" />
+                  <div class="image-cell">
+                    <?php if(isset($family->field_hub_image[0]['raw']['uri'])): ?>
+                    <img src="<?php print file_create_url($family->field_hub_images[0]['raw']['uri']); ?>"
+                        <?php if(isset($family->field_hub_images[0]['raw']['uri'])): ?>
+                         alt="<?php print $family->field_hub_images[0]['raw']['alt']; ?>" />
+                        <?php endif; ?>
+                    <?php endif; ?>
                   </div>
                 </div>
                 <div class="col-2-3">
@@ -223,21 +228,19 @@ hide($content['links']);
                   <div class="btn_143w"><a class="show-products" href="#family-product-list-<?php print $family->nid; ?>">See Products &#187;</a></div>
                 </div>
               </div>
-              <div class='clear_15px'>&nbsp;</div>
-              <div class='clear_1px'><img src='/sites/all/themes/adaptivetheme_subtheme_fnet/images/hub_product_divider.gif' width='650' height='1' border='0'></div>
-              <div class='clear_15px'>&nbsp;</div>
+              <hr class="fade" />
 
-            <?php } ?>
+            <?php endforeach; ?>
 
           </div>
 
-          <!-- "Right Hand Column" Content -->
+          <!-- "Right Hand Column" Content for the Overview Tab -->
           <div class="col-1-3">
             <div style="margin-left: 25px;padding-top: 15px;">
 
-              <?php if (fnet_common_safe_get($field_overview_box_1_title, 0, 'value')) { ?>
-                <h5><?php print fnet_common_safe_get($field_overview_box_1_title, 0, 'value'); ?></h5>
-              <?php } ?>
+              <?php if (isset($field_overview_box_1_title[LANGUAGE_NONE][0]['value'])): // TODO: Alter this to make the images show up. ?>
+                <h5><?php print $field_overview_box_1_title[LANGUAGE_NONE][0]['value']; ?></h5>
+              <?php endif; ?>
               <?php if (fnet_common_safe_get($field_overview_box_1_image, 0, 'uri')) { ?>
                 <p><img
                     src="<?php print file_create_url(fnet_common_safe_get($field_overview_box_1_image, 0, 'uri')); ?>"
@@ -429,21 +432,16 @@ hide($content['links']);
                     <div class="hub_product_desc"><div class="btn_143w"><a href="/<?php print drupal_lookup_path('alias', 'node/'.$product->nid); ?>">Learn More</a></div></div>
                   </div>
                 </div>
-
-                <div class='clear_15px'>&nbsp;</div>
-                <div class='clear_1px'><img src='/sites/all/themes/adaptivetheme_subtheme_fnet/images/hub_product_divider.gif' width='650' height='1' border='0'></div>
-                <div class='clear_15px'>&nbsp;</div>
+                <hr class="fade" />
 
               <?php endforeach; ?>
               
               <div style='text-align:right;'><a href='#top'>Back to top</a></div>
-              <div class='clear_15px'>&nbsp;</div>
-              <div class='clear_1px'><img src='/sites/all/themes/adaptivetheme_subtheme_fnet/images/hub_product_divider.gif' width='650' height='1' border='0'></div>
-              <div class='clear_15px'>&nbsp;</div>
+              <hr class="fade" />
             <?php endforeach; ?>
 
           </div>
-
+          <!-- Product Tab Right Column content -->
           <div class="col-1-3">
 					<div style="margin-left: 25px;padding-top: 15px;">
 

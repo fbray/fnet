@@ -209,7 +209,7 @@ body.front #content-wrapper {
 /*
  * Wraps all the branding elements, logo, name and slogan
  */
-#branding { float: left; margin-right: 0px;}
+#branding { float: left; margin-right: 0;}
 
 /*
  * Logo
@@ -268,10 +268,8 @@ h1.node-title {
   padding-top:3em;
 }
 #homepage-expertise .col-1-4 {
-  background-color: transparent;
-  background-repeat: no-repeat;
-  background-position: top left;
-  min-height:139px;
+    background: transparent no-repeat top left;
+    min-height:139px;
 }
 #homepage-expertise .col-1-4 ul {
   list-style:none;
@@ -335,6 +333,18 @@ ul.links {
 .search-results {
   margin: 0;
   padding: 0; }
+
+/*
+ * Horizontal Rules
+ */
+hr {}
+
+hr.fade {
+  border: 0;
+  margin:0;
+  height: 1px;
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0));
+}
 
 /* =============================================================================
  *   Views helper CSS
@@ -1778,6 +1788,19 @@ div.messages {
 .column-grid .col-2-3 {
   width: 70%; }
 
+.column-grid .col-2-3 .column-grid {
+  padding:1em 0;
+}
+
+.column-grid .col-2-3 .column-grid .col-1-3 .image-cell {
+  padding:1em;
+}
+
+.column-grid .col-2-3 .column-grid .col-1-3 .image-cell img {
+  width:auto;
+  max-width:100%;
+}
+
 .column-grid .col-1-4 {
   width: 25%; }
 
@@ -2434,6 +2457,7 @@ body.region-ru .hide-ru {
   line-height:20px;
 }
 
+
 /* Product Landing Page */
 .product_industry_title {
   padding:7px 7px 7px 10px;
@@ -2644,7 +2668,7 @@ body.node-type-edoc .field-name-body {
 
 /*
 #tabs-1,#tabs-2,#tabs-3 {
-  padding: 0px 40px 0px 40px;
+  padding: 0 40px 0 40px;
 } */
 
 /* ==========================================================================
@@ -3618,7 +3642,7 @@ ul.admin-list li {
   color: #9ca1a7;
   text-decoration: none; }
 #print_view .node-type-edoc .body-copy {
-  font-size: .938;
+  font-size: .938em;
   line-height: 1.35em;
   font-weight: normal; }
 #print_view .node-type-edoc .overview-frame {
@@ -3640,7 +3664,7 @@ ul.admin-list li {
   left: 0;
   bottom: 0; }
 #print_view .node-type-edoc .body-copy {
-  font-size: .938;
+  font-size: .938em;
   line-height: 1.35em;
   font-weight: normal; }
 #print_view .node-type-edoc .overview-frame {
@@ -3667,18 +3691,18 @@ ul.admin-list li {
   line-height: 1.25;
   font-weight: bold;
   text-align: left;
-  margin: 24px 0px 3px 0px; }
+  margin: 24px 0 3px 0; }
 #print_view .node-type-edoc .subhead {
   font-weight: bold;
   font-size: 1.0em;
   line-height: 1.25;
   color: #293F6a;
-  margin: 0px 0px 5px 0px; }
+  margin: 0 0 5px 0; }
 #print_view .node-type-edoc .caption {
   font-size: .813em;
   line-height: 1.25;
   font-weight: normal;
-  margin: 8px 0px 0px 0px; }
+  margin: 8px 0 0 0; }
 #print_view .node-type-edoc table {
   width: 100%; }
 #print_view .node-type-edoc th {
@@ -3720,40 +3744,40 @@ ul.admin-list li {
   width: 95%; }
 #print_view .node-type-edoc .body-list ul {
   list-style: disc outside none;
-  margin: 0px 0px 0px 18px; }
+  margin: 0 0 0 18px; }
 #print_view .node-type-edoc .body-list ul ul {
   list-style: disc outside none;
-  margin: 0px 0px 0px -20px; }
+  margin: 0 0 0 -20px; }
 #print_view .node-type-edoc .body-list ul ol {
   list-style: decimal outside none;
-  margin: 0px 0px 0px -20px; }
+  margin: 0 0 0 -20px; }
 #print_view .node-type-edoc .body-list ol {
   list-style: decimal outside none;
-  margin: 0px 0px 0px -20px; }
+  margin: 0 0 0 -20px; }
 #print_view .node-type-edoc .body-list ol ol {
   list-style: lower-roman outside none;
-  margin: 0px 0px 0px -20px; }
+  margin: 0 0 0 -20px; }
 #print_view .node-type-edoc .body-list ol ul {
   list-style: disc outside none;
-  margin: 0px 0px 0px 18px; }
+  margin: 0 0 0 18px; }
 #print_view .node-type-edoc .body-list ol {
   list-style: decimal outside none;
-  margin: 0px 0px 0px -20px; }
+  margin: 0 0 0 -20px; }
 #print_view .node-type-edoc .body-list ol ol {
   list-style: lower-roman outside none;
-  margin: 0px 0px 0px -20px; }
+  margin: 0 0 0 -20px; }
 #print_view .node-type-edoc .body-list ol ul {
   list-style: disc outside none;
-  margin: 0px 0px 0px 18px; }
+  margin: 0 0 0 18px; }
 #print_view .node-type-edoc .body-list li {
   font-family: "Arial", Helvetica, sans-serif;
   font-size: 1em;
   line-height: 1.5;
-  padding-left: 0px; }
+  padding-left: 0; }
 #print_view .node-type-edoc .body-list li::after {
   margin-bottom: 5px; }
 #print_view .node-type-edoc .overview-frame ol {
-  padding: 0px 18px;
+  padding: 0 18px;
   display: block;
   list-style-position: outside; }
 #print_view .node-type-edoc .overview-frame ol li {
@@ -3761,7 +3785,7 @@ ul.admin-list li {
   line-height: 1.25;
   font-style: italic;
   margin: 10px 5px -10px 10px;
-  padding-left: 0px; }
+  padding-left: 0; }
 #print_view .node-type-edoc .edoc_TOC {
   width: 100%; }
 #print_view .node-type-edoc .TOC-copy {
@@ -3790,7 +3814,7 @@ ul.admin-list li {
   border: 1px solid #fdb924;
   display: block;
   text-align: center;
-  padding: 8px 0px; }
+  padding: 8px 0; }
 
 /* Extras
 ------------------------- */
@@ -3805,7 +3829,7 @@ ul.admin-list li {
 #print_view .node-type-edoc .print-view-divider {
   border-bottom: thin solid #000;
   width: 100%;
-  margin: 12px 0px 24px 0px; }
+  margin: 12px 0 24px 0; }
 
 #print_view .node-type-edoc .focus-content {
   width: 100%; }
@@ -3814,7 +3838,7 @@ ul.admin-list li {
   line-height: 1;
   font-weight: bold;
   color: #293F6a;
-  margin: 0px 0px 18px 0px;
+  margin: 0 0 18px 0;
   border-bottom: thin solid #293F6a;
   padding-bottom: 3px; }
 #print_view .node-type-edoc .focus-content-subhead {
@@ -3822,12 +3846,12 @@ ul.admin-list li {
   line-height: .813em;
   text-transform: uppercase;
   color: #888;
-  margin: 3px 0px 0px 0x;
+  margin: 3px 0 0 0;
   letter-spacing: 1px; }
 #print_view .node-type-edoc .focus-content-copy {
   font-size: 1em;
   line-height: 1;
-  margin: -18px 0px 20px 0px; }
+  margin: -18px 0 20px 0; }
 
 /* Structure
 ------------------------- */
@@ -3873,21 +3897,21 @@ ul.admin-list li {
   font-size: 1.5em;
   color: #293F6a;
   font-style: italic;
-  margin: 0px 0px 18px 0px; }
+  margin: 0 0 18px 0; }
 .node-type-edoc h3 {
   font-size: 1.35em;
-  margin: 0px 0px 15px 0px; }
+  margin: 0 0 15px 0; }
 .node-type-edoc h4 {
   font-size: 1.25em;
-  margin: 0px 0px 12px 0px; }
+  margin: 0 0 12px 0; }
 .node-type-edoc h5 {
   font-size: 1em;
   color: #9ca1a7;
-  margin: 0px 0px 8px 0px; }
+  margin: 0 0 8px 0; }
 .node-type-edoc h6 {
   font-size: .938em;
   color: #9ca1a7;
-  margin: 0px 0px 8px 0px; }
+  margin: 0 0 8px 0; }
 .node-type-edoc .headline {
   font-family: "Arial", Helvetica, sans-serif;
   color: #293F6a;
@@ -3895,55 +3919,55 @@ ul.admin-list li {
   line-height: 1.5;
   font-weight: bold;
   text-align: left;
-  margin: 24px 0px 3px 0px; }
+  margin: 24px 0 3px 0; }
 .node-type-edoc .subhead {
   font-weight: bold;
   font-size: 1.1em;
   line-height: 1.25;
   color: #293F6a;
-  margin: 0px 0px 5px 0px; }
+  margin: 0 0 5px 0; }
 .node-type-edoc .lede {
   font-family: "Arial", Helvetica, sans-serif;
   color: #000;
   font-size: 1.125em;
   line-height: 1.5;
-  margin: 0px 0px 8px 0px; }
+  margin: 0 0 8px 0; }
 .node-type-edoc .body-copy {
   font-family: "Arial", Helvetica, sans-serif;
   color: #000;
   font-size: 1em;
   line-height: 1.25;
   text-align: left;
-  margin: 0px 0px 12px 0px; }
+  margin: 0 0 12px 0; }
 .node-type-edoc .body-copy-sm {
   font-family: "Arial", Helvetica, sans-serif;
   color: #000;
   font-size: .875em;
   line-height: 1.35;
   text-align: left;
-  margin: 0px 0px 8px 0px; }
+  margin: 0 0 8px 0; }
 .node-type-edoc .caption {
   font-family: "Arial", Helvetica, sans-serif;
   font-style: italic;
   color: #000;
   font-size: .813em;
   line-height: 1.25;
-  margin: 8px 0px 0px 0px; }
+  margin: 8px 0 0 0; }
 .node-type-edoc .footnote {
   font-family: "Arial", Helvetica, sans-serif;
   font-size: .813em;
   line-height: 1.25;
   font-weight: normal;
-  margin: 8px 0px 0px 8px; }
+  margin: 8px 0 0 8px; }
 .node-type-edoc .left {
   text-align: left;
-  padding: 0px 0px 0px 10px; }
+  padding: 0 0 0 10px; }
 .node-type-edoc .right {
   text-align: right;
-  padding: 0px 10px 0px 0px; }
+  padding: 0 10px 0 0; }
 .node-type-edoc .center {
   text-align: center;
-  padding: 0px 10px 0px 0px; }
+  padding: 0 10px 0 0; }
 .node-type-edoc .text-left {
   text-align: left; }
 .node-type-edoc .text-right {
@@ -3983,31 +4007,31 @@ ul.admin-list li {
   width: 95%; }
 .node-type-edoc .body-list ul {
   list-style: disc outside none;
-  margin: 0px 0px 0px -20px; }
+  margin: 0 0 0 -20px; }
 .node-type-edoc .body-list ul ul {
   list-style: disc outside none;
-  margin: 0px 0px 0px -20px; }
+  margin: 0 0 0 -20px; }
 .node-type-edoc .body-list ul ol {
   list-style: decimal outside none;
-  margin: 0px 0px 0px -20px; }
+  margin: 0 0 0 -20px; }
 .node-type-edoc .body-list ol {
   list-style: decimal outside none;
-  margin: 0px 0px 0px -20px; }
+  margin: 0 0 0 -20px; }
 .node-type-edoc .body-list ol ol {
   list-style: lower-roman outside none;
-  margin: 0px 0px 0px -20px; }
+  margin: 0 0 0 -20px; }
 .node-type-edoc .body-list ol ul {
   list-style: disc outside none;
-  margin: 0px 0px 0px -20px; }
+  margin: 0 0 0 -20px; }
 .node-type-edoc .body-list li {
   font-family: "Arial", Helvetica, sans-serif;
   font-size: 1em;
   line-height: 1.5;
-  padding-left: 0px; }
+  padding-left: 0; }
 .node-type-edoc .body-list li::after {
   margin-bottom: 5px; }
 .node-type-edoc .overview-frame ol {
-  padding: 0px 18px;
+  padding: 0 18px;
   display: block;
   list-style-position: outside; }
 .node-type-edoc .overview-frame ol li {
@@ -4015,7 +4039,7 @@ ul.admin-list li {
   line-height: 1.25;
   font-style: italic;
   margin: 10px 5px -10px 10px;
-  padding-left: 0px; }
+  padding-left: 0; }
 
 /* Tables
 ------------------------- */
@@ -4028,7 +4052,7 @@ ul.admin-list li {
   background-color: #FFF;
   border-radius: 0;
   border-collapse: collapse;
-  margin: 8px 0px; }
+  margin: 8px 0; }
 .node-type-edoc tbody {
   border: none; }
 .node-type-edoc th {
@@ -4102,7 +4126,7 @@ ul.admin-list li {
   border: 1px solid #fdb924;
   display: block;
   text-align: center;
-  padding: 8px 0px; }
+  padding: 8px 0; }
 
 /* Extras
 ------------------------- */
@@ -4112,14 +4136,14 @@ ul.admin-list li {
   border: 0;
   border-bottom: 1px dashed #9ca1a7;
   background: #e2e2e2;
-  margin: 12px 0px 0px 0px; }
+  margin: 12px 0 0 0; }
 .node-type-edoc hr.style-two {
   border: 0;
   height: 1px;
   background-image: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.75), transparent);
-  margin: 12px 0px 0px 0px; }
+  margin: 12px 0 0 0; }
 .node-type-edoc code {
-  margin: 18px 0px 10px 0px; }
+  margin: 18px 0 10px 0; }
 
 /* Clearing Goodness
 ------------------------- */
@@ -4137,7 +4161,7 @@ ul.admin-list li {
   line-height: 1;
   font-weight: bold;
   color: #293F6a;
-  margin: 0px;
+  margin: 0;
   border-bottom: thin solid #293F6a;
   padding-bottom: 3px; }
 .node-type-edoc .focus-content-subhead {
@@ -4145,12 +4169,12 @@ ul.admin-list li {
   line-height: .813em;
   text-transform: uppercase;
   color: #888;
-  margin: 3px 0px 0px 0x;
+  margin: 3px 0 0 0;
   letter-spacing: 1px; }
 .node-type-edoc .focus-content-copy {
   font-size: 1em;
   line-height: 1;
-  margin: -9px 0px 20px 0px; }
+  margin: -9px 0 20px 0; }
 
 /*# sourceMappingURL=fnet-style_REV.css.map */
 
@@ -4212,7 +4236,7 @@ div.gr-member-profile table {white-space: nowrap;}
 div#ps-widget-btn .ps-widget span, div#ps-widget-btn .ps-widget small{font-weight:normal !important;}
 #wtb-price-spider span, #wtb-price-spider small, .ps-widget span, .ps-widget small{font-size:13px !important;}
 #ps-widget-btn div.ps-widget{border: 1px solid #333;border-radius: 5px;background: linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(246,246,246,1) 47%,rgba(237,237,237,1) 100%) !important;}
-#At_A_Glance_Wrapper table.at-a-glance-buttons td#wtb-price-spider{cursor:default; padding:0px;}
+#At_A_Glance_Wrapper table.at-a-glance-buttons td#wtb-price-spider{cursor:default; padding :0;}
 
 /*Knowledge base*/
 #kb-search {
@@ -4274,7 +4298,7 @@ body.page-knowledge-base header#main-content-header {
 #kb-article-list caption{
 	float: left;
 	font-size: 20px;
-	padding: 15px 0px;
+	padding: 15px 0;
 }
 #kb-article-list {
     float:right;
@@ -4362,7 +4386,7 @@ body.page-knowledge-base header#main-content-header {
 	background-color: #E0E0E0;
 	float: right;
 	width: 240px;
-	padding: 0px 4px; 
+	padding:0 4px;
 }
 .recent-blogs-title {
 	padding-left: 27px;

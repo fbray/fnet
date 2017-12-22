@@ -304,25 +304,25 @@
 
 <!-- START: Region Menu -->
 <div id="selectRegionBox" style="display:none;">
-  <div id="selectRegionBoxTitle">Welcome to Fluke Networks</div>
-  <form action="" method="post" name="region">
-    <div style="padding:10px 5px 5px 5px;"><strong>Select your country:</strong></div>
-    <div class='OneLinkNoTx'>
-      <select id="regionCountry" name="regionCountry" onchange="countryLanguage(this.value);"
-              style="width:auto;font-size:12px;">
-        <option value="">-- Country --</option>
-      </select>
-    </div>
-    <div style="padding:10px 5px 5px 5px;"><strong>Select available language:</strong></div>
-    <select id="language" name="language" disabled="disabled" style="width:auto;font-size:12px;"">
-    <option value="">-- Language --</option>
-    </select>
+    <div id="selectRegionBoxTitle">Welcome to Fluke Networks</div>
+    <form action="" method="post" name="region">
+        <div style="padding:10px 5px 5px 5px;"><strong>Select your country:</strong></div>
+        <div class='OneLinkNoTx'>
+            <select id="regionCountry" name="regionCountry" onchange="countryLanguage(this.value);"
+                    style="width:auto;font-size:12px;">
+                <option value="">-- Country --</option>
+            </select>
+        </div>
+        <div style="padding:10px 5px 5px 5px;"><strong>Select available language:</strong></div>
+        <select id="language" name="language" disabled="disabled" style="width:auto;font-size:12px;">
+            <option value="">-- Language --</option>
+        </select>
+        <div class="clear">&nbsp;</div>
+        <div style="text-align:center;">
+            <div class="btn_143w" style="margin: 0px auto;"><a href="javascript:setRegion();"
+                                                               style="color:#000000;">Submit</a></div>
+        </div>
+    </form>
     <div class="clear">&nbsp;</div>
-    <div style="text-align:center;">
-      <div class="btn_143w" style="margin: 0px auto;"><a href="javascript:setRegion();"
-                                                         style="color:#000000;">Submit</a></div>
-    </div>
-  </form>
-  <div class="clear">&nbsp;</div>
 </div>
 <!-- END: Region Menu -->
