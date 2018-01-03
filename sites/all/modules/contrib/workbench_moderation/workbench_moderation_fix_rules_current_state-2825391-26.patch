@@ -1,0 +1,16 @@
+diff --git a/workbench_moderation.module b/workbench_moderation.module
+index f7aa74a..25c23ca 100644
+--- a/workbench_moderation.module
++++ b/workbench_moderation.module
+@@ -825,6 +825,11 @@ function workbench_moderation_save($node) {
+   // Save the node history record.
+   drupal_write_record('workbench_moderation_node_history', $new_revision);
+ 
++  // Set current revision.
++  if ($new_revision->is_current) {
++    $node->workbench_moderation['current'] = $new_revision;
++  }
++
+   // On a moderation loop, inform other modules of the change.
+   if (!empty($node->is_current)) {
+     // Clear the node's cache.

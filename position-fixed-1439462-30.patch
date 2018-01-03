@@ -1,0 +1,39 @@
+diff --git a/misc/drupal.js b/misc/drupal.js
+index 643baa1..808da7d 100644
+--- a/misc/drupal.js
++++ b/misc/drupal.js
+@@ -393,20 +393,6 @@ $('html').addClass('js');
+ // 'js enabled' cookie.
+ document.cookie = 'has_js=1; path=/';
+
+-/**
+- * Additions to jQuery.support.
+- */
+-$(function () {
+-  /**
+-   * Boolean indicating whether or not position:fixed is supported.
+-   */
+-  if (jQuery.support.positionFixed === undefined) {
+-    var el = $('<div style="position:fixed; top:10px" />').appendTo(document.body);
+-    jQuery.support.positionFixed = el[0].offsetTop === 10;
+-    el.remove();
+-  }
+-});
+-
+ //Attach all behaviors.
+ $(function () {
+   Drupal.attachBehaviors(document, Drupal.settings);
+diff --git a/misc/tableheader.js b/misc/tableheader.js
+index 47201b2..28a88e0 100644
+--- a/misc/tableheader.js
++++ b/misc/tableheader.js
+@@ -5,9 +5,6 @@
+  */
+ Drupal.behaviors.tableHeader = {
+   attach: function (context, settings) {
+-    if (!$.support.positionFixed) {
+-      return;
+-    }
+
+     $('table.sticky-enabled', context).once('tableheader', function () {
+       $(this).data("drupal-tableheader", new Drupal.tableHeader(this));
