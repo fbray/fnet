@@ -162,6 +162,7 @@ function digital_asset_page_view_form($form, &$form_state, $node) {
     '#markup' => fnet_common_get_field_value('digital_asset', $node, 'body', 'value'),
   );
   $tags = '';
+  // TODO: This field nme needs to be changed.
   if (isset($node->taxonomy_vocabulary_17) && is_array($node->taxonomy_vocabulary_17)) {
     foreach ($node->taxonomy_vocabulary_17 as $key => $term) {
       $tags .= ', ' . $term->name;
