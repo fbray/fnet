@@ -40,8 +40,7 @@ function digital_asset_admin_form($form, &$form_state) {
     '#executes_submit_callback' => TRUE,
     '#submit' => array('digital_asset_admin_rebuild_owner_table'),
   );
-  $form = system_settings_form($form);
-  return $form;
+  return system_settings_form($form);
 }
 
 /**
@@ -149,9 +148,8 @@ function digital_asset_admin_ccs_form($form, &$form_state) {
     ))),
   );
 
-  $form = system_settings_form($form);
   $form['#submit'][0] = 'digital_asset_admin_ccs_form_submit';
-  return $form;
+  return system_settings_form($form);
 }
 
 /**
@@ -173,6 +171,7 @@ function digital_asset_admin_print_vendor_mail_send_submit($form, &$form_state) 
  *
  * @param $form
  * @param $form_state
+ * TODO: WTF?
  */
 function digital_asset_admin_ccs_form_submit($form, &$form_state) {
   unset($form_state['values']['digital_asset_send_print_vendor_email']);
@@ -285,6 +284,7 @@ function digital_asset_admin_cdn_form($form, &$form_state) {
  * form submit function
  * @param $form
  * @param $form_state
+ * TODO: WTF?
  */
 function digital_asset_admin_cdn_form_submit($form, &$form_state) {
   unset($form_state['values']['test_ftp_connection']);

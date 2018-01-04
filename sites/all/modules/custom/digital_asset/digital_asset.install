@@ -11,6 +11,28 @@
  * implements hook_install
  */
 function digital_asset_install() {
+  $vocabularies = [];
+  // Asset Tags
+  $vocabularies[] = (object) array(
+    'name' => 'Asset Tags',
+    'machine_name' => 'asset_tags',
+  );
+
+  // Digital Asset Types
+  $vocabularies[] = (object) array(
+    'name' => 'Digital Asset Types',
+    'machine_name' => 'digital_asset_types',
+  );
+
+  foreach($vocabularies as $vocabulary) {
+    // Check if it aleady exists. If not, create it.
+    $existing = taxonomy_vocabulary_machine_name_load($vocabulary['machine_name']);
+    if (!$existing) {
+      taxonomy_vocabulary_save($vocabulary);
+    }
+  }
+
+  // TODO: Digital Asset content type
 }
 
 /**
@@ -35,6 +57,28 @@ function digital_asset_uninstall() {
   variable_del('digital_asset_cdn_upload_server');
   variable_del('digital_asset_cdn_username');
   variable_del('digital_asset_next_document_id');
+
+  // Remove Asset Tag vocabulary.
+  try {
+    $asset_tags = taxonomy_vocabulary_machine_name_load('asset_tags');
+    taxonomy_vocabulary_delete($asset_tags->vid);
+  }
+  catch(Exception $e) {
+    // TODO: Some sort of error handling.
+  }
+
+
+  // TODO: Remove Digital Asset Type vocabulary
+  try {
+    $digital_asset_types = taxonomy_vocabulary_machine_name_load('digital_asset_types');
+    taxonomy_vocabulary_delete($digital_asset_types->vid);
+  }
+  catch(Exception $e) {
+    // TODO: Some sort of error handling.
+  }
+
+
+  // TODO: Remove Digital Asset content
 }
 
 /**

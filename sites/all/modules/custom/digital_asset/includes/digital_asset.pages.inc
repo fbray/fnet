@@ -337,18 +337,7 @@ function digital_asset_page_view_form($form, &$form_state, $node) {
     'ent' => 'Enterprise',
     'all' => 'All',
   );
-  $business_entity_key = strtolower(fnet_common_get_field_value('digital_asset', $node, 'field_dam_business_entity', 'value'));
-  if (!empty($business_entity_key) && isset($options[$business_entity_key])) {
-    $business_entity = $options[$business_entity_key];
-  }
-  else {
-    $business_entity = '';
-  }
-  $form['business_entity'] = array(
-    '#type' => 'item',
-    '#title' => t('Business Entity'),
-    '#markup' => $business_entity,
-  );
+
   $form['bulk_fulfillment'] = array(
     '#type' => 'item',
     '#title' => t('Bulk Fulfillment Eligible'),
