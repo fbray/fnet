@@ -1,0 +1,516 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: ryanositis
+ * Date: 1/4/18
+ * Time: 1:13 PM
+ */
+
+/**
+ * @file
+ * Provides a protected extranet to the Fluke Networks website
+ * called 'Sales Insider'.
+ */
+
+/**
+ * Implements hook_permission().
+ *
+ * @return array
+ */
+function sales_insider_permission() {
+    return array(
+        'administer extranet' => array(
+            'title' => t('Administer Extranet'),
+            'description' => t('Access Extranet Administration pages.'),
+        ),
+        'access extranet' => array(
+            'title' => t('Access Extranet'),
+            'description' => t('Allow most basic Extranet access. Other restriction types will also usually be used.'),
+        ),
+    );
+}
+
+/**
+ * Implements hook_menu().
+ *
+ * @return array
+ */
+function fextranet_menu() {
+    $items = [];
+
+    // Public facing paths start with 'extranet'
+    $items['extranet'] = [
+        'menu_name' => 'extranet',
+        'title' => t('Sales Insider'),
+        'page callback' => '_sales_insider_base',
+        'access arguments' => ['access content'],
+        'type' => MENU_CALLBACK,
+    ];
+
+    $items['extranet/request-received'] = [
+        'title' => t('Sales Insider Access Request Received'),
+        'description' => t('Thank you page for Access Requests'),
+        'page callback' => '_sales_insider_access_request_received',
+        'access arguments' => ['access content'],
+        'type' => MENU_CALLBACK,
+    ];
+
+    $items['extranet-access-denied'] = [
+        'title' => t('Access Denied'),
+        'description' => t('Access Denied page'),
+        'page callback' => '_sales_insider_access_denied',
+        'access arguments' => ['access content'],
+        'type' => MENU_CALLBACK,
+    ];
+
+    $items['extranet/tools'] = [
+        'title' => t('Sales Tools'),
+        'description' => t('Extranet Sales Tools'),
+        'page callback' => '_sales_insider_sales_tool_page',
+        'access arguments' => ['access extranet'],
+        'type' => MENU_NORMAL_ITEM,
+        'menu_name' => 'extranet',
+    ];
+
+    $items['extranet/services'] = [
+        'title' => t('Services & Support'),
+        'description' => t('Extranet Services & Support'),
+        'page callback' => '_sales_insider_services_page',
+        'access arguments' => ['access extranet'],
+        'type' => MENU_NORMAL_ITEM,
+        'menu_name' => 'extranet',
+    ];
+
+    // box item download.  get box, then item url
+    // send back as redirect location
+    $items['extranet/download/%/%'] = [
+        'menu_name' => 'extranet',
+        'title' => 'Photo Download',
+        'page callback' => '_sales_insider_download_gallery_asset',
+        'page arguments' => [2, 3],
+        'access arguments' => ['access content'],
+        'type' => MENU_CALLBACK,
+    ];
+
+    $items['extranet/node/%'] = [
+        'menu_name' => 'extranet',
+        'page callback' => '_sales_insider_node_page',
+        'page arguments' => [2],
+        'title callback' => '_fextranet_node_title',
+        'title arguments' => [2],
+        'access callback' => '_fextranet_node_access',
+        'access arguments' => [2],
+        'type' => MENU_CALLBACK,
+    ];
+
+    // Autocomplete callback
+    $items['productname/autocomplete'] = [
+        'page callback' => '_sales_insider_products_autocomplete',
+        'access arguments' => ['access content'],
+        'type' => MENU_CALLBACK
+    ];
+
+    // Extranet Administrative Pages
+    $items['admin/fnet/extranet'] = [
+        'title' => t('Extranet'),
+        'description' => t('Adminstrative functions for managing the Extranet'),
+        'access arguments' => ['administer extranet'],
+        'page callback' => 'system_admin_menu_block_page',
+        'file' => 'system.admin.inc',
+        'file path' => drupal_get_path('module', 'system'),
+    ];
+
+    $items['admin/fnet/extranet/instructions'] = [
+        'title' => t('Instruction Text'),
+        'type' => MENU_NORMAL_ITEM,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => ['sales_insider_admin_instructions_form'],
+        'access arguments' => ['administer extranet'],
+        'file' => 'fextranet.admin.inc'
+    ];
+
+    $items['admin/fnet/extranet/notifications'] = [
+        'title' => t('Email Notifications'),
+        'description' => t('Settings for email notifications used by the Extranet.'),
+        'page callback' => 'drupal_get_form',
+        'page arguments' => ['sales_insider_admin_notifications_form'],
+        'access arguments' => ['administer extranet'],
+        'type' => MENU_NORMAL_ITEM,
+        'file' => 'fextranet.admin.inc'
+    ];
+
+    $admin_groups = _sales_insider_get_extranet_groups();
+    if (isset($admin_groups)) {
+        $items['admin/fnet/extranet/region'] = [
+            'title' => t('Regions'),
+            'description' => t('Administer Extranet content based on region.'),
+            'access arguments' => ['administer extranet'],
+            'type' => MENU_NORMAL_ITEM,
+        ];
+
+        foreach ($admin_groups as $group) {
+            $title = $group->title;
+            $gid = $group->gid;
+
+            $items['admin/fnet/extranet/region/' . $gid] = [
+                'title' => $title,
+                'type' => MENU_LOCAL_TASK,
+                'page callback' => 'fextranet_group_content_page',
+                'page arguments' => [2],
+                'access arguments' => ['administer extranet'],
+            ];
+            $plid = _sales_insider_get_mlid('admin/fnet/extranet/region/' . $gid);
+
+            // Content
+            $items['admin/fnet/extranet/region/' . $gid . '/content'] = [
+                'title' => $title . ' ' . t('Content'),
+                'type' => MENU_DEFAULT_LOCAL_TASK,
+                'page callback' => 'fextranet_group_content_page',
+                'page arguments' => [2],
+                'access arguments' => ['administer extranet'],
+            ];
+            if ($plid) {
+                $items['admin/fnet/extranet/region/' . $gid . '/content']['plid'] = $plid;
+            }
+
+            // Members
+            $items['admin/fnet/extranet/region/' . $gid . '/members'] = [
+                'title' => $title . ' ' . t('Members'),
+                'page callback' => 'fex_group_member_overview_form',
+                'page arguments' => [2],
+                'access arguments' => ['administer extranet'],
+                'type' => MENU_LOCAL_TASK,
+            ];
+            if ($plid) {
+                $items['admin/fnet/extranet/region/' . $gid . '/members']['plid'] = $plid;
+            }
+        }
+    }
+
+    /* Web service config page */
+    $items['admin/fnet/extranet/salesforce'] = [
+        'title' => t('Configure Salesforce Connection'),
+        'description' => t('Settings for connecting Salesforce to the Extranet.'),
+        'file' => 'sales_insider.admin.inc',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => ['_salesforce_admin_salesforce_config'],
+        'access arguments' => ['administer extranet'],
+        'type' => MENU_NORMAL_ITEM,
+    ];
+
+    /* Web service callback for new Salesforce-enabled processing */
+    $items['insider/v1/post'] = [
+        'page callback' => '_fextranet_insider_processing',
+        'access arguments' => ['access content'],
+        'type' => MENU_CALLBACK,
+    ];
+
+    return $items;
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * @return array
+ */
+function sales_insider_theme() {
+    $base = array(
+        'path' => drupal_get_path('module', 'sales_insider') . '/theme',
+    );
+    return array(
+        'product_assets' => $base + array(
+                'template' => 'product_assets',
+                'variables' => array(
+                    'elements' => NULL
+                ),
+            ),
+        'sales_insider_default_page_menu_item' => $base + array(
+                'template' => 'sales_insider_default_page_menu_item',
+                'variables' => array('items' => NULL),
+            ),
+        'sales_insider_request_thanks_message' => $base + array(
+                'template' => 'sales_insider_request_thanks_message',
+                'variables' => array(),
+            ),
+    );
+}
+
+/**
+ * Implements hook_node_info().
+ *
+ * @return array
+ */
+function sales_insider_node_info() {
+    $types = array(
+        'extranet_news' => array(
+            'name' => t('Extranet News'),
+            'base' => 'node_content',
+            'description' => t('Extranet News: Sales Alerts and Announcements'),
+            'has_title' => '1',
+            'title_label' => t('Title'),
+            'help' => t('Extranet News: Sales Alerts and Announcements'),
+        ),
+        'extranet_promotion' => array(
+            'name' => t('Extranet Promotion'),
+            'base' => 'node_content',
+            'description' => t('Extranet Promotions, optional start and end date.'),
+            'has_title' => '1',
+            'title_label' => t('Title'),
+            'help' => t('Extranet Promotions, optional start and end date.'),
+        ),
+        'media_gallery' => array(
+            'name' => t('Media Gallery'),
+            'base' => 'node_content',
+            'description' => t('Media Gallery can contain one or more of numerous file types, which can be either displayed or download.'),
+            'has_title' => '1',
+            'title_label' => t('Title'),
+            'help' => t('Media Gallery can contain one or more of numerous file types, which can be either displayed or download.'),
+        ),
+    );
+
+    return $types;
+}
+
+/**
+ * ---------- PAGE CALLBACKS ---------------
+ */
+
+/**
+ *
+ * @return array|mixed|null
+ * @throws \Exception
+ */
+function sales_insider_initial_content() {
+    $localized_message = '';
+    // Is the User logged in?
+    if (user_is_logged_in()) {
+        global $user;  // Get the current user.
+
+        // TODO: Re-write to remove stupid fextranet_session reference.
+        // get the user's group membership
+        // The big thing we want is the user's region.
+        $session = fextranet_session(); // So far, this is returning FALSE.
+
+        if (user_access('access_extranet')) {  // If the user has access to the Extranet...
+            $content = variable_get('extranet_instructions_main', '');
+            return $content;
+        }
+        else {
+            // ...because their request is pending
+            if (count($session->pending_groups) > 0) { // They have a pending access request
+                $pending_query = "SELECT requested_on, blocked_on, status, added_on FROM group_membership WHERE uid = :uid";
+                $access_requests = db_query($pending_query, array(':uid' => $user->uid))->fetchAssoc();
+                // If the status is empty
+                if ($access_requests) {
+                    /* Debugging
+                    if (module_exists('devel')) {
+                      dpm($access_requests);
+                    }
+                    */
+
+                    $requested_on = !empty($access_requests['requested_on']) ? format_date($access_requests['requested_on'], 'medium', ''): NULL;
+                    $blocked_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['blocked_on'], 'medium', ''): NULL;
+                    $added_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['added_on'], 'medium', ''): NULL;
+                    $status = $access_requests['status'];
+
+                    // TODO: Move this to an admin field using tokens. Also, language.
+                    // Display the 'You requested access on X, but it
+                    if (!empty($requested_on)) {
+                        $message = 'You requested access to Sales Insider on @request_date ';
+                        if ($status == 'blocked') { // has been denied.
+                            // Re-request Access/Resend Request option
+                            $message .= 'but unfortunately your request was denied by an administrator on @blocked_date.';
+                        }
+                        else {
+                            // has not yet been approved.'
+                            $message .= 'but your request has not yet been approved.';
+                        }
+                        $localized_message = t($message, array(
+                            '@request_date' => $requested_on,
+                            '@blocked_date' => $blocked_on
+                        ));
+                    }
+                    elseif (!empty($added_on)) {
+                        // if there is nothing in the requested_on field, the user was added manually.
+                        $message = 'You were granted access to Sales Insider on @added_date ';
+                        if ($status == 'blocked') { // has been denied.
+                            // Re-request Access/Resend Request option
+                            $message .= 'but unfortunately your access was blocked by an administrator on @blocked_date.';
+                        }
+                        else {
+                            // has not yet been approved.'
+                            $message .= 'but something has gone wrong.';
+                        }
+                        $localized_message = t($message, array(
+                            '@added_date' => $added_on,
+                            '@blocked_date' => $blocked_on
+                        ));
+                    }
+
+                }
+                else {
+                    // The default Thank You message.
+                    $localized_message = theme('sales_insider_request_thanks_message');
+                }
+                return $localized_message;
+            }
+            // ...or they just haven't requested access yet.
+            else {
+                // Load the Request Access Form
+                module_load_include('inc', 'sales_insider', 'includes/access_request.form');
+                $group_id = $session->region_group;
+                $request_form = drupal_get_form('sales_insider_request_form', $group_id);
+                return $request_form;
+            }
+        }
+
+    }
+    else {
+        $login_form = drupal_get_form('user_login');
+        $url = urldecode($login_form['#action']);
+        // If there is an existing query string, extract those values.
+        $query_string_values = array();
+        parse_str( parse_url($url, PHP_URL_QUERY), $query_string_values );
+        $query_string_values['destination'] = 'extranet';
+        // Trim the query off the URL to be able to rebuild.
+        $url = preg_replace('/\?.*/', '', $url);
+        // This puts in the '?destination=extranet'.
+        $action = url($url, array('query' => $query_string_values));
+        $login_form['#action'] = $action; // URL Decoding to clean up some weirdness.
+
+        $login_form['#redirect'] = 'extranet';
+        // $login_form['#submit'] = array('user_login_submit', 'fex_goto_extranet'); // This doesn't fucking work.
+        $login_form['#after_build'] = array();
+        /* TESTING
+        if (module_exists('devel')) {
+          dpm($login_form);
+        }
+        */
+        return $login_form;
+    }
+}
+
+/**
+ * Implements hook_views_api().
+ *
+ * @return array
+ */
+function sales_insider_views_api() {
+    return [
+        'api' => 3.0,
+        'path' => drupal_get_path('module', 'sales_insider') . '/views',
+    ];
+
+}
+
+/**
+ * wrappers to Group functions
+ */
+/**
+ * Group Access wrapper.
+ *
+ * @param $gid
+ * @return bool
+ */
+function _sales_insider_group_access($gid) {
+    $group = group_load($gid);
+    if ($group) {
+        return group_access('access member overview', $group);
+    }
+    return FALSE;
+}
+
+/**
+ * @param $gid
+ * @param $node_type
+ * @return array|bool
+ */
+function _sales_insider_gnode_node_add($gid, $node_type) {
+    $group = group_load($gid);
+    if ($group) {
+        return gnode_node_add($group, $node_type);
+    }
+    return FALSE;
+}
+
+/**
+ * @param $gid
+ * @param $node_type
+ * @return bool
+ */
+function _sales_insider_gnode_add_node_access($gid, $node_type) {
+    $group = group_load($gid);
+    if ($group) {
+        return gnode_add_node_access($group, $node_type);
+    }
+    return FALSE;
+}
+
+/**
+ * Implements hook_variable_group_info().
+ * Defines the variable group.
+ *
+ * @return array
+ */
+function sales_insider_variable_group_info() {
+    $groups = array();
+    $groups['sales_insider'] = array(
+        'title' => t('Sales Insider Extranet'),
+        'description' => t('Extranet variables'),
+        'access' => 'administer extranet',
+    );
+
+    return $groups;
+}
+
+/**
+ * Implements hook_variable_info().
+ *
+ * @param $options
+ * @return array
+ */
+function sales_insider_variable_info($options) {
+    $variable = array();
+
+    $variable['extranet_instructions_main'] = array(
+        'type' => 'string',
+        'title' => t('Extranet Main Instructions', array(), $options),
+        'description' => t('Instructions given to users on the main Sales Insider page.'),
+        'group' => 'sales_insider',
+        'default' => '',
+    );
+
+    $variable['extranet_instructions_sales_tools'] = array(
+        'type' => 'string',
+        'title' => t('Extranet Sales Tools Instructions', array(), $options),
+        'description' => t('Instructions given to users on the Sales Insider Extranet Sales Tools page.'),
+        'group' => 'sales_insider',
+        'default' => '',
+    );
+
+    $variable['extranet_instructions_services'] = array(
+        'type' => 'string',
+        'title' => t('Extranet Services Instructions', array(), $options),
+        'description' => t('Instructions given to users on the Sales Insider Services page.'),
+        'group' => 'sales_insider',
+        'default' => '',
+    );
+
+    $variable['extranet_instructions_access_denied'] = array(
+        'type' => 'string',
+        'title' => t('Extranet Access Denied', array(), $options),
+        'description' => t('Message given when user is denied access to the Sales Insider section.'),
+        'group' => 'sales_insider',
+        'default' => '',
+    );
+
+    $variable['extranet_instructions_request_access'] = array(
+        'type' => 'string',
+        'title' => t('Extranet Request Access', array(), $options),
+        'description' => t('Message given when user needs to request access to the Sales Insider section.'),
+        'group' => 'sales_insider',
+        'default' => '',
+    );
+
+    return $variable;
+}
