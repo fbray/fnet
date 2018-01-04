@@ -50,7 +50,7 @@ class MigrateDestinationGroup extends MigrateDestinationEntity {
     // Then add in anything provided by handlers
     $fields += migrate_handler_invoke_all('Entity', 'fields', $this->entityType, $this->bundle, $migration);
     $fields += migrate_handler_invoke_all('Group', 'fields', $this->entityType, $this->bundle, $migration);
-    // print_r($fields);
+    print_r($fields);
     return $fields;
   }
 

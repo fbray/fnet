@@ -14,6 +14,9 @@ class APACGroupMigration extends DrupalGroup7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
+
     $this->addFieldMapping('field_extranet_group_countries', 'field_extranet_group_countries');
 
   }

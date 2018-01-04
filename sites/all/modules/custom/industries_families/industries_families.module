@@ -38,6 +38,7 @@ function industries_families_preprocess_page(&$variables) {
     drupal_add_library('system', 'ui.tabs');
 
     // Hide title for this content type.
+    // TODO: Only on non-admin pages
     $variables['title'] = '';
   }
 }
@@ -54,10 +55,8 @@ function industries_families_preprocess_node(&$variables) {
 
     // Fetch the current user's region/language.
     $siteReg = module_invoke('fnet_helper', 'site_region');
-    $regLang = $siteReg["regLang"];
-    if (!isset($regLang)) {
-      $regLang = "en-us";
-    }
+    $regLang = (!isset($regLang)) ? $siteReg["regLang"] : 'en-us';
+
     $nid = $variables['node']->nid;
     $variables['industry_families'] = array();
     // Get the family nodes that are associated with a product category.
@@ -77,7 +76,7 @@ function industries_families_preprocess_node(&$variables) {
     foreach ($variables['industry_families'] as $family) {
       $product_list = views_get_view('product_family');
       $product_list->set_items_per_page(0);
-      $product_list->set_arguments(array($family->nid, strtolower($regLang)));
+      $product_list->set_arguments(array($family->nid)); // , strtolower($regLang)
       $product_list->set_display('products_by_family');
       $product_list->execute();
       $products_by_family[] = array($family->nid, $family->title, $product_list->result);
@@ -175,11 +174,10 @@ function industries_families_preprocess_node(&$variables) {
   } // end type = industry
 
   if (isset($variables['node']) && $variables['node']->type == 'product_family') {
-
     // Fetch the current user's region/language.
     $siteReg = module_invoke('fnet_helper', 'site_region');
-    $regLang = $siteReg["regLang"];
-    if (!isset($regLang)) $regLang = "en-us";
+
+    $regLang = (!isset($regLang)) ? $siteReg["regLang"] : 'en-us';
 
     // Get list of products by family
     $product_list = views_get_view('product_family');
@@ -187,6 +185,7 @@ function industries_families_preprocess_node(&$variables) {
     $product_list->set_arguments(array($variables['node']->nid));
     $product_list->set_display('families_by_product_category');
     $product_list->execute();
+    dpm($product_list->result);
     $products_by_family = array($variables['node']->nid, $variables['node']->title, $product_list->result);
 
     $variables['products_by_family'] = $products_by_family;
@@ -271,6 +270,10 @@ function _get_field_substitution_array() {
 
 
 function industries_families_digital_assets($language, $product_category, $type) {
+  // Make sure the type is lower case.
+  $type = strtolower($type);
+  // expect $language to be 'und' or 'en';
+  dpm($language);
 
   // TODO: Add the industry_assets to the views.
   // Product Category
