@@ -12,8 +12,6 @@ files[] = sales_insider.rules_defaults.inc
 
 stylesheets[all][] = css/sales_insider.css
 
-scripts[] = js/scripts.js
-
 dependencies[] = digital_asset
 dependencies[] = entityreference
 dependencies[] = fnet_common

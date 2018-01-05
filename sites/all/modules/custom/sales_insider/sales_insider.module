@@ -35,7 +35,7 @@ function sales_insider_permission() {
  *
  * @return array
  */
-function fextranet_menu() {
+function sales_insider_menu() {
     $items = [];
 
     // Public facing paths start with 'extranet'
@@ -214,25 +214,25 @@ function fextranet_menu() {
  * @return array
  */
 function sales_insider_theme() {
-    $base = array(
-        'path' => drupal_get_path('module', 'sales_insider') . '/theme',
-    );
-    return array(
-        'product_assets' => $base + array(
-                'template' => 'product_assets',
-                'variables' => array(
-                    'elements' => NULL
-                ),
-            ),
-        'sales_insider_default_page_menu_item' => $base + array(
-                'template' => 'sales_insider_default_page_menu_item',
-                'variables' => array('items' => NULL),
-            ),
-        'sales_insider_request_thanks_message' => $base + array(
-                'template' => 'sales_insider_request_thanks_message',
-                'variables' => array(),
-            ),
-    );
+  $base = array(
+    'path' => drupal_get_path('module', 'sales_insider') . '/theme',
+  );
+  return array(
+    'product_assets' => $base + array(
+        'template' => 'product_assets',
+        'variables' => array(
+          'elements' => NULL
+        ),
+      ),
+    'sales_insider_default_page_menu_item' => $base + array(
+        'template' => 'sales_insider_default_page_menu_item',
+        'variables' => array('items' => NULL),
+      ),
+    'sales_insider_request_thanks_message' => $base + array(
+        'template' => 'sales_insider_request_thanks_message',
+        'variables' => array(),
+      ),
+  );
 }
 
 /**
