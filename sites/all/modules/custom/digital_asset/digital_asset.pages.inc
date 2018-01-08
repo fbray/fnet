@@ -31,6 +31,7 @@ function digital_asset_page_view($node) {
 }
 
 /**
+ * TODO: This is funky. Shouldn't this just modify the Node Edit page?
  * @param $node
  */
 function digital_asset_edit($node) {
@@ -144,6 +145,8 @@ function digital_asset_ccs_categories($level_1 = NULL, $level_2 = NULL, $level_3
 }
 
 /**
+ * The alternative to the normal Node view form.
+ *
  * @param $form
  * @param $form_state
  * @param $node
@@ -216,9 +219,10 @@ function digital_asset_page_view_form($form, &$form_state, $node) {
     $form['children'] = array(
       '#type' => 'item',
       '#title' => t('Children'),
-      '#markup' => views_embed_view('digital_asset_children', 'default', $node->nid),
+      '#markup' => views_embed_view('digital_assets', 'children', $node->nid),
     );
   }
+
   $edoc_url = fnet_common_get_field_value('digital_asset', $node, 'field_dam_edoc_url', 'url');
   if (!empty($edoc_url)) {
     $link = str_replace('http://www.flukenetworks.com/', '', $edoc_url);
