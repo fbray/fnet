@@ -10,119 +10,116 @@
  * Implementationn of hook_install().
  */
 function sales_insider_install() {
-    $t = get_t();
+  $t = get_t();
 
-    // Menu
+  // Menu
+  if(!menu_load('extranet')) {
     $menu = array(
-        'menu_name' =>  'extranet',
-        'title' =>  'Sales Insider Extranet',
-        'description'  =>  'Menu Items for Extranet',
+      'menu_name' => 'extranet',
+      'title' => 'Sales Insider Extranet',
+      'description' => 'Menu Items for Extranet',
     );
     menu_save($menu);
-
-    // Roles & Permissions
-    _sales_insider_add_role_permissions();
-
-    // Pathauto Patterns
-    variable_set('pathauto_node_extranet_news_pattern', 'extranet/news/[node:title]');
-    variable_set('pathauto_node_extranet_promotion_pattern', 'extranet/promotion/[node:title]');
-    variable_set('pathauto_node_media_gallery_pattern', 'media_gallery/[node:title]');
-
-    // Content Types
-    // _sales_insider_create_extranet_news_type();
-    $nodes = sales_insider_node_info();
-
-    // Get the list of Content Types.
-    $entity = entity_get_info('node');
-    $node_types = array_keys( $entity['bundles'] );
-
-    // Go through the Sales Insider content types and see if they are already created.
-    foreach ($nodes as $node => $settings) {
-        $settings['type'] = $node;
-
-        if (! in_array($node, $node_types) ) {
-            drupal_set_message('Creating node type ' . $node );
-            $node_type = node_type_set_defaults($settings);
-            node_type_save($node_type);
-            node_add_body_field($node_type);
-        }
-    }
+  }
 
 
-    // Groups
-    // First, Group Types
-    // Sales Insider Region
-  /*
-  "name" : "sales_insider_region",
-  "label" : "Sales Insider Region",
-  "anonymous_permissions" : [],
-  "outsider_permissions" : [],
-  "member_permissions" : [
-    "view extranet_news node",
-    "view extranet_page node",
-    "view extranet_promotion node"
-  ],
-  "config" : { "subgroup" : { "sales_insider_subgroup" : {
-        "member" : {
-          "member" : "member",
-          "content_author" : 0,
-          "region_owner" : 0,
-          "group_admin" : 0
-        },
-        "content_author" : {
-          "content_author" : "content_author",
-          "member" : 0,
-          "region_owner" : 0,
-          "group_admin" : 0
-        },
-        "region_owner" : {
-          "region_owner" : "region_owner",
-          "member" : 0,
-          "content_author" : 0,
-          "group_admin" : 0
-        },
-        "group_admin" : {
-          "group_admin" : "group_admin",
-          "member" : 0,
-          "content_author" : 0,
-          "region_owner" : 0
-        }
+  // Roles & Permissions
+  _sales_insider_add_role_permissions();
+
+  // Pathauto Patterns
+  variable_set('pathauto_node_extranet_news_pattern', 'extranet/news/[node:title]');
+  variable_set('pathauto_node_extranet_promotion_pattern', 'extranet/promotion/[node:title]');
+  variable_set('pathauto_node_media_gallery_pattern', 'media_gallery/[node:title]');
+
+  // Content Types
+  node_types_rebuild();
+  $types = node_type_get_types();
+
+  // Field definitions go here
+  // Extranet Page
+  if(!array_key_exists('extranet_page', $types)) {
+    node_add_body_field($types['extranet_page']);
+    // TODO: If field doesn't exist
+    // TODO: Definition arrays should be in extranet_page.inc
+    $extranet_page_fields = array(
+
+    );
+    foreach($extranet_page_fields as $field) {
+      try {
+        field_create_field($field);
+      }
+      catch (Exception $e) {
+        // TODO: Watchdog
       }
     }
-  },
-  "weight" : "-10",
-  "rdf_mapping" : [],
-  "roles" : []
-}
-   */
-    // Sales Insider Subgroup
-  /*
-  {
-  "name" : "sales_insider_subgroup",
-  "label" : "Sales Insider Subgroup",
-  "anonymous_permissions" : [],
-  "outsider_permissions" : [],
-  "member_permissions" : [
-    "view digital_asset node",
-    "view extranet_news node",
-    "view extranet_page node",
-    "view extranet_promotion node"
-  ],
-  "config" : [],
-  "weight" : "-5",
-  "rdf_mapping" : [],
-  "roles" : []
-}
-   */
+
+    // Attach field instance
+    $extranet_page_instances = array(
+
+    );
+    foreach($extranet_page_instances as $instance) {
+      $instance['entity_type'] = 'node';
+      $instance['bundle'] = 'extranet_page';
+      try {
+        field_create_instance($instance);
+      }
+      catch (Exception $e) {
+        // TODO: Watchdog
+      }
+    }
+  }
+
+
+  // Extranet News
+  if(!array_key_exists('extranet_news', $types)) {
+    node_add_body_field($types['extranet_news']);
+  }
+  // Extranet Promotions
+  if(!array_key_exists('extranet_page', $types)) {
+    node_add_body_field($types['extranet_page']);
+  }
+
+
+
+  // Groups
+  // First, Group Types
+
 }
 
 /**
  * Implementation of hook_unistall().
  */
 function sales_insider_uninstall() {
-    // Taxonomies
-    // Content Types
-    // Groups
+  // Menus
+  if (module_exists('menu')) {
+    if ($my_menu = menu_load('extranet')) {
+      menu_delete($my_menu);
+    }
+  }
+
+  // Content Types
+  $content_types = ['extranet_page', 'extranet_news', 'extranet_promotion'];
+  $sql = 'SELECT nid FROM {node} n WHERE n.type IN :type';
+  $result = db_query($sql, array(':type' => $content_types));
+  $nids = array();
+  foreach ($result as $row) {
+    $nids[] = $row->nid;
+  }
+  try {
+    node_delete_multiple($nids); // Delete the nodes
+    foreach($content_types as $type) {  // Delete the custom fields and instances.
+      foreach(field_info_instances('node', $type) as $field_name => $instance) {
+        field_delete_instance($instance);
+      }
+      node_type_delete($type); // ...and delete the content types.
+    }
+    field_purge_batch(1000);
+  }
+  catch (Exception $e) {
+    // TODO: Watchdog here.
+  }
+
+  // Groups
 }
 
 /**
