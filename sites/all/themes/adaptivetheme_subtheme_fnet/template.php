@@ -93,9 +93,6 @@ function adaptivetheme_subtheme_fnet_preprocess_page(&$vars) {
   if ($header == "404 Not Found") {
     $vars['theme_hook_suggestions'][] = 'page__404';
   }
-  if ($header == "403 Forbidden") {
-    $vars['theme_hook_suggestions'][] = 'page_403';
-  }
   if (isset($vars['node'])) {
     $vars['theme_hook_suggestion'] = 'page__type__' . $vars['node']->type;
   }
