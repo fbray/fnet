@@ -35,28 +35,273 @@ function sales_insider_install() {
   node_types_rebuild();
   $types = node_type_get_types();
 
-  // Field definitions go here
+  // Field definitions
+  $fields = array(
+    // Display Title field
+    'field_display_title' => array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_display_title',
+      'indexes' => array(
+        'format' => array(
+          0 => 'format',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'text',
+      'settings' => array(
+        'entity_translation_sync' => FALSE,
+        'max_length' => 255,
+      ),
+      'translatable' => 1,
+      'type' => 'text',
+    ),
+    // Promotion Date field
+    'field_promotion_date' => array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_promotion_date',
+      'indexes' => array(),
+      'locked' => 0,
+      'module' => 'date',
+      'settings' => array(
+        'cache_count' => 4,
+        'cache_enabled' => 1,
+        'entity_translation_sync' => FALSE,
+        'granularity' => array(
+          'day' => 'day',
+          'hour' => 0,
+          'minute' => 0,
+          'month' => 'month',
+          'second' => 0,
+          'year' => 'year',
+        ),
+        'timezone_db' => '',
+        'todate' => 'required',
+        'tz_handling' => 'none',
+      ),
+      'translatable' => 0,
+      'type' => 'date',
+    ),
+
+    // Box Gallery
+    'field_box_gallery_id' => array(
+      'active' => 1,
+      'cardinality' => -1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_box_gallery_id',
+      'indexes' => array(
+        'target_id' => array(
+          0 => 'target_id',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'entityreference',
+      'settings' => array(
+        'entity_translation_sync' => FALSE,
+        'handler' => 'base',
+        'handler_settings' => array(
+          'behaviors' => array(
+            'views-select-list' => array(
+              'status' => 0,
+            ),
+          ),
+          'sort' => array(
+            'type' => 'none',
+          ),
+          'target_bundles' => array(),
+        ),
+        'target_type' => 'box_gallery',
+      ),
+      'translatable' => 0,
+      'type' => 'entityreference',
+    ),
+
+    // Digital Assets
+    'field_digital_assets' => array(
+      'active' => 1,
+      'cardinality' => -1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_digital_assets',
+      'indexes' => array(
+        'target_id' => array(
+          0 => 'target_id',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'entityreference',
+      'settings' => array(
+        'entity_translation_sync' => FALSE,
+        'handler' => 'base',
+        'handler_settings' => array(
+          'behaviors' => array(
+            'views-select-list' => array(
+              'status' => 0,
+            ),
+          ),
+          'sort' => array(
+            'type' => 'none',
+          ),
+          'target_bundles' => array(
+            'digital_asset' => 'digital_asset',
+          ),
+        ),
+        'target_type' => 'node',
+      ),
+      'translatable' => 0,
+      'type' => 'entityreference',
+    ),
+
+    // Gallery File
+    'field_gallery_file' => array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_gallery_file',
+      'indexes' => array(
+        'fid' => array(
+          0 => 'fid',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'file',
+      'settings' => array(
+        'display_default' => 0,
+        'display_field' => 1,
+        'entity_translation_sync' => array(
+          0 => 'fid',
+        ),
+        'uri_scheme' => 'public',
+      ),
+      'translatable' => 0,
+      'type' => 'file',
+    ),
+
+    // Gallery Video URL
+    'field_gallery_video_url' => array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_gallery_video_url',
+      'indexes' => array(),
+      'locked' => 0,
+      'module' => 'link',
+      'settings' => array(
+        'attributes' => array(
+          'class' => '',
+          'rel' => '',
+          'target' => 'default',
+        ),
+        'display' => array(
+          'url_cutoff' => 80,
+        ),
+        'enable_tokens' => 1,
+        'entity_translation_sync' => FALSE,
+        'title' => 'optional',
+        'title_maxlength' => 128,
+        'title_value' => '',
+        'url' => 0,
+      ),
+      'translatable' => 0,
+      'type' => 'link_field',
+    ),
+
+    // Media Gallery Display Type
+    'field_media_gallery_display_type' => array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_media_gallery_display_type',
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => 'box_entities_get_view_modes',
+        'entity_translation_sync' => FALSE,
+      ),
+      'translatable' => 0,
+      'type' => 'list_text',
+    ),
+
+    // Media Image Display
+    'field_media_image_display' => array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_media_image_display',
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => 'media_gallery_image_render_modes',
+        'entity_translation_sync' => FALSE,
+      ),
+      'translatable' => 0,
+      'type' => 'list_text',
+    ),
+
+    'field_media_images' => array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_media_images',
+      'indexes' => array(
+        'fid' => array(
+          0 => 'fid',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'image',
+      'settings' => array(
+        'default_image' => 0,
+        'entity_translation_sync' => array(
+          0 => 'fid',
+        ),
+        'uri_scheme' => 'public',
+      ),
+      'translatable' => 0,
+      'type' => 'image',
+    ),
+
+    // TODO: Extranet Group Countries
+
+  );
+  foreach($fields as $field) {
+    try {
+      field_create_field($field);
+    }
+    catch (Exception $e) {
+      // TODO: Watchdog
+    }
+  }
+
   // Extranet Page
   if(!array_key_exists('extranet_page', $types)) {
     node_add_body_field($types['extranet_page']);
-    // TODO: If field doesn't exist
-    // TODO: Definition arrays should be in extranet_page.inc
-    $extranet_page_fields = array(
 
-    );
-    foreach($extranet_page_fields as $field) {
-      try {
-        field_create_field($field);
-      }
-      catch (Exception $e) {
-        // TODO: Watchdog
-      }
-    }
-
-    // Attach field instance
-    $extranet_page_instances = array(
-
-    );
+    // Attach field instances
+    $extranet_page_instances = _sales_insider_extranet_page_field_instances();
     foreach($extranet_page_instances as $instance) {
       $instance['entity_type'] = 'node';
       $instance['bundle'] = 'extranet_page';
@@ -69,17 +314,53 @@ function sales_insider_install() {
     }
   }
 
-
   // Extranet News
   if(!array_key_exists('extranet_news', $types)) {
     node_add_body_field($types['extranet_news']);
+    $extranet_news_instances = _sales_insider_extranet_news_field_instances();
+    foreach($extranet_news_instances as $instance) {
+      $instance['entity_type'] = 'node';
+      $instance['bundle'] = 'extranet_news';
+      try {
+        field_create_instance($instance);
+      }
+      catch (Exception $e) {
+        // TODO: Watchdog
+      }
+    }
   }
+
   // Extranet Promotions
-  if(!array_key_exists('extranet_page', $types)) {
-    node_add_body_field($types['extranet_page']);
+  if(!array_key_exists('extranet_promotion', $types)) {
+    node_add_body_field($types['extranet_promotion']);
+    $extranet_promotion_instances = _sales_insider_extranet_promotions_field_instances();
+    foreach($extranet_promotion_instances as $instance) {
+      $instance['entity_type'] = 'node';
+      $instance['bundle'] = 'extranet_promotion';
+      try {
+        field_create_instance($instance);
+      }
+      catch (Exception $e) {
+        // TODO: Watchdog
+      }
+    }
   }
 
-
+  // Media Gallery
+  if(!array_key_exists('media_gallery', $types)) {
+    node_add_body_field($types['media_gallery']);
+    $extranet_promotion_instances = _sales_insider_media_gallery_field_instances();
+    foreach($extranet_promotion_instances as $instance) {
+      $instance['entity_type'] = 'node';
+      $instance['bundle'] = 'media_gallery';
+      try {
+        field_create_instance($instance);
+      }
+      catch (Exception $e) {
+        // TODO: Watchdog
+      }
+    }
+  }
 
   // Groups
   // First, Group Types
@@ -98,7 +379,7 @@ function sales_insider_uninstall() {
   }
 
   // Content Types
-  $content_types = ['extranet_page', 'extranet_news', 'extranet_promotion'];
+  $content_types = ['extranet_page', 'extranet_news', 'extranet_promotion', 'media_gallery'];
   $sql = 'SELECT nid FROM {node} n WHERE n.type IN :type';
   $result = db_query($sql, array(':type' => $content_types));
   $nids = array();

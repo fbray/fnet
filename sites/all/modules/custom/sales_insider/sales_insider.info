@@ -4,13 +4,14 @@ package = Fluke Networks
 core = 7.x
 
 files[] = views/sales_insider.views.inc
-files[] = views/sales_insider_handler_filter_dci_related_products.inc
-files[] = views/sales_insider_handler_field_search_results.inc
-files[] = sales_insider.admin.inc
-files[] = forms/access_request.form.inc
+;files[] = views/sales_insider_handler_field_search_results.inc
+files[] = includes/access_request.form.inc
 files[] = sales_insider.rules_defaults.inc
-
-stylesheets[all][] = css/sales_insider.css
+files[] = includes/extranet_news.inc
+files[] = includes/extranet_page.inc
+files[] = includes/extranet_promotions.inc
+files[] = includes/media_gallery.inc
+files[] = includes/groups.inc
 
 dependencies[] = digital_asset
 dependencies[] = entityreference
