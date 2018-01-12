@@ -10,7 +10,6 @@ files[] = sales_insider.rules_defaults.inc
 files[] = includes/extranet_news.inc
 files[] = includes/extranet_page.inc
 files[] = includes/extranet_promotions.inc
-files[] = includes/media_gallery.inc
 files[] = includes/groups.inc
 
 dependencies[] = digital_asset
