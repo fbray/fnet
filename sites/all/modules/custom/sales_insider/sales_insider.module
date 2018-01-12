@@ -92,6 +92,7 @@ function sales_insider_menu() {
         'type' => MENU_CALLBACK,
     ];
 
+    /* TODO: This seems to be unused. Deprecated?
     $items['extranet/node/%'] = [
         'menu_name' => 'extranet',
         'page callback' => '_sales_insider_node_page',
@@ -102,6 +103,7 @@ function sales_insider_menu() {
         'access arguments' => [2],
         'type' => MENU_CALLBACK,
     ];
+    */
 
     // Autocomplete callback
     $items['productname/autocomplete'] = [
@@ -126,66 +128,8 @@ function sales_insider_menu() {
         'page callback' => 'drupal_get_form',
         'page arguments' => ['sales_insider_admin_instructions_form'],
         'access arguments' => ['administer extranet'],
-        'file' => 'fextranet.admin.inc'
+        'file' => 'sales_insider.admin.inc'
     ];
-
-    $items['admin/fnet/extranet/notifications'] = [
-        'title' => t('Email Notifications'),
-        'description' => t('Settings for email notifications used by the Extranet.'),
-        'page callback' => 'drupal_get_form',
-        'page arguments' => ['sales_insider_admin_notifications_form'],
-        'access arguments' => ['administer extranet'],
-        'type' => MENU_NORMAL_ITEM,
-        'file' => 'fextranet.admin.inc'
-    ];
-
-    $admin_groups = _sales_insider_get_extranet_groups();
-    if (isset($admin_groups)) {
-        $items['admin/fnet/extranet/region'] = [
-            'title' => t('Regions'),
-            'description' => t('Administer Extranet content based on region.'),
-            'access arguments' => ['administer extranet'],
-            'type' => MENU_NORMAL_ITEM,
-        ];
-
-        foreach ($admin_groups as $group) {
-            $title = $group->title;
-            $gid = $group->gid;
-
-            $items['admin/fnet/extranet/region/' . $gid] = [
-                'title' => $title,
-                'type' => MENU_LOCAL_TASK,
-                'page callback' => 'fextranet_group_content_page',
-                'page arguments' => [2],
-                'access arguments' => ['administer extranet'],
-            ];
-            $plid = _sales_insider_get_mlid('admin/fnet/extranet/region/' . $gid);
-
-            // Content
-            $items['admin/fnet/extranet/region/' . $gid . '/content'] = [
-                'title' => $title . ' ' . t('Content'),
-                'type' => MENU_DEFAULT_LOCAL_TASK,
-                'page callback' => 'fextranet_group_content_page',
-                'page arguments' => [2],
-                'access arguments' => ['administer extranet'],
-            ];
-            if ($plid) {
-                $items['admin/fnet/extranet/region/' . $gid . '/content']['plid'] = $plid;
-            }
-
-            // Members
-            $items['admin/fnet/extranet/region/' . $gid . '/members'] = [
-                'title' => $title . ' ' . t('Members'),
-                'page callback' => 'fex_group_member_overview_form',
-                'page arguments' => [2],
-                'access arguments' => ['administer extranet'],
-                'type' => MENU_LOCAL_TASK,
-            ];
-            if ($plid) {
-                $items['admin/fnet/extranet/region/' . $gid . '/members']['plid'] = $plid;
-            }
-        }
-    }
 
     /* Web service config page */
     $items['admin/fnet/extranet/salesforce'] = [
