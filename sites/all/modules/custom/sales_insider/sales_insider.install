@@ -88,15 +88,37 @@ function sales_insider_install() {
       'type' => 'date',
     ),
 
-    // TODO: Extranet Group Countries
-
+    // Extranet Group Countries
+    'field_extranet_group_countries' => array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_extranet_group_countries',
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => 'country_get_list',
+        'allowed_values_php' => '',
+        'entity_translation_sync' => FALSE,
+      ),
+      'translatable' => 0,
+      'type' => 'list_text',
+    ),
   );
+
   foreach($fields as $field) {
     try {
       field_create_field($field);
     }
     catch (Exception $e) {
-      // TODO: Watchdog
+      watchdog('Sales Insider', array(), $e->getMessage());
     }
   }
 
@@ -107,13 +129,11 @@ function sales_insider_install() {
     // Attach field instances
     $extranet_page_instances = _sales_insider_extranet_page_field_instances();
     foreach($extranet_page_instances as $instance) {
-      $instance['entity_type'] = 'node';
-      $instance['bundle'] = 'extranet_page';
       try {
         field_create_instance($instance);
       }
       catch (Exception $e) {
-        // TODO: Watchdog
+        watchdog('Sales Insider', array(), $e->getMessage());
       }
     }
   }
@@ -123,13 +143,11 @@ function sales_insider_install() {
     node_add_body_field($types['extranet_news']);
     $extranet_news_instances = _sales_insider_extranet_news_field_instances();
     foreach($extranet_news_instances as $instance) {
-      $instance['entity_type'] = 'node';
-      $instance['bundle'] = 'extranet_news';
       try {
         field_create_instance($instance);
       }
       catch (Exception $e) {
-        // TODO: Watchdog
+        watchdog('Sales Insider', array(), $e->getMessage());
       }
     }
   }
@@ -139,24 +157,36 @@ function sales_insider_install() {
     node_add_body_field($types['extranet_promotion']);
     $extranet_promotion_instances = _sales_insider_extranet_promotions_field_instances();
     foreach($extranet_promotion_instances as $instance) {
-      $instance['entity_type'] = 'node';
-      $instance['bundle'] = 'extranet_promotion';
       try {
         field_create_instance($instance);
       }
       catch (Exception $e) {
-        // TODO: Watchdog
+        watchdog('Sales Insider', array(), $e->getMessage());
       }
     }
   }
 
   // Groups
   // First, Group Types
+  _sales_insider_group_type_entities();
+
+  // Instances used in the Group Type
+  $group_type_instances = _sales_insider_group_type_field_instances();
+  foreach($group_type_instances as $instance) {
+    try {
+      field_create_instance($instance);
+    } catch (Exception $e) {
+      watchdog('Sales Insider', array(), $e->getMessage());
+    }
+  }
+
+  // Then, the individual groups.
+  _sales_insider_group_entities();
 
 }
 
 /**
- * Implementation of hook_unistall().
+ * Implementation of hook_uninstall().
  */
 function sales_insider_uninstall() {
   // Menus
@@ -166,9 +196,11 @@ function sales_insider_uninstall() {
     }
   }
 
+  // TODO: Pathauto patterns
+
   // Content Types
   $content_types = ['extranet_page', 'extranet_news', 'extranet_promotion'];
-  $sql = 'SELECT nid FROM {node} n WHERE n.type IN :type';
+  $sql = 'SELECT nid FROM {node} n WHERE n.type IN (:type)';
   $result = db_query($sql, array(':type' => $content_types));
   $nids = array();
   foreach ($result as $row) {
@@ -185,10 +217,21 @@ function sales_insider_uninstall() {
     field_purge_batch(1000);
   }
   catch (Exception $e) {
-    // TODO: Watchdog here.
+    watchdog('Sales Insider', array(), $e->getMessage());
   }
 
-  // Groups
+  // TODO: Groups
+  $types = _sales_insider_get_group_type_entities();
+
+  // Delete the attached fields from the group types.
+  foreach ($types as $name) {
+    field_attach_delete_bundle('group', $name->name);
+    $groups = group_load_by_type($name->name);
+    foreach($groups as $group) {
+      group_delete_multiple($group->gid);
+    }
+
+  }
 }
 
 /**
@@ -246,4 +289,181 @@ function _sales_insider_create_extranet_news_type() {
         node_add_body_field( $type );
     }
     return;
+}
+
+function _sales_insider_group_type_field_instances() {
+  $field_instances = array();
+
+  $field_instances['group-sales_insider_region-field_extranet_group_countries'] = array(
+    'bundle' => 'sales_insider_region',
+    'default_value' => NULL,
+    'default_value_function' => '',
+    'default_value_php' => '',
+    'deleted' => 0,
+    'description' => 'Select the countries within this region.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'group',
+    'field_name' => 'field_extranet_group_countries',
+    'label' => 'Extranet Group Countries',
+    'required' => 0,
+    'settings' => array(
+      'entity_translation_sync' => FALSE,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'multiselect',
+      'settings' => array(),
+      'type' => 'multiselect',
+      'weight' => 1,
+    ),
+  );
+
+  return $field_instances;
+}
+
+/**
+ * Helper function to save the Sales Insider group types.
+ */
+function _sales_insider_group_type_entities() {
+  // Get the group type definitions
+  $group_types = _sales_insider_get_group_type_entities();
+  // I think this may not be working right.
+  $info = entity_load_multiple_by_name('group_type', array_keys($group_types));
+  dpm($info);
+  // Save them!
+  foreach ($group_types as $name => $group_type) {
+    if (!isset($info[$name])) { // Check if type exists.
+      entity_save('group_type', $group_type);
+      drupal_set_message('Created group type ' . $name);
+    }
+  }
+}
+
+/**
+ * Helper function for defining Sales Insider group types.
+ *
+ * @return array
+ */
+function _sales_insider_get_group_type_entities() {
+  $types = array();
+  // Sales Insider Region
+  $types['sales_insider_region'] = entity_import('group_type', '{
+  "name" : "sales_insider_region",
+  "label" : "Sales Insider Region",
+  "anonymous_permissions" : [],
+  "outsider_permissions" : [],
+  "member_permissions" : [
+    "view extranet_news node",
+    "view extranet_page node",
+    "view extranet_promotion node"
+  ],
+  "config" : { 
+    "subgroup" : { 
+      "sales_insider_subgroup" : {
+        "member" : {
+          "member" : "member",
+          "content_author" : 0,
+          "region_owner" : 0,
+          "group_admin" : 0
+        },
+        "content_author" : {
+          "content_author" : "content_author",
+          "member" : 0,
+          "region_owner" : 0,
+          "group_admin" : 0
+        },
+        "region_owner" : {
+          "region_owner" : "region_owner",
+          "member" : 0,
+          "content_author" : 0,
+          "group_admin" : 0
+        },
+        "group_admin" : {
+          "group_admin" : "group_admin",
+          "member" : 0,
+          "content_author" : 0,
+          "region_owner" : 0
+        }
+      }
+    }
+  },
+  "weight" : "-10",
+  "rdf_mapping" : [],
+  "roles" : [] }');
+
+  // Sales Insider Subgroup
+  $types['sales_insider_subgroup'] = entity_import('group_type', '{
+  "name" : "sales_insider_subgroup",
+  "label" : "Sales Insider Subgroup",
+  "anonymous_permissions" : [],
+  "outsider_permissions" : [],
+  "member_permissions" : [
+    "view digital_asset node",
+    "view extranet_news node",
+    "view extranet_page node",
+    "view extranet_promotion node"
+  ],
+  "config" : [],
+  "weight" : "-5",
+  "rdf_mapping" : [],
+  "roles" : [] }');
+  return $types;
+}
+
+/**
+ * Helper function for Sales Insider default groups.
+ *
+ * @return array
+ */
+function _sales_insider_get_group_entities() {
+  $groups = [
+    'sales_insider_region' => [
+      'Asia-Pacific',
+      'EMEA',
+      'Latin America',
+      'North America'
+    ],
+    'sales_insider_subgroup' => [
+      'Asia-Pacific Channel Partners',
+      'Asia-Pacific Channel Partners China',
+      'Asia-Pacific Internal Employees',
+      'EMEA Distributors',
+      'EMEA Internal Employees',
+      'Latin America Channel Partners',
+      'Latin America Internal Employees',
+      'North America Distribution Partner Marketing',
+      'North America Distribution Representatives',
+      'North America Internal Sales & Marketing',
+    ],
+  ];
+  return $groups;
+}
+
+/**
+ * Helper function to create the individual groups.
+ */
+function _sales_insider_group_entities() {
+  $groups = _sales_insider_get_group_entities();
+  foreach ($groups as $type => $group) {
+    if (!group_load_by_type($type)) { // Check if group exists.
+      foreach($group as $name) {
+        $values = [
+          'type' => $type,
+          'title' => $name,
+        ];
+      }
+      $new_group = entity_create('group', $values);
+      entity_save('group', $new_group);
+      drupal_set_message('Created group ' . $name);
+    }
+  }
 }

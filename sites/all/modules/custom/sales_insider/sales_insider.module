@@ -185,34 +185,33 @@ function sales_insider_theme() {
  * @return array
  */
 function sales_insider_node_info() {
-    $types = array(
-        'extranet_news' => array(
-            'name' => t('Extranet News'),
-            'base' => 'node_content',
-            'description' => t('Extranet News: Sales Alerts and Announcements'),
-            'has_title' => '1',
-            'title_label' => t('Title'),
-            'help' => t('Extranet News: Sales Alerts and Announcements'),
-        ),
-        'extranet_promotion' => array(
-            'name' => t('Extranet Promotion'),
-            'base' => 'node_content',
-            'description' => t('Extranet Promotions, optional start and end date.'),
-            'has_title' => '1',
-            'title_label' => t('Title'),
-            'help' => t('Extranet Promotions, optional start and end date.'),
-        ),
-        'media_gallery' => array(
-            'name' => t('Media Gallery'),
-            'base' => 'node_content',
-            'description' => t('Media Gallery can contain one or more of numerous file types, which can be either displayed or download.'),
-            'has_title' => '1',
-            'title_label' => t('Title'),
-            'help' => t('Media Gallery can contain one or more of numerous file types, which can be either displayed or download.'),
-        ),
-    );
-
-    return $types;
+  $types = array(
+    'extranet_page' => array(
+      'name' => t('Extranet Page'),
+      'base' => 'node_content',
+      'description' => t('Extranet Page'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => t('Extranet Page'),
+    ),
+    'extranet_news' => array(
+      'name' => t('Extranet News'),
+      'base' => 'node_content',
+      'description' => t('Extranet News: Sales Alerts and Announcements'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => t('Extranet News: Sales Alerts and Announcements'),
+    ),
+    'extranet_promotion' => array(
+      'name' => t('Extranet Promotion'),
+      'base' => 'node_content',
+      'description' => t('Extranet Promotions, optional start and end date.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => t('Extranet Promotions, optional start and end date.'),
+    ),
+  );
+  return $types;
 }
 
 /**
