@@ -228,7 +228,7 @@ function sales_insider_uninstall() {
     field_attach_delete_bundle('group', $name->name);
     $groups = group_load_by_type($name->name);
     foreach($groups as $group) {
-      group_delete_multiple($group->gid);
+      group_delete_multiple(array($group->gid));
     }
 
   }
@@ -338,7 +338,6 @@ function _sales_insider_group_type_entities() {
   $group_types = _sales_insider_get_group_type_entities();
   // I think this may not be working right.
   $info = entity_load_multiple_by_name('group_type', array_keys($group_types));
-  dpm($info);
   // Save them!
   foreach ($group_types as $name => $group_type) {
     if (!isset($info[$name])) { // Check if type exists.
@@ -355,6 +354,7 @@ function _sales_insider_group_type_entities() {
  */
 function _sales_insider_get_group_type_entities() {
   $types = array();
+
   // Sales Insider Region
   $types['sales_insider_region'] = entity_import('group_type', '{
   "name" : "sales_insider_region",
@@ -425,6 +425,7 @@ function _sales_insider_get_group_type_entities() {
  * @return array
  */
 function _sales_insider_get_group_entities() {
+  // TODO: Assign default values to countries.
   $groups = [
     'sales_insider_region' => [
       'Asia-Pacific',
@@ -454,16 +455,16 @@ function _sales_insider_get_group_entities() {
 function _sales_insider_group_entities() {
   $groups = _sales_insider_get_group_entities();
   foreach ($groups as $type => $group) {
-    if (!group_load_by_type($type)) { // Check if group exists.
-      foreach($group as $name) {
+    foreach($group as $name) {
+      if (!group_load_by_name($name)) { // Check if group exists.
         $values = [
           'type' => $type,
           'title' => $name,
         ];
+        $new_group = entity_create('group', $values);
+        entity_save('group', $new_group);
+        drupal_set_message('Created group ' . $name);
       }
-      $new_group = entity_create('group', $values);
-      entity_save('group', $new_group);
-      drupal_set_message('Created group ' . $name);
     }
   }
 }
