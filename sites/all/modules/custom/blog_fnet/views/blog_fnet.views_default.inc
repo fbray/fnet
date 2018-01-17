@@ -9,7 +9,7 @@
  */
 function blog_fnet_views_default_views() {
   $views = array();
-  $files = file_scan_directory(drupal_get_path('module', 'blog_fnet') . '/views', '/.*\.view$/');
+  $files = file_scan_directory(drupal_get_path('module', 'blog_fnet') . '/views', '/.*\.view.inc$/');
   foreach ($files as $filepath => $file) {
     require $filepath;
     if (isset($view)) {
