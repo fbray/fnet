@@ -1,5 +1,7 @@
-name = fnet_news_events
+name = FNET News, Events, & Awards
 package = Fluke Networks
-description = News Events
-version = 7.x.1.0-20150617
+description = "News, Events, and Award pages on the Fluke Networks site."
+version = 7.x.1.0-20180117
 core = 7.x
+
+dependencies[] = views

@@ -289,6 +289,18 @@ function fnet_news_events_block_view($delta = '') {
 }
 
 /**
+ * Implements hook_views_api().
+ *
+ * @return array
+ */
+function fnet_news_events_views_api() {
+  return [
+    'api' => 3.0,
+    'path' => drupal_get_path('module', 'fnet_news_events') . '/views',
+  ];
+}
+
+/**
  * TODO: Replace this with a View.
  * @param null $range
  * @return string
