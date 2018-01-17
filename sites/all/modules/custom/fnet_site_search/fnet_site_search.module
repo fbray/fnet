@@ -16,3 +16,447 @@ function fnet_site_search_views_api() {
     'api' => 3.0,
   );
 }
+
+/**
+ * Implements hook_default_search_api_index().
+ * Defines the Main Site Search index.
+ *
+ * @return array
+ */
+function fnet_site_search_default_search_api_index() {
+  $items = array();
+  $items['main_site_search'] = entity_import('search_api_index', '{
+    "name" : "Main Site Search",
+    "machine_name" : "main_site_search",
+    "description" : null,
+    "server" : "local_search",
+    "item_type" : "node",
+    "options" : {
+      "datasource" : { "bundles" : [
+          "blog_article",
+          "digital_asset",
+          "event",
+          "event_occurrence",
+          "expertise",
+          "exp_ind",
+          "exp_rle",
+          "exp_tpc",
+          "family",
+          "feature",
+          "homepage2013",
+          "industry",
+          "knowledge_base_article",
+          "marketo_form",
+          "microsite_page",
+          "microsite_story",
+          "page",
+          "page_reg",
+          "pressrelease",
+          "product",
+          "productsubtype",
+          "promotion",
+          "edoc"
+        ]
+      },
+      "index_directly" : 0,
+      "cron_limit" : "25",
+      "fields" : {
+        "body:value" : { "type" : "text" },
+        "metatag_abstract" : { "type" : "text" },
+        "metatag_cache-control" : { "type" : "text" },
+        "metatag_canonical" : { "type" : "uri" },
+        "metatag_content-language" : { "type" : "text" },
+        "metatag_description" : { "type" : "text" },
+        "metatag_expires" : { "type" : "text" },
+        "metatag_generator" : { "type" : "text" },
+        "metatag_geo.placename" : { "type" : "text" },
+        "metatag_geo.position" : { "type" : "text" },
+        "metatag_geo.region" : { "type" : "text" },
+        "metatag_icbm" : { "type" : "text" },
+        "metatag_image_src" : { "type" : "uri" },
+        "metatag_keywords" : { "type" : "text" },
+        "metatag_news_keywords" : { "type" : "text" },
+        "metatag_next" : { "type" : "uri" },
+        "metatag_original-source" : { "type" : "text" },
+        "metatag_pragma" : { "type" : "text" },
+        "metatag_prev" : { "type" : "uri" },
+        "metatag_rating" : { "type" : "text" },
+        "metatag_referrer" : { "type" : "text" },
+        "metatag_refresh" : { "type" : "text" },
+        "metatag_revisit-after" : { "type" : "text" },
+        "metatag_rights" : { "type" : "text" },
+        "metatag_robots" : { "type" : "text" },
+        "metatag_shortlink" : { "type" : "uri" },
+        "metatag_standout" : { "type" : "text" },
+        "metatag_title" : { "type" : "text" },
+        "search_api_language" : { "type" : "string" },
+        "title" : { "type" : "text" }
+      },
+      "data_alter_callbacks" : {
+        "search_api_alter_bundle_filter" : {
+          "status" : 0,
+          "weight" : "-10",
+          "settings" : { "default" : "1", "bundles" : [] }
+        },
+        "search_api_alter_language_control" : {
+          "status" : 0,
+          "weight" : "0",
+          "settings" : { "lang_field" : "", "languages" : [] }
+        },
+        "search_api_alter_node_access" : { "status" : 0, "weight" : "0", "settings" : [] },
+        "search_api_alter_node_status" : { "status" : 1, "weight" : "0", "settings" : [] },
+        "search_api_alter_add_hierarchy" : { "status" : 0, "weight" : "0", "settings" : { "fields" : [] } },
+        "search_api_alter_add_viewed_entity" : { "status" : 0, "weight" : "0", "settings" : { "mode" : "full" } },
+        "search_api_alter_add_url" : { "status" : 0, "weight" : "0", "settings" : [] },
+        "search_api_alter_add_aggregation" : { "status" : 0, "weight" : "0", "settings" : [] },
+        "search_api_metatag_alter_callback" : { "status" : 1, "weight" : "0", "settings" : [] }
+      },
+      "processors" : {
+        "search_api_case_ignore" : {
+          "status" : 1,
+          "weight" : "0",
+          "settings" : { "fields" : { "title" : true, "body:value" : true } }
+        },
+        "search_api_html_filter" : {
+          "status" : 1,
+          "weight" : "10",
+          "settings" : {
+            "fields" : { "title" : true, "body:value" : true },
+            "title" : 0,
+            "alt" : 1,
+            "tags" : "h1 = 5\\r\\nh2 = 3\\r\\nh3 = 2\\r\\nstrong = 2\\r\\nb = 2\\r\\nem = 1.5\\r\\nu = 1.5"
+          }
+        },
+        "search_api_tokenizer" : {
+          "status" : 1,
+          "weight" : "20",
+          "settings" : {
+            "fields" : { "title" : true, "body:value" : true },
+            "spaces" : "[^[:alnum:]]",
+            "ignorable" : "[\\u0027]"
+          }
+        },
+        "search_api_stopwords" : {
+          "status" : 1,
+          "weight" : "30",
+          "settings" : {
+            "fields" : { "title" : true, "body:value" : true },
+            "file" : "",
+            "stopwords" : "but\\r\\ndid\\r\\nthe this that those\\r\\netc"
+          }
+        },
+        "search_api_highlighting" : {
+          "status" : 0,
+          "weight" : "35",
+          "settings" : {
+            "prefix" : "\\u003Cstrong\\u003E",
+            "suffix" : "\\u003C\\/strong\\u003E",
+            "excerpt" : 1,
+            "excerpt_length" : "256",
+            "exclude_fields" : [],
+            "highlight" : "always"
+          }
+        }
+      }
+    },
+    "enabled" : "1",
+    "read_only" : "0",
+    "rdf_mapping" : []
+  }');
+  return $items;
+}
+
+/**
+ * Implements hook_default_search_api_server().
+ * Defines the Local Search server.
+ *
+ * @return array
+ */
+function main_site_search_default_search_api_server() {
+  $items = array();
+  $items['local_search'] = entity_import('search_api_server', '{
+    "name" : "Local Search",
+    "machine_name" : "local_search",
+    "description" : "",
+    "class" : "search_api_db_service",
+    "options" : {
+      "database" : "default:default",
+      "min_chars" : "1",
+      "partial_matches" : 1,
+      "indexes" : {
+        "extranet_index" : {
+          "title" : {
+            "table" : "search_api_db_extranet_index_text",
+            "type" : "text",
+            "boost" : "2.0"
+          },
+          "search_api_language" : {
+            "table" : "search_api_db_extranet_index",
+            "column" : "search_api_language",
+            "type" : "string",
+            "boost" : "1.0"
+          },
+          "field_dam_document_id" : {
+            "table" : "search_api_db_extranet_index_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "field_dam_industry" : {
+            "table" : "search_api_db_extranet_index_field_dam_industry",
+            "column" : "value",
+            "type" : "list\\u003Cstring\\u003E",
+            "boost" : "1.0"
+          },
+          "field_dam_related_product" : {
+            "table" : "search_api_db_extranet_index_field_dam_related_product",
+            "column" : "value",
+            "type" : "list\\u003Cinteger\\u003E",
+            "boost" : "1.0"
+          },
+          "field_edoc_subtitle" : {
+            "table" : "search_api_db_extranet_index_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "body:value" : {
+            "table" : "search_api_db_extranet_index_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "status" : {
+            "table" : "search_api_db_extranet_index",
+            "column" : "status",
+            "type" : "integer",
+            "boost" : "1.0"
+          },
+          "author" : {
+            "table" : "search_api_db_extranet_index",
+            "column" : "author",
+            "type" : "integer",
+            "boost" : "1.0"
+          },
+          "group" : {
+            "table" : "search_api_db_extranet_index_group",
+            "column" : "value",
+            "type" : "list\\u003Cinteger\\u003E",
+            "boost" : "1.0"
+          },
+          "field_business_entity" : {
+            "table" : "search_api_db_extranet_index",
+            "column" : "field_business_entity",
+            "type" : "integer",
+            "boost" : "1.0"
+          },
+          "field_dam_asset_type" : {
+            "table" : "search_api_db_extranet_index",
+            "column" : "field_dam_asset_type",
+            "type" : "string",
+            "boost" : "1.0"
+          },
+          "field_dam_language" : {
+            "table" : "search_api_db_extranet_index",
+            "column" : "field_dam_language",
+            "type" : "string",
+            "boost" : "1.0"
+          },
+          "field_dam_parent" : {
+            "table" : "search_api_db_extranet_index",
+            "column" : "field_dam_parent",
+            "type" : "integer",
+            "boost" : "1.0"
+          },
+          "field_media_gallery" : {
+            "table" : "search_api_db_extranet_index_field_media_gallery",
+            "column" : "value",
+            "type" : "list\\u003Cinteger\\u003E",
+            "boost" : "1.0"
+          },
+          "field_digital_assets" : {
+            "table" : "search_api_db_extranet_index_field_digital_assets",
+            "column" : "value",
+            "type" : "list\\u003Cinteger\\u003E",
+            "boost" : "1.0"
+          },
+          "field_products" : {
+            "table" : "search_api_db_extranet_index_field_products",
+            "column" : "value",
+            "type" : "list\\u003Cinteger\\u003E",
+            "boost" : "1.0"
+          },
+          "search_api_viewed" : {
+            "table" : "search_api_db_extranet_index_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "search_api_access_node" : {
+            "table" : "search_api_db_extranet_index_search_api_access_node",
+            "column" : "value",
+            "type" : "list\\u003Cstring\\u003E",
+            "boost" : "1.0"
+          }
+        },
+        "main_site_search" : {
+          "title" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "search_api_language" : {
+            "table" : "search_api_db_main_site_search",
+            "column" : "search_api_language",
+            "type" : "string",
+            "boost" : "1.0"
+          },
+          "body:value" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_title" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_description" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_abstract" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_keywords" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_robots" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_news_keywords" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_standout" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_rating" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_referrer" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_generator" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_rights" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_image_src" : {
+            "table" : "search_api_db_main_site_search",
+            "column" : "metatag_image_src",
+            "type" : "uri",
+            "boost" : "1.0"
+          },
+          "metatag_canonical" : {
+            "table" : "search_api_db_main_site_search",
+            "column" : "metatag_canonical",
+            "type" : "uri",
+            "boost" : "1.0"
+          },
+          "metatag_shortlink" : {
+            "table" : "search_api_db_main_site_search",
+            "column" : "metatag_shortlink",
+            "type" : "uri",
+            "boost" : "1.0"
+          },
+          "metatag_original-source" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_prev" : {
+            "table" : "search_api_db_main_site_search",
+            "column" : "metatag_prev",
+            "type" : "uri",
+            "boost" : "1.0"
+          },
+          "metatag_next" : {
+            "table" : "search_api_db_main_site_search",
+            "column" : "metatag_next",
+            "type" : "uri",
+            "boost" : "1.0"
+          },
+          "metatag_content-language" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_geo.position" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_geo.placename" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_geo.region" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_icbm" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_refresh" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_revisit-after" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_pragma" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_cache-control" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          },
+          "metatag_expires" : {
+            "table" : "search_api_db_main_site_search_text",
+            "type" : "text",
+            "boost" : "1.0"
+          }
+        }
+      }
+    },
+    "enabled" : "1",
+    "rdf_mapping" : []
+  }');
+  return $items;
+}
