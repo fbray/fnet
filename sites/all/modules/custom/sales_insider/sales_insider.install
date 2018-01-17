@@ -10,6 +10,9 @@
  * Implementationn of hook_install().
  */
 function sales_insider_install() {
+  module_load_include('inc', 'sales_insider', 'includes/extranet_news');
+  module_load_include('inc', 'sales_insider', 'includes/extranet_page');
+  module_load_include('inc', 'sales_insider', 'includes/extranet_promotions');
   $t = get_t();
 
   // Menu
@@ -118,12 +121,12 @@ function sales_insider_install() {
       field_create_field($field);
     }
     catch (Exception $e) {
-      watchdog('Sales Insider', array(), $e->getMessage());
+      watchdog('Sales Insider', $e->getMessage());
     }
   }
 
   // Extranet Page
-  if(!array_key_exists('extranet_page', $types)) {
+  if(array_key_exists('extranet_page', $types)) {
     node_add_body_field($types['extranet_page']);
 
     // Attach field instances
@@ -133,13 +136,13 @@ function sales_insider_install() {
         field_create_instance($instance);
       }
       catch (Exception $e) {
-        watchdog('Sales Insider', array(), $e->getMessage());
+        watchdog('Sales Insider', $e->getMessage());
       }
     }
   }
 
   // Extranet News
-  if(!array_key_exists('extranet_news', $types)) {
+  if(array_key_exists('extranet_news', $types)) {
     node_add_body_field($types['extranet_news']);
     $extranet_news_instances = _sales_insider_extranet_news_field_instances();
     foreach($extranet_news_instances as $instance) {
@@ -147,13 +150,13 @@ function sales_insider_install() {
         field_create_instance($instance);
       }
       catch (Exception $e) {
-        watchdog('Sales Insider', array(), $e->getMessage());
+        watchdog('Sales Insider', $e->getMessage());
       }
     }
   }
 
   // Extranet Promotions
-  if(!array_key_exists('extranet_promotion', $types)) {
+  if(array_key_exists('extranet_promotion', $types)) {
     node_add_body_field($types['extranet_promotion']);
     $extranet_promotion_instances = _sales_insider_extranet_promotions_field_instances();
     foreach($extranet_promotion_instances as $instance) {
@@ -161,7 +164,7 @@ function sales_insider_install() {
         field_create_instance($instance);
       }
       catch (Exception $e) {
-        watchdog('Sales Insider', array(), $e->getMessage());
+        watchdog('Sales Insider', $e->getMessage());
       }
     }
   }
@@ -176,7 +179,7 @@ function sales_insider_install() {
     try {
       field_create_instance($instance);
     } catch (Exception $e) {
-      watchdog('Sales Insider', array(), $e->getMessage());
+      watchdog('Sales Insider', $e->getMessage());
     }
   }
 
@@ -217,10 +220,10 @@ function sales_insider_uninstall() {
     field_purge_batch(1000);
   }
   catch (Exception $e) {
-    watchdog('Sales Insider', array(), $e->getMessage());
+    watchdog('Sales Insider', $e->getMessage());
   }
 
-  // TODO: Groups
+  // Groups
   $types = _sales_insider_get_group_type_entities();
 
   // Delete the attached fields from the group types.

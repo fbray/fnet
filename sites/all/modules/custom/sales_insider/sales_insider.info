@@ -12,6 +12,7 @@ files[] = includes/extranet_page.inc
 files[] = includes/extranet_promotions.inc
 
 dependencies[] = digital_asset
+dependencies[] = entity
 dependencies[] = entityreference
 dependencies[] = fnet_common
 dependencies[] = group
@@ -22,9 +23,9 @@ dependencies[] = i18n_node
 dependencies[] = i18n_select
 dependencies[] = i18n_redirect
 dependencies[] = i18n_variable
-dependencies[] = rules
 dependencies[] = mailsystem
 dependencies[] = mimemail
+dependencies[] = rules
 dependencies[] = search_api
 dependencies[] = views
 
