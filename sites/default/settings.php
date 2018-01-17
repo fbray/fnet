@@ -639,9 +639,11 @@ $conf['404_fast_html'] = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
 # $conf['allow_css_double_underscores'] = TRUE;
 
 /**
- * Include a local settings file if it exists. D7 only
+ * Include a local settings file locally if it exists. D7 only.
  */
-$local_settings = dirname(__FILE__) . '/local-settings.php';
-if (file_exists($local_settings)) {
-  include $local_settings;
+if (!defined('PANTHEON_ENVIRONMENT')) {
+  $local_settings = dirname(__FILE__) . '/local-settings.php';
+  if (file_exists($local_settings)) {
+    include $local_settings;
+  }
 }
