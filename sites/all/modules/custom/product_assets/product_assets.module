@@ -84,17 +84,6 @@ function product_assets_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  // Technical docs: Whitepapers
-  $items['expertise/whitepapers'] = array(
-    'title' => '',
-    'title callback' => 'product_assets_title_generator',
-    'title arguments' => array(1),
-    'page callback' => 'product_assets_technical_docs_page',
-    'page arguments' => array(1),
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
-  );
-
   // TODO: Move to View. Get rid of title thingy.
   $items['expertise/whitepapers/%/%'] = array(
     'title' => '',
@@ -150,28 +139,6 @@ function product_assets_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  // Technical docs: Webcasts
-  $items['expertise/webcasts'] = array(
-    'title' => '',
-    'title callback' => 'product_assets_title_generator',
-    'title arguments' => array(1),
-    'page callback' => 'product_assets_technical_docs_page',
-    'page arguments' => array(1),
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
-  );
-
-  // TODO: Move to View. Get rid of title thingy.
-  $items['expertise/webcasts/%/%'] = array(
-    'title' => '',
-    'title callback' => 'product_assets_title_generator',
-    'title arguments' => array(1, 3),
-    'page callback' => 'product_assets_technical_docs_page',
-    'page arguments' => array(1, 2),
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
-  );
-
   return $items;
 }
 
@@ -195,28 +162,12 @@ function product_assets_theme() {
         'assets' => array(),
       )
     ),
-    'expertise_page' => $base + array(
-      'template' => 'expertise_page',
-      'variables' => array(
-        'expertise' => array(),
-      ),
-    ),
     'support_page' => $base + array(
       'template' => 'support_page',
       'variables' => array(
         'support' => array(),
       ),
     ),
-  );
-}
-
-/**
- * Implements hook_theme()
- */
-
-function custom_pages_theme() {
-  return array(
-
   );
 }
 
