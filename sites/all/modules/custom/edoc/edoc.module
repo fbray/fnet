@@ -7,35 +7,44 @@
  * @return mixed
  */
 function edoc_menu() {
-  $items['admin/fnet/edoc'] = array(
-    'title' => 'eDoc',
-    'description' => "Settings for eDoc",
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('edoc_admin_form'),
-    'access arguments' => array('administer site configuration'),
+  $items = [];
+  // eDoc Administrative Pages
+  $items['admin/fnet/edocs'] = [
+    'title' => 'eDocs',
+    'description' => t('Administrative functions for eDocs'),
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => ['administer site configuration'],
     'type' => MENU_NORMAL_ITEM,
-  );
-  $items['admin/fnet/edoc/settings'] = array(
-    'title' => 'Settings',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -1,
-  );
-  $items['admin/fnet/edoc/footers'] = array(
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+
+  ];
+  $items['admin/fnet/edocs/settings'] = [
+    'title' => t('Settings'),
+    'description' => t('Settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['edoc_settings_form'],
+    'access arguments' => ['administer site configuration'],
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 0,
+  ];
+  $items['admin/fnet/edocs/footers'] = [
     'title' => 'Regional Footers',
     'description' => "Enter footer content for each region.",
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('edoc_footer_form'),
-    'access arguments' => array('administer site configuration'),
+    'page arguments' => ['edoc_footer_form'],
+    'access arguments' => ['administer site configuration'],
     'type' => MENU_LOCAL_TASK,
-  );
-  $items['edocs/%/%'] = array(
+  ];
+
+  $items['edocs/%/%'] = [
     'title' => 'eDoc download',
     'description' => 'eDoc Download',
     'page callback' => 'edoc_download',
-    'page arguments' => array(1, 2),
+    'page arguments' => [1, 2],
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   return $items;
 }
@@ -238,7 +247,12 @@ function edoc_theme() {
 
 /**
  * Theme hook which themes the appropriate brand banner for print pages only.
- * TODO: Deprecated. Only the Fluke Networks logo needs to be here.
+ *
+ * Historical note: This was once used to have multiple brands be printed on eDocs.
+ * This happened when Fluke Networks purchased a company and needed to use their
+ * brand. The eDoc content type would then be given a Brand field.
+ *
+ * Only the Fluke Networks logo needs to be here at this point..
  *
  * @param $variables
  * @return string
@@ -260,14 +274,13 @@ function theme_edoc_print_banner() {
 }
 
 /**
- * TODO: DEPRECATED. Only the Fluke Networks brand is used now. Rework.
+ * Slighty deprecated. Only the Fluke Networks brand is used for now.
  *
  * @param $taxonomy
  * @return string
  */
 function edoc_brand_header() {
   // prepare page logo
-  // TODO: Test the path to see if the background-image loads.
   $image_path = drupal_get_path('module', 'edoc') . '/images/fluke_networks.png';
   $brand_header = "\n<style>\n";
   $brand_header .= "#print_view .edocs_page_header, #print_view .edocs_page_wrapper, \n";
@@ -620,4 +633,16 @@ function edoc_get_language_override_id($node) {
   }
 
   return $langNodeId;
+}
+
+/**
+ * Implements hook_views_api().
+ *
+ * @return array
+ */
+function edoc_views_api() {
+  return [
+    'api' => '3.0',
+    'path' => drupal_get_path('module', 'edoc') . '/views',
+  ];
 }
