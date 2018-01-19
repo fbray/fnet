@@ -242,6 +242,10 @@ function products_node_view($node, $view_mode) {
     }
     $node->content['product_case_studies'] = $product_case_studies;
 
+    // Related Products
+    $relatedProd = views_get_view_result('product_content', 'related_products_embed');
+    $node->content['related_products'] = $relatedProd;
+
   }
 }
 

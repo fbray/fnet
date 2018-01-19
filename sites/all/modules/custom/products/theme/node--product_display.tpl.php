@@ -114,9 +114,9 @@ $product_moa = $content['product_moa'];
 $myDoc = $content['product_documents'];
 $myDemos = $content['product_demos'];
 $product_case_studies = $content['product_case_studies'];
-// TODO: Find this view
-$relatedProd = views_get_view_result('product_related_prod');
-dpm($content);
+
+
+
 ?>
 
 <div id="stickynav">
@@ -938,19 +938,19 @@ $wtb = fnet_common_safe_get($field_prod_where_to_buy_button);
 
       <?php
       $has_related_products = FALSE;
-      foreach ($relatedProd as $rProd) {
-        if ( (isset($rProd->field_field_prod_related_img[0]) ) &&  ( $rProd->field_field_prod_related_img[0]['rendered']['#path']['path']) ) {
-
+      foreach ($content['related_products'] as $rProd) {
+        if (isset($rProd->field_field_prod_related_img[0]['rendered']['#path']['path'])) {
           $related_product_file = $rProd->field_field_prod_related_img[0]['rendered']['#path']['path'];
-          $related_product_nid = $rProd->node_field_data_field_prod_relatedprod_nid;
-          $related_product_title = $rProd->node_field_data_field_prod_relatedprod_title;
+          $related_product_nid = $rProd->node_field_data_field_products_nid;
+          $related_product_title = $rProd->node_field_data_field_products_title;
 
           if ($related_product_file && $related_product_nid && $related_product_title) {
             $has_related_products = TRUE;
           }
         }
       }
-      if ($has_related_products) { ?>
+      ?>
+      <?php if ($has_related_products): ?>
 
         <div class="product-page-section column-grid">
 
@@ -960,28 +960,11 @@ $wtb = fnet_common_safe_get($field_prod_where_to_buy_button);
 
             <div id="product-page-related-products">
               <ul>
-
-                <?php
-                foreach ($relatedProd as $rProd) {
-                  if ( (isset($rProd->field_field_prod_related_img[0]) ) && ($rProd->field_field_prod_related_img[0]['rendered']['#path']['path']) ) {
-                    $related_product_file = $rProd->field_field_prod_related_img[0]['rendered']['#path']['path'];
-                    $related_product_nid = $rProd->node_field_data_field_prod_relatedprod_nid;
-                    $related_product_title = $rProd->node_field_data_field_prod_relatedprod_title;
-
-                    if ($related_product_file && $related_product_nid && $related_product_title) { ?>
-
-                      <li>
-                          <a href="/<?php echo drupal_lookup_path('alias','node/'.$related_product_nid); ?>">
-                            <img src="<?php echo $related_product_file; ?>">
-                            <p><?php echo $related_product_title; ?></p>
-                          </a>
-                      </li>
-
-                    <?php }
-                  }
-
-                } ?>
-
+                <?php foreach ($content['related_products'] as $rProd): ?>
+                  <?php if (isset($rProd->field_field_prod_related_img[0]['rendered']['#path']['path'])): ?>
+                    <li><?php print render($rProd->field_field_prod_related_img); ?><p><?php print $rProd->node_field_data_field_products_title; ?></p></li>
+                  <?php endif; ?>
+                <?php endforeach; ?>
               </ul>
 
             </div>
@@ -989,7 +972,7 @@ $wtb = fnet_common_safe_get($field_prod_where_to_buy_button);
 
         </div>
 
-      <?php } ?><!-- Related Products -->
+      <?php endif; ?><!-- Related Products -->
 
     </div>
 
