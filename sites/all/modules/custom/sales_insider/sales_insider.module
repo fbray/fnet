@@ -42,7 +42,7 @@ function sales_insider_menu() {
     $items['extranet'] = [
         'menu_name' => 'extranet',
         'title' => t('Sales Insider'),
-        'page callback' => '_sales_insider_base',
+        'page callback' => '_sales_insider_initial_content',
         'access arguments' => ['access content'],
         'type' => MENU_CALLBACK,
     ];
@@ -219,118 +219,116 @@ function sales_insider_node_info() {
  */
 
 /**
+ * Initial content for the Extranet page.
  *
  * @return array|mixed|null
  * @throws \Exception
  */
-function sales_insider_initial_content() {
-    $localized_message = '';
-    // Is the User logged in?
-    if (user_is_logged_in()) {
-        global $user;  // Get the current user.
+function _sales_insider_initial_content() {
+  global $user;  // Get the current user.
+  $account = user_load($user->uid);
 
-        // TODO: Re-write to remove stupid fextranet_session reference.
-        // get the user's group membership
-        // The big thing we want is the user's region.
-        $session = fextranet_session(); // So far, this is returning FALSE.
-
-        if (user_access('access_extranet')) {  // If the user has access to the Extranet...
-            $content = variable_get('extranet_instructions_main', '');
-            return $content;
-        }
-        else {
-            // ...because their request is pending
-            if (count($session->pending_groups) > 0) { // They have a pending access request
-                $pending_query = "SELECT requested_on, blocked_on, status, added_on FROM group_membership WHERE uid = :uid";
-                $access_requests = db_query($pending_query, array(':uid' => $user->uid))->fetchAssoc();
-                // If the status is empty
-                if ($access_requests) {
-                    /* Debugging
-                    if (module_exists('devel')) {
-                      dpm($access_requests);
-                    }
-                    */
-
-                    $requested_on = !empty($access_requests['requested_on']) ? format_date($access_requests['requested_on'], 'medium', ''): NULL;
-                    $blocked_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['blocked_on'], 'medium', ''): NULL;
-                    $added_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['added_on'], 'medium', ''): NULL;
-                    $status = $access_requests['status'];
-
-                    // TODO: Move this to an admin field using tokens. Also, language.
-                    // Display the 'You requested access on X, but it
-                    if (!empty($requested_on)) {
-                        $message = 'You requested access to Sales Insider on @request_date ';
-                        if ($status == 'blocked') { // has been denied.
-                            // Re-request Access/Resend Request option
-                            $message .= 'but unfortunately your request was denied by an administrator on @blocked_date.';
-                        }
-                        else {
-                            // has not yet been approved.'
-                            $message .= 'but your request has not yet been approved.';
-                        }
-                        $localized_message = t($message, array(
-                            '@request_date' => $requested_on,
-                            '@blocked_date' => $blocked_on
-                        ));
-                    }
-                    elseif (!empty($added_on)) {
-                        // if there is nothing in the requested_on field, the user was added manually.
-                        $message = 'You were granted access to Sales Insider on @added_date ';
-                        if ($status == 'blocked') { // has been denied.
-                            // Re-request Access/Resend Request option
-                            $message .= 'but unfortunately your access was blocked by an administrator on @blocked_date.';
-                        }
-                        else {
-                            // has not yet been approved.'
-                            $message .= 'but something has gone wrong.';
-                        }
-                        $localized_message = t($message, array(
-                            '@added_date' => $added_on,
-                            '@blocked_date' => $blocked_on
-                        ));
-                    }
-
-                }
-                else {
-                    // The default Thank You message.
-                    $localized_message = theme('sales_insider_request_thanks_message');
-                }
-                return $localized_message;
-            }
-            // ...or they just haven't requested access yet.
-            else {
-                // Load the Request Access Form
-                module_load_include('inc', 'sales_insider', 'includes/access_request.form');
-                $group_id = $session->region_group;
-                $request_form = drupal_get_form('sales_insider_request_form', $group_id);
-                return $request_form;
-            }
-        }
-
+  /*
+   * Here we go with the logic needed to provide a response based on that status of the user.
+   * First off, s the User logged in?
+   */
+  if (user_is_logged_in()) {
+    // Yes? Excellent. Let the user in.
+    if (user_access('access_extranet')) {  // If the user has access to the Extranet...
+      $content = variable_get('extranet_instructions_main', '');
+      return $content;
     }
+
+    // No? Well, that's fine. More checking is necessary.
     else {
-        $login_form = drupal_get_form('user_login');
-        $url = urldecode($login_form['#action']);
-        // If there is an existing query string, extract those values.
-        $query_string_values = array();
-        parse_str( parse_url($url, PHP_URL_QUERY), $query_string_values );
-        $query_string_values['destination'] = 'extranet';
-        // Trim the query off the URL to be able to rebuild.
-        $url = preg_replace('/\?.*/', '', $url);
-        // This puts in the '?destination=extranet'.
-        $action = url($url, array('query' => $query_string_values));
-        $login_form['#action'] = $action; // URL Decoding to clean up some weirdness.
+      // Does the user have any pending requests?
+      $pending_query = "SELECT requested_on, blocked_on, status, added_on FROM group_membership WHERE uid = :uid";
+      $access_requests = db_query($pending_query, array(':uid' => $user->uid))->fetchAssoc();
 
-        $login_form['#redirect'] = 'extranet';
-        // $login_form['#submit'] = array('user_login_submit', 'fex_goto_extranet'); // This doesn't fucking work.
-        $login_form['#after_build'] = array();
-        /* TESTING
-        if (module_exists('devel')) {
-          dpm($login_form);
+      // A request has been made and is pending.
+      if ($access_requests) {
+        $requested_on = !empty($access_requests['requested_on']) ? format_date($access_requests['requested_on'], 'medium', ''): NULL;
+        $blocked_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['blocked_on'], 'medium', ''): NULL;
+        $added_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['added_on'], 'medium', ''): NULL;
+        $status = $access_requests['status'];
+
+        // Display the 'You requested access on X, but it
+        if (!empty($requested_on)) {
+          $message = 'You requested access to Sales Insider on @request_date ';
+          if ($status == 'blocked') { // has been denied.
+            // Re-request Access/Resend Request option
+            $message .= 'but unfortunately your request was denied by an administrator on @blocked_date.';
+          }
+          else {
+            // has not yet been approved.'
+            $message .= 'but your request has not yet been approved.';
+          }
+          $localized_message = t($message, array(
+            '@request_date' => $requested_on,
+            '@blocked_date' => $blocked_on
+          ));
         }
-        */
-        return $login_form;
+        elseif (!empty($added_on)) {
+          // if there is nothing in the requested_on field, the user was added manually.
+          $message = 'You were granted access to Sales Insider on @added_date ';
+          if ($status == 'blocked') { // has been denied.
+            // Re-request Access/Resend Request option
+            $message .= 'but unfortunately your access was blocked by an administrator on @blocked_date.';
+          }
+          else {
+            // has not yet been approved.'
+            $message .= 'but something has gone wrong.';
+          }
+          $localized_message = t($message, array(
+            '@added_date' => $added_on,
+            '@blocked_date' => $blocked_on
+          ));
+        }
+
+        // Give a default message,
+        else {
+          // TODO: Language?
+          $localized_message = theme('sales_insider_request_thanks_message');
+        }
+        return $localized_message;
+      }
+
+      // ...or they just haven't requested access yet.
+      else {
+        // Load the Request Access Form
+        module_load_include('inc', 'sales_insider', 'includes/access_request.form');
+        // Get the region by looking for the country in the user address field.
+        $address = field_get_items('user', $account, 'field_address', LANGUAGE_NONE);
+        dpm($address);
+        $country = $address[0]['country'];
+
+        // Get the Groud ID of the Sales Insider Region group that has this country.
+        $group = _sales_insider_get_group_by_country($country);
+
+        // TODO: Modify the Request Form to deal with multiple groups, if only as a failover.
+
+        $request_form = drupal_get_form('sales_insider_request_form', $group);
+        return $request_form;
+      }
     }
+  }
+  // The user is not logged in. Give them the form.
+  else {
+    $login_form = drupal_get_form('user_login');
+    $url = urldecode($login_form['#action']);
+    // If there is an existing query string, extract those values.
+    $query_string_values = array();
+    parse_str( parse_url($url, PHP_URL_QUERY), $query_string_values );
+    $query_string_values['destination'] = 'extranet';
+    // Trim the query off the URL to be able to rebuild.
+    $url = preg_replace('/\?.*/', '', $url);
+    // This puts in the '?destination=extranet'.
+    $action = url($url, array('query' => $query_string_values));
+    $login_form['#action'] = $action; // URL Decoding to clean up some weirdness.
+    $login_form['#redirect'] = 'extranet';
+    $login_form['#after_build'] = array();
+    return $login_form;
+  }
 }
 
 /**
@@ -343,7 +341,6 @@ function sales_insider_views_api() {
         'api' => 3.0,
         'path' => drupal_get_path('module', 'sales_insider') . '/views',
     ];
-
 }
 
 /**
@@ -387,6 +384,32 @@ function _sales_insider_gnode_add_node_access($gid, $node_type) {
         return gnode_add_node_access($group, $node_type);
     }
     return FALSE;
+}
+
+/**
+ * Helper function to find which Sales Insider Region group is assigned what country.
+ * Assumes a country is only in 1 group.
+ *
+ * TODO: Returns the newest/highest gid if multiple. This can cause issues. Needs fixing.
+ *
+ * @param $country
+ * @return bool|\Group
+ */
+function _sales_insider_get_group_by_country($country) {
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'group')
+    ->fieldCondition('field_extranet_group_countries', 'value', $country , '=');
+  $query->propertyOrderBy('gid', 'DESC');
+  $query->range(0,1);
+  $entity_array = $query->execute();
+
+  if ($entity_array) {
+    $group_num = key( $entity_array['group']);
+    $group = group_load($group_num);
+    return $group;
+  } else {
+    return FALSE;
+  }
 }
 
 /**

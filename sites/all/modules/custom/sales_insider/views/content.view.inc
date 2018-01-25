@@ -331,7 +331,7 @@ $handler->display->display_options['filters']['status_1']['table'] = 'node';
 $handler->display->display_options['filters']['status_1']['field'] = 'status';
 $handler->display->display_options['filters']['status_1']['relationship'] = 'group_entity_node';
 $handler->display->display_options['filters']['status_1']['value'] = '1';
-$handler->display->display_options['block_description'] = 'Sales Insider News Block';
+$handler->display->display_options['block_description'] = 'Sales Insider Promotions Block';
 
 /* Display: Featured Block */
 $handler = $view->new_display('block', 'Featured Block', 'sales_insider_featured_block');
@@ -427,3 +427,4 @@ $handler->display->display_options['filters']['promote']['field'] = 'promote';
 $handler->display->display_options['filters']['promote']['relationship'] = 'group_entity_node';
 $handler->display->display_options['filters']['promote']['value'] = '1';
 $handler->display->display_options['block_description'] = 'Sales Insider Featured Block';
+
