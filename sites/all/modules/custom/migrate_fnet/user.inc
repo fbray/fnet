@@ -79,5 +79,7 @@ class FNETUserMigration extends DrupalUser7Migration {
       return FALSE;
     }
 
+    // TODO: If they haven't logged in within the last two years.
+
   }
 }

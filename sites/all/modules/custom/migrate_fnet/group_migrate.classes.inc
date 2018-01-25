@@ -6,184 +6,6 @@
  * Time: 11:36 AM
  */
 
-/*
- *  Group Migration Class
- *  for moving entity content in the Drupal Group module
-*/
-class MigrateDestinationGroup extends MigrateDestinationEntity {
-  static public function getKeySchema() {
-    return array(
-      'gid' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'description' => 'ID of destination group',
-      ),
-    );
-  }
-
-  /**
-   * Basic initialization
-   *
-   * @param string $bundle
-   *  A.k.a. the content type (page, article, etc.) of the group.
-   * @param array $options
-   *  Options applied to group.
-   */
-  public function __construct($bundle, array $options = array()) {
-    parent::__construct('group', $bundle, $options);
-  }
-
-  /**
-   * Returns a list of fields available to be mapped for the group type (bundle)
-   *
-   * @param Migration $migration
-   *  Optionally, the migration containing this destination.
-   * @return array
-   *  Keys: machine names of the fields (to be passed to addFieldMapping)
-   *  Values: Human-friendly descriptions of the fields.
-   */
-  public function fields($migration = NULL) {
-    $fields = array();
-    // First the core (groups table) properties
-    $fields['gid'] = t('Group: Existing group ID');
-
-    // Then add in anything provided by handlers
-    $fields += migrate_handler_invoke_all('Entity', 'fields', $this->entityType, $this->bundle, $migration);
-    $fields += migrate_handler_invoke_all('Group', 'fields', $this->entityType, $this->bundle, $migration);
-    print_r($fields);
-    return $fields;
-  }
-
-  /**
-   * Delete a batch of group at once.
-   *
-   * @param $gids
-   *  Array of group IDs to be deleted.
-   */
-  public function bulkRollback(array $gids) {
-    migrate_instrument_start('group_delete_multiple');
-    $this->prepareRollback($gids);
-    group_delete_multiple($gids);
-    $this->completeRollback($gids);
-    migrate_instrument_stop('group_delete_multiple');
-  }
-
-  /**
-   * Import a single group.
-   *
-   * @param $group
-   *  Group object to build. Prefilled with any fields mapped in the Migration.
-   * @param $row
-   *  Raw source data object - passed through to prepare/complete handlers.
-   * @return array
-   *  Array of key fields (gid only in this case) of the group that was saved if
-   *  successful. FALSE on failure.
-   */
-  public function import(stdClass $group, stdClass $row) {
-    // Updating previously-migrated content?
-    print_r($group);
-    print_r($row);
-    print_r($this);
-    // TODO: Path ID? What the hell is it expecting it to be?
-    $new_group = entity_create('group', array(
-      'field_extranet_group_countries' => $group->field_extranet_group_countries,
-      'url' => array('alias' => $row->path),
-      'type' => $group->type,
-    ));
-    $wrapper = entity_metadata_wrapper('group', $new_group);
-    print_r($wrapper->getPropertyInfo());
-    $migration = Migration::currentMigration();
-    $old_group = new stdClass();
-    if (isset($row->migrate_map_destid1)) {
-      if (isset($group->gid)) {
-        if ($group->gid != $row->migrate_map_destid1) {
-          throw new MigrateException(t("Incoming gid !gid and map destination gid !destid1 don't match",
-            array('!gid' => $group->gid, '!destid1' => $row->migrate_map_destid1)));
-        }
-      }
-      else {
-        $group->gid = $row->migrate_map_destid1;
-      }
-    }
-    if ($migration->getSystemOfRecord() == Migration::DESTINATION) {
-      if (!isset($group->gid)) {
-        throw new MigrateException(t('System-of-record is DESTINATION, but no destination gid provided'));
-      }
-      $old_group = group_load($group->gid);
-      if (empty($old_group)) {
-        throw new MigrateException(t('System-of-record is DESTINATION, but group !gid does not exist', array('!gid' => $group->gid)));
-      }
-    }
-
-    if (!isset($group->type)) {
-      // Default the type to our designated destination bundle (by doing this
-      // conditionally, we permit some flexibility in terms of implementing
-      // migrations which can affect more than one type).
-      $group->type = $this->bundle;
-    }
-
-    // Invoke migration prepare handlers
-    $this->prepare($group, $row);
-
-    // Trying to update an existing group
-    if ($migration->getSystemOfRecord() == Migration::DESTINATION) {
-      // Incoming data overrides existing data, so only copy non-existent fields
-      foreach ($old_group as $field => $value) {
-        // An explicit NULL in the source data means to wipe to old value (i.e.,
-        // don't copy it over from $old_group)
-        if (property_exists($group, $field) && $group->$field === NULL) {
-          // Ignore this field
-        }
-        elseif (!isset($group->$field)) {
-          $group->$field = $old_group->$field;
-        }
-      }
-    }
-
-    if (isset($group->gid)) {
-      $updating = TRUE;
-    }
-    else {
-      $updating = FALSE;
-    }
-    // migrate_instrument is to measure time and memory usage.
-    migrate_instrument_start('entity_save');
-    /* TODO: Doing the entity_save causes an error: Call to undefined method stdClass::addMember() in GroupController->invoke().
-     * TODO: Without it, we get the following error:
-     * Error: Call to undefined method stdClass::uri() in entity_class_uri() (line 1146 of                                                   [error]
-     * /webdev/fluke-networks-pantheon/sites/all/modules/contrib/entity/entity.module).
-     * The problem here is that we're using a stdClass object instead of a Group Entity object.
-     */
-    // group_entity_save($group, 'group');
-
-    $group->save(); // Fastest, cleanest
-    // entity_save('group', $new_group);
-    migrate_instrument_stop('entity_save');
-
-    if (isset($group->gid)) {
-      if ($updating) {
-        $this->numUpdated++;
-      }
-      else {
-        $this->numCreated++;
-      }
-
-      if (!empty($fields)) {
-        // We actually have something to update.
-        $query->fields($fields);
-        $query->execute();
-      }
-      $return = array($group->gid);
-    }
-    else {
-      $return = FALSE;
-    }
-
-    $this->complete($group, $row);
-    return $return;
-  }
-}
-
 
 class MigrateDestinationGroupMembership extends MigrateDestination {
   public function __toString() {
@@ -233,22 +55,59 @@ class MigrateDestinationGroupMembership extends MigrateDestination {
    *  Array of key fields of the object that was saved if
    *  successful. FALSE on failure.
    */
-  public function import(stdClass $group_membership, stdClass $row) {
-    if (empty($group_membership->gid)) {
+  public function import(stdClass $membership, stdClass $row) {
+    if (empty($membership->gid)) {
       throw new MigrateException('Missing group ID.');
     }
-    if (empty($group_membership->uid)) {
+    if (empty($membership->uid)) {
       throw new MigrateException('Missing user ID.');
     }
 
-    $this->prepare($group_membership, $row);
+    $this->prepare($membership, $row);
+
 
     // Group roles are NOT the same as Drupal roles.
-    if (!isset($group_membership->roles)) {
-      $group_membership->roles = array();
+    // TODO: We may need to approach this in a different way.
+    if (!isset($membership->roles)) {
+      $membership->roles = array();
+    }
+    // print_r($membership);
+    $entity_type = 'group_membership';
+    $group_membership = entity_create($entity_type, array('type' => 'group_membership'));
+    // $wrapper = entity_metadata_wrapper($entity_type, $group_membership);
+
+    $wrapper = entity_metadata_wrapper($entity_type, NULL, array('bundle' => 'group_membership'));
+    $info = $wrapper->getPropertyInfo();
+    // print_r($info);
+
+    // Convert stdClass into GroupMembership object.
+    try {
+      // $group_membership = new GroupMembership();
+      $group_membership->roles = array(); // $membership->roles;
+      $group_membership->gid = $membership->gid;
+      $group_membership->uid = $membership->uid;
+      $group_membership->status = $membership->status;
+      $group_membership->blocked_status = $membership->blocked_status;
+      $group_membership->blocked_by = $membership->blocked_by;
+      $group_membership->blocked_on = $membership->blocked_on;
+      $group_membership->joined_on = $membership->joined_on;
+      $group_membership->requested_on = $membership->requested_on;
+      $group_membership->approved_on = $membership->approved_on;
+      $group_membership->approved_by = $membership->approved_by;
+      $group_membership->added_on = $membership->added_on;
+      $group_membership->added_by = $membership->added_by;
+      $group_membership->parent_membership = $membership->parent_mid;
+      $group_membership->heritage = $membership->heritage;
+
+    }
+    catch (Exception $e) {
+      watchdog('group_membership', $e->getMessage());
     }
 
+    // This is where the data gets saved into the destination
+    // $group_membership->save();
     entity_save('group_membership', $group_membership);
+    // print_r($group_membership);
     $this->complete($group_membership, $row);
     return array($group_membership->mid);
   }
@@ -257,7 +116,7 @@ class MigrateDestinationGroupMembership extends MigrateDestination {
    * Give handlers a shot at modifying the object before saving it.
    *
    * @param $group_membership
-   *   OGMembership object to build. Prefilled with any fields mapped in
+   *   Group Membership object to build. Prefilled with any fields mapped in
    *   the Migration.
    * @param $source_row
    *   Raw source data object - passed through to prepare handlers.
@@ -269,6 +128,12 @@ class MigrateDestinationGroupMembership extends MigrateDestination {
       'machineName' => $migration->getMachineName(),
     );
 
+    // print_r($group_membership); // This had the correct UIDs!
+/*
+    if(empty($row->uid)) {
+      return FALSE;
+    }
+*/
     // Call any general handlers.
     migrate_handler_invoke_all('group_membership', 'prepare', $group_membership, $row);
     // Then call any prepare handler for this specific Migration.
@@ -303,10 +168,24 @@ class MigrateDestinationGroupMembership extends MigrateDestination {
   }
 
   public function fields() {
+    // Can we get these automatically?
     return array(
-      'gid' => 'Group entity id',
-      'uid' => 'User ID',
       'roles' => 'Array of role names to assign to the user in this group.',
+      'mid' => t('Membership ID'),
+      'gid' => t('Group ID'),
+      'uid' => t('User ID'),
+      'status' => t('Membership Status'),
+      'blocked_status' => t('Blocked Status'),
+      'blocked_on' => t('Blocked On'),
+      'blocked_by' => t('Blocked By'),
+      'joined_on' => t('Joined On'),
+      'requested_on' => t('Requested On'),
+      'approved_on' => t('Approved On'),
+      'approved_by' => t('Approved By'),
+      'added_on' => t('Added On'),
+      'added_by' => t('Added By'),
+      'parent_mid' => t('Parent Membership ID'),
+      'heritage' => t('Heritage'),
     );
   }
 }
@@ -386,19 +265,8 @@ abstract class DrupalGroupMigration extends DrupalMigration {
     );
 
     // Setup common mappings
-    $this->addSimpleMappings(array('title'));
     $this->addFieldMapping('type')->defaultValue($this->destinationType);
 
-    if ($this->moduleExists('path')) {
-      $this->addFieldMapping('path', 'path')
-        ->description('Handled in prepareRow');
-    }
-
-    if (module_exists('pathauto')) {
-      $this->addFieldMapping('pathauto')
-        ->description('By default, disable in favor of migrated paths')
-        ->defaultValue(0);
-    }
   }
 
   /**
@@ -410,13 +278,7 @@ abstract class DrupalGroupMigration extends DrupalMigration {
       return FALSE;
     }
 
-    // Add the path to the source row, if relevant
-    if ($this->moduleExists('path')) {
-      $path = $this->version->getPath('group/' . $row->gid);
-      if ($path) {
-        $row->path = $path;
-      }
-    }
+    print_r($row->uid);
 
     $this->version->getSourceValues($row, $row->gid);
   }
@@ -481,19 +343,15 @@ abstract class DrupalGroupMembershipMigration extends DrupalMigration {
       'joined_on' => t('Joined On'),
       'requested_on' => t('Requested On'),
       'approved_on' => t('Approved On'),
+      'approved_by' => t('Approved By'),
       'added_on' => t('Added On'),
       'added_by' => t('Added By'),
       'parent_mid' => t('Parent Membership ID'),
       'heritage' => t('Heritage'),
     ];
 
-    // The source fields here are for membership, not group.
-    // TODO: Set manually.
-    //$this->sourceFields += $this->version->getSourceFields('group_membership');
-
     $this->destination = new MigrateDestinationGroupMembership();
 
-    // TODO: Finish map.
     $this->map = new MigrateSQLMap($this->machineName,
       array(
         'mid' => array('type' => 'int',
@@ -507,8 +365,24 @@ abstract class DrupalGroupMembershipMigration extends DrupalMigration {
     );
 
     // Setup common mappings
-    // $this->addSimpleMappings(array('title'));
-    // $this->addFieldMapping('type')->defaultValue($this->destinationType);
+    $this->addFieldMapping('gid', 'gid');
+    $this->addFieldMapping('uid', 'uid')
+      ->sourceMigration('FNETUser');
+    $this->addFieldMapping('status', 'status');
+    $this->addFieldMapping('blocked_status', 'blocked_status');
+    $this->addFieldMapping('blocked_on', 'blocked_on');
+    $this->addFieldMapping('blocked_by', 'blocked_by')
+      ->sourceMigration('FNETUser');
+    $this->addFieldMapping('joined_on', 'joined_on');
+    $this->addFieldMapping('requested_on', 'requested_on');
+    $this->addFieldMapping('approved_on', 'approved_on');
+    $this->addFieldMapping('approved_by', 'approved_by')
+      ->sourceMigration('FNETUser');
+    $this->addFieldMapping('added_on', 'added_on');
+    $this->addFieldMapping('added_by', 'added_by')
+      ->sourceMigration('FNETUser');
+    $this->addFieldMapping('parent_mid', 'parent_mid');
+    $this->addFieldMapping('heritage', 'heritage');
 
   }
 
@@ -520,6 +394,26 @@ abstract class DrupalGroupMembershipMigration extends DrupalMigration {
     if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
+
+    $result = db_query('SELECT gid FROM {groups} g WHERE g.title = :title', array(':title' => $row->title));
+    $record = $result->fetchField(0);
+    $row->gid = $record;
+
+    // print_r($row->uid); // This results in the old UID.
+
+
+
+    // Roles
+    /*
+    $roles = [];
+    $results = db_query('SELECT role from group_membership_role where mid = :mid', array(':mid' => $row->mid));
+    foreach($results as $result) {
+      $roles[] = $result->role;
+    }
+    $row->roles = $roles;
+    */
+
+    $row->roles = [];
 
     $this->version->getSourceValues($row, $row->mid);
   }

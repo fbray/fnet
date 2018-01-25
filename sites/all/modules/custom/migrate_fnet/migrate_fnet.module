@@ -91,51 +91,6 @@ function migrate_fnet_register_migrations() {
   // specifying its particular field mappings and transformations. source_type
   // and destination_type are required arguments.
   $group_arguments = array(
-    // Asia-Pacific Group
-    /* TODO: Barfs an error when you run it. Tries to create the group, but Group module needs current user to become Group Admin.
-    array(
-      'class_name' => 'APACGroupMigration',
-      'description' => t('Migration of the Asia-Pacific group'),
-      'machine_name' => 'APACGroup',
-      'source_type' => 'extranet_asia',  // D7 Vocabulary ID
-      'destination_type' => 'sales_insider_region',
-    ),
-
-    // Europe-Middle East Group
-    array(
-      'class_name' => 'EMEAGroupMigration',
-      'description' => t('Migration of the Europe-Middle East group'),
-      'machine_name' => 'EMEAGroup',
-      'source_type' => 'extranet_europe',  // D7 Vocabulary ID
-      'destination_type' => 'sales_insider_region',
-    ),
-
-    // Latin America Group
-    array(
-      'class_name' => 'LatAmGroupMigration',
-      'description' => t('Migration of the Latin America group'),
-      'machine_name' => 'LATAMGroup',
-      'source_type' => 'extranet_latam',  // D7 Vocabulary ID
-      'destination_type' => 'sales_insider_region',
-    ),
-
-    // North America Group
-    array(
-      'class_name' => 'NorthAmericaGroupMigration',
-      'description' => t('Migration of the North America group'),
-      'machine_name' => 'NorthAmericaGroup',
-      'source_type' => 'extranet_north_america',  // D7 Vocabulary ID
-      'destination_type' => 'sales_insider_region',
-    ),
-
-    // Sales Insider Subtype Group
-    array(
-      'class_name' => 'SalesInsiderSubGroupMigration',
-      'description' => t('Migration of the Sales Insider subgroup'),
-      'machine_name' => 'SalesInsiderSubGroup',
-      'source_type' => 'sales_insider_subgroup',  // D7 Vocabulary ID
-      'destination_type' => 'sales_insider_subgroup',
-    ),
 
     // Group Membership
     /* TODO: Throws a bunch of errors within the Migrate module.
@@ -143,15 +98,12 @@ function migrate_fnet_register_migrations() {
 Illegal offset type migrate.module:383                                                                                                        [warning]
 Illegal offset type in isset or empty migrate.module:384                                                                                      [warning]
 Illegal offset type migrate.module:390
-
+*/
     array(
       'class_name' => 'DrupalGroupMembership7Migration',
       'description' => t('Migration of Group Membership'),
       'machine_name' => 'GroupMembership',
-      'user_migration' => 'FNETUser',
-      // 'dependencies' => array('APACGroup', 'EMEAGroup', 'LATAMGroup', 'NorthAmericaGroup', 'SalesInsiderSubGroup'),
     ),
-    */
   );
 
   $common_group_arguments = $common_arguments + array('user_migration' => 'FNETUser');

@@ -8,7 +8,7 @@ dependencies[] = migrate_d2d
 dependencies[] = migrate_extras
 dependencies[] = date
 
-files[] = apac_group.inc
+
 files[] = asset_gateway.inc
 files[] = award.inc
 files[] = blog_article.inc
@@ -16,7 +16,7 @@ files[] = digital_asset.inc
 files[] = distributor_location.inc
 files[] = edoc.inc
 files[] = edoc_language.inc
-files[] = emea_group.inc
+
 files[] = ems_registrant.inc
 files[] = ems_registration.inc
 files[] = event.inc
@@ -28,20 +28,20 @@ files[] = extranet_news.inc
 files[] = extranet_page.inc
 files[] = extranet_promotion.inc
 files[] = file.inc
-files[] = global_group.inc
+
 files[] = group_migrate.classes.inc
 files[] = groups.inc
 files[] = homepage2013.inc
 files[] = homepage2013_language.inc
 files[] = knowledge_base_article.inc
-files[] = latam_group.inc
+
 files[] = marketo_form.inc
 files[] = microsite_page.inc
 files[] = microsite_page_language.inc
 files[] = microsite_story.inc
 files[] = microsite_story_language.inc
 files[] = node_migrate.classes.inc
-files[] = north_america_group.inc
+
 files[] = page.inc
 files[] = page_region.inc
 files[] = page_region_language.inc
@@ -56,5 +56,5 @@ files[] = product_language.inc
 files[] = product_sub_type.inc
 files[] = promotion.inc
 files[] = roles.inc
-files[] = sales_insider_subgroup.inc
+
 files[] = user.inc
