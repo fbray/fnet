@@ -44,6 +44,21 @@ class FNETExtranetPromotionMigration extends DrupalNode7Migration {
   }
 
   /**
+   * Implementation of prepareRow()
+   *
+   * @param $row
+   * @return bool
+   */
+  public function prepareRow($row) {
+    // Always include this snippet, in case our parent class decides to ignore the row
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+    // TODO: Regex file and image URLs from /sites/flukenetworks.com/files... to /sites/default/files...
+  }
+
+
+  /**
    * Code to add imported Extranet Promotions to their respective groups.
    *
    * @param $node
