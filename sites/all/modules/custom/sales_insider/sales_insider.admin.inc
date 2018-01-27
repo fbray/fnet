@@ -34,11 +34,11 @@ function sales_insider_admin_instructions_form($form, &$form_state) {
     '#default_value' => variable_get('extranet_instructions_sales_tools', ''),
   );
 
-  $form['extranet_instructions_services'] = array(
+  $form['extranet_instructions_contacts'] = array(
     '#type' => 'textarea',
-    '#title' => t('Services & Support text'),
-    '#description' => t('The instruction text for the Services & Support page.'),
-    '#default_value' => variable_get('extranet_instructions_services', ''),
+    '#title' => t('Contacts Page text'),
+    '#description' => t('The instruction text for the Contacts page.'),
+    '#default_value' => variable_get('extranet_instructions_contacts', ''),
   );
 
   $form['extranet_instructions_access_denied'] = array(
