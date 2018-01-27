@@ -108,7 +108,7 @@ if (!user_access('access extranet')) {
   drupal_goto('/extranet-access-denied');
 }
 ?>
-<div id="page-wrapper" class="fextranet">
+<div id="page-wrapper" class="extranet">
   <a name="topanchor" style="font-size:0; height:0;"></a>
   <div id="page" class="<?php print $classes; ?>">
 

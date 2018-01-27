@@ -103,7 +103,7 @@
 // Check to see if this user can access the extranet
 $member = isset($page['#access_extranet']) ? $page['#access_extranet'] : FALSE ;
 ?>
-<div id="page-wrapper" class="fextranet">
+<div id="page-wrapper" class="extranet">
   <a name="topanchor" style="font-size:0; height:0;"></a>
   <div id="page" class="<?php print $classes; ?>">
 
@@ -203,8 +203,7 @@ $member = isset($page['#access_extranet']) ? $page['#access_extranet'] : FALSE ;
                         </div>
 
                         <div class='extranet-region'>
-                        <?php print $page['extranet_region'] ;  // Region by user/country match
-                        ?>
+                        <?php print $page['extranet_region'];  // Region by user/country match ?>
                         </div>
                     </div>
                     <div class='extranet-topnav'>
