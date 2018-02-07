@@ -25,9 +25,11 @@ class FNETHomepage2013LanguageMigration extends FNETNode7Migration {
     // Individual Fields
     $this->addFieldMapping('field_language_region', 'field_home13lng_lng');
     $this->addFieldMapping('field_home13_banner_html', 'field_home13lng_banner_html');
-    $this->addFieldMapping('field_home13_banner_html:format', 'field_home13lng_banner_html:format');
+    $this->addFieldMapping('field_home13_banner_html:format')
+      ->defaultValue('full_html');
     $this->addFieldMapping('field_home13_ads', 'field_home13lng_ads');
-    $this->addFieldMapping('field_home13_ads:format', 'field_home13lng_ads:format');
+    $this->addFieldMapping('field_home13_ads:format')
+      ->defaultValue('full_html');
     $this->addFieldMapping('field_category_description_1', 'field_home13lng_ind_desc_1');
     $this->addFieldMapping('field_category_description_2', 'field_home13lng_ind_desc_2');
     $this->addFieldMapping('field_category_description_3', 'field_home13lng_ind_desc_3');
@@ -63,13 +65,19 @@ class FNETHomepage2013LanguageMigration extends FNETNode7Migration {
       return FALSE;
     }
 
-    // Check the body field. Replace and instanes of 'sites/flukenetworks.com' in URLs
+    // Check the body field. Replace instances of 'sites/flukenetworks.com' in URLs
     // with 'sites/all'.
-    $row->field_home13lng_banner_html = str_replace('/flukenetworks.com/', '/all/', $row->field_home13lng_banner_html);
+    $row->field_home13lng_banner_html = str_replace('/flukenetworks.com/', '/default/', $row->field_home13lng_banner_html);
+    $row->field_home13_ads= str_replace('/flukenetworks.com/', '/default/', $row->field_home13_ads);
 
     // The language/region thing seems to be problematic with the allowed values.
     // Let's trim it down to just the first five characters.
     $row->field_home13lng_lng[0] = substr($row->field_home13lng_lng[0], 0, 5);
 
+    // Also, remove the hard URL.
+    $row->field_home13_banner_html = str_replace('https://www.flukenetworks.com/', '/', $row->field_home13_banner_html);
+    $row->field_home13_banner_html = str_replace('http://www.flukenetworks.com/', '/', $row->field_home13_banner_html);
+    $row->field_home13_ads= str_replace('https://www.flukenetworks.com/', '/', $row->field_home13_ads);
+    $row->field_home13_ads= str_replace('http://www.flukenetworks.com/', '/', $row->field_home13_ads);
   }
 }

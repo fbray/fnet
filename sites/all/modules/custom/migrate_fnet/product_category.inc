@@ -14,8 +14,13 @@ class FNETProductCategoryMigration extends DrupalNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
+
     // Deprecated Fields
-    $this->addFieldMapping(NULL, 'field_business_entity');
+    $this->addFieldMapping(NULL, 'field_business_entity')
+      ->description(t('No longer necessary as NetScout split is complete.'))
+      ->issueGroup(t('DNM'));
 
     // Individual Fields
     $this->addFieldMapping('field_description', 'field_industry_shortdesc');
@@ -233,8 +238,52 @@ class FNETProductCategoryMigration extends DrupalNode7Migration {
 
 
     // Entity References
-    $this->addFieldMapping('product_attributes', 'taxonomy_vocabulary_6')
+    $this->addFieldMapping('field_product_attributes', 'taxonomy_vocabulary_6')
       ->sourceMigration('ProductAttributes');
 
+  }
+
+  public function prepareRow($row) {
+    // Always include this snippet, in case our parent class decides to ignore the row
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+
+    // Check the various fields. Remove the hard URLs.
+    $row->field_industry_banner_txt_1 = $this->stripDomain($row->field_industry_banner_txt_1);
+    $row->field_industry_banner_txt_2 = $this->stripDomain($row->field_industry_banner_txt_2);
+    $row->field_industry_banner_txt_3 = $this->stripDomain($row->field_industry_banner_txt_3);
+    $row->field_industry_banner_txt_4 = $this->stripDomain($row->field_industry_banner_txt_4);
+    $row->field_industry_banner_txt_5 = $this->stripDomain($row->field_industry_banner_txt_5);
+    $row->field_industry_box_desc_1 = $this->stripDomain($row->field_industry_box_desc_1);
+    $row->field_industry_box_desc_2 = $this->stripDomain($row->field_industry_box_desc_2);
+    $row->field_industry_box_desc_3 = $this->stripDomain($row->field_industry_box_desc_3);
+    $row->field_industry_box_url_1 = $this->stripDomain($row->field_industry_box_url_1);
+    $row->field_industry_box_url_2 = $this->stripDomain($row->field_industry_box_url_2);
+    $row->field_industry_box_url_3 = $this->stripDomain($row->field_industry_box_url_3);
+    $row->field_industry_demo_1 = $this->stripDomain($row->field_industry_demo_1);
+    $row->field_industry_demo_2 = $this->stripDomain($row->field_industry_demo_2);
+    $row->field_industry_demo_3 = $this->stripDomain($row->field_industry_demo_3);
+    $row->field_industry_fea_top_1 = $this->stripDomain($row->field_industry_fea_top_1);
+    $row->field_industry_fea_top_2 = $this->stripDomain($row->field_industry_fea_top_2);
+    $row->field_industry_fea_top_3 = $this->stripDomain($row->field_industry_fea_top_3);
+    $row->field_industry_learn_abt_1 = $this->stripDomain($row->field_industry_learn_abt_1);
+    $row->field_industry_learn_abt_2 = $this->stripDomain($row->field_industry_learn_abt_2);
+    $row->field_industry_learn_abt_3 = $this->stripDomain($row->field_industry_learn_abt_3);
+    $row->field_industry_pop_res_1 = $this->stripDomain($row->field_industry_pop_res_1);
+    $row->field_industry_pop_res_2 = $this->stripDomain($row->field_industry_pop_res_2);
+    $row->field_industry_pop_res_3 = $this->stripDomain($row->field_industry_pop_res_3);
+    $row->field_industry_promo_1 = $this->stripDomain($row->field_industry_promo_1);
+    $row->field_industry_promo_2 = $this->stripDomain($row->field_industry_promo_2);
+    $row->field_industry_promo_3 = $this->stripDomain($row->field_industry_promo_3);
+    $row->field_industry_trial_1 = $this->stripDomain($row->field_industry_trial_1);
+    $row->field_industry_trial_2 = $this->stripDomain($row->field_industry_trial_2);
+    $row->field_industry_trial_3 = $this->stripDomain($row->field_industry_trial_3);
+  }
+
+  protected function stripDomain($string) {
+    $stripped = str_replace('https://www.flukenetworks.com/', '/', $string);
+    $stripped = str_replace('http://www.flukenetworks.com/', '/', $string);
+    return $stripped;
   }
 }
