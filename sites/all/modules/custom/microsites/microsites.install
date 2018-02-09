@@ -1,0 +1,30 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: rositis
+ * Date: 2/9/18
+ * Time: 11:35 AM
+ */
+function microsites_install() {
+  // Menu
+  if(!menu_load('linkwarelive')) {
+    $menu = array(
+      'menu_name' => 'linkwarelive', // was: menu-microsite-linkware-live-top',
+      'title' => 'LinkWare Live Main Menu',
+      'description' => 'Menu Items for LinkwareLive',
+    );
+    menu_save($menu);
+  }
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function microsites_uninstall() {
+  // Menus
+  if (module_exists('menu')) {
+    if ($my_menu = menu_load('linkwarelive')) {
+      menu_delete($my_menu);
+    }
+  }
+}
