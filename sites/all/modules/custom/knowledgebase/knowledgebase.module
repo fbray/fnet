@@ -4,6 +4,8 @@
  * Code for the knowledgebase feature.
  */
 
+include_once 'knowledgebase.features.inc';
+
 /**
  * Implementation of hook_help().
  */
@@ -27,6 +29,18 @@ function knowledgebase_init(){
 		$newtermpath = drupal_get_path_alias('taxonomy/term/'.$tid);
 		drupal_goto($newtermpath, array(), 301);
 	}	
+	
+	if(arg(0) == 'knowledge-base' && arg(1) == 'it-networking'){
+		$meta_kb_itnetworking_index = array(
+			'#type' => 'html_tag',
+			'#tag' => 'meta',
+			'#attributes' => array(
+				'name' => 'robots',
+				'content' => 'noindex,nofollow',
+			),
+		);
+		drupal_add_html_head($meta_kb_itnetworking_index, 'metakbitnetworkingindex');
+	}
 }
 /**
  * Implementation of hook_menu().
@@ -112,28 +126,14 @@ function knowledgebase_metatag_page_cache_cid_parts_alter(&$cid_parts) {
 }
 
 /**
- * Implements hook_views_api()
- *
- * @return array
- */
-function knowledgebase_views_api() {
-  return array(
-    'api' => 3.0,
-    'path' => drupal_get_path('module', 'knowledgebase') . '/views',
-  );
-}
-
-/**
  * Implements hook_views_pre_render().
- *
- * @param $view
  */
 function knowledgebase_views_pre_render(&$view) {
   if ($view->name == 'knowledge_base_search') {
-		if(isset($view->exposed_data['title']) || isset($view->exposed_data['field_knowledge_base_target_id'])){
+		if(isset($view->exposed_data['title']) || isset($view->exposed_data['taxonomy_vocabulary_14_tid'])){
 			$title = ($view->exposed_data['title'] == "")?"All":$view->exposed_data['title'];
 			
-			$tid = $view->exposed_data['field_knowledge_base_target_id'];
+			$tid = $view->exposed_data['taxonomy_vocabulary_14_tid'];
 			$term = isset($tid)?taxonomy_term_load($tid):"";
 			$name = $term ? $term->name : "";	
 			
@@ -147,7 +147,7 @@ function knowledgebase_views_pre_render(&$view) {
 
 function knowledgebase_form_views_exposed_form_alter(&$form, &$form_state) {
 	  if($form["#id"] == 'views-exposed-form-knowledge-base-search-page'){
-			unset($form['field_knowledge_base_target_id']['#options']['IT Networking']);
+			unset($form['taxonomy_vocabulary_14_tid']['#options']['IT Networking']);
 		}
 }
 
