@@ -215,26 +215,37 @@ class FNETProductCategoryMigration extends DrupalNode7Migration {
       ->sourceMigration('Files');
     $this->addFieldMapping('field_image:file_class' )
       ->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_image:preserve_files')
+      ->defaultValue(TRUE);
 
     $this->addFieldMapping('field_background_image', 'field_ind_background_img')
       ->sourceMigration('Files');
+
     $this->addFieldMapping('field_background_image:file_class' )
       ->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_background_image:preserve_files')
+      ->defaultValue(TRUE);
 
     $this->addFieldMapping('field_overview_box_1_image', 'field_industry_box_img_1')
       ->sourceMigration('Files');
     $this->addFieldMapping('field_overview_box_1_image:file_class')
       ->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_overview_box_1_image:preserve_files')
+      ->defaultValue(TRUE);
 
     $this->addFieldMapping('field_overview_box_2_image', 'field_industry_box_img_2')
       ->sourceMigration('Files');
     $this->addFieldMapping('field_overview_box_2_image:file_class')
       ->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_overview_box_2_image:preserve_files')
+      ->defaultValue(TRUE);
 
     $this->addFieldMapping('field_overview_box_3_image', 'field_industry_box_img_3')
       ->sourceMigration('Files');
     $this->addFieldMapping('field_overview_box_3_image:file_class')
       ->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_overview_box_3_image:preserve_files')
+      ->defaultValue(TRUE);
 
 
     // Entity References

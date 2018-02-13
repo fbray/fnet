@@ -115,7 +115,10 @@ class FNETEventOccurrenceMigration extends FNETNode7Migration {
     if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
-    // TODO: Put the date and time fields together.
+    // Uppercase for Address fields.
+    $row->country = strtoupper($row->country);
+    $row->province = strtoupper($row->province);
+
     $date = $row->field_evnt_occ_date[0];
 
     // Extract the start and end times.

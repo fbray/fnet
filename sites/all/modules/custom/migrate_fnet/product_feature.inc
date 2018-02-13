@@ -25,10 +25,12 @@ class FNETProductFeatureMigration extends DrupalNode7Migration {
     // Individual Fields
     // Move to a common Sort Order field using an integer
     $this->addFieldMapping('weight', 'field_feature_sortorder');
+    $this->addFieldMapping('body:language', 'body:language')
+      ->defaultValue(LANGUAGE_NONE);
 
     // Entity References
     // Move to a common Product field
-    $this->addFieldMapping('field_product', 'field_feature_product')
+    $this->addFieldMapping('field_products', 'field_feature_product')
       ->sourceMigration('ProductDisplay');
 
   }

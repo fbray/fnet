@@ -23,9 +23,11 @@ class FNETEventMigration extends FNETNode7Migration {
       ->issueGroup(t('DNM'));
 
     // Individual Fields
+    $this->addFieldMapping('body:language', 'body:language');
     $this->addFieldMapping('field_intro', 'field_event_intro');
-    $this->addFieldMapping('field_intro:format', 'field_event_intro:format'); // Careful here. The first migration had messed up Text Formats because one was missing on import.
-    $this->addFieldMapping('field_intro:language', 'field_event_intro:language')
+    $this->addFieldMapping('field_intro:format')
+      ->defaultValue('full_html');
+    $this->addFieldMapping('field_intro:language', 'language')
       ->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('weight', 'field_event_priority'); // Move to Weight
     $this->addFieldMapping('field_tracking_code', 'field_event_adtracker');
@@ -47,7 +49,7 @@ class FNETEventMigration extends FNETNode7Migration {
 
 
     // Entity References
-    $this->addFieldMapping('event_types', 'taxonomy_vocabulary_10')
+    $this->addFieldMapping('field_event_types', 'taxonomy_vocabulary_10')
       ->sourceMigration('EventTypes');
     $this->addFieldMapping('field_product_category', 'field_workshop_industry')
       ->sourceMigration('ProductCategory')
@@ -58,6 +60,27 @@ class FNETEventMigration extends FNETNode7Migration {
 
     // Internationalization
     $this->addFieldMapping('field_language_region', 'field_event_langreg');
+  }
+
+  /**
+   * @param $row
+   * @return bool
+   */
+  public function prepareRow($row) {
+    // Always include this snippet, in case our parent class decides to ignore the row
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+
+    // Check the various fields. Remove the hard URLs.
+    $row->body = $this->stripDomain($row->body);
+    $row->body = str_replace('/flukenetworks.com/', '/default/', $row->body);
+  }
+
+  protected function stripDomain($string) {
+    $stripped = str_replace('https://www.flukenetworks.com/', '/', $string);
+    $stripped = str_replace('http://www.flukenetworks.com/', '/', $string);
+    return $stripped;
   }
 
 }

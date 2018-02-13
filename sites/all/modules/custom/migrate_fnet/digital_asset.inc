@@ -10,9 +10,6 @@
 */
 class FNETDigitalAssetMigration extends FNETNode7Migration {
   public function __construct(array $arguments) {
-    $this->sourceFields += array(
-      'consolidated_industry' => t('Combining the field_dam_industry and the field_dam_new_industry fields.'),
-    );
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
@@ -26,6 +23,7 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
       ->issueGroup(t('DNM'));
 
     // Individual Fields
+
     $this->addFieldMapping('field_dam_language', 'field_dam_language');
     $this->addFieldMapping('field_dam_document_id', 'field_dam_document_id');
     $this->addFieldMapping('field_dam_ams_id', 'field_dam_ams_id');
@@ -36,7 +34,10 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
     $this->addFieldMapping('field_dam_file_size', 'field_dam_file_size');
     $this->addFieldMapping('field_dam_original_file_name', 'field_dam_original_filename');
     $this->addFieldMapping('field_dam_keep_original_filename', 'field_dam_keep_original_filename');
-    $this->addFieldMapping('field_dam_asset_type', 'field_dam_asset_type');
+
+
+    $this->addFieldMapping('field_asset_type', 'field_dam_asset_type');
+
     $this->addFieldMapping('field_dam_export_controlled', 'field_dam_export_controlled');
     $this->addFieldMapping('field_dam_document_status', 'field_dam_document_status');
     $this->addFieldMapping('field_dam_entitlement_level', 'field_dam_entitlement_level');
@@ -56,8 +57,7 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
     $this->addFieldMapping('field_dam_l3_category', 'field_dam_l3_category');
     $this->addFieldMapping('field_dam_l4_category', 'field_dam_l4_category');
 
-    $this->addFieldMapping('field_dam_industry', 'consolidated_industry');
-
+    $this->addFieldMapping('field_dam_industry', 'field_dam_industry');
 
     // Link Fields
     $this->addFieldMapping('field_dam_edoc_url', 'field_dam_edoc_url');
@@ -93,9 +93,6 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
     $this->addFieldMapping('field_asset_tags', 'taxonomy_vocabulary_19')
       ->sourceMigration('AssetTags');
 
-    $this->addFieldMapping('field_product_category', 'consolidated_industry')
-      ->sourceMigration('ProductCategory');
-
     // File Fields
     $this->addFieldMapping('field_asset_file', 'field_dam_asset_file')
       ->sourceMigration('Files');
@@ -116,6 +113,7 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
     $this->addFieldMapping('field_dam_asset_file_pod:display', 'field_dam_asset_file_pod:display');
     $this->addFieldMapping('field_dam_asset_file_pod:description', 'field_dam_asset_file_pod:description')
       ->defaultValue(NULL);
+
   }
 
   /**
@@ -123,36 +121,14 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
    *
    * @param $row
    * @return bool
+   *
+   * TODO: This is throwing an error.
    */
   public function prepareRow($row) {
     // Always include this snippet, in case our parent class decides to ignore the row
     if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
-
-    // Merge the two industry fields.
-    $consolidated = array();
-    if (is_array($row->field_dam_industry)) {
-      foreach($row->field_dam_industry as $industry) {
-        if ($industry != '') {
-          $consolidated[] = $industry;
-        }
-      }
-    }
-    if (is_array($row->field_dam_new_industry)) {
-      foreach($row->field_dam_new_industry as $new_industry) {
-        if ($new_industry != '') {
-          if ($new_industry == 'Both') {
-            $consolidated[] = 'Enterprise Systems';
-            $consolidated[] = 'Portable Network Tools';
-          }
-          else {
-            $consolidated[] = $new_industry;
-          }
-        }
-      }
-    }
-    $row->consolidated_industry = $consolidated;
 
     // Correct the language field.
     /*
@@ -165,12 +141,44 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
       $row->field_dam_language = 'zh-hans';
     }
     */
-
+    // Check the various fields. Remove the hard URLs.
     // Remove the absolute URL in the Form URL and eDoc URL fields.
     // Check the body field. Replace and instanes of 'sites/flukenetworks.com' in URLs
     // with 'sites/all'.
-    $row->field_dam_form_url = str_replace('http://flukenetworks.com/', '/', $row->field_dam_form_url);
-    $row->field_dam_edoc_url = str_replace('http://flukenetworks.com/', '/', $row->field_dam_edoc_url);
+
+    $row->body = $this->stripDomain($row->body);
+    $row->field_dam_form_url = $this->stripDomain($row->field_dam_form_url);
+    $row->field_dam_edoc_url = $this->stripDomain($row->field_dam_edoc_url);
+    $row->body = str_replace('/flukenetworks.com/', '/default/', $row->body);
+
+
+
+    // Stupid Asset Type field.
+    $type = [
+      'application notes' => 'application_notes',
+      'brochures' => 'brochure',
+      'case studies' => 'case_study',
+      'catalogs' => 'catalog',
+      'corporate' => 'corporate',
+      'data sheets' => 'data_sheet',
+      'extended specifications' => 'extended_specification',
+      'flyers' => 'flyer',
+      'gold training' => 'gold_training',
+      'images' => 'image',
+      'letters' => 'letter',
+      'manuals' => 'manual',
+      'miscellaneous' => 'miscellaneous',
+      'powerpoint presentations' => 'presentation',
+      'product software' => 'product_software',
+      'product software release notes' => 'product_software_release_notes',
+      'sales guides' => 'sales_guide',
+      "user's guide" => 'user_guide',
+      'videos' => 'video',
+      'virtual demos' => 'virtual_demonstration',
+      'webcasts' => 'webcast',
+      'white papers' => 'white_paper',
+    ];
+    $row->field_dam_asset_type[0] = $type[$row->field_dam_asset_type[0]];
 
     // Use Proper case for L# categories.
     // $row->field_dam_l1_category =
@@ -182,6 +190,7 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
    * @param $node
    * @param \stdClass $row
    */
+
   public function complete($node, stdClass $row) {
     // $node is the new, $row is the old.
 
@@ -219,6 +228,7 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
       catch (Exception $e) {
         watchdog('migrate_fnet', $e->getMessage());
       }
+
     }
 
     return parent::complete($node, $row); // TODO: Change the autogenerated stub
@@ -229,9 +239,17 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
    *
    * @param $entity_ids
    */
+
   public function completeRollback($entity_ids) {
     db_delete('group_entity')
       ->condition('entity_id', $entity_ids, 'IN')
       ->execute();
+  }
+
+
+  protected function stripDomain($string) {
+    $stripped = str_replace('https://www.flukenetworks.com/', '/', $string);
+    $stripped = str_replace('http://www.flukenetworks.com/', '/', $string);
+    return $stripped;
   }
 }

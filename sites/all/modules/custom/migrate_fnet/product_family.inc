@@ -269,6 +269,5 @@ class FNETProductFamilyMigration extends DrupalNode7Migration {
     if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
-    // TODO: Do some sort of check for existing data for references. Try to cut down on the stubs.
   }
 }

@@ -27,6 +27,9 @@ class FNETeDocMigration extends FNETNode7Migration {
       ->issueGroup(t('DNM'));
 
     // Individal fields
+    $this->addFieldMapping('body:language', 'body:language');
+    $this->addFieldMapping('body:format')
+      ->defaultValue('full_html');
     $this->addFieldMapping('field_subtitle', 'field_edoc_subtitle');
 
     $this->addFieldMapping('field_literature_id_en', 'field_edoc_lid_en');

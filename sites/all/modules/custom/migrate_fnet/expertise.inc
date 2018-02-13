@@ -23,12 +23,16 @@ class FNETExpertiseMigration extends FNETNode7Migration {
       ->issueGroup(t('DNM'));
 
     // Individual Fields
+    $this->addFieldMapping('body:language', 'body:language');
     $this->addFieldMapping('field_intro', 'field_expertise_intro');
-    $this->addFieldMapping('field_intro:format', 'field_expertise_intro:format');
-    $this->addFieldMapping('field_intro:language', 'field_expertise_intro:language')
+    $this->addFieldMapping('field_intro:format')
+      ->defaultValue('full_html');
+    $this->addFieldMapping('field_intro:language', 'language')
       ->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('field_expertise_related_content', 'field_expertise_relatedcontent');
-    $this->addFieldMapping('field_expertise_related_content:format', 'field_expertise_relatedcontent:format');
+    $this->addFieldMapping('field_expertise_related_content:language', 'field_expertise_relatedcontent:language');
+    $this->addFieldMapping('field_expertise_related_content:format')
+      ->defaultValue('full_html');
 
     // Convert this one to use the Weight module.
     $this->addFieldMapping('weight', 'field_expertise_sortorder');
@@ -68,6 +72,16 @@ class FNETExpertiseMigration extends FNETNode7Migration {
     if (!is_null($row->field_expertise_sortorder)) {
       $row->field_expertise_sortorder[0] = ($row->field_expertise_sortorder[0] / 10);
     }
+
+    // Check the various fields. Remove the hard URLs.
+    $row->body = $this->stripDomain($row->body);
+    $row->body = str_replace('/flukenetworks.com/', '/default/', $row->body);
+  }
+
+  protected function stripDomain($string) {
+    $stripped = str_replace('https://www.flukenetworks.com/', '/', $string);
+    $stripped = str_replace('http://www.flukenetworks.com/', '/', $string);
+    return $stripped;
   }
 
 }
