@@ -71,6 +71,8 @@ function industries_families_preprocess_node(&$variables) {
       $variables['industry_families'] = node_load_multiple(array_keys($result));
     }
 
+    // TODO: Do the theming of the industry_families here and then simply barf them back into the variables.
+
     // Get list of products by family related to this industry
     $products_by_family = array();
     foreach ($variables['industry_families'] as $family) {
@@ -81,10 +83,10 @@ function industries_families_preprocess_node(&$variables) {
       $product_list->execute();
       $products_by_family[] = array($family->nid, $family->title, $product_list->result);
     }
-
     $variables['products_by_family'] = $products_by_family;
 
     //get whitepapers
+    // dpm($variables['node']->title);
     $variables['whitepapers'] = industries_families_digital_assets($siteReg['lang'], $variables['node']->title, 'whitepapers');
     //get webcasts
     $variables['webcasts'] = industries_families_digital_assets($siteReg['lang'], $variables['node']->title, 'webcasts');
@@ -109,15 +111,16 @@ function industries_families_preprocess_node(&$variables) {
     $variables['industries_links'] = $industries_links;
 
     // Language Overrides
-
+   // dpm($variables['node']);
     // Hero banner
+
     $banners = array();
     $banners_lng = array();
 
     for ($i = 1; $i <= 5 ; $i++) {
-      $banner_txt = fnet_common_get_field_value('node', $variables['node'], 'field_family_banner_txt_' . $i);
-      dpm($banner_txt);
-      if ( $banner_txt) $banners[] = $banner_txt;
+      $banner_text = fnet_common_get_field_value('node', $variables['node'], 'field_family_banner_text_' . $i);
+      // dpm('Banner Text: ' . $banner_text);
+      if ( $banner_text) $banners[] = $banner_text;
     }
 
     // get industry_lang
@@ -185,7 +188,7 @@ function industries_families_preprocess_node(&$variables) {
     $product_list->set_arguments(array($variables['node']->nid));
     $product_list->set_display('families_by_product_category');
     $product_list->execute();
-    dpm($product_list->result);
+    // dpm($product_list->result);
     $products_by_family = array($variables['node']->nid, $variables['node']->title, $product_list->result);
 
     $variables['products_by_family'] = $products_by_family;
@@ -272,10 +275,7 @@ function _get_field_substitution_array() {
 function industries_families_digital_assets($language, $product_category, $type) {
   // Make sure the type is lower case.
   $type = strtolower($type);
-  // expect $language to be 'und' or 'en';
-  dpm($language);
 
-  // TODO: Add the industry_assets to the views.
   // Product Category
   $assets = views_get_view('product_category', FALSE);
   $assets->set_display($type); // Machine Name of the display.
@@ -295,7 +295,7 @@ function industries_families_digital_assets($language, $product_category, $type)
 function industries_families_case_studies($industry_nid) {
   $case_studies = views_get_view('product_category');
   $case_studies->set_display('case_studies');
-  $case_studies->set_arguments($industry_nid);
+  $case_studies->set_arguments(array($industry_nid));
   $case_studies->pre_execute();
   $case_studies->execute();
   if (count($case_studies->result) > 0) {
