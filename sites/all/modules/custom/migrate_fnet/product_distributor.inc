@@ -25,7 +25,7 @@ class FNETProductDistributorMigration extends DrupalNode7Migration {
       ->issueGroup(t('DNM'));
 
     // Entity References
-    $this->addFieldMapping('field_product', 'field_products')
+    $this->addFieldMapping('field_products', 'field_products')
       ->sourceMigration('ProductDisplay');
 
   }

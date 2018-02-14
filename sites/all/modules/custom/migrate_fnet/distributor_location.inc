@@ -14,6 +14,9 @@ class FNETDistributorLocationMigration extends FNETNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
+
     // Deprecated Fields
     // This is likely better handled by node status
     $this->addFieldMapping(NULL, 'field_custom_publish_content');
@@ -29,7 +32,7 @@ class FNETDistributorLocationMigration extends FNETNode7Migration {
       ->defaultValue(NULL);
 
     // Convert former Location module data to Address Field
-    // Country
+    // Country - Note that Country has to go first and it doesn't have a sub-field.
     $this->addFieldMapping('field_address', 'country')
       ->defaultValue(NULL);
     // State/Province/Region
@@ -102,6 +105,16 @@ class FNETDistributorLocationMigration extends FNETNode7Migration {
 
   }
 
+  public function prepareRow($row) {
+    // Always include this snippet, in case our parent class decides to ignore the row
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+    // Use uppercase for countries, states, and provinces.
+    $row->country = strtoupper($row->country);
+    $row->province = strtoupper($row->province);
+  }
+
   protected function query() {
     $query = parent::query();
     // Join location table
@@ -119,8 +132,4 @@ class FNETDistributorLocationMigration extends FNETNode7Migration {
     return $query;
   }
 
-  public function complete($node, stdClass $row) {
-    // Generate URL Redirects.
-    parent::generateNodeRedirect($node, $row);
-  }
 }

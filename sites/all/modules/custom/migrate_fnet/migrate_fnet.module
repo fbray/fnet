@@ -606,7 +606,7 @@ Illegal offset type migrate.module:390
       'description' =>  t('Migration of the Product Sub Type Language nodes from Drupal.'),
       'machine_name' => 'ProductSubType',
       'source_type' => 'productsubtype',
-      'destination_type' => 'productsubtype',
+      'destination_type' => 'product_sub_type',
       'dependencies' => array('ProductDisplay', 'ProductSubtypes')
     ),
 

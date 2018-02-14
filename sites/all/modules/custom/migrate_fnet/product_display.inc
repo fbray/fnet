@@ -467,7 +467,7 @@ class FNETProductDisplayMigration extends DrupalNode7Migration {
 
     // Replace any instance of 'http://www.flukenetworks.com'.
     // $row->field_prod_wtb_online = str_ireplace('http://www.flukenetworks.com', '', $row->field_prod_wtb_online);
-    $domains = ['http://www.flukenetworks.com', 'https://www.flukenetworks.com'];
+    $domains = ['http://www.flukenetworks.com/', 'https://www.flukenetworks.com/', 'http://flukenetworks.com/', 'https://flukenetworks.com/'];
     $row->field_prod_btn_calltoaction = str_ireplace($domains, '', $row->field_prod_btn_calltoaction);
   }
 

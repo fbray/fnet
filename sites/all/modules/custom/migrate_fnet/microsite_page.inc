@@ -14,6 +14,9 @@ class FNETMicrositePageMigration extends FNETNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
+
     // Deprecated Fields
     $this->addFieldMapping(NULL, 'field_business_entity')
       ->description(t('No longer necessary as NetScout split is complete.'))
@@ -44,8 +47,20 @@ class FNETMicrositePageMigration extends FNETNode7Migration {
       ->sourceMigration('Microsites');
   }
 
-  public function complete($node, stdClass $row) {
-    // Generate URL Redirects.
-    parent::generateNodeRedirect($node, $row);
+  public function prepareRow($row) {
+    // Always include this snippet, in case our parent class decides to ignore the row
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+
+    // Check the various fields. Remove the hard URLs.
+    $row->body = $this->stripDomain($row->body);
+    $row->body = str_replace('/flukenetworks.com/', '/default/', $row->body);
+  }
+
+  protected function stripDomain($string) {
+    $stripped = str_replace('https://www.flukenetworks.com/', '/', $string);
+    $stripped = str_replace('http://www.flukenetworks.com/', '/', $string);
+    return $stripped;
   }
 }

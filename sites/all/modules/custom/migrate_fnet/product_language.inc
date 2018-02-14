@@ -62,6 +62,7 @@ class FNETProductLanguageMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_prod_sol_desc_4', 'field_prodlang_sol_desc_4');
 
     // Link Fields
+    // TODO: URLs should not be absolute using flukenetworks.com. Test and fix if necessary.
     $this->addFieldMapping('field_prod_btn_calltoaction', 	'field_prodlang_btn_calltoaction');
     $this->addFieldMapping('field_prod_btn_calltoaction:title', 	'field_prodlang_btn_calltoaction:title')
       ->defaultValue(NULL);
@@ -343,6 +344,9 @@ class FNETProductLanguageMigration extends DrupalNode7Migration {
     if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
+
+    $domains = ['http://www.flukenetworks.com/', 'https://www.flukenetworks.com/', 'http://flukenetworks.com/', 'https://flukenetworks.com/'];
+    $row->field_prodlang_btn_calltoaction = str_ireplace($domains, '', $row->field_prodlang_btn_calltoaction);
 
     // The language/region thing seems to be problematic with the allowed values.
     // Let's trim it down to just the first five characters.
