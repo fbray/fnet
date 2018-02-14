@@ -26,8 +26,8 @@
 	</div>
 	<!-- END: "Back to List" link -->
 	
-	 <!-- START: KB Article 
-	<div id="kb-article" <?php //if ($node->do_not_translate) { // print 'class="OneLinkNoTx"';	} ?>>-->
+	 <!-- START: KB Article -->
+	<div id="kb-article" <?php //if ($node->do_not_translate) { // print 'class="OneLinkNoTx"';	} ?>>
 	
 	<?php
 		// echo "<pre>"; print_r($node); echo "</pre>";
