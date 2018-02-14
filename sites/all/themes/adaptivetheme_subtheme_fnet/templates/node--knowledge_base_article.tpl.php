@@ -1,7 +1,5 @@
 <div id="knowledge-base">
-<?php
-		 echo "<pre>"; print_r($node); echo "</pre>";
-	?>
+
 	<!-- START: Breadcrumbs -->
 	<div id="kb-breadcrumbs">										
 		<?php 
