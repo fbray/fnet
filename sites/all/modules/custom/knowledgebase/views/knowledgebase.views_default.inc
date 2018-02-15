@@ -1,17 +1,16 @@
 <?php
+
 /**
  * @file
  * knowledgebase.views_default.inc
  */
 
 /**
- * Implementation of hook_views_default_views()
- *
- * @return array
+ * Implements hook_views_default_views().
  */
 function knowledgebase_views_default_views() {
   $views = array();
-  $files = file_scan_directory(drupal_get_path('module', 'knowledgebase') . '/views', '/.*\.view$/');
+  $files = file_scan_directory(drupal_get_path('module', 'knowledgebase') . '/views', '/.*\.view.inc$/');
   foreach ($files as $filepath => $file) {
     require $filepath;
     if (isset($view)) {

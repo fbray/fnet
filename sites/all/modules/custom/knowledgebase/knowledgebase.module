@@ -1,121 +1,66 @@
 <?php
+
 /**
  * @file
  * Code for the knowledgebase feature.
  */
 
-include_once 'knowledgebase.features.inc';
-
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  */
-function knowledgebase_help() {
+function knowledgebase_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#knowledgebase':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('The Knowledge Base module provides two different views to help display Knowledge Base Articles.  The first view, knowledge_base_articles, provides an administrative listing of all the Knowledge Base Article content.  It also allows the user to filter the Knowledge Base Articles by Product Category and makes use of a body text search filter.') . '</p>';
+      $output .= '<p>' . t('The second view, knowledge_base_search, provides the public facing list of published Knowledge Base Articles.  It also allows a user to filter based on Product Category and implements a title search.') . '</p>';
 
-}
-function knowledgebase_init(){
-	$nid = isset($_GET["nid"]) ? $_GET["nid"] : false;
-	$node = $nid ? node_load($nid) : false; 
-	
-	if(!empty($node) && $node->type == 'knowledge_base_article'){
-		$newpath = drupal_get_path_alias('node/'.$nid);
-		drupal_goto($newpath, array(), 301);
-	}	
-	$termname_arg = str_replace("##","/",arg(2)); 
-	$termname = $termname_arg != ''? urldecode($termname_arg) : "all";
-  $term = $termname != "all" ? taxonomy_get_term_by_name($termname,'knowledge_base') : false; // Get term object if term id was provided in URL.
-	$term = !empty($term)?reset($term):'';
-	if(!empty($term) && $term->vocabulary_machine_name == 'knowledge_base'){
-		$tid = $term->tid;
-		$newtermpath = drupal_get_path_alias('taxonomy/term/'.$tid);
-		drupal_goto($newtermpath, array(), 301);
-	}	
-	
-	if(arg(0) == 'knowledge-base' && arg(1) == 'it-networking'){
-		$meta_kb_itnetworking_index = array(
-			'#type' => 'html_tag',
-			'#tag' => 'meta',
-			'#attributes' => array(
-				'name' => 'robots',
-				'content' => 'noindex,nofollow',
-			),
-		);
-		drupal_add_html_head($meta_kb_itnetworking_index, 'metakbitnetworkingindex');
-	}
-}
-/**
- * Implementation of hook_menu().
- *
- * @return array
- */
-function knowledgebase_menu() {
-  $items = array(); 
-  $items['admin/kb/update_pathauto'] = array(
-    'title' => t('Knowledge Base - Update path auto flag'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('kb_pathauto_form'),
-    'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK,
-  );
-  return $items;
+      $output .= '<h3>' . t('Uses') . '</h3>';
+      $output .= '<dl>';
+      $output .= '<dt>' . t('Searching for Knowledge Base Articles.') . '</dt>';
+      $output .= '<dd>' . t('As a site user, you may visit the <a href="/knowledge-base">Knowledge Base page</a> to view the published Knowledge Base Articles.  As a site administrator, you can visit the <a href="/admin/content/knowledge-base">Knowledge Base Administration page</a> to view a listing of all Knowledge Base Articles.') . '</dd>';
+      $output .= '</dl>';
+
+      return $output;
+  }
 }
 
 /**
- * Implementation of hock_form_FORM_ID_alter().
- *
- * @param $form
- * @param $form_state
- * @param $form_id
+ * Implements hook_init().
  */
-function knowledgebase_form_knowledge_base_article_node_form_alter(&$form, &$form_state, $form_id){
+function knowledgebase_init() {
+  $nid = isset($_GET["nid"]) ? $_GET["nid"] : FALSE;
+  $node = $nid ? node_load($nid) : FALSE;
+
+  if (!empty($node) && $node->type == 'knowledge_base_article') {
+    $newpath = drupal_get_path_alias('node/' . $nid);
+    drupal_goto($newpath, array(), 301);
+  }
+  $termname_arg = str_replace("##", "/", arg(2));
+  $termname = $termname_arg != '' ? urldecode($termname_arg) : "all";
+  // Get term object if term id was provided in URL.
+  $term = $termname != "all" ? taxonomy_get_term_by_name($termname, 'knowledge_base') : FALSE;
+  $term = !empty($term) ? reset($term) : '';
+  if (!empty($term) && $term->vocabulary_machine_name == 'knowledge_base') {
+    $tid = $term->tid;
+    $newtermpath = drupal_get_path_alias('taxonomy/term/' . $tid);
+    drupal_goto($newtermpath, array(), 301);
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function knowledgebase_form_knowledge_base_article_node_form_alter(&$form, &$form_state, $form_id) {
   unset($form['locations']);
   $form['#group_children']['field_article_author'] = 'authoring_information';
 }
 
-
 /**
- * @return array
- */
-function kb_pathauto_form(){
-	$node_types = '';
-	$node_types = node_type_get_names();
-	
-	$form = array();
-	$form['kb_node_types'] = array(
-		'#title' => t('Node Types'),
-		'#type' => 'checkboxes',
-		'#options' => $node_types
-	);
-	$form['submit'] = array(
-		'#type' => 'submit',
-		'#value' => t('Update pathauto flag')
-	);
-	return $form;
-}
-
-/**
- * @param $form
- * @param $form_state
- */
-function kb_pathauto_form_submit($form, &$form_state){
-	if(isset($form_state['values']['kb_node_types']['knowledge_base_article'])){
-		$subquery = db_select('node');
-		$subquery->addField('node', 'nid');
-		$subquery->condition('node.type', 'knowledge_base_article', '=');
-		$update_query = db_update('pathauto_state') // Table name no longer needs {}
-										->fields(array(
-											'pathauto' => 1,
-										))
-										->condition('entity_id', $subquery,'IN')
-										->execute();
-		//UPDATE {pathauto_state} SET pathauto=:db_update_placeholder_0 WHERE (entity_id IN (SELECT node.nid AS nid FROM {node} node WHERE (node.type = :db_condition_placeholder_0) )) 
-		drupal_set_message('Done Successfully!');
-	}else{
-		drupal_set_message("Knowledge Base not selected");
-	}
-}
-
-/**
- * Implementation of metatag module hook_metatag_page_cache_cid_parts_alter
+ * Implements hook_metatag_page_cache_cid_parts_alter().
+ *
+ * Implementation of metatag module hook.
  */
 function knowledgebase_metatag_page_cache_cid_parts_alter(&$cid_parts) {
   if (isset($cid_parts['path']) && $cid_parts['path'] == 'knowledge-base') {
@@ -126,28 +71,31 @@ function knowledgebase_metatag_page_cache_cid_parts_alter(&$cid_parts) {
 }
 
 /**
+ * Implements hook_views_api().
+ */
+function knowledgebase_views_api() {
+  return array(
+    'api' => 3.0,
+    'path' => drupal_get_path('module', 'knowledgebase') . '/views',
+  );
+}
+
+/**
  * Implements hook_views_pre_render().
  */
 function knowledgebase_views_pre_render(&$view) {
   if ($view->name == 'knowledge_base_search') {
-		if(isset($view->exposed_data['title']) || isset($view->exposed_data['field_knowledge_base_target_id'])){
-			$title = ($view->exposed_data['title'] == "")?"All":$view->exposed_data['title'];
-			
-			$tid = $view->exposed_data['field_knowledge_base_target_id'];
-			$term = isset($tid)?taxonomy_term_load($tid):"";
-			$name = $term ? $term->name : "";	
-			
-			$label = ($name != "")?$name:$title;
-			$label = "Articles : ".$label;
-			
-			$view->field['title']->options['label'] = $label;
-		}
+    if (isset($view->exposed_data['title']) || isset($view->exposed_data['field_knowledge_base_target_id'])) {
+      $title = ($view->exposed_data['title'] == "") ? "All" : $view->exposed_data['title'];
+
+      $tid = $view->exposed_data['field_knowledge_base_target_id'];
+      $term = isset($tid) ? taxonomy_term_load($tid) : "";
+      $name = $term ? $term->name : "";
+
+      $label = ($name != "") ? $name : $title;
+      $label = "Articles : " . $label;
+
+      $view->field['title']->options['label'] = $label;
+    }
   }
 }
-
-function knowledgebase_form_views_exposed_form_alter(&$form, &$form_state) {
-	  if($form["#id"] == 'views-exposed-form-knowledge-base-search-page'){
-			unset($form['field_knowledge_base_target_id']['#options']['IT Networking']);
-		}
-}
-
