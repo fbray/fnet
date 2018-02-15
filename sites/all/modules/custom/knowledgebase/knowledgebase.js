@@ -13,7 +13,6 @@
 
     $("#taxonomy-menu").fadeIn(200); // Since the accordion functionality of the menu is initialized/styled on the client side, display it only once this process completes.
 
-
     $('#kb-article-list .views-field a[href]').each(function () {
         var href = $(this).attr('href'); // Get the current href value of view links.
         $(this).attr('href', href);

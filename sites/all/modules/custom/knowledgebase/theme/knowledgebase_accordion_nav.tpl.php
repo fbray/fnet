@@ -57,4 +57,3 @@ $tree = taxonomy_get_tree($vocabulary->vid); // Get the VID for the Knowledge Ba
     </div>
     <?php endif; ?>
 </div>
-
