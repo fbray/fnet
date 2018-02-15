@@ -39,9 +39,9 @@ function product_distributor_init() {
 function product_distributor_menu() {
   $items = array();
   //Where To Buy public facing page
-  $items['where2buy'] = array(  //
+  $items['wheretobuy'] = array(  //
     'title' => 'Where to Buy',
-    'page callback' => 'where2buy_page',
+    'page callback' => 'wheretobuy_page',
     'access arguments' => array('access wtb'),
     'type' => MENU_CALLBACK,
   );
@@ -55,31 +55,31 @@ function product_distributor_menu() {
 
   //AJAX callbacks:
   //Get cities in a region of a country
-  $items['where2buy_ajax/get_cities'] = array(
+  $items['wheretobuy_ajax/get_cities'] = array(
     'title' => 'Where to Buy: AJAX Response Handler: Get cities by regions',
     'file' => 'product_distributor.ajax.inc',
-    'page callback' => 'where2buy_get_cities',
+    'page callback' => 'wheretobuy_get_cities',
     'access arguments' => array('access wtb'),
     'type' => MENU_CALLBACK,
   );
   //Get available delivery types in a country
-  $items['where2buy_ajax/get_delivery_types'] = array(
+  $items['wheretobuy_ajax/get_delivery_types'] = array(
     'title' => 'Where to Buy: AJAX Response Handler: Get delivery types by country',
     'file' => 'product_distributor.ajax.inc',
-    'page callback' => 'where2buy_get_delivery_types',
+    'page callback' => 'wheretobuy_get_delivery_types',
     'access arguments' => array('access wtb'),
     'type' => MENU_CALLBACK,
   );
   //Get distributors' search result
-  $items['where2buy_ajax/get_distributors'] = array(
+  $items['wheretobuy_ajax/get_distributors'] = array(
     'title' => 'Where to Buy: Get Distributors',
     'file' => 'product_distributor.ajax.inc',
-    'page callback' => 'where2buy_get_distributors',
+    'page callback' => 'wheretobuy_get_distributors',
     'access arguments' => array('access wtb'),
     'type' => MENU_CALLBACK,
   );
   //Get WTB error message
-  $items['where2buy_ajax/wtb_error_message'] = array(
+  $items['wheretobuy_ajax/wtb_error_message'] = array(
     'title' => 'Where to Buy: Get Distributors',
     'file' => 'product_distributor.ajax.inc',
     'page callback' => 'wtb_error_message',
@@ -441,18 +441,18 @@ function modify_location_form($form_element, &$form_state) {
 
 
 /**
- * Implementation of hook_page() to implement Where2Buy public facing website
+ * Implementation of hook_page() to implement wheretobuy public facing website
  */
-function where2buy_page() {
+function wheretobuy_page() {
   $default_map_img = 'productcollage.jpg';
   drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/tabs.css');
   drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/tabs.js', array('defer' => TRUE, 'preprocess' => FALSE));
 
-  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/where2buy_page_1.js', array('defer' => TRUE, 'preprocess' => FALSE));
-  // drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/where2buy_page.css');
+  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/wheretobuy_page_1.js', array('defer' => TRUE, 'preprocess' => FALSE));
+  // drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/wheretobuy_page.css');
 
-  drupal_add_js(array('where2buy_path' => drupal_get_path('module', 'product_distributor')), array('type' => 'setting', 'scope' => JS_DEFAULT));
-  drupal_add_js(array('where2buy_default_img' => base_path() . drupal_get_path('module', 'product_distributor') . '/images/' . $default_map_img), array('type' => 'setting', 'scope' => JS_DEFAULT));
+  drupal_add_js(array('wheretobuy_path' => drupal_get_path('module', 'product_distributor')), array('type' => 'setting', 'scope' => JS_DEFAULT));
+  drupal_add_js(array('wheretobuy_default_img' => base_path() . drupal_get_path('module', 'product_distributor') . '/images/' . $default_map_img), array('type' => 'setting', 'scope' => JS_DEFAULT));
 
 
   $vars1 = variable_get('wtb_settings_tab1', array());
@@ -490,11 +490,11 @@ function contactus_page() {
   drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/tabs.css');
 //  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/tabs.js', 'module', 'header', TRUE, TRUE, FALSE);
 
-  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/where2buy_page_1.js', array('defer' => TRUE, 'preprocess' => FALSE));
-  drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/where2buy_page.css');
+  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/wheretobuy_page_1.js', array('defer' => TRUE, 'preprocess' => FALSE));
+  drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/wheretobuy_page.css');
 
-  drupal_add_js(array('where2buy_path' => drupal_get_path('module', 'product_distributor')), array('type' => 'setting', 'scope' => JS_DEFAULT));
-  drupal_add_js(array('where2buy_default_img' => base_path() . drupal_get_path('module', 'product_distributor') . '/images/' . $default_map_img), array('type' => 'setting', 'scope' => JS_DEFAULT));
+  drupal_add_js(array('wheretobuy_path' => drupal_get_path('module', 'product_distributor')), array('type' => 'setting', 'scope' => JS_DEFAULT));
+  drupal_add_js(array('wheretobuy_default_img' => base_path() . drupal_get_path('module', 'product_distributor') . '/images/' . $default_map_img), array('type' => 'setting', 'scope' => JS_DEFAULT));
 
   $output = '<ul class="tabs">
         <li class="fulltab active"><a>' . variable_get('product_distributor_tab2_title', '') . '</a></li>
@@ -1148,7 +1148,7 @@ function get_inactive_countries() {
 function pd_l1_form($form, $form_state, $continent_code = NULL) {
   $form = array();
   $countries = array();
-  $countries = array_change_key_case(location_get_iso3166_list(), CASE_UPPER);
+  $countries = country_get_list();
   $inactive_countries = get_inactive_countries();
   $countries = array_diff_key($countries, $inactive_countries);
   $continent_text = '';
@@ -1180,7 +1180,7 @@ function pd_l1_form($form, $form_state, $continent_code = NULL) {
       }
     }
     catch (Exception $e) {
-      $countries = array_change_key_case(location_get_iso3166_list(), CASE_UPPER);
+      $countries = country_get_list();
       $countries = array_diff_key($countries, $inactive_countries);
     }
   }
@@ -1188,7 +1188,7 @@ function pd_l1_form($form, $form_state, $continent_code = NULL) {
 
   $sql = "SELECT n.nid, n.title
     FROM {node} AS n
-    WHERE n.type = 'product'
+    WHERE n.type = 'product_display'
     AND n.`status` = 1
     ORDER BY n.title ASC";
 
@@ -1314,15 +1314,13 @@ function process_product_text($element, $children) {
 
 /**
  * Implements hook_views_api().
-().
  */
 function product_distributor_views_api() {
   return array(
-    'api' => 2,
-    'path' => drupal_get_path('module', 'product_distributor'),
+    'api' => 3,
+    'path' => drupal_get_path('module', 'product_distributor') . '/views',
   );
 }
-
 
 /**
  * Implements hook_views_pre_render

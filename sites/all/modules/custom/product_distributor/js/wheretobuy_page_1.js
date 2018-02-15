@@ -68,7 +68,7 @@ jQuery.noConflict();
                 storefrontsInCountry = null;
 
                 //AJAX call to fetch delivery types available for the selected country.
-                var url = Drupal.settings.basePath + 'where2buy_ajax/get_delivery_types';
+                var url = Drupal.settings.basePath + 'wheretobuy_ajax/get_delivery_types';
                 var urlData = 'country=' + $('#edit-countries').val();
                 urlData += '&product=' + $('#edit-products').val();
 
@@ -127,7 +127,7 @@ jQuery.noConflict();
                                 //Check if valid region is selected
                                 if ($('#edit-regions').val() != 0) {
                                     //AJAX to get cities specified in the selected country-region pair.
-                                    var url = Drupal.settings.basePath + 'where2buy_ajax/get_cities';
+                                    var url = Drupal.settings.basePath + 'wheretobuy_ajax/get_cities';
 
                                     var urlData = 'country=' + $('#edit-countries').val();
                                     urlData += '&product=' + $('#edit-products').val();
@@ -183,7 +183,7 @@ jQuery.noConflict();
                                         },
                                         error: function (jqXHR, textStatus, errorThrown) {
                                             // alert('error: ' + textStatus);
-                                            // alert('The error is happening in the where2buy.js file.');
+                                            // alert('The error is happening in the wheretobuy.js file.');
                                             console.log(errorThrown);
                                             $('#ajax-loader-wrapper').hide();
                                         },
@@ -325,7 +325,7 @@ jQuery.noConflict();
             if (submitCallback) {
                 //Hide Airmagnet How-to-buy link
                 $('#airmagnet-wtb-link').hide();
-                var url = Drupal.settings.basePath + 'where2buy_ajax/' + submitCallback;
+                var url = Drupal.settings.basePath + 'wheretobuy_ajax/' + submitCallback;
                 var urlData = '';
                 if (submitCallbackData)
                     urlData += submitCallbackData + '&';

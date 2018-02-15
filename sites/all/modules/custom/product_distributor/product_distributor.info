@@ -13,13 +13,13 @@ stylesheets[all][] = css/distributor_form.css
 stylesheets[all][] = css/distributor_group_form.css
 stylesheets[all][] = css/product_form.css
 stylesheets[all][] = css/tabs.css
-stylesheets[all][] = css/where2buy_page.css
+stylesheets[all][] = css/wheretobuy_page.css
 stylesheets[all][] = css/wtb_countries_form.css
 
 scripts[] = js/distributor_group_form.js
 scripts[] = js/tabs.js
 scripts[] = js/views_filters_reset.js
-scripts[] = js/where2buy_page_1.js
+scripts[] = js/wheretobuy_page_1.js
 scripts[] = js/wtb_countries_form.js
 
 files[] = product_distributor.admin.inc

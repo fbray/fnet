@@ -11,7 +11,7 @@
  * @param null $country_code
  * @return array
  */
-function where2buy_get_regions($country_code = NULL) {
+function wheretobuy_get_regions($country_code = NULL) {
   if ($country_code) {
     //Check if country marked to 'Skip region search'
     $flagged_countries = variable_get('wtb_countries_skip_region', array());
@@ -80,7 +80,7 @@ function where2buy_get_regions($country_code = NULL) {
  * Based on the country and product in the GET array,
  * returns a json array of cities.
  */
-function where2buy_get_cities() {
+function wheretobuy_get_cities() {
   $country = $_GET['country'];
   $product = isset($_GET['product']) ? $_GET['product']: 0; //query on this at the end.
   $sales_channel = isset($_GET['channel']) ? $_GET['channel']: 0;
@@ -121,17 +121,16 @@ function where2buy_get_cities() {
       // Filter the locations according to the filtering criteria.
       if (!empty($locations)) {
         $query = db_select('node', 'n')->distinct();
-        $query->join('location_instance', 'li', 'li.vid = n.vid');
-        $query->join('location', 'l', 'l.lid = li.lid');
+        $query->join('field_data_field_address', 'address', 'address.entity_id = n.nid ANd address.revision_id = n.vid');
         $query->join('field_data_field_delivery_type', 'cfdt', 'cfdt.entity_id = n.nid AND cfdt.revision_id = n.vid');
         $query
-          ->fields('l', array('city'))
+          ->fields('address', array('field_address_locality'))
           ->condition('n.status', 1, '=')
-          ->condition('l.country', $country, '=')
+          ->condition('address.field_address_country', $country, '=')
           ->condition('cfdt.field_delivery_type_value', 'S', '=')
-          ->condition('l.city', '', '<>')
-          ->condition('l.province', $region, '=');
-        $query->orderBy('l.city');
+          ->condition('address.field_address_locality', '', '<>')
+          ->condition('address.field_address_administrative_area', $region, '=');
+        $query->orderBy('address.field_address_locality');
         if ($country == 'US' && $sales_channel == 1) {
           $query->join('field_data_field_gsa_schedule', 'ctd5', 'ctd5.entity_id = n.nid AND ctd5.revision_id = n.vid');
           $query->condition('ctd5.field_gsa_schedule_value', 1, '=');
@@ -145,8 +144,8 @@ function where2buy_get_cities() {
 
 //      while ($data = db_fetch_object($results)) {
         foreach ($results as $data) {
-          if (trim($data->city) != '') {
-            $cities[$data->city] = $data->city;
+          if (trim($data->field_address_locality) != '') {
+            $cities[$data->field_address_locality] = $data->field_address_locality;
           }
         }
         if (!empty($cities)) {
@@ -360,7 +359,7 @@ function get_national_distributors($type = NULL, $data_nids = NULL) {
 /**
  * AJAX Callback handler: Get available delivery types in a country.
  */
-function where2buy_get_delivery_types() {
+function wheretobuy_get_delivery_types() {
   $country_code = $_GET['country'];
   $product_code = $_GET['product'];
   $message = '';
@@ -379,9 +378,9 @@ function where2buy_get_delivery_types() {
                  . ' FROM {node} n, {content_type_product} ctp'
                  . ' INNER JOIN {files} f ON f.fid = ctp.field_prod_wtb_img_fid'
                  . ' WHERE ctp.nid = n.nid AND ctp.vid = n.vid AND ctp.nid = :productCode ', array(':productCode'=>$product_code)); */
-      $iresult = db_query('SELECT ctp.field_prod_wtb_img_fid, f.filepath'
+      $iresult = db_query('SELECT ctp.field_prod_wtb_img_fid, f.uri'
         . ' FROM {node} n, {field_data_field_prod_wtb_img} ctp'
-        . ' INNER JOIN {files} f ON f.fid = ctp.field_prod_wtb_img_fid'
+        . ' INNER JOIN {file_managed} f ON f.fid = ctp.field_prod_wtb_img_fid'
         . ' WHERE ctp.entity_id = n.nid AND ctp.revision_id = n.vid AND ctp.entity_id = :productCode ', array(':productCode'=>$product_code));
 
       if ($idata = (object)$iresult->fetchObject()) {
@@ -403,9 +402,9 @@ function where2buy_get_delivery_types() {
             . ' INNER JOIN {files} f ON f.fid = ctp.field_prod_carousel_img_lg_1_fid'
             . ' WHERE ctp.nid = n.nid AND ctp.vid = n.vid AND ctp.nid = :productCode ', array(':productCode'=>$product_code))->fetchObject();
 */
-        $idata = (object)db_query('SELECT ctp.field_prod_carousel_img_lg_1_fid, f.filepath'
+        $idata = (object)db_query('SELECT ctp.field_prod_carousel_img_lg_1_fid, f.uri'
           . ' FROM {node} n, {field_data_field_prod_carousel_img_lg_1} ctp'
-          . ' INNER JOIN {files} f ON f.fid = ctp.field_prod_carousel_img_lg_1_fid'
+          . ' INNER JOIN {file_managed} f ON f.fid = ctp.field_prod_carousel_img_lg_1_fid'
           . ' WHERE ctp.entity_id = n.nid AND ctp.revision_id = n.vid AND ctp.entity_id = :productCode ', array(':productCode'=>$product_code))->fetchObject();
 
 //        if ($idata = db_fetch_object($iresult)) {
@@ -450,17 +449,29 @@ function where2buy_get_delivery_types() {
         exit;
       }
     }
-/*    $results = db_query('SELECT DISTINCT(cfdt.field_delivery_type_value) FROM {content_field_delivery_type} cfdt'
-               . ' INNER JOIN {location_instance} li ON li.vid = cfdt.vid'
-               . ' INNER JOIN {node} n ON n.vid = cfdt.vid'
-               . ' INNER JOIN {location} l ON l.lid = li.lid'
-               . ' WHERE l.country= :country AND n.status=1', array(':country'=>strtolower($country_code)));
-*/
-    $results = db_query('SELECT DISTINCT(cfdt.field_delivery_type_value) FROM {field_data_field_delivery_type} cfdt'
+/*    'SELECT DISTINCT(cfdt.field_delivery_type_value) FROM {field_data_field_delivery_type} cfdt'
       . ' INNER JOIN {location_instance} li ON li.vid = cfdt.revision_id'
       . ' INNER JOIN {node} n ON n.vid = cfdt.revision_id'
       . ' INNER JOIN {location} l ON l.lid = li.lid'
-      . ' WHERE l.country= :country AND n.status=1', array(':country'=>strtolower($country_code)));
+      . ' WHERE l.country= :country AND n.status=1'
+
+SELECT DISTINCT(delivery.field_delivery_type_value)
+      FROM field_data_field_delivery_type delivery
+      INNER JOIN field_data_field_address address ON address.entity_id = delivery.entity_id
+      AND address.revision_id = delivery.revision_id
+      INNER JOIN node n ON n.vid = delivery.revision_id
+      WHERE address.field_address_country = 'US'
+      AND n.status = 1
+*/
+    // TODO: Rework this to use Addressfield.
+    $address_query = "SELECT DISTINCT(delivery.field_delivery_type_value)
+      FROM {field_data_field_delivery_type} delivery
+      INNER JOIN {field_data_field_address} address ON address.entity_id = delivery.entity_id
+      AND address.revision_id = delivery.revision_id
+      INNER JOIN {node} n ON n.vid = delivery.revision_id
+      WHERE address.field_address_country = :country
+      AND n.status = 1";
+    $results = db_query($address_query, array(':country' => strtoupper($country_code)));
 
     $items = array();
     $delivery_types = array();
@@ -506,7 +517,7 @@ function where2buy_get_delivery_types() {
         );
       }
       else { //Storefront/National Default buying methods present: Try to dislay region drop-down
-        $tmp = where2buy_get_regions($country_code);
+        $tmp = wheretobuy_get_regions($country_code);
         if ($tmp['status']) {
           $json_arr += array(
             'status' => TRUE,
@@ -538,7 +549,7 @@ function where2buy_get_delivery_types() {
  * AJAX Callback handler: Get search results for Distributors
  * Refer requirement specification document.
  */
-function where2buy_get_distributors() {
+function wheretobuy_get_distributors() {
   $buying_methods = explode('|', $_GET['buying']);
   $country = $_GET['country'];
   $online_results = FALSE;
@@ -1028,9 +1039,9 @@ function is_online_location($dnode) {
 function get_product_locations($pid) {
   $query = "SELECT n.nid
   FROM node n
-  JOIN field_data_field_product_groups distributor ON  distributor.entity_id = n.nid
-  JOIN field_data_field_products products ON products.entity_id = distributor.field_product_groups_nid
-  WHERE products.field_products_nid = :pid
+  JOIN field_data_field_product_distributor_groups distributor ON  distributor.entity_id = n.nid
+  JOIN field_data_field_products products ON products.entity_id = distributor.field_product_distributor_groups_target_id
+  WHERE products.field_products_target_id = :pid
   AND n.status = 1";
   $results = db_query($query, array(':pid' => $pid))->fetchCol();
   return $results;  // TODO: error handling if no results?
