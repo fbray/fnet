@@ -5,5 +5,3 @@ package = Fluke Networks
 version = "7.x-1.1"
 
 dependencies[] = views
-
-stylesheets[all][] = blog_fnet.css

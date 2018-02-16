@@ -374,7 +374,8 @@ textarea {
   font-size: 100%;
   margin: 0;
   vertical-align: baseline;
-  *vertical-align: middle; }
+  *vertical-align: middle;
+  padding-left: 0.3em; }
 
 /*
  * Addresses FF3/4 setting line-height on 'input' using !important in the UA stylesheet

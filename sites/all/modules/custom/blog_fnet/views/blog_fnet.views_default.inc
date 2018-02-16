@@ -1,11 +1,12 @@
 <?php
+
 /**
  * @file
  * blog_fnet.views_default.inc
  */
 
 /**
- * Implementation of hook_views_default_views()
+ * Implements hook_views_default_views().
  */
 function blog_fnet_views_default_views() {
   $views = array();
@@ -18,4 +19,3 @@ function blog_fnet_views_default_views() {
   }
   return $views;
 }
-?>

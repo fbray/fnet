@@ -1,11 +1,12 @@
 <?php
+
 /**
  * @file
- * Code for the Blog Fnet feature.
+ * Code for the FNET Blog.
  */
 
 /**
- * Implements hook_views_api()
+ * Implements hook_views_api().
  */
 function blog_fnet_views_api() {
   return array(
