@@ -268,8 +268,8 @@ h1.node-title {
   padding-top:3em;
 }
 #homepage-expertise .col-1-4 {
-    background: transparent no-repeat top left;
-    min-height:139px;
+  background: transparent no-repeat top left;
+  min-height:139px;
 }
 #homepage-expertise .col-1-4 ul {
   list-style:none;
@@ -2257,8 +2257,7 @@ article.node-product {
   zoom: 1;
   *display: inline;
   font-family: Arial, Helvetica, sans-serif;
-  margin-top: 2em;
-  margin-bottom: 3em; }
+  margin-bottom: 2em; }
 
 #blog-header-all ul.blog-list.columns-1 li {
   width: 30%;
@@ -2289,7 +2288,6 @@ article.node-product {
 
 #blog-header-all ul.blog-list li h2 {
   margin-top: 0;
-  padding-top: 1em;
   line-height: 1;
   font-size: 1.5em; }
 
@@ -4324,14 +4322,17 @@ body.page-knowledge-base header#main-content-header {
 	font-weight: normal;
 	margin-top: 0;
 }
-#views-exposed-form-knowledge-base-search-page {
+#views-exposed-form-knowledge-base-search-page,
+#views-exposed-form-blog-articles-cabling-chronicles {
 	padding: 15px;
 	margin: 20px 0;
 	background-color: #eee;
 	border: 1px solid #ccc;
 	border-radius: 3px;
 }
-#edit-submit-knowledge-base-search {
+#edit-submit-knowledge-base-search,
+#edit-submit-blog-articles,
+#edit-reset {
 	margin-top: auto;
 }
 .taxonomy-menu{
