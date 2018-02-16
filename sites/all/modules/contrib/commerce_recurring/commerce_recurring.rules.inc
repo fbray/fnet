@@ -251,6 +251,12 @@ function commerce_recurring_rules_action_info() {
         'label' => t('Quantity'),
       ),
     ),
+    'provides' => array(
+      'new_commerce_recurring' => array(
+        'type' => 'commerce_recurring',
+        'label' => t('Generated commerce_recurring entity'),
+      ),
+    ),
     'group' => t('Commerce recurring'),
     'callbacks' => array(
       'execute' => 'commerce_recurring_rules_generate_recurring_product',
@@ -326,6 +332,11 @@ function commerce_recurring_rules_set_price($line_item, $listing_price, $initial
       if (!empty($line_item->data['recurring_entity'])) {
         $recurring_entity = entity_load_single('commerce_recurring', $line_item->data['recurring_entity']);
         $recurring_wrapper = entity_metadata_wrapper('commerce_recurring', $recurring_entity);
+
+        // Allow the prices to be altered by other modules.
+        drupal_alter('commerce_recurring_initial_price', $initial_price, $line_item, $recurring_entity);
+        drupal_alter('commerce_recurring_recurring_price', $recurring_price, $line_item, $recurring_entity);
+
         // Case: Recurring price.
         $recurring_orders = $recurring_wrapper->commerce_recurring_order->value();
         // Empty the price components to recalculate them.
@@ -457,6 +468,8 @@ function commerce_recurring_rules_generate_recurring_product($order, $line_item,
   }
 
   rules_invoke_event('commerce_recurring_paid_full', $order, $recurring_entity, count($recurring_entity->commerce_recurring_order[LANGUAGE_NONE]));
+
+  return array('new_commerce_recurring' => $recurring_entity);
 }
 
 /**
@@ -494,8 +507,8 @@ function commerce_recurring_rules_generate_order_from_recurring() {
 
   // @TODO Take care of order fail handling? http://drupal.org/node/1969350
 
-  // If the due date is over the end date, stop the recurring.
-  if (!empty($recurring_entity->end_date) && ($due_date > $recurring_entity->end_date)) {
+  // If the due date is over or equal to the end date, stop the recurring.
+  if (!empty($recurring_entity->end_date) && ($due_date >= $recurring_entity->end_date)) {
     commerce_recurring_stop_recurring($recurring_entity);
     return;
   }
@@ -514,12 +527,12 @@ function commerce_recurring_rules_generate_order_from_recurring() {
   }
   commerce_order_save($order);
 
-  $line_item = commerce_product_line_item_new($product_wrapper->value(), $recurring_entity->quantity);
-  $line_item->order_id = $order->order_id;
-
   // We need to add a flag to the line item to be able to know that we're in a
   // recurring context in rules.
-  $line_item->data['recurring_entity'] = $recurring_entity->id;
+  $data = array('recurring_entity' => $recurring_entity->id);
+  $line_item = commerce_product_line_item_new($product_wrapper->value(), $recurring_entity->quantity, 0, $data);
+  $line_item->order_id = $order->order_id;
+
   // Update the current line item price.
   rules_invoke_event('commerce_product_calculate_sell_price', $line_item);
   commerce_line_item_save($line_item);

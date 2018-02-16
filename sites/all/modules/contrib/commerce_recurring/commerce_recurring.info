@@ -19,9 +19,9 @@ dependencies[] = rules
 ; Tests
 files[] = tests/commerce_recurring.test
 
-; Information added by Drupal.org packaging script on 2016-04-28
+; Information added by Drupal.org packaging script on 2018-02-07
 version = "7.x-2.x-dev"
 core = "7.x"
 project = "commerce_recurring"
-datestamp = "1461852732"
+datestamp = "1518047284"
 
