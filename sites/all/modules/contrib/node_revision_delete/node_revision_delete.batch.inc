@@ -8,17 +8,17 @@
 /**
  * Callback to delete revisions using Batch API.
  */
-function node_revision_delete_batch_process($content_type, $max_revisions, &$context) {
+function node_revision_delete_batch_process($content_type, $minimum_revisions_to_keep, $minimum_age_to_delete, $when_to_delete, $dry_run, &$context) {
   if (!isset($context['sandbox']['nids'])) {
     // Set initial values.
-    $context['sandbox']['nids'] = node_revision_delete_candidates($content_type, $max_revisions);
+    $context['sandbox']['nids'] = _node_revision_delete_candidates($content_type, $minimum_revisions_to_keep, $minimum_age_to_delete, $when_to_delete);
     $context['sandbox']['current'] = 0;
     $context['sandbox']['total'] = count($context['sandbox']['nids']);
   }
 
   // Perform the actual revision deletion.
   $nid = $context['sandbox']['nids'][$context['sandbox']['current']];
-  $deleted_revisions = _node_revision_delete_do_delete($nid, $max_revisions);
+  $deleted_revisions = _node_revision_delete_do_delete($nid, $minimum_revisions_to_keep, $dry_run);
 
   // Save results for final report.
   if (isset($context['results'][$nid])) {
@@ -44,9 +44,9 @@ function node_revision_delete_batch_process($content_type, $max_revisions, &$con
 function node_revision_delete_batch_finish($success, $results, $operations) {
   if ($success) {
     foreach ($results as $nid => $count) {
-      drupal_set_message(t('Deleted !count revisions for node with nid !nid.', array(
-        '!count' => $count,
-        '!nid' => $nid,
+      drupal_set_message(t('Deleted @count revisions for node with nid @nid.', array(
+        '@count' => $count,
+        '@nid' => $nid,
       )));
     }
   }
