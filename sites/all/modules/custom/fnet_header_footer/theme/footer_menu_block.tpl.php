@@ -1,10 +1,8 @@
 <?php
-// $Id$
 
 /**
  * @file
- * Footer menu block template
- *
+ * Footer menu block template.
  */
 ?>
 
@@ -19,9 +17,8 @@
          <div class="footer_link"><a href="/solutions/learn-about"><?php print t('Learn About'); ?></a></div>
         <div class="footer_link"><a href="/solutions/case-studies"><?php print t('Case Studies'); ?></a></div>
         <div class="clear_15px">&nbsp;</div>
-        <div class="footer_subtitle"><a href="/blog"><?php print t('Blog'); ?>:</a></div>
-        <div class="footer_link"><a href="/blog/cabling-chronicles"><?php print t('Cabling
-            Chronicles'); ?></a></div>
+        <div class="footer_title"><a href="/blog/cabling-chronicles"><?php print t('BLOG'); ?>:</a></div>
+        <div class="footer_link"><a href="/blog/cabling-chronicles"><?php print t('Cabling Chronicles'); ?></a></div>
       </div>
 
       <div class="footer_box">
@@ -57,8 +54,7 @@
         <div class="footer_title"><a href="/community">COMMUNITY</a></div>
         <div class="clear_20px">&nbsp;</div>
         <div class="footer_title"><a href="/about-us">ABOUT US</a></div>
-        <div class="footer_link"><a href="https://fortive.taleo.net/careersection/fluke/jobsearch.ftl?lang=en&radiusType=K&searchExpanded=true&organization=3100100284&radius=1"
-                                    target="_blank">Careers</a></div>
+        <div class="footer_link"><a href="https://careers.fluke.com" target="_blank">Careers</a></div>
       </div>
 
       <div class="footer_box">
@@ -81,15 +77,3 @@ if ((isset($node) && $node->type == 'marketo_form') || $qPath == 'where2buy' || 
   <script type="text/javascript"
           src="http://formalyzer.com/formalyze_call.js"></script>
 <?php endif; ?>
-
-<!--Google -->
-<meta name="google-site-verification"
-      content="yH4QxKQIuhIR0gYw8o50ubbthoG-v6TadOK02RbmuWQ"/>
-
-<!--Bing -->
-<meta name="msvalidate.01" content="3641B35956F1B33717802D1D96205243"/>
-
-
-
-
-

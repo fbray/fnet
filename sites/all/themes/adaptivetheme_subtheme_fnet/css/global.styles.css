@@ -74,7 +74,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 87.5%;
   min-width: 1000px; }
-  
+
 body.product-modal {
   min-width:0;
 }
@@ -2266,6 +2266,7 @@ article.node-product {
   margin-right: 10%; }
 
 #blog-header-all ul.blog-list.columns-2 li {
+  font-size: 130%;
   width: 30%;
   margin-left: 5%;
   margin-right: 5%; }
@@ -2305,7 +2306,7 @@ article.node-product {
 
 body.page-blog.page-views h1#page-title {
   display: none; }
-  
+
 .page-news-events .container .block-content a {
   /*font-weight: bold;*/
 }
@@ -4393,7 +4394,7 @@ body.page-knowledge-base header#main-content-header {
 }
 .recent-blogs-block ul li {
   line-height: 17px;
-  margin: 11px; 
+  margin: 11px;
 }
 .recent-blogs-block ul{
 	padding-left: 15px;

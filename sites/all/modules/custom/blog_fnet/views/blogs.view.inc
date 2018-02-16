@@ -1,13 +1,13 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 8/23/17
- * Time: 4:18 PM
+ * @file
+ * Collection of Blog Articles.
  */
+
 $view = new view();
 $view->name = 'blog_articles';
-$view->description = '';
+$view->description = 'Aggregates Blog Article content types which can be filtered by category.';
 $view->tag = 'default';
 $view->base_table = 'node';
 $view->human_name = 'Blog Articles';
@@ -26,7 +26,46 @@ $handler->display->display_options['cache']['results_lifespan_custom'] = '0';
 $handler->display->display_options['cache']['output_lifespan'] = '3600';
 $handler->display->display_options['cache']['output_lifespan_custom'] = '0';
 $handler->display->display_options['query']['type'] = 'views_query';
-$handler->display->display_options['exposed_form']['type'] = 'basic';
+$handler->display->display_options['exposed_form']['type'] = 'post_exposed_filters';
+$handler->display->display_options['exposed_form']['options']['submit_button'] = 'Search';
+$handler->display->display_options['exposed_form']['options']['reset_button'] = TRUE;
+$handler->display->display_options['exposed_form']['options']['reset_button_label'] = 'Clear';
+$handler->display->display_options['exposed_form']['options']['exposed_sorts_label'] = 'Sort By';
+$handler->display->display_options['exposed_form']['options']['expose_sort_order'] = FALSE;
+$handler->display->display_options['exposed_form']['options']['bef'] = array(
+  'general' => array(
+    'input_required' => 0,
+    'text_input_required' => array(
+      'text_input_required' => array(
+        'value' => 'Select any filter and click on Apply to see results',
+        'format' => 'filtered_html',
+      ),
+    ),
+    'allow_secondary' => 0,
+    'secondary_label' => 'Advanced options',
+    'secondary_collapse_override' => '0',
+  ),
+  'field_blog_categories_target_id' => array(
+    'bef_format' => 'default',
+    'more_options' => array(
+      'bef_select_all_none' => FALSE,
+      'bef_collapsible' => 0,
+      'autosubmit' => 0,
+      'is_secondary' => 0,
+      'any_label' => 'All categories',
+      'bef_filter_description' => '',
+      'tokens' => array(
+        'available' => array(
+          0 => 'global_types',
+        ),
+      ),
+      'rewrite' => array(
+        'filter_rewrite_values' => '',
+      ),
+    ),
+  ),
+);
+$handler->display->display_options['exposed_form']['options']['form_method'] = 'post';
 $handler->display->display_options['pager']['type'] = 'full';
 $handler->display->display_options['pager']['options']['items_per_page'] = '10';
 $handler->display->display_options['style_plugin'] = 'default';
@@ -40,6 +79,8 @@ $handler->display->display_options['fields']['path']['id'] = 'path';
 $handler->display->display_options['fields']['path']['table'] = 'node';
 $handler->display->display_options['fields']['path']['field'] = 'path';
 $handler->display->display_options['fields']['path']['exclude'] = TRUE;
+$handler->display->display_options['fields']['created']['element_label_colon'] = FALSE;
+$handler->display->display_options['fields']['created']['label'] = '';
 /* Field: Content: Post date */
 $handler->display->display_options['fields']['created']['id'] = 'created';
 $handler->display->display_options['fields']['created']['table'] = 'node';
@@ -104,11 +145,81 @@ $handler->display->display_options['filters']['type']['field'] = 'type';
 $handler->display->display_options['filters']['type']['value'] = array(
   'blog_article' => 'blog_article',
 );
+$handler->display->display_options['filters']['type']['group'] = 1;
+/* Filter criterion: Content: Title */
+$handler->display->display_options['filters']['title']['id'] = 'title';
+$handler->display->display_options['filters']['title']['table'] = 'node';
+$handler->display->display_options['filters']['title']['field'] = 'title';
+$handler->display->display_options['filters']['title']['operator'] = 'word';
+$handler->display->display_options['filters']['title']['group'] = 1;
+$handler->display->display_options['filters']['title']['exposed'] = TRUE;
+$handler->display->display_options['filters']['title']['expose']['operator_id'] = 'title_op';
+$handler->display->display_options['filters']['title']['expose']['operator'] = 'title_op';
+$handler->display->display_options['filters']['title']['expose']['identifier'] = 'title';
+$handler->display->display_options['filters']['title']['expose']['remember_roles'] = array(
+  2 => '2',
+  3 => 0,
+  7 => 0,
+  1 => 0,
+  8 => 0,
+  9 => 0,
+  10 => 0,
+  11 => 0,
+  12 => 0,
+  14 => 0,
+  15 => 0,
+  16 => 0,
+  17 => 0,
+  18 => 0,
+  19 => 0,
+  20 => 0,
+  21 => 0,
+  6 => 0,
+  22 => 0,
+  23 => 0,
+  4 => 0,
+  5 => 0,
+  13 => 0,
+);
 /* Filter criterion: Content: Blog Categories (field_blog_categories) */
 $handler->display->display_options['filters']['field_blog_categories_target_id']['id'] = 'field_blog_categories_target_id';
 $handler->display->display_options['filters']['field_blog_categories_target_id']['table'] = 'field_data_field_blog_categories';
 $handler->display->display_options['filters']['field_blog_categories_target_id']['field'] = 'field_blog_categories_target_id';
-$handler->display->display_options['filters']['field_blog_categories_target_id']['operator'] = 'not empty';
+$handler->display->display_options['filters']['field_blog_categories_target_id']['value'] = array(
+  233 => '233',
+  379 => '379',
+  380 => '380',
+);
+$handler->display->display_options['filters']['field_blog_categories_target_id']['group'] = 1;
+$handler->display->display_options['filters']['field_blog_categories_target_id']['exposed'] = TRUE;
+$handler->display->display_options['filters']['field_blog_categories_target_id']['expose']['operator_id'] = 'field_blog_categories_target_id_op';
+$handler->display->display_options['filters']['field_blog_categories_target_id']['expose']['operator'] = 'field_blog_categories_target_id_op';
+$handler->display->display_options['filters']['field_blog_categories_target_id']['expose']['identifier'] = 'field_blog_categories_target_id';
+$handler->display->display_options['filters']['field_blog_categories_target_id']['expose']['remember_roles'] = array(
+  2 => '2',
+  3 => 0,
+  7 => 0,
+  1 => 0,
+  8 => 0,
+  9 => 0,
+  10 => 0,
+  11 => 0,
+  12 => 0,
+  14 => 0,
+  15 => 0,
+  16 => 0,
+  17 => 0,
+  18 => 0,
+  19 => 0,
+  20 => 0,
+  21 => 0,
+  6 => 0,
+  22 => 0,
+  23 => 0,
+  4 => 0,
+  5 => 0,
+  13 => 0,
+);
 
 /* Display: All */
 $handler = $view->new_display('page', 'All', 'page');
@@ -124,7 +235,7 @@ $handler->display->display_options['header']['area']['table'] = 'views';
 $handler->display->display_options['header']['area']['field'] = 'area';
 $handler->display->display_options['header']['area']['content'] = '<div id="blog-header-all">
     <h1 class="blog-title"><span>Fluke Networks Blog</span></h1>
-<ul class="blog-list columns-2">
+    <ul class="blog-list columns-2">
         <li class="first">
             <a href="/blog/cabling-chronicles"><h2>Cabling Chronicles</h2></a>
             <div class="copy">
@@ -144,6 +255,7 @@ $handler = $view->new_display('page', 'Cabling Chronicles', 'cabling_chronicles'
 $handler->display->display_options['defaults']['title'] = FALSE;
 $handler->display->display_options['title'] = 'Blog: Cabling Chronicles';
 $handler->display->display_options['display_description'] = 'Cabling Chronicles blog';
+$handler->display->display_options['exposed_block'] = TRUE;
 $handler->display->display_options['defaults']['header'] = FALSE;
 /* Header: Global: Text area */
 $handler->display->display_options['header']['area']['id'] = 'area';
