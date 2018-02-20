@@ -61,6 +61,8 @@ class FNETPromotionMigration extends DrupalNode7Migration {
       ->sourceMigration('Files');
     $this->addFieldMapping('field_thumbnail:file_class')
       ->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_thumbnail:preserve_files')
+      ->defaultValue(TRUE);
     $this->addFieldMapping('field_thumbnail:alt', 'field_promo_thumbnail:alt')
       ->sourceMigration(NULL);
 
@@ -68,6 +70,8 @@ class FNETPromotionMigration extends DrupalNode7Migration {
       ->sourceMigration('Files');
     $this->addFieldMapping('field_image:file_class')
       ->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_image:preserve_files')
+      ->defaultValue(TRUE);
     $this->addFieldMapping('field_image:alt', 'field_promo_lgimage:alt')
       ->sourceMigration(NULL);
 

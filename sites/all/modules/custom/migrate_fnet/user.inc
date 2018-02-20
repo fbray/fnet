@@ -79,7 +79,10 @@ class FNETUserMigration extends DrupalUser7Migration {
       return FALSE;
     }
 
-    // TODO: If they haven't logged in within the last two years.
-
+    // If they haven't logged in within the last two years.
+    $two_years = strtotime('-2 years', time());
+    if ($row->access < $two_years) {
+      return FALSE;
+    }
   }
 }
