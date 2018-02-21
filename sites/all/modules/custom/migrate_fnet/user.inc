@@ -79,9 +79,9 @@ class FNETUserMigration extends DrupalUser7Migration {
       return FALSE;
     }
 
-    // If they haven't logged in within the last two years.
+    // If they haven't logged in within the last two years and are not Gold members, GONE.
     $two_years = strtotime('-2 years', time());
-    if ($row->access < $two_years) {
+    if (($row->access < $two_years) && ($row->field_user_gold_number[0] != '')) {
       return FALSE;
     }
   }
