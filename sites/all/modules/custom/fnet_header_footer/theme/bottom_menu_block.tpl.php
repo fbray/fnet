@@ -13,17 +13,16 @@
 <?php if ((!isset($_COOKIE['regLang'])) || (isset($_COOKIE["regLang"]) && ($_COOKIE["regLang"] != "CN-ZH"))): ?>
   <div id="footer_social">
     <div class="footer_social_icon">
-      <a id="footer_social_icon_twitter" href="/twitter"
-         target="_blank">Twitter</a>
+      <!-- <a id="footer_social_icon_twitter" href="/twitter" target="_blank">Twitter12</a> -->
+			<?php print l(t('Twitter'),'https://twitter.com/FlukeNetDCI',array('attributes' => array('id' => 'footer_social_icon_twitter'))); ?>
     </div>
     <div class="footer_social_icon">
-      <a id="footer_social_icon_facebook"
-         href="http://www.facebook.com/flukenetworks"
-         target="_blank">Facebook</a>
+      <!-- <a id="footer_social_icon_facebook" href="http://www.facebook.com/flukenetworks" target="_blank">Facebook</a> -->
+			<?php print l(t('Facebook'),'https://www.facebook.com/flukenetworks',array('attributes' => array('id' => 'footer_social_icon_facebook'))); ?>
     </div>
     <div class="footer_social_icon">
-      <a id="footer_social_icon_youtube"
-         href="http://www.youtube.com/flukenetworksvideo" target="_blank">YouTube</a>
+      <!-- <a id="footer_social_icon_youtube" href="http://www.youtube.com/flukenetworksvideo" target="_blank">YouTube</a> -->
+			<?php print l(t('YouTube'),'https://www.youtube.com/flukenetworksvideo',array('attributes' => array('id' => 'footer_social_icon_youtube'))); ?>
     </div>
     <?php
     //<div class="footer_social_icon">
