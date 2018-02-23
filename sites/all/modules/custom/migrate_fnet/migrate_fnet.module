@@ -64,11 +64,10 @@ function migrate_fnet_register_migrations() {
     'machine_name' => 'UserPicture',
     'description' => t('User pictures from WWW to be imported to Drupal 7'),
     'default_uid' => 1, // The default owner id if owner is not present
-    // 'source_dir' => '/webdev/playon.tv/drupal-6.30/sites/default/files/',  // This is the location of the original files. Modify as needed.
-    'source_dir' =>  '/home/dev/playon-import-files/',
+    'source_dir' =>  '/webdev/file-import/profiles/pictures/',
     'destination_dir' => 'public://',
   );
-  Migration::registerMigration('DrupalPicture6Migration', $picture_arguments['machine_name'], $picture_arguments);
+  Migration::registerMigration('DrupalPicture7Migration', $picture_arguments['machine_name'], $picture_arguments);
   
   /*
    * Users
@@ -221,7 +220,7 @@ Illegal offset type migrate.module:390
       'description' => t('Migration of Product Sub Type terms from Drupal'),
       'machine_name' => 'ProductSubtypes',
       'source_vocabulary' => 'vocabulary_2',  // D7 Vocabulary ID
-      'destination_vocabulary' => 'product_subtypes',
+      'destination_vocabulary' => 'product_sub_types',
     ),
 
     // Promotion product category
@@ -245,7 +244,7 @@ Illegal offset type migrate.module:390
       'description' => t('Migration of Blog Tag terms from Drupal'),
       'machine_name' => 'BlogTags',
       'source_vocabulary' => 'vocabulary_17',  // D7 Vocabulary ID
-      'destination_vocabulary' => 'tags',
+      'destination_vocabulary' => 'blog_tags',
     ),
 
     // Industries
@@ -510,6 +509,15 @@ Illegal offset type migrate.module:390
       'source_type' => 'distributor',
       'destination_type' => 'distributor_location',
       'dependencies' => array('ProductDistributor'),
+    ),
+
+    // New FNET Marketo Form
+    array(
+      'class_name' => 'FNETNewMarketoFormMigration',
+      'description' => t('Migration of the New FNET Marketo Form nodes. You know, Marketo 2.0.'),
+      'machine_name' => 'FNETMarketoForm',
+      'source_type' => 'fnet_marketo_form',
+      'destination_type' => 'fnet_marketo_form',
     ),
 
     // Marketo Form

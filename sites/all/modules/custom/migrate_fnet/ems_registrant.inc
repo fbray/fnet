@@ -69,7 +69,18 @@ class EventRegistrantMigration extends Migration {
     //  drush migrate-fields-destination BeerTerm
     //  drush migrate-fields-source BeerTerm
     // or review the detail pages in the UI.
-    $this->addSimpleMappings(array('first_name', 'last_name', 'email', 'job_title', 'job_role', 'company', 'address', 'phone', 'city', 'state', 'postal_code', 'country'));
-
+    $this->addSimpleMappings(array(
+      'first_name',
+      'last_name',
+      'email',
+      'job_title',
+      'job_role',
+      'company',
+      'address',
+      'phone',
+      'city',
+      'state',
+      'postal_code',
+      'country'));
   }
 }

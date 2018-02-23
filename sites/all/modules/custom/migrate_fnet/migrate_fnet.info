@@ -28,7 +28,7 @@ files[] = extranet_news.inc
 files[] = extranet_page.inc
 files[] = extranet_promotion.inc
 files[] = file.inc
-
+files[] = fnet_marketo_form.inc
 files[] = group_migrate.classes.inc
 files[] = groups.inc
 files[] = homepage2013.inc

@@ -47,8 +47,8 @@ class FNETUserMigration extends DrupalUser7Migration {
     $this->addFieldMapping('field_address:organisation_name', 'field_user_company')
       ->defaultValue(NULL);
     // Full Name
-    $this->addFieldMapping('field_address:name_line', 'name')
-      ->defaultValue(NULL);
+    /* $this->addFieldMapping('field_address:name_line', 'name')
+      ->defaultValue(NULL); */
     $this->addFieldMapping('field_address:first_name', 'field_user_first_name')
       ->defaultValue(NULL);
     $this->addFieldMapping('field_address:last_name', 'field_user_last_name')
@@ -63,6 +63,9 @@ class FNETUserMigration extends DrupalUser7Migration {
     if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
+
+    // Country needs to be upper case
+    $row->field_user_country[0] = strtoupper($row->field_user_country[0]);
 
     // Data import rules to filter out junk users.
     // First Name and Last Name the same? NOPE.
