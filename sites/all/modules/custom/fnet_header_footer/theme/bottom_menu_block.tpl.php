@@ -13,32 +13,23 @@
 <?php if ((!isset($_COOKIE['regLang'])) || (isset($_COOKIE["regLang"]) && ($_COOKIE["regLang"] != "CN-ZH"))): ?>
   <div id="footer_social">
     <div class="footer_social_icon">
-      <a id="footer_social_icon_twitter" href="/twitter"
-         target="_blank">Twitter</a>
+      <?php print l(t('Twitter'),'https://twitter.com/FlukeNetDCI',array('attributes' => array('id' => 'footer_social_icon_twitter', 'target' => '_blank'))); ?>
     </div>
     <div class="footer_social_icon">
-      <a id="footer_social_icon_facebook"
-         href="http://www.facebook.com/flukenetworks"
-         target="_blank">Facebook</a>
+      <?php print l(t('Facebook'),'https://www.facebook.com/flukenetworks',array('attributes' => array('id' => 'footer_social_icon_facebook', 'target' => '_blank'))); ?>
     </div>
     <div class="footer_social_icon">
-      <a id="footer_social_icon_youtube"
-         href="http://www.youtube.com/flukenetworksvideo" target="_blank">YouTube</a>
+      <?php print l(t('YouTube'),'https://www.youtube.com/flukenetworksvideo',array('attributes' => array('id' => 'footer_social_icon_youtube', 'target' => '_blank'))); ?>
     </div>
-    <?php
-    //<div class="footer_social_icon">
-    // <a id="footer_social_icon_rss" href="/rss" target="_blank">RSS Feed</a>
-    //</div>-->
-    ?>
     <div class="clear_1px">&nbsp;</div>
   </div>
 <?php endif; ?>
 <div id="footer_nav">
-  <a href="http://www.fortive.com/integrity-compliance" target="_blank">Integrity and
-    Compliance Program</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-  <a href="/about/privacy">Privacy Policy</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-  <a href="/about/terms-of-use">Terms of Use</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-  <a href="/sitemap">Sitemap</a>
+  <?php print l(t('Integrity and
+    Compliance Program'),'http://www.fortive.com/integrity-compliance',array('attributes' => array('id' => 'integrity-compliance', 'class'=>'first', 'target' => '_blank'))); ?>
+  <?php print l(t('Privacy Policy'),'about/privacy',array('attributes' => array('id' => 'privacy-policy'))); ?>
+  <?php print l(t('Terms of Use'),'about/terms-of-use',array('attributes' => array('id' => 'terms-of-use'))); ?>
+  <?php print l(t('Sitemap'),'sitemap',array('attributes' => array('id' => 'sitemap', 'class' => 'last'))); ?>
 </div>
 
 <div id="copyright" style="width:240px;">
