@@ -47,6 +47,129 @@ body {
     border-bottom: 1px solid #fff;
   }
 }
+
+
+/*
+ * Header
+ */
+
+#header-wrapper{
+  header{
+    padding-top: 12px;
+
+    #menu-bars{
+      display: inline-block;
+    }
+    #branding{
+      margin: 0;
+      #logo{
+        width: 113px;
+        height: 30px;
+      }
+    }
+    #mobile-icons-wrapper{
+      display: inline-block;
+    }
+  }
+}
+
+#utility_nav{
+  display: none;
+}
+
+#menu-bars{
+  display: inline-block;
+}
+
+#nav-wrapper{
+  border-top: none;
+  .container{
+    position: absolute;
+    #main-header-menu{
+      display: none;
+      background-color: #FFF;
+
+      & > ul.menu{
+
+        & > li{
+          width: 92%;
+          border: 1px solid #293F6A;
+
+          &.multi-level > ul{
+            column-count:1;
+          }
+
+          &.main-menu-select{
+            background-color: $fnet_yellow;
+
+           & > a{                
+              color: #000;
+            }
+
+            & > span{
+              color: #000;
+            }
+
+            & > ul.menu{
+              display: block;
+            }
+          }
+
+          & > span{
+            color: #737373;
+            float: right;
+            padding: 20px 25px;
+            position: absolute;
+            top: 0;
+            right: 0;
+          }
+
+          & > a{
+            color: #737373;
+            font-size: 16px;
+            padding: 20px;
+            display: block;
+          }
+
+          & > ul.menu{
+            background-color: #FFF;
+            position: static;
+
+            & > li{
+              padding: 10px;
+
+              ul.menu{
+                margin-left: 10px;
+              }
+            }
+
+            .topnav_submenu_item {
+              a{
+                font-size: 16px;
+                line-height: 21px;
+                text-transform: none;
+                color: #737373;
+              }            
+            }
+             .topnav_submenu_title {
+              border: none;
+              color: #737373;
+              font-size: 16px;
+              font-weight: normal;
+            }
+          }
+        }
+      }
+      
+      &.show-header-nav{
+        display: block;
+        position: absolute;
+        top: 0;
+      }  
+    }      
+  }
+}
+
 #footer-wrapper{
   margin-bottom: 20px;
  }
@@ -119,6 +242,7 @@ body {
  */
 .region-footer {
   font-size: 7px;
+  border-top: 0.5px solid #979797;
 
   #block-menu-menu-footer-main-menu{
     float: none;

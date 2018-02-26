@@ -115,7 +115,13 @@
 
     <div id="header-wrapper">
       <div class="container clearfix">
+        
         <header<?php print $header_attributes; ?>>
+          <div id="menu-bars">
+            <span>
+              <i class="fa fa-bars fa-2x" aria-hidden="true"></i>
+            </span>
+          </div>
 
           <?php if (($site_logo || $site_name || $site_slogan) && $show_nav): ?>
             <!-- start: Branding -->
@@ -141,10 +147,16 @@
 
                 </div><!-- /end #name-and-slogan -->
               <?php endif; ?>
-
-
             </div><!-- /end #branding -->
           <?php endif; ?>
+
+            <div class="mobile-icons" id="mobile-icons-wrapper">
+              <a href="#" id="menu-countries"><i class="fa fa-globe fa-lg" aria-hidden="true"></i></a>
+              <a href="/contact" id="menu-contact"><i class="fa fa-phone fa-lg" aria-hidden="true"></i></a>
+              <a href="#" id="menu-users"><i class="fa fa-user fa-lg" aria-hidden="true"></i></a>
+              <a href="#" id="menu-search"><i class="fa fa-search fa-lg" aria-hidden="true"></i></a>
+            </div>
+
 
           <?php if ($show_nav): ?>
             <?php print render($page['header']); ?>
@@ -160,7 +172,9 @@
           <?php print render($page['menu_bar']); ?>
           <?php if ($primary_navigation): print $primary_navigation; endif; ?>
           <?php if ($secondary_navigation): print $secondary_navigation; endif; ?>
-          <?php if ($main_menu_expanded): print render($main_menu_expanded); endif; ?>
+          <div id="main-header-menu">
+            <?php if ($main_menu_expanded): print render($main_menu_expanded); endif; ?>
+          </div>
         </div>
       </div>
     <?php endif; ?>
@@ -289,8 +303,11 @@
     <div id="footer-wrapper">
       <div class="container clearfix">
         <footer<?php print $footer_attributes; ?>>
+          <div id="footer-more-links">
+            <?php if ($footer_menu_expanded): print render($footer_menu_expanded); endif; ?>
+          </div>
           <?php print render($page['footer']); ?>
-          <?php print $attribution; ?>
+          <?php print $attribution; ?>          
         </footer>
       </div>
     </div>

@@ -17,6 +17,49 @@
 .container {
   width: 100%;
 }
+
+/*
+ * Nav
+ */
+
+#nav-wrapper {
+  .container {
+    #main-header-menu{
+
+      & > ul.menu{
+
+        & > li{
+          margin-right: 0px;
+
+          & > span{
+           font-size: 1em;
+          }
+
+          &.main-menu-select{
+            background-color: $fnet_yellow;
+
+           & > a{                
+              color: #000;
+            }
+
+            & > span{
+             color: #000;
+            }
+
+            & > ul.menu{
+              display: block;
+
+              & > li{
+                width:200px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 // #content {
 //   margin-right: 30px;
 //   margin-left: 35px;

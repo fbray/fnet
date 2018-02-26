@@ -46,43 +46,166 @@ body {
   border-bottom: 1px solid #fff;
 }
 
-/* line 50, ../sass/responsive.smalltouch.landscape.scss */
+/*
+ * Header
+ */
+/* line 57, ../sass/responsive.smalltouch.landscape.scss */
+#header-wrapper header {
+  padding-top: 12px;
+}
+/* line 60, ../sass/responsive.smalltouch.landscape.scss */
+#header-wrapper header #menu-bars {
+  display: inline-block;
+}
+/* line 63, ../sass/responsive.smalltouch.landscape.scss */
+#header-wrapper header #branding {
+  margin: 0;
+}
+/* line 65, ../sass/responsive.smalltouch.landscape.scss */
+#header-wrapper header #branding #logo {
+  width: 113px;
+  height: 30px;
+}
+/* line 70, ../sass/responsive.smalltouch.landscape.scss */
+#header-wrapper header #mobile-icons-wrapper {
+  display: inline-block;
+}
+
+/* line 76, ../sass/responsive.smalltouch.landscape.scss */
+#utility_nav {
+  display: none;
+}
+
+/* line 80, ../sass/responsive.smalltouch.landscape.scss */
+#menu-bars {
+  display: inline-block;
+}
+
+/* line 84, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper {
+  border-top: none;
+}
+/* line 86, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper .container {
+  position: absolute;
+}
+/* line 88, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper .container #main-header-menu {
+  display: none;
+  background-color: #FFF;
+}
+/* line 94, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li {
+  width: 92%;
+  border: 1px solid #293F6A;
+}
+/* line 98, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li.multi-level > ul {
+  column-count: 1;
+}
+/* line 102, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li.main-menu-select {
+  background-color: #DDAB17;
+}
+/* line 105, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li.main-menu-select > a {
+  color: #000;
+}
+/* line 109, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li.main-menu-select > span {
+  color: #000;
+}
+/* line 113, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li.main-menu-select > ul.menu {
+  display: block;
+}
+/* line 118, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li > span {
+  color: #737373;
+  float: right;
+  padding: 20px 25px;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+/* line 127, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li > a {
+  color: #737373;
+  font-size: 16px;
+  padding: 20px;
+  display: block;
+}
+/* line 134, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li > ul.menu {
+  background-color: #FFF;
+  position: static;
+}
+/* line 138, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li > ul.menu > li {
+  padding: 10px;
+}
+/* line 141, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li > ul.menu > li ul.menu {
+  margin-left: 10px;
+}
+/* line 147, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li > ul.menu .topnav_submenu_item a {
+  font-size: 16px;
+  line-height: 21px;
+  text-transform: none;
+  color: #737373;
+}
+/* line 154, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li > ul.menu .topnav_submenu_title {
+  border: none;
+  color: #737373;
+  font-size: 16px;
+  font-weight: normal;
+}
+/* line 164, ../sass/responsive.smalltouch.landscape.scss */
+#nav-wrapper .container #main-header-menu.show-header-nav {
+  display: block;
+  position: absolute;
+  top: 0;
+}
+
+/* line 173, ../sass/responsive.smalltouch.landscape.scss */
 #footer-wrapper {
   margin-bottom: 20px;
 }
 
 /* Marketo Form */
-/* line 54, ../sass/responsive.smalltouch.landscape.scss */
+/* line 177, ../sass/responsive.smalltouch.landscape.scss */
 .mkto-content-main {
   width: 100%;
 }
-/* line 57, ../sass/responsive.smalltouch.landscape.scss */
+/* line 180, ../sass/responsive.smalltouch.landscape.scss */
 .mkto-content-main #mkto-content {
   padding: 0px 30px 60px 30px;
 }
-/* line 60, ../sass/responsive.smalltouch.landscape.scss */
+/* line 183, ../sass/responsive.smalltouch.landscape.scss */
 .mkto-content-main #mkto-content #mkt-prod-details {
   width: 30%;
   margin-right: 10px;
 }
 @media only screen and (max-width: 470px) {
-  /* line 60, ../sass/responsive.smalltouch.landscape.scss */
+  /* line 183, ../sass/responsive.smalltouch.landscape.scss */
   .mkto-content-main #mkto-content #mkt-prod-details {
     width: 100%;
   }
 }
-/* line 67, ../sass/responsive.smalltouch.landscape.scss */
+/* line 190, ../sass/responsive.smalltouch.landscape.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-title {
   font-size: 18px;
   margin-top: 20px;
 }
-/* line 72, ../sass/responsive.smalltouch.landscape.scss */
+/* line 195, ../sass/responsive.smalltouch.landscape.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-left,
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-right {
   width: 131px;
   margin-top: 15px;
 }
-/* line 78, ../sass/responsive.smalltouch.landscape.scss */
+/* line 201, ../sass/responsive.smalltouch.landscape.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-content {
   font-size: 14px;
   line-height: 21px;
@@ -91,7 +214,7 @@ body {
   float: none;
   text-align: justify;
 }
-/* line 88, ../sass/responsive.smalltouch.landscape.scss */
+/* line 211, ../sass/responsive.smalltouch.landscape.scss */
 .mkto-content-main #mkto-content #mkto-content-main-form {
   float: right;
   width: 65%;
@@ -99,24 +222,24 @@ body {
   margin-top: 45px;
 }
 @media only screen and (max-width: 470px) {
-  /* line 88, ../sass/responsive.smalltouch.landscape.scss */
+  /* line 211, ../sass/responsive.smalltouch.landscape.scss */
   .mkto-content-main #mkto-content #mkto-content-main-form {
     width: 100%;
   }
 }
-/* line 97, ../sass/responsive.smalltouch.landscape.scss */
+/* line 220, ../sass/responsive.smalltouch.landscape.scss */
 .mkto-content-main #mkto-content #mkto-content-main-form #mkto-form-header {
   padding: 5px;
 }
-/* line 100, ../sass/responsive.smalltouch.landscape.scss */
+/* line 223, ../sass/responsive.smalltouch.landscape.scss */
 .mkto-content-main #mkto-content #mkto-content-main-form #mkto-form {
   padding: 20px 0;
 }
-/* line 105, ../sass/responsive.smalltouch.landscape.scss */
+/* line 228, ../sass/responsive.smalltouch.landscape.scss */
 .mkto-content-main #mkto-content #mkt-more-links-content {
   margin-top: 20px;
 }
-/* line 110, ../sass/responsive.smalltouch.landscape.scss */
+/* line 233, ../sass/responsive.smalltouch.landscape.scss */
 .mkto-content-main #mkto-content #mkt-contact-info {
   margin-top: 20px;
 }
@@ -124,23 +247,24 @@ body {
 /*
  * Footer region
  */
-/* line 120, ../sass/responsive.smalltouch.landscape.scss */
+/* line 243, ../sass/responsive.smalltouch.landscape.scss */
 .region-footer {
   font-size: 7px;
+  border-top: 0.5px solid #979797;
 }
-/* line 123, ../sass/responsive.smalltouch.landscape.scss */
+/* line 247, ../sass/responsive.smalltouch.landscape.scss */
 .region-footer #block-menu-menu-footer-main-menu {
   float: none;
   width: 315px;
   margin: 0 auto;
 }
-/* line 129, ../sass/responsive.smalltouch.landscape.scss */
+/* line 253, ../sass/responsive.smalltouch.landscape.scss */
 .region-footer #block-block-11 {
   float: none;
   width: 200px;
   margin: 0 auto;
 }
-/* line 135, ../sass/responsive.smalltouch.landscape.scss */
+/* line 259, ../sass/responsive.smalltouch.landscape.scss */
 .region-footer #block-menu-menu-footer-social-links {
   float: none;
   width: 135px;

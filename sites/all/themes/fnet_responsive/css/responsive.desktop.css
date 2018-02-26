@@ -7,56 +7,84 @@
  *
  * - Read the _README file in this directory, it contains useful help and other information.
  */
-/* line 18, ../sass/responsive.desktop.scss */
+/* line 22, ../sass/responsive.desktop.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li:hover, #nav-wrapper .container #main-header-menu > ul.menu > li:focus {
+  background-color: #DDAB17;
+}
+/* line 25, ../sass/responsive.desktop.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li:hover > a, #nav-wrapper .container #main-header-menu > ul.menu > li:focus > a {
+  color: #000;
+}
+/* line 29, ../sass/responsive.desktop.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li:hover > span, #nav-wrapper .container #main-header-menu > ul.menu > li:focus > span {
+  color: #000;
+}
+/* line 33, ../sass/responsive.desktop.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li:hover > li, #nav-wrapper .container #main-header-menu > ul.menu > li:focus > li {
+  background: none;
+}
+/* line 40, ../sass/responsive.desktop.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li:hover.multi-level > ul, #nav-wrapper .container #main-header-menu > ul.menu > li:focus.multi-level > ul {
+  display: -webkit-flex;
+}
+/* line 44, ../sass/responsive.desktop.scss */
+#nav-wrapper .container #main-header-menu > ul.menu > li:hover.single-level > ul, #nav-wrapper .container #main-header-menu > ul.menu > li:focus.single-level > ul {
+  display: block;
+}
+
+/* line 53, ../sass/responsive.desktop.scss */
 .mkto-content-main {
   margin: 0 auto;
   width: 1024px;
   font-family: Arial;
   color: #4A4A4A;
 }
-/* line 25, ../sass/responsive.desktop.scss */
+/* line 60, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkt-prod-banner img {
   width: 100% !important;
   height: auto !important;
 }
-/* line 33, ../sass/responsive.desktop.scss */
+/* line 68, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-prod-details {
   float: left;
-  width: 62% #mkt-prod-title;
-  width-font-size: 32px;
-  width-font-weight: bold;
+  width: 62%;
 }
-/* line 42, ../sass/responsive.desktop.scss */
+/* line 72, ../sass/responsive.desktop.scss */
+.mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-title {
+  font-size: 32px;
+  font-weight: bold;
+}
+/* line 77, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-left {
   width: 216px;
   float: left;
   margin-right: 20px;
 }
-/* line 47, ../sass/responsive.desktop.scss */
+/* line 82, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-left img {
   width: 100%;
 }
-/* line 51, ../sass/responsive.desktop.scss */
+/* line 86, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-right {
   width: 216px;
   float: right;
 }
-/* line 55, ../sass/responsive.desktop.scss */
+/* line 90, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-img-right img {
   width: 100%;
 }
-/* line 60, ../sass/responsive.desktop.scss */
+/* line 95, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-prod-details #mkt-prod-content {
   font-size: 16px;
   line-height: 21px;
 }
-/* line 68, ../sass/responsive.desktop.scss */
+/* line 103, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkto-content-main-form {
   float: right;
   width: 35%;
   border: 2px solid #DDD;
 }
-/* line 73, ../sass/responsive.desktop.scss */
+/* line 108, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkto-content-main-form #mkto-form-header {
   padding: 10px;
   text-align: center;
@@ -65,19 +93,19 @@
   color: #FFFFFF;
   background-color: #293F6A;
 }
-/* line 83, ../sass/responsive.desktop.scss */
+/* line 118, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-more-links-content {
   clear: left;
   float: left;
   margin-top: 30px;
 }
-/* line 88, ../sass/responsive.desktop.scss */
+/* line 123, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-more-links-content a {
   font-size: 14px;
   color: #293F6A;
   text-decoration: none;
 }
-/* line 95, ../sass/responsive.desktop.scss */
+/* line 130, ../sass/responsive.desktop.scss */
 .mkto-content-main #mkto-content #mkt-contact-info {
   clear: left;
   float: left;

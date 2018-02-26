@@ -19,6 +19,110 @@ body {
 .container {
   width: 100%;
 }
+
+/*
+ * Nav
+ */
+
+#nav-wrapper {
+  .container {
+    #main-header-menu{
+
+      & > ul.menu{
+
+        & > li{
+          margin-right: 0px;
+
+          &.multi-level > ul{
+            // width: 840px;
+            column-count:3;
+          }
+
+          &.single-level > ul{
+            // width: 180px;
+            padding: 10px;
+          }
+          & > span{
+            font-size: 1em;
+            padding: 10px 5px;
+          }
+
+          & > a{
+            font-size: 12px;
+            padding: 10px 5px;
+          }
+
+          & > ul.menu{
+            display: none;
+            border: none;
+            background-color: #EEE;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            // width: 840px;
+            z-index: 999;
+
+            & > li{
+              width: 235px;
+              padding: 20px;
+              background: none;
+              display: inline-table;
+              float: none;
+
+              ul.menu{
+                display: block;
+                position: relative;
+                width: inherit;
+              }
+            }
+
+            .topnav_submenu_item {
+              background: none;
+              text-align: left;
+              line-height: 14px;
+              font-family: Arial, Helvetica, sans-serif;
+              font-size: 12px;
+              font-weight: normal;
+              padding: 0 0 7px 0;
+              text-transform: uppercase;
+              margin: 10px 0 auto;
+              width: 235px;
+              
+              a{
+                width: unset;
+                white-space: normal;
+                color: #303030;
+                text-decoration: none;
+                font-weight: normal;
+                font-size: 12px;
+                line-height: 14px;
+
+                &:hover, &:focus{
+                  color: #336699;
+                }
+              }            
+            }
+
+            .topnav_submenu_title {
+              font-family: Arial, Helvetica, sans-serif;
+              font-size: 14px;
+              font-weight: bold;
+              text-align: left;
+              color: #293f6a;
+              line-height: 16px;
+              padding-bottom: 10px;
+              width: 100%;
+              border-bottom: 1px solid #888;
+              text-transform: uppercase;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
 // #content {
 //   margin-right: 30px;
 //   margin-left: 35px;

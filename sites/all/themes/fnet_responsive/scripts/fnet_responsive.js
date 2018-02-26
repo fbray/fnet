@@ -396,6 +396,38 @@ if (typeof selectedLanguage == 'undefined') {
 
 (function ($) {
     $(document).ready(function () {
+				$("#main-header-menu .nav li.expanded.menu-depth-1").append('<span class="fa fa-angle-down multilevel"></span>');
+				
+				$("#menu-bars").click(function(){
+					if($(window).width() < 580){
+						$('#main-header-menu').toggleClass('show-header-nav');
+						$('ul.menu li.main-menu-select span.fa-angle-up').toggleClass('fa-angle-up fa-angle-down');
+						$('ul.menu li.main-menu-select').removeClass('main-menu-select');
+					}
+				});		
+				$("span.multilevel").click(function(){ 
+					// if($(window).width() < 580){
+						if ($(this).hasClass("fa-angle-up")) {
+							$(this).removeClass("fa-angle-up");
+							$(this).addClass("fa-angle-down");
+							$(this).parent("li").removeClass('main-menu-select');
+						}
+						else {
+							$('ul.menu li.main-menu-select span.fa-angle-up').toggleClass('fa-angle-up fa-angle-down');
+							$('ul.menu li.main-menu-select').removeClass('main-menu-select');
+							$(this).removeClass("fa-angle-down");
+							$(this).addClass("fa-angle-up");
+							$(this).parent("li").addClass('main-menu-select');
+						}
+					// }
+				});			
+							
+				$("#main-header-menu .nav li.expanded.menu-depth-1").hover(function(){
+					if($(window).width() > 1024){
+						$(this).find("span.multilevel").toggleClass("fa-angle-down fa-angle-up");
+					}
+				});
+				
         selectedCountry = getCookie("regCountry");
         if (typeof selectedCountry == 'undefined') {
             console.log('Selected Country is undefined here.');

@@ -11,10 +11,45 @@
  *
  * - Read the _README file in this directory, it contains useful help and other information.
  */
-// #content {
-//   margin-right: 30px;
-//   margin-left: 35px;
-// }
+#nav-wrapper {
+  .container {  
+    #main-header-menu{
+
+        & > ul.menu{
+
+          & > li{
+
+            &:hover, &:focus{
+              background-color: $fnet_yellow;
+
+              & > a{                
+                color: #000;
+              }
+              
+              & > span{
+                color: #000;
+              }
+
+              & > li{
+                background: none;
+              }
+
+              // & > ul.menu{
+              //   display: block;
+              // }
+              &.multi-level > ul{
+                display: -webkit-flex;
+              }
+
+              &.single-level > ul{
+                display: block;
+              }
+            }
+          }
+        }
+      }
+  }
+}
 .mkto-content-main {
   margin: 0 auto;
   width: 1024px;
@@ -32,7 +67,7 @@
 
     #mkt-prod-details {
       float: left;
-      width: 62%
+      width: 62%;
 
       #mkt-prod-title {
         font-size: 32px;
