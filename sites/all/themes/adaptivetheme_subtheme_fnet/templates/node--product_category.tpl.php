@@ -104,6 +104,7 @@
  * later using the render() function. Install the Devel module and use
  * <?php dsm($content); ?> to find variable names to hide() or render().
  */
+// dpm($content);
 hide($content['comments']);
 hide($content['links']);
 ?>
@@ -207,17 +208,15 @@ hide($content['links']);
 
           <!-- List Families -->
           <div class="col-2-3">
-            <?php dpm($industry_families); ?>
 
             <?php foreach ($industry_families as $family): ?>
-
               <div class="column-grid">
                 <div class="col-1-3">
                   <div class="image-cell">
-                    <?php if(isset($family->field_hub_image[0]['raw']['uri'])): ?>
-                    <img src="<?php print file_create_url($family->field_hub_images[0]['raw']['uri']); ?>"
-                        <?php if(isset($family->field_hub_images[0]['raw']['uri'])): ?>
-                         alt="<?php print $family->field_hub_images[0]['raw']['alt']; ?>" />
+                    <?php if(isset($family->field_hub_image[LANGUAGE_NONE][0]['uri'])): ?>
+                    <img src="<?php print file_create_url($family->field_hub_image[LANGUAGE_NONE][0]['uri']); ?>"
+                        <?php if(isset($family->field_hub_image[LANGUAGE_NONE][0]['uri'])): ?>
+                         alt="<?php print $family->field_hub_image[LANGUAGE_NONE][0]['alt']; ?>" />
                         <?php endif; ?>
                     <?php endif; ?>
                   </div>
@@ -229,7 +228,6 @@ hide($content['links']);
                 </div>
               </div>
               <hr class="fade" />
-
             <?php endforeach; ?>
 
           </div>
@@ -237,11 +235,11 @@ hide($content['links']);
           <!-- "Right Hand Column" Content for the Overview Tab -->
           <div class="col-1-3">
             <div style="margin-left: 25px;padding-top: 15px;">
-
               <?php if (isset($field_overview_box_1_title[LANGUAGE_NONE][0]['value'])): // TODO: Alter this to make the images show up. ?>
                 <h5><?php print $field_overview_box_1_title[LANGUAGE_NONE][0]['value']; ?></h5>
               <?php endif; ?>
               <?php if (fnet_common_safe_get($field_overview_box_1_image, 0, 'uri')) { ?>
+
                 <p><img
                     src="<?php print file_create_url(fnet_common_safe_get($field_overview_box_1_image, 0, 'uri')); ?>"
                     style="width:auto; max-width:100%;" alt="<?php print fnet_common_safe_get($field_overview_box_1_image, 0, 'alt') ?>" /></p>
@@ -371,32 +369,33 @@ hide($content['links']);
             </div>
 
           </div>
+
           <div class="col-2-3">
             <div id="industries-links">
               <a name="top"></a>
               <?php print $industries_links; ?>
             </div>
-            <?php if ($whitepapers) { ?>
+            <?php if ($whitepapers): ?>
               <a name="white_papers"></a>
               <h4>White Papers</h4>
-            <?php print $whitepapers; ?>
+                <?php print $whitepapers; ?>
               <div style="text-align:right;"><a href="#top">Back to top</a>
               </div>
-            <?php } ?>
-            <?php if ($webcasts) { ?>
+            <?php endif; ?>
+            <?php if ($webcasts): ?>
               <a name="webcasts"></a>
               <h4>Webcasts</h4>
               <?php print $webcasts; ?>
               <div style="text-align:right;"><a href="#top">Back to top</a>
               </div>
-            <?php } ?>
-            <?php if ($case_studies) { ?>
+            <?php endif; ?>
+            <?php if ($case_studies): ?>
               <a name="case_studies"></a>
               <h4>Case Studies</h4>
               <?php print $case_studies; ?>
               <div style="text-align:right;"><a href="#top">Back to top</a>
               </div>
-            <?php } ?>
+            <?php endif; ?>
           </div>
         </div>
       </div><!-- #tabs-2 -->
