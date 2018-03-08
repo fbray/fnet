@@ -68,7 +68,7 @@ function fnet_bedrock_permission() {
  */
 function fnet_bedrock_get_user($email) {
   $rest_method = 'users';
-  $data = array('email' => $email);
+  $data = ['email' => $email];
   $result = fnet_bedrock_rest('GET', $rest_method, $data);
   if ($result->code == 200) {
     $bedrock_user = json_decode($result->data);
@@ -225,16 +225,17 @@ function fnet_bedrock_create_drupal_user(fnet_bedrock_user $bedrock_user) {
  * @param null $data
  */
 function fnet_bedrock_log_failure($result, $data = NULL) {
-  if (!empty($data)) {
-    if (module_exists('devel')) {
-      dpm($data);
-    }
-    // TODO: What if the response is an array?
+  if (!empty($data) || !is_array($data)) {
     $payload = json_decode($data);
     if (($payload) && ($payload->user)) {
       $payload->user->password = '*******';
     }
     $data = json_encode($payload);
+  }
+  else {
+    if (module_exists('devel')) {
+      dpm($data);
+    }
   }
   $message = 'Bedrock REST returned error code: %code <br/>';
   $message .= 'REST method: %method <br/>';
