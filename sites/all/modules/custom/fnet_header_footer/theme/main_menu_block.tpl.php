@@ -172,7 +172,7 @@
                   style="font-family:Arial, Helvetica, sans-serif; font-size:13px;line-height:13px;font-weight:normal;">
                   <div style="padding:0px 0px 10px 0px;" id="need-help"><?php print t('Need Help?'); ?></div>
                   <div id="btn_product_finder">
-                    <a href="/product_finder"><?php print t('Product Finder'); ?></a>
+                    <a href="/product-finder"><?php print t('Product Finder'); ?></a>
                   </div>
                 </div>
               </div>

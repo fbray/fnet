@@ -28,7 +28,7 @@
         <div class="footer_link"><a href="/installation-and-test"><?php print t('Installation and Test'); ?></a>
         </div>
         <div class="footer_link"><a href="/telecom-test"><?php print t('Telecom Test'); ?></a></div>
-        <div class="footer_link"><a href="/product_finder"><?php print t('Product Finder'); ?></a>
+        <div class="footer_link"><a href="/product-finder"><?php print t('Product Finder'); ?></a>
         </div>
         <div class="footer_link"><a href="/products"><?php print ('See All Products'); ?></a></div>
         <div class="footer_link"><a href="/promotions-home"><?php print ('Promotions'); ?></a></div>
