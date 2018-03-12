@@ -1,11 +1,15 @@
 <?php
+
 /**
  * @file
- * Adds custom product finder functionality to Drupal. This functionality is specific to Fluke Networks web portal.
+ * Adds custom product finder functionality to Drupal.
+ *
+ * This functionality is specific to Fluke Networks web portal.
  */
 
 /**
  * TODO: Add validation to the Contextual Filter in the view.
+ *
  * Make sure it checks if the input is either
  * a) numeric or
  * b) fits the format of 123+124+125 (numbers concatinated with +).
@@ -13,8 +17,6 @@
 
 /**
  * Implements hook_menu().
- *
- * @return mixed
  */
 function product_finder_menu() {
   $items['product-finder'] = array(
@@ -29,9 +31,7 @@ function product_finder_menu() {
 }
 
 /**
- * Implements hook_views_api()
- *
- * @return array
+ * Implements hook_views_api().
  */
 function product_finder_views_api() {
   return array(
@@ -42,10 +42,6 @@ function product_finder_views_api() {
 
 /**
  * Implementation of Search form for Product Finder.
- *
- * @param $form
- * @param $form_state
- * @return array
  */
 function product_finder_search_form($form, &$form_state) {
   global $language;
@@ -82,7 +78,7 @@ function product_finder_search_form($form, &$form_state) {
     );
   }
 
-  // Now, put the data in to form elements. Split it up according to Product Category.
+  // Put the data into form elements. Split it up according to Product Category.
   foreach ($data as $category => $attributes) {
     // The categories are a fieldset.
     $form[$category] = array(
@@ -91,7 +87,7 @@ function product_finder_search_form($form, &$form_state) {
       '#collapsible' => FALSE,
       '#collapsed' => FALSE,
     );
-    foreach($attributes as $attribute) {
+    foreach ($attributes as $attribute) {
       $form[$category][$attribute['tid']] = array(
         '#type' => 'checkbox',
         '#title' => $attribute['name'],
@@ -108,15 +104,19 @@ function product_finder_search_form($form, &$form_state) {
   return $form;
 }
 
+/**
+ * Submit handler for the Product Finder search form.
+ */
 function product_finder_search_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   $selected = array();
-  foreach($values as $key => $value) {
-    if((is_numeric($key)) && ($value == 1)) {
+  foreach ($values as $key => $value) {
+    if ((is_numeric($key)) && ($value == 1)) {
       $selected[] = $key;
     }
   }
-  // Format the results of the form (the checkboxes) into a value that the view will find useful. In this case Value1+Value2+Value3... and so on.
+  // Format the results of the form (the checkboxes) into a value that the view
+  // will find useful. In this case Value1+Value2+Value3... and so on.
   $tids = implode('+', $selected);
   $form_state['redirect'] = '/product-finder/' . $tids;
 }
