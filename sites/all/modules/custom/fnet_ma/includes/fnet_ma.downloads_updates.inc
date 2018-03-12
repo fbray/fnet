@@ -94,33 +94,6 @@ function fnet_ma_fetch_product_list_related_to_download_updates() {
 }
 
 /**
- * @return string
- */
-function fnet_ma_display_all_user_download_and_updates() {
-  drupal_add_js(drupal_get_path('module', 'fnet_ma') . '/js/fnet_ma_helper.js');
-  $form = drupal_get_form('fnet_ma_downloads_and_updates_form');
-  $output = '';
-  $text = variable_get('myaccount_download_and_updates_page_text', t('This is page introduction for Non-Gold User'));
-  $output .= '<div class="posRel">
-                  <div class="dvValid" id="helping-instruction-support-incidents-listing-page">
-                    <div class="cnt">' . t("Click to expand and view content.") . '</div>
-                  </div>
-                </div>
-
-                <div id = "all-support-incidents-listing-section-expanding-master-key-div" Onclick="return toggle_sections(\'all-support-incidents-listing-section\');" class=\'my-account-headlines my-account-header-minus-background\'>' . t('Downloads and Updates') . '
-                </div>
-
-                <div id = \'all-support-incidents-listing-section\' class=\'listing-page-helper-section\'>' . check_markup($text, FILTER_FORMAT_DEFAULT, $langcode = '' /* TODO Set this variable. */, TRUE) . '</div>
-
-                <div id= \'download-and-updates-search-form\'>' . drupal_render($form) . '</div>';
-
-  $output .= "<div id='gold_support_section_wrapper' style='margin-top:10px'>";
-  $output .= theme("all_download_and_updates_display", array('download_and_updates_array' => NULL));
-  $output .= "</div>";
-  return $output;
-}
-
-/**
  * An AJAX function to
  * @param $category
  * @return array

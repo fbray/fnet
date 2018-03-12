@@ -138,21 +138,38 @@ function fnet_ma_menu_alter(&$items) {
  */
 function fnet_ma_menu() {
   $items = array();
-  $items['admin/fnet/my_account'] = array(
-    'title' => 'FNET My Account',
+  $items['admin/fnet/my_account'] = [
+    'title' => t('My Account'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('fnet_ma_admin_settings'),
-    'access arguments' => array('Fluke Networks My Account Administer'),
+    'page arguments' => ['fnet_ma_admin_settings'],
+    'access arguments' => ['Fluke Networks My Account Administer'],
     'file' => 'includes/fnet_ma.admin.inc',
     'type' => MENU_NORMAL_ITEM,
-  );
+  ];
 
   $items['admin/fnet/my_account/settings'] = array(
     'title' => 'My Account Settings',
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
 
-  // TODO: Assess if this is still relevant
+  $items['admin/fnet/my_account/settings/web_services'] = [
+    'title' => t('Settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fnet_ma_admin_web_services'),
+    'access arguments' => array('Fluke Networks My Account Administer'),
+    'file' => 'includes/fnet_ma.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  ];
+
+  $items['admin/fnet/my_account/settings/notifications'] = [
+    'title' => t('Notifications'),
+    'page callback' => 'drupal_ger_form',
+    'page arguments' => ['fnet_ma_admin_notifications'],
+    'access arguments' => ['Fluke Networks My Account Administer'],
+    'file' => 'includes/fnet_ma.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  ];
+
   $items['admin/fnet/my_account/t2w_redirect'] = array(
     'title' => 'T2W Redirects',
     'page callback' => 'drupal_get_form',
@@ -366,6 +383,22 @@ function fnet_ma_menu() {
   );
 
   return $items;
+}
+
+/**
+ * Implements hook_variable_group_info().
+ * Defines the variable group.
+ *
+ * @return array
+ */
+function fnet_ma_variable_group_info() {
+    $groups = array();
+    $groups['myaccount'] = array(
+        'title' => t('My Account'),
+        'description' => t('My Account variables'),
+        'access' => 'administer my account',
+    );
+    return $groups;
 }
 
 /**
