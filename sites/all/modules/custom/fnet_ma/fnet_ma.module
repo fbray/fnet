@@ -1179,6 +1179,8 @@ function fnet_ma_get_asset_details($asset_id) {
  */
 function fnet_ma_send_product_registration_email_to_user() {
   global $user;
+  // TODO: The localized email module and content type is deprecated. Refactor using another method. -rositis 3/12/2018
+  /*
   //The Mail ID for this email is - fnet_ma_product_registration_success_email
   $mail_id = 'flukenetworks_myaccount_product_registration_success_email';
   $mail_to_address = check_plain($user->mail);
@@ -1193,6 +1195,7 @@ function fnet_ma_send_product_registration_email_to_user() {
     );
     fnet_helper_mail_send($message);
   }
+  */
 }
 
 /**
