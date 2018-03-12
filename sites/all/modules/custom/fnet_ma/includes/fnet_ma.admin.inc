@@ -384,6 +384,14 @@ function fnet_ma_admin_web_services($form, &$form_state) {
 function fnet_ma_admin_notifications($form, &$form_state) {
   $form = [];
 
+  $form['my_account_product_registration_success_email'] = [
+    '#title' => t('Registration Success'),
+    '#type' => 'textarea',
+    '#description' => t('Enter the text of the email sent when a user successfully registers a product.'),
+    '#default_value' => variable_get('my_account_product_registration_success_email', ''),
+    '#required' => FALSE,
+  ];
+
   return system_settings_form($form);
 }
 

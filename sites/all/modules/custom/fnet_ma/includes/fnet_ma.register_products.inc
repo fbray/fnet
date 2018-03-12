@@ -504,7 +504,7 @@ function fnet_ma_display_product_registration_thanks_message($category, $model) 
   $html .= '<br /><b>' . t('You have successfully registered the product - <i>"@product_name"</i>', array('@product_name' => $product_models[$key])) . '</b>';
   $fn_myaccount_product_registered_thankyou_message = variable_get('fn_myaccount_product_registered_thankyou_message', t('Thank you for registering your products.'));
   $html .= '<br /><br />';
-  $html .= check_markup($fn_myaccount_product_registered_thankyou_message, FILTER_FORMAT_DEFAULT, $langcode = '' /* TODO Set this variable. */, TRUE);
+  $html .= check_markup($fn_myaccount_product_registered_thankyou_message, NULL, $langcode = '' /* TODO Set this variable. */, TRUE);
   $html .= '<br /><br />';
   $html .= t('Click to !link_to_register_again', array('!link_to_register_again' => l(t("Register more products."), 'myaccount/register-products-step-one')));
   $html .= '<br /><br />';
@@ -514,8 +514,9 @@ function fnet_ma_display_product_registration_thanks_message($category, $model) 
 
 // Function to display the product details on a page based on asset id.
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * @param string $asset_id
+ * @return string
+ * @throws \Exception
  */
 function fnet_ma_view_registered_product_details($asset_id = '') {
   $html = '';

@@ -58,7 +58,7 @@ function fnet_ma_permission() {
     ),
     'administer my account' => array(
       'title' => t('Administer My Account'),
-      'description' => t('Fluke Networks My Account Administer'),
+      'description' => t('Administer Fluke Networks My Account'),
     ),
   );
 }
@@ -137,12 +137,12 @@ function fnet_ma_menu_alter(&$items) {
  * @return array
  */
 function fnet_ma_menu() {
-  $items = array();
+  $items = [];
   $items['admin/fnet/my_account'] = [
     'title' => t('My Account'),
     'page callback' => 'drupal_get_form',
     'page arguments' => ['fnet_ma_admin_settings'],
-    'access arguments' => ['Fluke Networks My Account Administer'],
+    'access arguments' => ['administer my account'],
     'file' => 'includes/fnet_ma.admin.inc',
     'type' => MENU_NORMAL_ITEM,
   ];
@@ -152,32 +152,32 @@ function fnet_ma_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
 
-  $items['admin/fnet/my_account/settings/web_services'] = [
-    'title' => t('Settings'),
+  $items['admin/fnet/my_account/web_services'] = [
+    'title' => t('Web Services'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('fnet_ma_admin_web_services'),
-    'access arguments' => array('Fluke Networks My Account Administer'),
+    'page arguments' => ['fnet_ma_admin_web_services'],
+    'access arguments' => ['administer my account'],
     'file' => 'includes/fnet_ma.admin.inc',
     'type' => MENU_LOCAL_TASK,
   ];
 
-  $items['admin/fnet/my_account/settings/notifications'] = [
+  $items['admin/fnet/my_account/notifications'] = [
     'title' => t('Notifications'),
-    'page callback' => 'drupal_ger_form',
+    'page callback' => 'drupal_get_form',
     'page arguments' => ['fnet_ma_admin_notifications'],
-    'access arguments' => ['Fluke Networks My Account Administer'],
+    'access arguments' => ['administer my account'],
     'file' => 'includes/fnet_ma.admin.inc',
     'type' => MENU_LOCAL_TASK,
   ];
 
-  $items['admin/fnet/my_account/t2w_redirect'] = array(
-    'title' => 'T2W Redirects',
+  $items['admin/fnet/my_account/t2w_redirect'] = [
+    'title' => t('T2W Redirects'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('fnet_ma_t2w_redirect_settings_form'),
-    'access arguments' => array('Fluke Networks My Account Administer'),
+    'page arguments' => ['fnet_ma_t2w_redirect_settings_form'],
+    'access arguments' => ['administer my account'],
     'file' => 'includes/fnet_ma.admin.inc',
     'type' => MENU_LOCAL_TASK,
-  );
+  ];
 
   $items['myaccount/thank_you'] = array(
     'title' => 'Check your email to complete registration and activate your user account ',
@@ -392,13 +392,34 @@ function fnet_ma_menu() {
  * @return array
  */
 function fnet_ma_variable_group_info() {
-    $groups = array();
-    $groups['myaccount'] = array(
+    $groups = [];
+    $groups['my_account'] = [
         'title' => t('My Account'),
         'description' => t('My Account variables'),
         'access' => 'administer my account',
-    );
+    ];
     return $groups;
+}
+
+/**
+ * Implements hook_variable_info().
+ *
+ * @param $options
+ * @return array
+ */
+function fnet_ma_variable_info($options) {
+  $variable = [];
+
+  $variable['my_account_product_registration_success_email'] = [
+    'type' => 'string',
+    'title' => t('Product Registration Success email text', [], $options),
+    'description' => t('Instructions given to users on the main Sales Insider page.'),
+    'group' => 'my_account',
+    'localize' => TRUE,
+    'default' => '',
+  ];
+
+  return $variable;
 }
 
 /**
@@ -1612,3 +1633,4 @@ function fnet_ma_check_profile() {
     drupal_set_message($message);
   }
 }
+
