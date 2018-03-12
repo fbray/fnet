@@ -50,6 +50,19 @@ function product_finder_views_api() {
 function product_finder_search_form($form, &$form_state) {
   global $language;
   $form = array();
+
+  drupal_set_title('Find the Best Cable Network Testing Tools');
+  // Add meta tag description.
+  $tag = [
+    '#type' => 'html_tag',
+    '#tag' => 'meta',
+    '#attributes' => [
+      'name' => 'description',
+      'content' => 'Network installation and testing tools for contractors, data center operators, network engineers, and service providers who install and maintain critical network cabling infrastructure.  Fluke Networks provides the best certification, qualification, and verification tools for copper and fiber cabling.',
+    ],
+  ];
+  drupal_add_html_head($tag, 'meta_description');
+
   // Get Product Categories and their Product Attributes.
   $query = "SELECT n.title as title, ti.tid as tid, ttd.name as name, ttd.description as description
   FROM {node} n
@@ -107,6 +120,3 @@ function product_finder_search_form_submit($form, &$form_state) {
   $tids = implode('+', $selected);
   $form_state['redirect'] = '/product-finder/' . $tids;
 }
-
-
-
