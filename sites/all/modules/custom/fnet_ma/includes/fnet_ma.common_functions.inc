@@ -126,7 +126,6 @@ function fnet_ma_save_errors_to_watch_dog_and_email_to_admin($url = '', $reason 
     '%user_id' => $user->uid,
     '%user_name' => $user->name,
     '%user_emailaddress' => $user->mail,
-    '%assignedId' => $user_info['onyx_memberID'],
     '%time_date' => date("h:i  l m/d/Y"),
     // '%full_name' => $user_info['fullname'],
   );
