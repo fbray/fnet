@@ -105,8 +105,9 @@ function fnet_ma_get_address_defaults() {
 function fnet_ma_save_errors_to_watch_dog_and_email_to_admin($url = '', $reason = '') {
   global $user;
   $user_info = array();
-  $user_info['fullname'] = check_plain(trim($user->field_user_first_name[LANGUAGE_NONE][0]['value'])) . " " . check_plain(trim($user->field_user_last_name[LANGUAGE_NONE][0]['value']));
-  $user_info['onyx_memberID'] = check_plain(trim($user->field_user_onyx_id[LANGUAGE_NONE][0]['value']));
+  // TODO: Replace with new Addressfield data fields
+  // $user_info['fullname'] = check_plain(trim($user->field_user_first_name[LANGUAGE_NONE][0]['value'])) . " " . check_plain(trim($user->field_user_last_name[LANGUAGE_NONE][0]['value']));
+
 
   // TODO: Rework to remove HTML from translated string.
   $message = t('
@@ -116,7 +117,6 @@ function fnet_ma_save_errors_to_watch_dog_and_email_to_admin($url = '', $reason 
     <b>Drupal Username</b>: %user_name<br/><br/>
     <b>User\'s Email Address</b>: %user_emailaddress<br/><br/>
     <b>Full Name</b>: %full_name<br/><br/>
-    <b>User\'s Onyx individual ID</b>: %assignedId<br/><br/>
     <b>Issue occured at</b>: %time_date<br/><br/>
   ');
 
@@ -128,7 +128,7 @@ function fnet_ma_save_errors_to_watch_dog_and_email_to_admin($url = '', $reason 
     '%user_emailaddress' => $user->mail,
     '%assignedId' => $user_info['onyx_memberID'],
     '%time_date' => date("h:i  l m/d/Y"),
-    '%full_name' => $user_info['fullname'],
+    // '%full_name' => $user_info['fullname'],
   );
 
   watchdog('My Account', $message, $variables, $severity = WATCHDOG_ERROR, NULL);
