@@ -413,7 +413,7 @@ function fnet_ma_variable_info($options) {
   $variable['my_account_product_registration_success_email'] = [
     'type' => 'string',
     'title' => t('Product Registration Success email text', [], $options),
-    'description' => t('Instructions given to users on the main Sales Insider page.'),
+    'description' => t('Email text send when a user successfully registers a product.'),
     'group' => 'my_account',
     'localize' => TRUE,
     'default' => '',
@@ -1200,23 +1200,24 @@ function fnet_ma_get_asset_details($asset_id) {
  */
 function fnet_ma_send_product_registration_email_to_user() {
   global $user;
-  // TODO: The localized email module and content type is deprecated. Refactor using another method. -rositis 3/12/2018
-  /*
-  //The Mail ID for this email is - fnet_ma_product_registration_success_email
-  $mail_id = 'flukenetworks_myaccount_product_registration_success_email';
-  $mail_to_address = check_plain($user->mail);
-  $localized_message = localized_email_message($mail_id, $tokens = array());
-  if ($localized_message) {
-    $message = array(
-      'to' => $mail_to_address,
-      'from' => $localized_message['Sender'],
-      'subject' => $localized_message['subject'],
-      'body' => $localized_message['body'],
-      'headers' => $localized_message['headers'],
-    );
-    fnet_helper_mail_send($message);
-  }
-  */
+  global $language;
+  $account = user_load($user->uid);
+  $items = field_get_items('user', $account, 'field_user_preferred_language');
+  // This gets the sanitized output, from the first field delta value (0)
+  $preferred_language = field_view_value('user', $account, 'field_user_preferred_language', $items[0]);
+
+  //The Mail key for this email is - fnet_ma_product_registration_success_email
+  $key = 'flukenetworks_myaccount_product_registration_success_email';
+  $mail_to_address = check_plain($account->mail);
+  $from = variable_get('site_mail', ini_get('sendmail_from'));
+  $options['language']= $language;
+  $options['language']->language = $preferred_language;
+  $email_body = variable_get_value('my_account_product_registration_success_email', $options);
+  $params = [
+    'body' => $email_body,
+    'subject' => t('Registration Confirmation'),
+  ];
+  $mail = drupal_mail('fnet_ma', $key, $mail_to_address, $preferred_language, $params, $from);
 }
 
 /**
@@ -1633,4 +1634,5 @@ function fnet_ma_check_profile() {
     drupal_set_message($message);
   }
 }
+
 
