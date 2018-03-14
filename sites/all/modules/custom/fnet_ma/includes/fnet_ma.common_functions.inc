@@ -19,56 +19,51 @@ function fnet_ma_countrycode_missing_email_trigger($drupal_country_code = '', $d
   }
 
   global $user;
-  $user_info = array();
-  $user_info['fullname'] = check_plain(trim($user->field_user_first_name[LANGUAGE_NONE][0]['value'])) . " " . check_plain(trim($user->field_user_last_name[LANGUAGE_NONE][0]['value']));
+  $account = user_load($user->uid);
 
-  // TODO: Is Onyx still relevant? Might be deprecated. -rositis 5/6/16
-  $user_info['onyx_memberID'] = check_plain(trim($user->field_user_onyx_id[LANGUAGE_NONE][0]['value']));
+  $items = field_get_items('user', $account, 'field_address');
+  // This gets the sanitized output, from the first field delta value (0)
+  $address = field_view_value('user', $account, 'field_address', $items[0]);
 
-  // TODO: Rework to remove HTML from translated string.
-  $message = t('
-    <b>Notification for an issue that occurred when mapping the Country code of Drupal Addresses module with the Country Code of Onyx System<br/><br/>
+  $message = '<b>Notification for an issue that occurred when mapping the Country code of Drupal Addresses module with the Country Code of Onyx System<br/><br/>
     <b>There is an issue with Drupal to Onyx country mappings in fnet_country_data_cleansing module.  The country that is not mapping correctly is: </b>%country_name (%country_code)<br/><br/>
     <b>Drupal User ID of user</b>: %user_id<br/><br/>
     <b>Drupal Username</b>: %user_name<br/><br/>
     <b>Full Name of the user</b>: %full_name<br/><br/>
-    <b>User\'s Onyx individual ID for whom the mapping issue occurred and due to which the Country is defaulted to "United States" for this user and State/Region to "NULL"</b>: %assignedId<br/><br/>
-    <b>Issue occured at</b>: %time_date<br/><br/>
-  ');
+    <b>Issue occured at</b>: %time_date<br/><br/>';
 
-  $variables = array(
+  $variables = [
     '%country_name' => $drupal_country_name,
     '%country_code' => $drupal_country_code,
-    '%user_id' => $user->uid,
-    '%user_name' => $user->name,
-    '%assignedId' => $user_info['onyx_memberID'],
+    '%user_id' => $account->uid,
+    '%user_name' => $account->name,
     '%time_date' => date("h:i  l m/d/Y"),
-    '%full_name' => $user_info['fullname'],
-  );
+    '%full_name' => $address['#address']['name_line'],
+  ];
 
   watchdog('My Account', $message, $variables, $severity = WATCHDOG_ERROR, NULL);
 
   // Function to email the issue to specific email ID here!!!
   // Build the default headers
-  $headers = array(
+  $headers = [
     'MIME-Version' => '1.0',
     'Content-Type' => 'text/html;charset=utf-8',
     'Content-Transfer-Encoding' => '8Bit',
     'X-Mailer' => 'Drupal',
-  );
+  ];
 
   $email_subject = t('Issue with fnet_country_data_cleansing module while mapping the Country: %country_name', array('%country_name' => $drupal_country_name));
   $email_content = t($message, $variables);
 
   $default_from = variable_get('site_mail', ini_get('sendmail_from'));
   $headers['From'] = $headers['Sender'] = $headers['Return-Path'] = $headers['Errors-To'] = $default_from;
-  $message = array(
+  $message = [
     'to' => check_plain(variable_get('myaccount_webservices_failure_notification_email_address', 'example@flukenetworks.com')),
     'from' => $default_from,
     'subject' => $email_subject,
     'body' => $email_content,
     'headers' => $headers,
-  );
+  ];
   fnet_helper_mail_send($message);
 }
 
@@ -86,7 +81,7 @@ function fnet_ma_get_address_defaults() {
       $country_code = 'uk';
       break;
   }
-  $address = array(
+  $address = [
     'is_primary' => TRUE,
     'aname' => '',
     'country' => $country_code,
@@ -95,7 +90,7 @@ function fnet_ma_get_address_defaults() {
     'street' => '',
     'additional' => '',
     'postal_code' => '',
-  );
+  ];
   return array($address);
 }
 
@@ -104,55 +99,53 @@ function fnet_ma_get_address_defaults() {
  */
 function fnet_ma_save_errors_to_watch_dog_and_email_to_admin($url = '', $reason = '') {
   global $user;
-  $user_info = array();
-  // TODO: Replace with new Addressfield data fields
-  // $user_info['fullname'] = check_plain(trim($user->field_user_first_name[LANGUAGE_NONE][0]['value'])) . " " . check_plain(trim($user->field_user_last_name[LANGUAGE_NONE][0]['value']));
+  $account = user_load($user->uid);
 
+  $items = field_get_items('user', $account, 'field_address');
+  // This gets the sanitized output, from the first field delta value (0)
+  $address = field_view_value('user', $account, 'field_address', $items[0]);
 
-  // TODO: Rework to remove HTML from translated string.
-  $message = t('
-    <b>Notification for an issue that occurred when interacting with the Web service at URL</b>: "%url".<br/><br/>
+  $message = '<b>Notification for an issue that occurred when interacting with the Web service at URL</b>: "%url".<br/><br/>
     <b>Reason</b>: !reason<br/><br/>
     <b>Drupal User ID of user for whom the error occurred</b>: %user_id<br/><br/>
     <b>Drupal Username</b>: %user_name<br/><br/>
     <b>User\'s Email Address</b>: %user_emailaddress<br/><br/>
     <b>Full Name</b>: %full_name<br/><br/>
-    <b>Issue occured at</b>: %time_date<br/><br/>
-  ');
+    <b>Issue occured at</b>: %time_date<br/><br/>';
 
-  $variables = array(
+  $variables = [
     '%url' => $url,
     '!reason' => $reason,
-    '%user_id' => $user->uid,
-    '%user_name' => $user->name,
-    '%user_emailaddress' => $user->mail,
+    '%user_id' => $account->uid,
+    '%user_name' => $account->name,
+    '%user_emailaddress' => $account->mail,
     '%time_date' => date("h:i  l m/d/Y"),
-    // '%full_name' => $user_info['fullname'],
-  );
+    '%full_name' => $address['#address']['name_line'],
+  ];
 
   watchdog('My Account', $message, $variables, $severity = WATCHDOG_ERROR, NULL);
 
   // Function to email the issue to specific email ID here!!!
   // Build the default headers
-  $headers = array(
+  $headers = [
     'MIME-Version' => '1.0',
     'Content-Type' => 'text/html;charset=utf-8',
     'Content-Transfer-Encoding' => '8Bit',
     'X-Mailer' => 'Drupal',
-  );
+  ];
 
   $email_subject = t('Notification for Web service failure: URL - ') . $url;
   $email_content = t($message, $variables);
 
   $default_from = variable_get('site_mail', ini_get('sendmail_from'));
   $headers['From'] = $headers['Sender'] = $headers['Return-Path'] = $headers['Errors-To'] = $default_from;
-  $message = array(
+  $message = [
     'to' => check_plain(variable_get('myaccount_webservices_failure_notification_email_address', 'example@flukenetworks.com')),
     'from' => $default_from,
     'subject' => $email_subject,
     'body' => $email_content,
     'headers' => $headers,
-  );
+  ];
   fnet_helper_mail_send($message);
 }
 
