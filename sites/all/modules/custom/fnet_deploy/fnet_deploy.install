@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * @file
+ * Install for FNET deployment module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function fnet_deploy_install() {
+  drupal_set_installed_schema_version('fnet_deploy', 7100);
+}
