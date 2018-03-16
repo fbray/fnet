@@ -25,7 +25,7 @@ function wheretobuy_get_regions($country_code = NULL) {
     else {
       // $country_code = strtolower($country_code); // Make sure the country code isn't upper case.
       $administrative_areas = addressfield_get_administrative_areas($country_code);
-      //filter out regions which will be treated as countries
+      // filter out regions which will be treated as countries
       if ($country_code == 'US') {
         $filtered_regions = [
           'AS' => 'American Samoa',
@@ -78,11 +78,12 @@ function wheretobuy_get_regions($country_code = NULL) {
  * Based on the country and product in the GET array,
  * returns a json array of cities.
  */
+// http://fluke-networks-pantheon.local/wheretobuy_ajax/get_cities?country=ES&product=88928&buying=S%7CO%7CN&region=B
 function wheretobuy_get_cities() {
   $country = $_GET['country'];
   $product = isset($_GET['product']) ? $_GET['product']: 0; //query on this at the end.
   $sales_channel = isset($_GET['channel']) ? $_GET['channel']: 0;
-  $region = $_GET['region'];
+  $region = isset($_GET['region']) ? $_GET['region'] : '';
   $buying_method = $_GET['buying']; //Not to be used in Query
   $json_arr = [];
 
@@ -113,8 +114,9 @@ function wheretobuy_get_cities() {
     }
 
     if ($pnode = node_load($product)) {
-      //Get list of locations supplying the product
+      // Get list of locations supplying the product
       $locations = get_product_locations($pnode->nid); // array of location nids.
+      // $json_arr['test'] = $locations;
       // Filter the locations according to the filtering criteria.
       if (!empty($locations)) {
         $query = db_select('node', 'n')->distinct();
@@ -127,14 +129,17 @@ function wheretobuy_get_cities() {
           ->condition('cfdt.field_delivery_type_value', 'S', '=')
           ->condition('address.field_address_locality', '', '<>')
           ->condition('address.field_address_administrative_area', $region, '=');
-        $query->orderBy('address.field_address_locality');
+        //$query->orderBy('address.field_address_locality');
+        /*
         if ($country == 'US' && $sales_channel == 1) {
           $query->join('field_data_field_gsa_schedule', 'ctd5', 'ctd5.entity_id = n.nid AND ctd5.revision_id = n.vid');
           $query->condition('ctd5.field_gsa_schedule_value', 1, '=');
         }
+
         if ($product != -1) {
           $query->condition('n.nid', $locations, 'IN');
         }
+        */
         $results = $query->execute();
 
 
@@ -144,6 +149,7 @@ function wheretobuy_get_cities() {
             $cities[$data->field_address_locality] = $data->field_address_locality;
           }
         }
+        $json_arr['test'] = $cities;
         if (!empty($cities)) {
           $cities = array(
               0 => '--Select a City--',
@@ -1061,7 +1067,7 @@ function get_product_locations($pid) {
   JOIN field_data_field_products products ON products.entity_id = distributor.field_product_distributor_groups_target_id
   WHERE products.field_products_target_id = :pid
   AND n.status = 1";
-  $results = db_query($query, array(':pid' => $pid))->fetchCol();
+  $results = db_query($query, [':pid' => $pid])->fetchCol();
   return $results;  // TODO: error handling if no results?
 }
 

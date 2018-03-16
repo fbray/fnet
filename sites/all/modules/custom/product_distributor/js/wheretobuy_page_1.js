@@ -106,6 +106,7 @@ console.log(urlData);
                                 if(jdata.psmodel == null){
                                     jdata.psmodel= '';
                                 }
+                                alert('Cue the WTB button!');
                                 $('#ps-widget-btn').html('<div class="ps-widget" ps-sku="'+jdata.psmodel+'"></div>');
                                 PriceSpider.rebind();
                                 $('.ps-widget').fadeIn();
@@ -144,8 +145,8 @@ console.log(urlData);
                                     if (($('#edit-countries').val() == 'US') && ($('input#edit-gsa-schedule').is(':checked'))) {
                                         urlData += '&channel=1';
                                     }
-                                    // alert(url);
-                                    // alert(urlData);
+                                    alert(url);
+                                    alert(urlData);
                                     $('#ajax-loader-wrapper').show();
                                     $.ajax({
                                         type: "GET",

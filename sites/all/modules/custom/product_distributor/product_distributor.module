@@ -39,39 +39,39 @@ function product_distributor_init() {
  * @return array
  */
 function product_distributor_menu() {
-  $items = array();
-  //Where To Buy public facing page
-  $items['wheretobuy'] = array(  //
+  $items = [];
+  // Where To Buy public facing page
+  $items['wheretobuy'] = [
     'title' => 'Where to Buy',
     'page callback' => 'wheretobuy_page',
-    'access arguments' => array('access wtb'),
+    'access arguments' => ['access wtb'],
     'type' => MENU_CALLBACK,
-  );
+  ];
 
-  $items['contactus'] = array(
+  $items['contactus'] = [
     'title' => 'Contact Us',
     'page callback' => 'contactus_page',
-    'access arguments' => array('access wtb'),
+    'access arguments' => ['access wtb'],
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   //AJAX callbacks:
   //Get cities in a region of a country
-  $items['wheretobuy_ajax/get_cities'] = array(
+  $items['wheretobuy_ajax/get_cities'] = [
     'title' => 'Where to Buy: AJAX Response Handler: Get cities by regions',
     'file' => 'product_distributor.ajax.inc',
     'page callback' => 'wheretobuy_get_cities',
-    'access arguments' => array('access wtb'),
+    'access arguments' => ['access wtb'],
     'type' => MENU_CALLBACK,
-  );
+  ];
   //Get available delivery types in a country
-  $items['wheretobuy_ajax/get_delivery_types'] = array(
+  $items['wheretobuy_ajax/get_delivery_types'] = [
     'title' => 'Where to Buy: AJAX Response Handler: Get delivery types by country',
     'file' => 'product_distributor.ajax.inc',
     'page callback' => 'wheretobuy_get_delivery_types',
-    'access arguments' => array('access wtb'),
+    'access arguments' => ['access wtb'],
     'type' => MENU_CALLBACK,
-  );
+  ];
   //Get distributors' search result
   $items['wheretobuy_ajax/get_distributors'] = array(
     'title' => 'Where to Buy: Get Distributors',
@@ -231,6 +231,7 @@ function product_distributor_theme() {
  */
 function product_distributor_menu_alter(&$menu) {
   // TODO: No longer using Location module. Replace with something from Locale or Addressfield.
+  // TODO: If we want to use an autocomplete, the callback should be the _adminstrative_area_autocomplete.
   /*
   if (isset($menu['location/autocomplete'])) {
     $menu['location/autocomplete']['page callback'] = '_custom_location_autocomplete';
@@ -243,29 +244,28 @@ function product_distributor_menu_alter(&$menu) {
  * Helper function to modify the list of regions that show in autocomplete suggestions
  * This function overrides the default autocomplete function "_location_autocomplete" of location module
  * located in location.module
- * TODO: Deprecated. Use Location or Addressfield module for similar functionality.
  */
-/*
-function _custom_location_autocomplete($country, $string = '') {
+
+function _administrative_area_autocomplete($country, $string = '') {
   $counter = 0;
   $string   = strtolower($string);
   $string   = '/^' . $string . '/';
-  $matches  = array();
+  $matches  = [];
 
   if (strpos($country, ',') !== FALSE) {
     // Multiple countries specified.
-    $provinces = array();
+    $areas = [];
     $country = explode(',', $country);
     foreach ($country as $c) {
-      $provinces = $provinces + location_get_provinces($c);
+      $areas = $areas + addressfield_get_administrative_areas($c);
     }
   }
   else {
-    $provinces = location_get_provinces($country);
+    $areas = addressfield_get_administrative_areas($country);
   }
 
-  if (!empty($provinces)) {
-    while (list($code, $name) = each($provinces)) {
+  if (!empty($areas)) {
+    foreach($areas as $name) {
       if (preg_match($string, strtolower($name))) {
         $matches[$name] = $name;
       }
@@ -273,7 +273,7 @@ function _custom_location_autocomplete($country, $string = '') {
   }
   drupal_json_output($matches);
 }
-*/
+
 
 
 /**
