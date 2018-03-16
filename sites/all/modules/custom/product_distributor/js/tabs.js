@@ -27,7 +27,7 @@ jQuery.noConflict();
             activateDefaultTab(isErrorOnTab2);
         }
         else if (tab >= 1 && tab <= 3) { //If 'tab' parameter found in valid range, activate corresponding tab
-            $("ul.tabs li:nth-child(" + tab + ")").addClass("active").show();
+            $("ul.wtbtabs li:nth-child(" + tab + ")").addClass("active").show();
             $(".tab_content:nth-child(" + tab + ")").show();
         }
         else { //If 'tab' parameter has invalid value, show 2nd tab if errors present else show first tab
@@ -35,16 +35,16 @@ jQuery.noConflict();
         }
 
         //On Click Event
-        $("ul.tabs li").click(function () {
+        $("ul.wtbtabs li").click(function () {
 
-            $("ul.tabs li").removeClass("active"); //Remove any "active" class
+            $("ul.wtbtabs li").removeClass("active"); //Remove any "active" class
             $(this).addClass("active"); //Add "active" class to selected tab
             if ($('.messages.success').html()) {
                 $('.messages.success').html('');
                 $('.messages.success').slideUp();
             }
             if (isErrorOnTab2 == true) {
-                if ($("ul.tabs li.active").hasClass("second"))
+                if ($("ul.wtbtabs li.active").hasClass("second"))
                     $(".messages.error").slideDown();
                 else
                     $(".messages.error").slideUp();
@@ -60,10 +60,10 @@ jQuery.noConflict();
 //Default tab activation functionality
     function activateDefaultTab(isErrorOnTab2) {
         if(isErrorOnTab2 == true) {
-            $("ul.tabs li:nth-child(2)").addClass("active").show(); //Activate second tab
+            $("ul.wtbtabs li:nth-child(2)").addClass("active").show(); //Activate second tab
             $(".tab_content:nth-child(2)").show(); //Show second tab content
         } else {
-            $("ul.tabs li:first").addClass("active").show(); //Activate first tab
+            $("ul.wtbtabs li:first").addClass("active").show(); //Activate first tab
             $(".tab_content:first").show(); //Show first tab content
         }
     }

@@ -463,7 +463,7 @@ function wheretobuy_page() {
 //        <div id="tab2" style="display:none" class="tab_content">' . get_tab_content(2) . '
 //  </div>
 
-  $output .= '<ul class="tabs">
+  $output .= '<ul class="wtbtabs">
         <li class=""><a href="#tab3">' . variable_get('product_distributor_tab1_title', '') . '</a></li>
         <li class=""><a href="#tab1">' . variable_get('product_distributor_tab2_title', '') . '</a></li>
         </ul>
@@ -496,7 +496,7 @@ function contactus_page() {
   drupal_add_js(array('wheretobuy_path' => drupal_get_path('module', 'product_distributor')), array('type' => 'setting', 'scope' => JS_DEFAULT));
   drupal_add_js(array('wheretobuy_default_img' => base_path() . drupal_get_path('module', 'product_distributor') . '/images/' . $default_map_img), array('type' => 'setting', 'scope' => JS_DEFAULT));
 
-  $output = '<ul class="tabs">
+  $output = '<ul class="wtbtabs">
         <li class="fulltab active"><a>' . variable_get('product_distributor_tab2_title', '') . '</a></li>
         </ul><div id="wtb-tabs-container" class="tab_container">
        <div id="tab2" class="tab_content">' . get_tab_content(2) . '
