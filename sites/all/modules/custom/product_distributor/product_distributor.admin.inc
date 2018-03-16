@@ -45,22 +45,30 @@ function product_distributor_admin() {
 
 /**
  * Implementation of hook_form() for configuring FNET WTB countries settings
- * TODO: Update with better country list using Locale module.
+ *
  * @return array
  */
 function wtb_configure_countries_form() {
-  $form = array();
+  // List all available handlers
+  $handlers = geocoder_handler_info();
+  dpm($handlers);
 
-  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/javascripts/wtb_countries_form.js');
-  drupal_add_css(drupal_get_path('module', 'product_distributor') . '/styles/wtb_countries_form.css');
+  $address = 'SW61HS';
+  $point = geocoder('google',$address);
+  $geoJSON = $point->out('json');
+  $geo = json_decode($geoJSON);
+  dpm($geo);
 
-  $countries = array_change_key_case(location_get_iso3166_list(), CASE_UPPER);
+  $form = [];
+
+  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/wtb_countries_form.js');
+  drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/wtb_countries_form.css');
+
+  $countries = country_get_list();
   $inactive_countries = get_inactive_countries();
   $countries = array_diff_key($countries, $inactive_countries);
-  $skip_region = variable_get('wtb_countries_skip_region', array());
-  $show_always = variable_get('wtb_countries_show_always', array());
 
-  $form['help_text'] = array(
+  $form['help_text'] = [
     '#value' => '<div id="wtb-help-text"><p>Below you will find the option to make a country "skip region" or to make National Distributors show all the time.
 If you choose neither, search results will only show the distributor locations for a product within the region and city filtered upon.  If there are no local responses, only then will National Distributor locations with the product show for the country.
 </p><p>
@@ -70,62 +78,27 @@ If you choose to make National Distributors always show, the results displayed w
 </p><p>
 Please note you can choose not to check neither of these features, or only one.
 </p></div>',
-  );
+  ];
 
-  $form['skip_region'] = array(
+  $form['wtb_countries_skip_region'] = [
     '#type' => 'checkboxes',
     '#title' => t('Skip region selection'),
     '#prefix' => '<div id="countries-checkbox-wrapper">',
-    '#default_value' => $skip_region,
+    '#default_value' => variable_get('wtb_countries_skip_region', []),
     '#options' => $countries,
     '#description' => t('Setting a country to skip the region will disable the ability for a customer to refine their search by region and city.'),
-  );
-  $form['show_always'] = array(
+  ];
+
+  $form['wtb_countries_show_always'] = [
     '#type' => 'checkboxes',
     '#title' => t('Always show National/Default'),
-    '#suffix' => '<input type="submit" class="form-submit" value="Save" id="edit-Save-1" name="op"></div>',
-    '#default_value' => $show_always,
+    '#default_value' => variable_get('wtb_countries_show_always', []),
     '#options' => $countries,
     '#description' => t('Setting a country to "Always show National/Default" will result in National/Default appearing always in results.'),
-  );
+  ];
 
-  $form['Save'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save'),
-    '#weight' => 10,
-  );
-
-  return $form;
+  return system_settings_form($form);
 }
-
-
-/**
- * Implementation of hook_submit for FNET WTB countries settings form
- *
- * @param $form
- * @param $form_state
- */
-function wtb_configure_countries_form_submit($form, &$form_state) {
-  if (isset($form['#post']['skip_region'])) {
-    $countries = array_change_key_case(location_get_iso3166_list(), CASE_UPPER);
-    variable_set('wtb_countries_skip_region', $form['#post']['skip_region']);
-  }
-  else {
-    variable_set('wtb_countries_skip_region', array());
-  }
-
-  if (isset($form['#post']['show_always'])) {
-    $countries = array_change_key_case(location_get_iso3166_list(), CASE_UPPER);
-    variable_set('wtb_countries_show_always', $form['#post']['show_always']);
-  }
-  else {
-    variable_set('wtb_countries_show_always', array());
-  }
-
-  drupal_set_message('Configurations have been saved successfully');
-
-}
-
 
 /**
  * Views field extension for formatting data
@@ -133,9 +106,6 @@ function wtb_configure_countries_form_submit($form, &$form_state) {
  * @param $data
  */
 function views_distributor_list_customfield($data) {
-/*  $results = db_query('SELECT n.nid, n.title FROM {node} n'
-             . ' INNER JOIN {content_field_product_groups} cfpg ON n.nid = cfpg.nid'
-             . ' WHERE cfpg.field_product_groups_nid = %d', $data->nid); */
   $results = db_query('SELECT n.nid, n.title FROM {node} n'
     . ' INNER JOIN {field_data_field_product_groups} cfpg ON n.nid = cfpg.entity_id'
     . ' WHERE cfpg.field_product_groups_nid = %d', $data->nid);

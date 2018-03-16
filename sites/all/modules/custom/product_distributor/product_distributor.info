@@ -6,6 +6,7 @@ core = 7.x
 version = "7.x-1.2"
 
 dependencies[] = locale
+dependencies[] = addressfield
 dependencies[] = views
 
 stylesheets[all][] = css/admin_toolbar_top_position_fix.css
