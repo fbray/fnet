@@ -23,6 +23,8 @@ class FNETMicrositeStoryMigration extends FNETNode7Migration {
       ->issueGroup(t('DNM'));
 
     // Individual Fields
+    $this->addFieldMapping('body:language', 'body:language')
+      ->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('field_display_title', 'field_display_title');
     $this->addFieldMapping('field_background_color', 'field_ms_story_bg_color');
 
@@ -56,8 +58,7 @@ class FNETMicrositeStoryMigration extends FNETNode7Migration {
   }
 
   protected function stripDomain($string) {
-    $stripped = str_replace('https://www.flukenetworks.com/', '/', $string);
-    $stripped = str_replace('http://www.flukenetworks.com/', '/', $string);
+    $stripped = str_replace(array('https://www.flukenetworks.com/', 'http://www.flukenetworks.com/'), '/', $string);
     return $stripped;
   }
 }

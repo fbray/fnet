@@ -36,6 +36,7 @@ class FNETMarketoFormMigration extends FNETNode7Migration {
     $this->addFieldMapping('field_iframe_height', 'field_mkt_iframe_height');
     $this->addFieldMapping('field_marketo_form_title', 'field_mkt_form_title');
     $this->addFieldMapping('field_bottom_content_cn', 'field_mkt_bot_content_cn');
+    $this->addFieldMapping('field_bottom_content_de', 'field_mkt_bot_content_de');
     $this->addFieldMapping('field_bottom_content_en', 'field_mkt_bot_content_en');
     $this->addFieldMapping('field_bottom_content_en_eu', 'field_mkt_bot_content_en_eu');
     $this->addFieldMapping('field_bottom_content_en_in', 'field_mkt_bot_content_en_in');
@@ -76,6 +77,24 @@ class FNETMarketoFormMigration extends FNETNode7Migration {
       ->sourceMigration('Files');
     $this->addFieldMapping('field_image:file_class')
       ->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_image:preserve_files')
+      ->defaultValue(TRUE);
+  }
+
+  /**
+   * @param $row
+   * @return bool
+   */
+  public function prepareRow($row) {
+    // Always include this snippet, in case our parent class decides to ignore the row
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+
+    // Convert from text field to integer and remove the 'px' from the value.
+    $row->field_mkt_iframe_height[0] = str_replace(['px', 'PX'], '', $row->field_mkt_iframe_height[0]);
+
+
   }
 
 }

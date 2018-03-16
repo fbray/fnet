@@ -24,6 +24,8 @@ class FNETMicrositePageMigration extends FNETNode7Migration {
     $this->addFieldMapping(NULL, 'field_removenav');
 
     // Individual Fields
+    $this->addFieldMapping('body:language', 'body:language')
+      ->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('field_intro', 'field_ms_page_intro_content');
     $this->addFieldMapping('field_intro:format', 'field_ms_page_intro_content:format');
     $this->addFieldMapping('field_background_color', 'field_ms_page_bg_color');
@@ -59,8 +61,7 @@ class FNETMicrositePageMigration extends FNETNode7Migration {
   }
 
   protected function stripDomain($string) {
-    $stripped = str_replace('https://www.flukenetworks.com/', '/', $string);
-    $stripped = str_replace('http://www.flukenetworks.com/', '/', $string);
+    $stripped = str_replace(array('https://www.flukenetworks.com/', 'http://www.flukenetworks.com/'), '/', $string);
     return $stripped;
   }
 }
