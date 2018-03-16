@@ -27,6 +27,8 @@ class FNETMicrositeStoryMigration extends FNETNode7Migration {
       ->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('field_display_title', 'field_display_title');
     $this->addFieldMapping('field_background_color', 'field_ms_story_bg_color');
+    $this->addFieldMapping('weight', 'weight')
+      ->defaultValue('0');
 
     // Image field
     $this->addFieldMapping('field_background_image', 'field_ms_story_bg_image')
