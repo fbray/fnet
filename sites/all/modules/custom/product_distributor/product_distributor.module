@@ -8,6 +8,8 @@
 
 define("NO_REGIONS_IN_COUNTRY", -1);
 define("NO_RESULTS_FOR_PROXIMITY_SEARCH", -2);
+include_once DRUPAL_ROOT . '/includes/locale.inc';
+module_load_include('inc', 'addressfield', 'addressfield.administrative_areas');
 
 
 /**
@@ -199,20 +201,22 @@ function product_distributor_permission() {
 
 /**
  * Implements hook_theme().
- * TODO: Move the templates to the theme directory in the module.
  * @return array
  */
 function product_distributor_theme() {
+  $base = array(
+    'path' => drupal_get_path('module', 'product_distributor') . '/theme',
+  );
   return array(
-    'fnet_wtb_online_location_list_item' => array(
+    'fnet_wtb_online_location_list_item' => $base + array(
       'template' => 'fnet_wtb_online_location_list_item',
       'variables' => array('data' => array()),
     ),
-    'fnet_wtb_storefront_location_list_item' => array(
+    'fnet_wtb_storefront_location_list_item' => $base + array(
       'template' => 'fnet_wtb_storefront_location_list_item',
       'variables' => array('data' => array()),
     ),
-    'fnet_wtb_national_default_location_list_item' => array(
+    'fnet_wtb_national_default_location_list_item' => $base + array(
       'template' => 'fnet_wtb_national_default_location_list_item',
       'variables' => array('data' => array()),
     ),
@@ -445,13 +449,14 @@ function modify_location_form($form_element, &$form_state) {
  */
 function wheretobuy_page() {
   $default_map_img = 'productcollage.jpg';
+  drupal_add_js('//cdn.pricespider.com/1/lib/ps-widget.js','external');
   drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/tabs.css');
   drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/tabs.js', array('defer' => TRUE, 'preprocess' => FALSE));
 
   drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/wheretobuy_page_1.js', array('defer' => TRUE, 'preprocess' => FALSE));
   // drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/wheretobuy_page.css');
 
-  drupal_add_js(array('wheretobuy_path' => drupal_get_path('module', 'product_distributor')), array('type' => 'setting', 'scope' => JS_DEFAULT));
+  drupal_add_js(array('wheretobuy_path' => drupal_get_path('module', 'product_distributor')), ['type' => 'setting', 'scope' => JS_DEFAULT]);
   drupal_add_js(array('wheretobuy_default_img' => base_path() . drupal_get_path('module', 'product_distributor') . '/images/' . $default_map_img), array('type' => 'setting', 'scope' => JS_DEFAULT));
 
 
@@ -1146,11 +1151,14 @@ function get_inactive_countries() {
  * @return array
  */
 function pd_l1_form($form, $form_state, $continent_code = NULL) {
-  $form = array();
-  $countries = array();
+  $form = [];
+  $headers = [];
+  $countries = [];
   $countries = country_get_list();
   $inactive_countries = get_inactive_countries();
   $countries = array_diff_key($countries, $inactive_countries);
+
+
   $continent_text = '';
   if ($continent_code) {
     try {
@@ -1180,8 +1188,9 @@ function pd_l1_form($form, $form_state, $continent_code = NULL) {
       }
     }
     catch (Exception $e) {
-      $countries = country_get_list();
-      $countries = array_diff_key($countries, $inactive_countries);
+      // $countries = country_get_list();
+      // $countries = array_diff_key($countries, $inactive_countries);
+      watchdog('Product Distributor', $e->getMessage());
     }
   }
 
@@ -1193,8 +1202,8 @@ function pd_l1_form($form, $form_state, $continent_code = NULL) {
     ORDER BY n.title ASC";
 
 
-  $product_results = db_query($sql, array());
-  $products = array();
+  $product_results = db_query($sql, []);
+  $products = [];
   $products[0] = t('Select a Product');
 
   foreach ($product_results as $product_data) {
@@ -1202,7 +1211,7 @@ function pd_l1_form($form, $form_state, $continent_code = NULL) {
   }
 
   $distributor = field_info_instances('node', 'distributor');
-  $buying_methods = array();
+  $buying_methods = [];
   $default_buying_methods = explode(chr(10), "O|Online\r\nS|Storefront\r\nN|National/Default");
   foreach ($default_buying_methods as $dbm) {
     if ($dbm != '') {
@@ -1252,52 +1261,55 @@ function pd_l1_form($form, $form_state, $continent_code = NULL) {
   if ($country_code == 'GB') {
     $country_code = 'UK';
   }
-
-  $form['countries'] = array(
+  // TODO: check here for which field is throwing the undefined index.
+  $form['countries'] = [
     '#type' => 'select',
     '#title' => t('1. Select a Country' . check_plain($continent_text)),
     '#default_value' => $country_code,
     '#options' => $countries,
-  );
-  $form['products'] = array(
+  ];
+  // dpm($countries);
+  $form['products'] = [
     '#type' => 'select',
     '#prefix' => '<div class="OneLinkNoTx">',
     '#title' => t('2. Select a Product'),
     '#default_value' => 0,
     '#options' => $products,
-    '#post_render' => array('process_product_text'),
+    '#post_render' => ['process_product_text'],
     '#suffix' => '</div>',
-  );
-  $form['buying_methods'] = array(
+  ];
+  // dpm($products);
+  $form['buying_methods'] = [
     '#type' => 'select',
     '#title' => t('3. Select a Buying Method'),
     '#options' => $buying_methods,
-  );
-  $form['regions'] = array(
+  ];
+  // dpm($buying_methods);
+  $form['regions'] = [
     '#type' => 'select',
     '#title' => t('4. Select a Region'),
-    '#options' => array(0 => '--Select a country from above--'),
-  );
-  $form['cities'] = array(
+    '#options' => [0 => '--Select a country from above--'],
+  ];
+  $form['cities'] = [
     '#type' => 'select',
     '#title' => t('Select a City'),
-    '#options' => array(0 => '--Select a region from above--'),
-  );
-  $form['postal_code'] = array(
+    '#options' => [0 => '--Select a region from above--'],
+  ];
+  $form['postal_code'] = [
     '#type' => 'textfield',
     '#title' => t('OR Search by Postal Code'),
-  );
+  ];
+  /*
   $form['gsa_schedule'] = array(
     '#title' => t('Only see resellers on GSA schedule'),
     '#type' => 'checkbox',
     '#default_value' => FALSE,
   );
+  */
   $submit_button = '<div id="edit-submit" class="btn_46w" style="display: none;">
             <a href="#" id="edit-submit-go" onclick="return false;">Go</a>
           </div>';
-  $form['wtbsubmit'] = array(
-    '#markup' => $submit_button,
-  );
+  $form['wtbsubmit'] = ['#markup' => $submit_button];
   return $form;
 }
 

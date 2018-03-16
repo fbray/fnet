@@ -22,12 +22,13 @@ jQuery.noConflict();
 
         // We're going to do quite a bit of manipulation, so we declare various elements as variables for caching. FTW!
         var editProducts = $('#edit-products');
+        var editCountries = $('#edit-countries');
         var editProductsWrapper = $('#edit-products-wrapper');
         var editCitiesWrapper = $('#edit-cities-wrapper');
 
         //Bind JS events
         //Countries drop-down
-        $('#edit-countries').change(function () {
+        editCountries.change(function () {
             //reset default selection and visibility of form elements
             editProducts.val(0);
             $('#edit-postal-code').val('');
@@ -53,9 +54,10 @@ jQuery.noConflict();
             }
         });
 
-        //Products dropdown: Check visibility of Sales channel radios and submit button on change
-        $('#edit-products').change(function () {
+        // Products dropdown: Check visibility of Sales channel radios and submit button on change
+        editProducts.change(function () {
             if ($(this).val() != 0) {
+                alert($(this).val());
                 // Clear the existing elements.
                 $('#edit-postal-code').val('');
                 $('#edit-regions').val(0);
@@ -67,44 +69,50 @@ jQuery.noConflict();
                 wtb_search_results(true);
                 storefrontsInCountry = null;
 
-                //AJAX call to fetch delivery types available for the selected country.
+                // AJAX call to fetch delivery types available for the selected country.
                 var url = Drupal.settings.basePath + 'wheretobuy_ajax/get_delivery_types';
                 var urlData = 'country=' + $('#edit-countries').val();
                 urlData += '&product=' + $('#edit-products').val();
-
+console.log(urlData);
                 $('#ajax-loader-wrapper').show();
                 $.ajax({
                     type: "GET",
                     url: url,
                     data: urlData,
                     success: function (jdata) {
-                        //Set buyingMethods
+                        // Set buyingMethods
                         if (jdata.deliveryTypes)
                             buyingMethods = jdata.deliveryTypes;
                         else
                             buyingMethods = false;
 
-                        //Deal with response data returned
-                        if (jdata.submitCallback) { //No region filters required. Show Go button
+                        // Deal with response data returned
+                        if (jdata.submitCallback) {
+                            // No region filters required. Show Go button.
+                            console.log(jdata.submitCallbackData);
                             $('#pd-l1-form #edit-submit').fadeIn();
                             submitCallback = jdata.submitCallback;
                             submitCallbackData = jdata.submitCallbackData;
                         }
-                        else { //Display region & postal_code filters
+                        else {
+                            // Display region & postal_code filters
+                            alert('Should display region and postal code stuff.')
                             $('#pd-l1-form #edit-submit').hide();
                             submitCallback = false;
                             submitCallbackData = false;
-                            //Show msg for no regions available
-                            $('#edit-regions-wrapper').html(jdata.data).fadeIn();
 
-                            if ($('#edit-countries').val() == 'US') {
-                                $('#edit-postal-code-wrapper').fadeIn();
-                                $('#edit-gsa-schedule-wrapper').fadeIn();
-                                // bind the gsa schedule checkbox
-                                // $('input#edit-gsa-schedule').on
-                                $(document).on('change', 'input#edit-gsa-schedule', function() {});
+                            // Display the Price spider WTB button if country is US
+                            if ($('#edit-countries').val() == 'US' && jdata.wtbcheck == 1) {
+                                if(jdata.psmodel == null){
+                                    jdata.psmodel= '';
+                                }
+                                $('#ps-widget-btn').html('<div class="ps-widget" ps-sku="'+jdata.psmodel+'"></div>');
+                                PriceSpider.rebind();
+                                $('.ps-widget').fadeIn();
                             }
                             else {
+                                $('.ps-widget').remove();
+                                $('#edit-regions-wrapper').html(jdata.data).fadeIn();
                                 $('#edit-postal-code-wrapper').fadeOut();
                                 $('#edit-gsa-schedule-wrapper').fadeOut();
                             }
@@ -356,8 +364,8 @@ jQuery.noConflict();
 
                 $('#ajax-loader-wrapper').show();
                 //AJAX to search distributors with selected form settings
-                // alert(url);
-                // alert(urlData);
+                console.log(url);
+                console.log(urlData);
                 $.ajax({
                     type: "GET",
                     url: url,
@@ -372,7 +380,8 @@ jQuery.noConflict();
                                 $('#dsearch-results').html(jdata.data);
 
                                 if (jdata.storefrontData) {
-                                    process_google_map(jdata);
+                                    // process_google_map(jdata);
+                                    alert('Process Google Map');
                                 } else {
                                     //If buying method is not Storefront
                                     $('#gmap-wrapper').hide();
@@ -454,7 +463,7 @@ jQuery.noConflict();
             $('#dsearch-results #wtb-contact-form-wrapper').html($('#wtb-contact-us-form-wrapper').html());
     }
 
-//Google Map JS
+    //Google Map JS
     function loadScript() {
         var script = document.createElement("script");
         script.type = "text/javascript";

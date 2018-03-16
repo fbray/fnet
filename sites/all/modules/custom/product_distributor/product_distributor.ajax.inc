@@ -14,23 +14,20 @@
 function wheretobuy_get_regions($country_code = NULL) {
   if ($country_code) {
     //Check if country marked to 'Skip region search'
-    $flagged_countries = variable_get('wtb_countries_skip_region', array());
-    if (isset($flagged_countries[$country_code])) {
-      return array(
+    $flagged_countries = variable_get('wtb_countries_skip_region', []);
+    if ((isset($flagged_countries[$country_code])) && ($flagged_countries[$country_code] != 0)) {
+      return [
         'status' => FALSE,
-        'submitCallback' => 'get_distributors',
+        'submitCallback' => $flagged_countries[$country_code], //'get_distributors',
         'submitCallbackData' => FALSE,
-      );
+      ];
     }
     else {
-      $country_code_lower = strtolower($country_code); // Make sure the country code isn't upper case.
-      $provinces_callback = 'location_province_list_' . $country_code_lower;
-      module_load_include('inc', 'location', 'supported/location.' . $country_code_lower);
-      $provinces = $provinces_callback();
-
+      // $country_code = strtolower($country_code); // Make sure the country code isn't upper case.
+      $administrative_areas = addressfield_get_administrative_areas($country_code);
       //filter out regions which will be treated as countries
       if ($country_code == 'US') {
-        $filtered_regions = array(
+        $filtered_regions = [
           'AS' => 'American Samoa',
           'FM' => 'Federated States of Micronesia',
           'GU' => 'Guam',
@@ -39,36 +36,37 @@ function wheretobuy_get_regions($country_code = NULL) {
           'PW' => 'Palau',
           'PR' => 'Puerto Rico',
           'VI' => 'Virgin Islands',
-        );
+        ];
         foreach ($filtered_regions as $key => $val) {
-          unset($provinces[$key]);
+          unset($administrative_areas[$key]);
         }
       }
-      asort($provinces);
-      if (!empty($provinces)) {
-        $provinces = array(0 => '--Select a Region--') + $provinces;
+      if (!empty($administrative_areas)) {
+        // Sort the areas.
+        asort($administrative_areas);
+        $administrative_areas = [0 => '--Select a Region--'] + $administrative_areas;
       }
-      $choice_form = array(
+      $choice_form = [
         '#type' => 'select',
         '#attributes' => array('id' => 'edit-regions'),
         '#title' => t('Select a Region'),
-        '#options' => $provinces,
-      );
+        '#options' => $administrative_areas,
+      ];
       $output = drupal_render($choice_form);
 
       // Final rendering callback.
-      if (empty($provinces)) { // No provinces found in the Selected Country: ERROR matrix case 1 ?
-        return array(
+      if (empty($administrative_areas)) { // No provinces found in the Selected Country: ERROR matrix case 1 ?
+        return [
           'status' => FALSE,
           'submitCallback' => 'wtb_error_message',
           'submitCallbackData' => 'error_id=1',
-        );
+        ];
       }
       else {
-        return array(
+        return [
           'status' => TRUE,
           'data' => $output,
-        );
+        ];
       }
     }
   }
@@ -86,7 +84,7 @@ function wheretobuy_get_cities() {
   $sales_channel = isset($_GET['channel']) ? $_GET['channel']: 0;
   $region = $_GET['region'];
   $buying_method = $_GET['buying']; //Not to be used in Query
-  $json_arr = array();
+  $json_arr = [];
 
   if ($country && $region && $product && $buying_method) {
     $buying_methods = explode('|', $buying_method);
@@ -103,21 +101,20 @@ function wheretobuy_get_cities() {
       $buying_method = 'S';
     }
     $nds_found = FALSE;
-    $cities = array();
+    $cities = [];
     if ($product == 0) {
       //Handle error: Product dd option not selected
       $output = 'Please select a Product!';
-      echo json_encode(array(
+      echo json_encode([
         'status' => FALSE,
         'data' => $output,
-      ));
+      ]);
       exit;
     }
 
     if ($pnode = node_load($product)) {
       //Get list of locations supplying the product
       $locations = get_product_locations($pnode->nid); // array of location nids.
-      // TODO: Add is_array check to $locations?
       // Filter the locations according to the filtering criteria.
       if (!empty($locations)) {
         $query = db_select('node', 'n')->distinct();
@@ -140,9 +137,8 @@ function wheretobuy_get_cities() {
         }
         $results = $query->execute();
 
-        // Use query below if no check for product's distributor is required in a particula region is required
 
-//      while ($data = db_fetch_object($results)) {
+        // Generate the array of cities for the form.
         foreach ($results as $data) {
           if (trim($data->field_address_locality) != '') {
             $cities[$data->field_address_locality] = $data->field_address_locality;
@@ -169,15 +165,14 @@ function wheretobuy_get_cities() {
     /* No cities have been found for the region. Get the count of storefronts. */
     if (empty($cities)) {
       $region_query = db_select('node', 'n');
-      $region_query->join('location_instance', 'li', 'li.vid = n.vid');
-      $region_query->join('location', 'l', 'l.lid = li.lid');
+      $region_query->join('field_data_field_address', 'address', 'address.entity_id = n.nid ANd address.revision_id = n.vid');
       $region_query->join('field_data_field_delivery_type', 'cfdt', 'cfdt.entity_id = n.nid AND cfdt.revision_id = n.vid');
       $region_query
-        ->fields('l', array('province'))
+        ->fields('address', array('field_address_administrative_area'))
         ->condition('n.status', 1, '=')
-        ->condition('l.country', $country, '=')
+        ->condition('address.field_address_country', $country, '=')
         ->condition('cfdt.field_delivery_type_value', 'S', '=')
-        ->condition('l.province', '', '<>');
+        ->condition('address.field_address_administrative_area', '', '<>');
 
       // GSA Only results
       if ($country == 'US' && $sales_channel == 1) {
@@ -215,7 +210,6 @@ function wheretobuy_get_cities() {
       echo json_encode($json_arr);
       exit;
     }
-    // return $output; // Remove this to have AJAX return.
   }
 }
 
@@ -250,10 +244,9 @@ function get_national_distributors($type = NULL, $data_nids = NULL) {
   if (!empty($locations)) {
     $query = db_select('node', 'n')
       ->fields('n', array('nid'));
-    $query->join('location_instance', 'li', 'li.vid = n.vid');
-    $query->join('location', 'l', 'l.lid = li.lid');
+    $query->join('field_data_field_address', 'address', 'address.entity_id = n.nid ANd address.revision_id = n.vid');
     $query->join('field_data_field_stocking_rating', 'stocking', 'stocking.entity_id = n.nid AND stocking.revision_id = n.vid');
-    $query->join('field_data_field_sales_force_rating', 'salesforce', 'salesforce.entity_id = n.nid AND salesforce.revision_id = n.vid');
+    $query->join('field_data_field_salesforce_rating', 'salesforce', 'salesforce.entity_id = n.nid AND salesforce.revision_id = n.vid');
     $query->join('field_data_field_distributor_type_rating', 'distributor', 'distributor.entity_id = n.nid AND distributor.revision_id = n.vid');
     $query->join('field_data_field_point_of_sale_rating', 'pos', 'pos.entity_id = n.nid AND pos.revision_id = n.vid');
     $query->join('field_data_field_delivery_type', 'delivery', 'delivery.entity_id = n.nid AND delivery.revision_id = n.vid');
@@ -263,19 +256,19 @@ function get_national_distributors($type = NULL, $data_nids = NULL) {
     }
     $query
       ->condition('n.status', 1, '=')
-      ->condition('l.country', $country, '=')
+      ->condition('address.field_address_country', $country, '=')
       ->condition('delivery.field_delivery_type_value', $delivery_type, '=');
     if ($product != -1) {
       $query->condition('n.nid', $locations, 'IN');
     }
-    $query->orderBy('(stocking.field_stocking_rating_value+salesforce.field_sales_force_rating_value+distributor.field_distributor_type_rating_value+pos.field_point_of_sale_rating_value)', 'DESC');
+    $query->orderBy('(stocking.field_stocking_rating_value+salesforce.field_salesforce_rating_value+distributor.field_distributor_type_rating_value+pos.field_point_of_sale_rating_value)', 'DESC');
     $query->orderBy('n.title', 'ASC');
     $results = $query->execute();
 
     $data_arr = array();
 //    while ($data = db_fetch_object($results)) {
     foreach ($results as $data) {
-      //Skip if result already contains the location nid
+      // Skip if result already contains the location nid
       if (in_array($data->nid, $data_nids)) {
         continue;
       }
@@ -284,8 +277,7 @@ function get_national_distributors($type = NULL, $data_nids = NULL) {
       }
 
       $dnode = node_load($data->nid);
-      // print_r($dnode);
-
+      /*
       // TODO: This language stuff is going to be a problem later on. We'll want to fix it soon. -rositis
       // If the URL doesn't have http:// on the front, tack it on.
       if (!strstr($dnode->field_website_url[LANGUAGE_NONE][0]['value'], 'http://')) {
@@ -319,6 +311,7 @@ function get_national_distributors($type = NULL, $data_nids = NULL) {
         'url' => (strlen(trim($dnode->field_website_url[LANGUAGE_NONE][0]['value'])) > 7) ? trim($dnode->field_website_url[LANGUAGE_NONE][0]['value']) : '',
         'buy_online_url' => (strlen(trim($dnode->field_buy_online_url[LANGUAGE_NONE][0]['value'])) > 7) ? trim($dnode->field_buy_online_url[LANGUAGE_NONE][0]['value']) : '',
       );
+      */
     }
     if (count($data_arr)) {
       $nds_found = TRUE;
@@ -359,111 +352,109 @@ function get_national_distributors($type = NULL, $data_nids = NULL) {
 /**
  * AJAX Callback handler: Get available delivery types in a country.
  */
+// fluke-networks-pantheon.local/wheretobuy_ajax/get_delivery_types?country=US&product=88928
 function wheretobuy_get_delivery_types() {
   $country_code = $_GET['country'];
-  $product_code = $_GET['product'];
-  $message = '';
+  $product_code = $_GET['product'] ? $_GET['product'] : 0;
   $image = '';
-  $online_only = FALSE;
-  $json_arr = array();
-  $output = '';
-  if ($country_code && $product_code) {
-    if ($product_code > 0) { //field_prod_carousel_img_lg_1_fid
-//      $iresult = db_query('SELECT ctp.field_prod_carousel_img_lg_1_data, f.filepath FROM {content_type_product} ctp'
-//      . ' INNER JOIN {files} f ON f.fid = ctp.field_prod_carousel_img_lg_1_fid'
-//      . ' WHERE ctp.nid = %d', $product_code);
+  $json_arr = [];
+  if ((isset($country_code)) && (isset($product_code))) {
 
-      // default to WTB product image
-/*      $iresult = db_query('SELECT ctp.field_prod_wtb_img_data, f.filepath'
-                 . ' FROM {node} n, {content_type_product} ctp'
-                 . ' INNER JOIN {files} f ON f.fid = ctp.field_prod_wtb_img_fid'
-                 . ' WHERE ctp.nid = n.nid AND ctp.vid = n.vid AND ctp.nid = :productCode ', array(':productCode'=>$product_code)); */
-      $iresult = db_query('SELECT ctp.field_prod_wtb_img_fid, f.uri'
-        . ' FROM {node} n, {field_data_field_prod_wtb_img} ctp'
-        . ' INNER JOIN {file_managed} f ON f.fid = ctp.field_prod_wtb_img_fid'
-        . ' WHERE ctp.entity_id = n.nid AND ctp.revision_id = n.vid AND ctp.entity_id = :productCode ', array(':productCode'=>$product_code));
+    // Image section
+    if ($product_code > 0) {
+      $img_query = 'SELECT
+        ctp.field_prod_wtb_img_fid fid,
+        ctp.field_prod_wtb_img_alt alt,
+        ctp.field_prod_wtb_img_title title,
+        ctp.field_prod_wtb_img_width width,
+        ctp.field_prod_wtb_img_height height,
+        f.uri uri
+        FROM {node} n
+        INNER JOIN {field_data_field_prod_wtb_img} ctp ON ctp.entity_id = n.nid AND ctp.revision_id = n.vid
+        INNER JOIN {file_managed} f ON f.fid = ctp.field_prod_wtb_img_fid
+        WHERE n.nid = :product_code';
+      $iresult = db_query($img_query, [':product_code' => $product_code]);
 
-      if ($idata = (object)$iresult->fetchObject()) {
-//      if ($idata = db_fetch_object($iresult)) {
-        if (isset($idata->filepath)) {  // Needs attributes or it blows up.
-          $image = theme_image(array(
-            'path' => $idata->filepath,
-            'width' => '',
-            'height' => '',
-            'alt' => '',
-            'title' => '',
-            'attributes' => array(),
-          ));
+      if ($idata = (object) $iresult->fetchObject()) {
+        if (isset($idata->uri)) {  // Needs attributes or it blows up.
+          $image = theme_image([
+            'path' => $idata->uri,
+            'width' => $idata->width,
+            'height' => $idata->height,
+            'alt' => $idata->alt,
+            'title' => $idata->title,
+            'attributes' => [],
+          ]);
         }
       }
-      if (empty($image)) { // use first carousel image if WTB image is not available
-/*        $idata = (object)db_query('SELECT ctp.field_prod_carousel_img_lg_1_data, f.filepath'
-            . ' FROM {node} n, {content_type_product} ctp'
-            . ' INNER JOIN {files} f ON f.fid = ctp.field_prod_carousel_img_lg_1_fid'
-            . ' WHERE ctp.nid = n.nid AND ctp.vid = n.vid AND ctp.nid = :productCode ', array(':productCode'=>$product_code))->fetchObject();
-*/
-        $idata = (object)db_query('SELECT ctp.field_prod_carousel_img_lg_1_fid, f.uri'
+
+      // use first carousel image if WTB image is not available
+      // TODO: Look closely at this
+      if (empty($image)) {
+        $idata = (object) db_query('SELECT ctp.field_prod_carousel_img_lg_1_fid, f.uri'
           . ' FROM {node} n, {field_data_field_prod_carousel_img_lg_1} ctp'
           . ' INNER JOIN {file_managed} f ON f.fid = ctp.field_prod_carousel_img_lg_1_fid'
-          . ' WHERE ctp.entity_id = n.nid AND ctp.revision_id = n.vid AND ctp.entity_id = :productCode ', array(':productCode'=>$product_code))->fetchObject();
+          . ' WHERE ctp.entity_id = n.nid AND ctp.revision_id = n.vid AND ctp.entity_id = :productCode ', array(':productCode' => $product_code))->fetchObject();
 
 //        if ($idata = db_fetch_object($iresult)) {
 //        if ($idata = (object)$iresult->fetchObject()) {
         if (isset($idata->filepath)) {
-          $image = theme_image(array(
+          $image = theme_image([
             'path' => $idata->filepath,
             'width' => '',
             'height' => '',
             'alt' => '',
             'title' => '',
             'attributes' => array(),
-          ));
+          ]);
 
         }
       }
       //Add image to json array
       if ($image != '') {
-        $json_arr += array(
+        $json_arr += [
           'image' => $image,
-        );
+        ];
       }
 
+      // GET Flag to decide whether to show Price spider WTB button or traditional functionality on WTB page
+      $wtb_check_query = "SELECT fdipsc.field_include_price_spider_code_value code
+        FROM {field_data_field_include_price_spider_code} fdipsc
+        WHERE fdipsc.entity_id = :product_code";
+      $wtb_check_result = db_query($wtb_check_query, [':product_code' => $product_code])->fetchAssoc();
+      $wtb_check_output = $wtb_check_result['code'];
+      $json_arr += ['wtbcheck' => $wtb_check_output];
+
+      // GET PRODUCT MODEL FOR PRICE SPIDER WTB BUTTON TO WORK
+      $ps_query = "SELECT field_wtb_ps_model_sku_value sku
+        FROM {field_data_field_wtb_ps_model_sku} fdfwpm
+        WHERE fdfwpm.entity_id = :product_code";
+      $ps_result = db_query($ps_query, [':product_code' => $product_code])->fetchAssoc();
+      $ps_output = $ps_result['sku'];
+      $json_arr += ['psmodel' => $ps_output];
+
       //Not available for distribution
-/*      $gresults = db_query('SELECT n.nid FROM {node} n'
-                  . ' INNER JOIN {content_field_do_not_distribute} cfdnd ON cfdnd.vid = n.vid AND cfdnd.field_do_not_distribute_value = :dndValue '
-                  . ' WHERE n.nid = :productCode AND n.status = 1'
-                  , array(':dndValue'=>strtolower($country_code), ':productCode'=>$product_code)); */
       $gresults = db_query('SELECT n.nid FROM {node} n'
         . ' INNER JOIN {field_data_field_do_not_distribute} cfdnd ON cfdnd.revision_id = n.vid AND cfdnd.field_do_not_distribute_value = :dndValue '
         . ' WHERE n.nid = :productCode AND n.status = 1'
-        , array(':dndValue'=>strtolower($country_code), ':productCode'=>$product_code));
+        , [
+          ':dndValue' => strtolower($country_code),
+          ':productCode' => $product_code
+        ]);
 
       if ($gresults->rowCount() > 0) {
-        $json_arr += array(
+        $json_arr += [
           'status' => FALSE,
           'deliveryTypes' => FALSE,
           'submitCallback' => 'wtb_error_message',
           'submitCallbackData' => 'error_id=0',
-        );
+        ];
         echo json_encode($json_arr);
         exit;
       }
     }
-/*    'SELECT DISTINCT(cfdt.field_delivery_type_value) FROM {field_data_field_delivery_type} cfdt'
-      . ' INNER JOIN {location_instance} li ON li.vid = cfdt.revision_id'
-      . ' INNER JOIN {node} n ON n.vid = cfdt.revision_id'
-      . ' INNER JOIN {location} l ON l.lid = li.lid'
-      . ' WHERE l.country= :country AND n.status=1'
 
-SELECT DISTINCT(delivery.field_delivery_type_value)
-      FROM field_data_field_delivery_type delivery
-      INNER JOIN field_data_field_address address ON address.entity_id = delivery.entity_id
-      AND address.revision_id = delivery.revision_id
-      INNER JOIN node n ON n.vid = delivery.revision_id
-      WHERE address.field_address_country = 'US'
-      AND n.status = 1
-*/
-    // TODO: Rework this to use Addressfield.
+    // Address query
     $address_query = "SELECT DISTINCT(delivery.field_delivery_type_value)
       FROM {field_data_field_delivery_type} delivery
       INNER JOIN {field_data_field_address} address ON address.entity_id = delivery.entity_id
@@ -471,10 +462,9 @@ SELECT DISTINCT(delivery.field_delivery_type_value)
       INNER JOIN {node} n ON n.vid = delivery.revision_id
       WHERE address.field_address_country = :country
       AND n.status = 1";
-    $results = db_query($address_query, array(':country' => strtoupper($country_code)));
+    $results = db_query($address_query, [':country' => strtoupper($country_code)]);
 
-    $items = array();
-    $delivery_types = array();
+    $items = [];
     foreach ($results as $data) {
       $val = '';
       $key = $data->field_delivery_type_value;
@@ -495,7 +485,9 @@ SELECT DISTINCT(delivery.field_delivery_type_value)
     }
     arsort($items);
 
-    if (empty($items)) { //Buying methods not found
+
+    if (empty($items)) {
+      // Buying methods not found
       $json_arr += array(
         'status' => FALSE,
         'deliveryTypes' => FALSE,
@@ -503,33 +495,39 @@ SELECT DISTINCT(delivery.field_delivery_type_value)
         'submitCallbackData' => 'error_id=1',
       );
     }
-    else { //Buying methods found
-      $delivery_types = array_keys($items);
-      $json_arr += array(
-        'deliveryTypes' => implode('|', $delivery_types),
-      );
 
-      if ((count($items) == 1) && (isset($items['O']))) { //Only online buying method present: Show go button
-        $json_arr += array(
+    else {
+      // Buying methods found
+      $delivery_types = array_keys($items);
+      $json_arr += [
+        'deliveryTypes' => implode('|', $delivery_types),
+      ];
+
+      if ((count($items) == 1) && (isset($items['O']))) { // Only online buying method present: Show go button
+        $json_arr += [
           'status' => FALSE,
-          'submitCallback' => 'get_distributors',
+          'submitCallback' => 'feck', //'get_distributors',
           'submitCallbackData' => FALSE,
-        );
+        ];
       }
-      else { //Storefront/National Default buying methods present: Try to dislay region drop-down
+
+      else {
+        // Storefront/National Default buying methods present: Try to dislay region drop-down
         $tmp = wheretobuy_get_regions($country_code);
-        if ($tmp['status']) {
-          $json_arr += array(
+
+        if ((isset($tmp['status'])) && (isset($tmp['data']))) {
+          $json_arr += [
             'status' => TRUE,
             'data' => $tmp['data'],
-          );
+          ];
         }
-        else { //No regions found OR Skip region search: Show go button
-          $json_arr += array(
+        else {
+          // No regions found OR Skip region search: Show go button
+          $json_arr += [
             'status' => FALSE,
             'submitCallback' => $tmp['submitCallback'],
             'submitCallbackData' => $tmp['submitCallbackData'],
-          );
+          ];
         }
       }
     }
@@ -542,6 +540,7 @@ SELECT DISTINCT(delivery.field_delivery_type_value)
     );
   }
   echo json_encode($json_arr);
+  // dpm($json_arr);
 }
 
 
@@ -555,21 +554,25 @@ function wheretobuy_get_distributors() {
   $online_results = FALSE;
   $storefront_results = FALSE;
   $national_default_results = FALSE;
-  $data_nids = array();
-  $data_arr = array();
+  $data_nids = [];
+  $data_arr = [];
   $invalid_postal_code = FALSE;
 
-  //Check if postal_code search and validate postal code
+  // Check if postal_code search and validate postal code
+
   if (isset($_GET['postal'])) {
+    $invalid_postal_code = TRUE;
     if (ltrim($_GET['postal'], '0') <= 99999) {
-      $coordinates = location_latlon_rough(array('country' => $_GET['country'], 'postal_code' => $_GET['postal']));
-      if (!$coordinates) {
-        $invalid_postal_code = TRUE;
+      $address = $country . ' ' . $_GET['postal'];
+      $point = geocoder('google', $address);
+      $geoJSON = $point->out('json');
+      $coordinates = isset($geoJSON->coordinates) ? $geoJSON->coordinates : FALSE;
+      // If there are coordinates, they are in an array.
+      if (is_array($coordinates)) {
+        $invalid_postal_code = FALSE;
       }
     }
-    else {
-      $invalid_postal_code = TRUE;
-    }
+
   }
 
   if (in_array('S', $buying_methods)) { //Storefront locations
@@ -626,10 +629,13 @@ function wheretobuy_get_distributors() {
       'nationalDefaultData' => $national_default_results,
       'onlineData' => $online_results,
     ) + wtb_format_results($data_arr, $country));
-    /* Testing
+
+    /* Testing */
+    /*
     $fnord = wtb_format_results($data_arr, $country);
-    print_r($fnord);
+    dpm($fnord);
     */
+
   }
   else { //No locations found. Check error matrix and display error message.
     if (isset($_GET['channel']) && !$invalid_postal_code) { //Case Six: Filter by GSA Schedule
@@ -708,18 +714,17 @@ function get_distributors($buying_method = NULL, &$data_nids = NULL) {
   // if (!empty($locations)) {
   $query = db_select('node', 'n')
     ->fields('n', array('nid'));
-  $query->join('location_instance', 'li', 'li.vid = n.vid');
-  $query->join('location', 'l', 'l.lid = li.lid');
+  $query->join('field_data_field_address', 'address', 'address.entity_id = n.nid AND address.revision_id = n.vid');
   $query->join('field_data_field_stocking_rating', 'stocking', 'stocking.entity_id = n.nid AND stocking.revision_id = n.vid');
-  $query->join('field_data_field_sales_force_rating', 'salesforce', 'salesforce.entity_id = n.nid AND salesforce.revision_id = n.vid');
+  $query->join('field_data_field_salesforce_rating', 'salesforce', 'salesforce.entity_id = n.nid AND salesforce.revision_id = n.vid');
   $query->join('field_data_field_distributor_type_rating', 'distributor_rating', 'distributor_rating.entity_id = n.nid AND distributor_rating.revision_id = n.vid');
   $query->join('field_data_field_point_of_sale_rating', 'pos', 'pos.entity_id = n.nid AND pos.revision_id = n.vid');
   $query->join('field_data_field_delivery_type', 'delivery', 'delivery.entity_id = n.nid AND delivery.revision_id = n.vid');
-  $query->join('field_data_field_product_groups', 'distributor', 'distributor.entity_id = n.nid');
-  $query->join('field_data_field_products', 'products', 'products.entity_id = distributor.field_product_groups_nid');
+  $query->join('field_data_field_product_distributor_groups', 'distributor', 'distributor.entity_id = n.nid');
+  $query->join('field_data_field_products', 'products', 'products.entity_id = distributor.field_product_distributor_groups_target_id');
   $query
     ->condition('n.status', 1, '=')
-    ->condition('l.country', $country, '=')
+    ->condition('address.field_address_country', $country, '=')
     ->condition('delivery.field_delivery_type_value', $buying_method, '=');
 
   if ($country == 'US' && $sales_channel == 1) {
@@ -728,12 +733,18 @@ function get_distributors($buying_method = NULL, &$data_nids = NULL) {
   }
 
   if ($product != -1) {
-    $query->condition('products.field_products_nid', $product, '=');
+    $query->condition('products.field_products_target_id', $product, '=');
     // $query->condition('n.nid', $locations, 'IN');
   }
 
+  // Latitude/Longitude
+  // TODO: Rework with different module than Location.
   if ($buying_method == 'S') {
+    watchdog('wtb', 'Buying Method:S');
+    // TODO: This is tabled while getting onto Pantheon 2/15/2018 - rositis
+
     if (isset($_GET['postal'])) {
+      /*
       //postal code processing
       if (ltrim($_GET['postal'], '0') < 99999) {
         $coordinates = location_latlon_rough(array(
@@ -789,18 +800,19 @@ function get_distributors($buying_method = NULL, &$data_nids = NULL) {
           ->condition('l.longitude', $lonrange[0], '>')
           ->condition('l.longitude', $lonrange[1], '<');
       }
+      */
     }
     elseif (isset($_GET['region'])) {
       $region = $_GET['region'];
-      $query->condition('l.province', $region, '=');
+      $query->condition('address.field_address_administrative_area', $region, '=');
 
       if ((isset($_GET['city'])) && ($_GET['city'] != -1)) {
         $city = $_GET['city'];;
-        $query->condition('l.city', $city, '=');
+        $query->condition('address.field_address_locality', $city, '=');
       }
     }
   }
-  $query->orderBy('(stocking.field_stocking_rating_value+salesforce.field_sales_force_rating_value+distributor_rating.field_distributor_type_rating_value+pos.field_point_of_sale_rating_value)', 'DESC');
+  $query->orderBy('(stocking.field_stocking_rating_value+salesforce.field_salesforce_rating_value+distributor_rating.field_distributor_type_rating_value+pos.field_point_of_sale_rating_value)', 'DESC');
   $query->orderBy('n.title', 'ASC');
   // dpm((string) $query);
   // dpm($query->arguments());
@@ -809,6 +821,7 @@ function get_distributors($buying_method = NULL, &$data_nids = NULL) {
   $data_arr = array();
   $nids_arr = array();
   foreach ($results as $data) {
+    dpm($data);
     //Skip if result already contains the location nid
     if (!in_array($data->nid, $data_nids)) {
       $data_nids[] = $data->nid;
@@ -816,6 +829,7 @@ function get_distributors($buying_method = NULL, &$data_nids = NULL) {
 
     // Load the full node data for the distributor.
     $dnode = node_load($data->nid);
+    dpm($dnode);
     $nids_arr[$data->nid] = $dnode->title;
 
     // Make sure the URLs start with HTTP://
@@ -829,6 +843,8 @@ function get_distributors($buying_method = NULL, &$data_nids = NULL) {
 
     // Storefronts
     if ($buying_method == 'S') {
+      // TODO: Geocoding to replace Location module functionality?
+      /*
       // This is for Postal Codes, since $coordinates has been set.
       if (!empty($coordinates)) { // Set the Distance Between.
         $distance_between = location_distance_between($coordinates, array(
@@ -840,43 +856,45 @@ function get_distributors($buying_method = NULL, &$data_nids = NULL) {
           $distance_between['distance_unit'] = 'miles';
         }
       }
-
+*/
       $location_street = '';
-      if (trim($dnode->location['street']) != '') {
-        $location_street .= $dnode->location['street'];
+      if (trim($dnode->field_address[LANGUAGE_NONE][0]['thoroughfare']) != '') {
+        $location_street .= $dnode->field_address[LANGUAGE_NONE][0]['thoroughfare'];
       }
-      if (trim($dnode->location['additional']) != '') {
-        if (trim($dnode->location['street']) != '') {
+      if (trim($dnode->field_address[LANGUAGE_NONE][0]['premise']) != '') {
+        if (trim($dnode->field_address[LANGUAGE_NONE][0]['thoroughfare']) != '') {
           $location_street .= '<br/>';
         }
-        $location_street .= $dnode->location['additional'];
+        $location_street .= $dnode->field_address[LANGUAGE_NONE][0]['premise'];
       }
       $buy_online_url = '';
       if (!empty($dnode->field_buy_online_url)) {
-        if (strlen(trim($dnode->field_buy_online_url[LANGUAGE_NONE][0]['value'])) > 7) {
-          $buy_online_url = (trim($dnode->field_buy_online_url[LANGUAGE_NONE][0]['value']));
+        if (strlen(trim($dnode->field_buy_online_url[LANGUAGE_NONE][0]['url'])) > 7) {
+          $buy_online_url = (trim($dnode->field_buy_online_url[LANGUAGE_NONE][0]['url']));
         }
       }
 
+      // TODO: Some stuff here is weird. Needs QA
       $data_arr[] = array(
         'nid' => $dnode->nid,
         'type' => 'S',
         'is_online' => is_online_location($dnode),
-        'name' => $dnode->field_display_name[LANGUAGE_NONE][0]['value'],
-        'address' => $location_street . '<br/>' . $dnode->location['city'] . ', ' . $dnode->location['province_name'] . ' ' . $dnode->location['postal_code'] . '<br/>' . $dnode->location['country_name'],
+        'name' => $dnode->field_display_title[LANGUAGE_NONE][0]['value'],
+        'address' => $location_street . '<br/>' . $dnode->field_address[LANGUAGE_NONE][0]['locality'] . ', ' . $dnode->field_address[LANGUAGE_NONE][0]['administrative_area'] . ' ' . $dnode->field_address[LANGUAGE_NONE][0]['postal_code'] . '<br/>' . $dnode->field_address[LANGUAGE_NONE][0]['country'],
         'toll_free_phone' => isset($dnode->field_toll_free_phone[LANGUAGE_NONE][0]['value']) ? $dnode->field_toll_free_phone[LANGUAGE_NONE][0]['value'] : "",
-        'phone' => $dnode->location['phone'],
-        'fax' => $dnode->location['fax'],
+        //'phone' => $dnode->location['phone'],
+        //'fax' => $dnode->location['fax'],
         'email' => !empty($dnode->field_email_contact) ? trim($dnode->field_email_contact[LANGUAGE_NONE][0]['value']) : '',
-        'url' => (strlen(trim($dnode->field_website_url[LANGUAGE_NONE][0]['value'])) > 7) ? trim($dnode->field_website_url[LANGUAGE_NONE][0]['value']) : '',
+        'url' => (strlen(trim($dnode->field_website_url[LANGUAGE_NONE][0]['url'])) > 7) ? trim($dnode->field_website_url[LANGUAGE_NONE][0]['url']) : '',
         'buy_online_url' => $buy_online_url,
-        'dist' => isset($distance_between['scalar']) ? $distance_between['scalar'] : 0,
-        'dist_unit' => isset($distance_between['distance_unit']) ? $distance_between['distance_unit'] : 'km',
-        'lat' => (($dnode->location['source'] != 0) ? $dnode->location['latitude'] : 'NULL'),
+        //'dist' => isset($distance_between['scalar']) ? $distance_between['scalar'] : 0,
+        //'dist_unit' => isset($distance_between['distance_unit']) ? $distance_between['distance_unit'] : 'km',
+        //'lat' => (($dnode->location['source'] != 0) ? $dnode->location['latitude'] : 'NULL'),
         //Check if the lat/lons exist.
-        'lon' => (($dnode->location['source'] != 0) ? $dnode->location['longitude'] : 'NULL'),
-        //See location.module for details
+        //'lon' => (($dnode->location['source'] != 0) ? $dnode->location['longitude'] : 'NULL'),
+
       );
+
     }
   }
 
