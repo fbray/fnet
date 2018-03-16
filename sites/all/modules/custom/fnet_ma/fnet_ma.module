@@ -542,7 +542,7 @@ function fnet_ma_myaccount_home() {
   $html .= "<div class = 'full-available-width'>
                 <div id = 'downloads-and-updates-summary-section-expanding-master-key-div' Onclick=\"return toggle_sections('downloads-and-updates-summary-section');\" class='my-account-headlines my-account-header-minus-background'>" . t('Downloads and Updates') . "</div>
   </div>";
-  $html .= "<div id = 'downloads-and-updates-summary-section'>" . check_markup(variable_get('fnet_ma_download_and_updates_text', t('Click on the "Download & Updates link to view all the Assets that you can download."')), 'FILTER_FORMAT_DEFAULT', $langcode = '' /* TODO Set this variable. */, TRUE) . "</div>";
+  $html .= "<div id = 'downloads-and-updates-summary-section'>" . check_markup(variable_get('fnet_ma_download_and_updates_text', t('Click on the "Download & Updates link to view all the Assets that you can download."')), filter_fallback_format(), $langcode = '' /* TODO Set this variable. */, TRUE) . "</div>";
 
   $html .= '<br />';
   $html .= "<div class = 'full-available-width'>
