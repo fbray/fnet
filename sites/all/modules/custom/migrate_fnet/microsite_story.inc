@@ -56,7 +56,8 @@ class FNETMicrositeStoryMigration extends FNETNode7Migration {
 
     // Check the various fields. Remove the hard URLs.
     $row->body = $this->stripDomain($row->body);
-    $row->body = str_replace('/flukenetworks.com/', '/default/', $row->body);
+    $row->body = str_replace('/flukenetworks.com/files', '/default/files', $row->body);
+    $row->body = str_replace('/flukenetworks.com/theme', '/all/theme', $row->body);
   }
 
   protected function stripDomain($string) {
