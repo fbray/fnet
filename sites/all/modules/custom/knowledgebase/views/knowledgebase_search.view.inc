@@ -110,10 +110,11 @@ $handler->display->display_options['filters']['type']['value'] = array(
   'knowledge_base_article' => 'knowledge_base_article',
 );
 
-/* Display: Page */
-$handler = $view->new_display('page', 'Page', 'page');
+/* Display: Page :: Knowledge Base Search */
+$handler = $view->new_display('page', 'Page :: Knowledge Base Search', 'page');
 $handler->display->display_options['defaults']['css_class'] = FALSE;
 $handler->display->display_options['css_class'] = 'kb-article-list';
+$handler->display->display_options['display_description'] = 'Landing page for KB articles search and list';
 $handler->display->display_options['defaults']['style_plugin'] = FALSE;
 $handler->display->display_options['style_plugin'] = 'table';
 $handler->display->display_options['style_options']['columns'] = array(
@@ -141,6 +142,7 @@ $handler->display->display_options['empty']['area']['field'] = 'area';
 $handler->display->display_options['empty']['area']['empty'] = TRUE;
 $handler->display->display_options['empty']['area']['content'] = 'No Knowledge Base Articles found.';
 $handler->display->display_options['empty']['area']['format'] = 'plain_text';
+$handler->display->display_options['defaults']['relationships'] = FALSE;
 $handler->display->display_options['defaults']['filter_groups'] = FALSE;
 $handler->display->display_options['defaults']['filters'] = FALSE;
 /* Filter criterion: Content: Published */
@@ -226,8 +228,9 @@ $handler->display->display_options['filters']['field_knowledge_base_target_id'][
 );
 $handler->display->display_options['path'] = 'knowledge-base';
 
-/* Display: Block */
-$handler = $view->new_display('block', 'Block', 'block');
+/* Display: Block :: KB breadcrumb */
+$handler = $view->new_display('block', 'Block :: KB breadcrumb', 'block');
+$handler->display->display_options['display_description'] = 'Breadcrumb for KB article node page and term page';
 $handler->display->display_options['defaults']['pager'] = FALSE;
 $handler->display->display_options['pager']['type'] = 'some';
 $handler->display->display_options['pager']['options']['items_per_page'] = '1';
@@ -260,7 +263,7 @@ $handler->display->display_options['fields']['name_1']['field'] = 'name';
 $handler->display->display_options['fields']['name_1']['relationship'] = 'field_knowledge_base_target_id';
 $handler->display->display_options['fields']['name_1']['label'] = '';
 $handler->display->display_options['fields']['name_1']['alter']['alter_text'] = TRUE;
-$handler->display->display_options['fields']['name_1']['alter']['text'] = '<a href="/knowledge-base" id="bc-link">KB Home</a> > [name_1]  > [name] ';
+$handler->display->display_options['fields']['name_1']['alter']['text'] = '<a href="/knowledge-base" id="bc-link">KB Home</a> > [name]  > [name_1] ';
 $handler->display->display_options['fields']['name_1']['element_label_colon'] = FALSE;
 $handler->display->display_options['fields']['name_1']['hide_alter_empty'] = FALSE;
 $handler->display->display_options['defaults']['arguments'] = FALSE;
@@ -274,6 +277,79 @@ $handler->display->display_options['arguments']['tid']['default_argument_type'] 
 $handler->display->display_options['arguments']['tid']['summary']['number_of_records'] = '0';
 $handler->display->display_options['arguments']['tid']['summary']['format'] = 'default_summary';
 $handler->display->display_options['arguments']['tid']['summary_options']['items_per_page'] = '25';
+
+/* Display: Block :: KB articles by term */
+$handler = $view->new_display('block', 'Block :: KB articles by term', 'block_1');
+$handler->display->display_options['defaults']['title'] = FALSE;
+$handler->display->display_options['display_description'] = 'Lists KB articles based on the term page';
+$handler->display->display_options['defaults']['exposed_form'] = FALSE;
+$handler->display->display_options['exposed_form']['type'] = 'basic';
+$handler->display->display_options['defaults']['style_plugin'] = FALSE;
+$handler->display->display_options['style_plugin'] = 'table';
+$handler->display->display_options['style_options']['grouping'] = array(
+  0 => array(
+    'field' => 'name',
+    'rendered' => 1,
+    'rendered_strip' => 0,
+  ),
+);
+$handler->display->display_options['style_options']['columns'] = array(
+  'name' => 'name',
+  'title' => 'title',
+);
+$handler->display->display_options['style_options']['default'] = '-1';
+$handler->display->display_options['style_options']['info'] = array(
+  'name' => array(
+    'sortable' => 0,
+    'default_sort_order' => 'asc',
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+  'title' => array(
+    'sortable' => 0,
+    'default_sort_order' => 'asc',
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+);
+$handler->display->display_options['defaults']['style_options'] = FALSE;
+$handler->display->display_options['defaults']['row_plugin'] = FALSE;
+$handler->display->display_options['defaults']['row_options'] = FALSE;
+$handler->display->display_options['defaults']['relationships'] = FALSE;
+/* Relationship: Entity Reference: Referenced Entity */
+$handler->display->display_options['relationships']['field_knowledge_base_target_id']['id'] = 'field_knowledge_base_target_id';
+$handler->display->display_options['relationships']['field_knowledge_base_target_id']['table'] = 'field_data_field_knowledge_base';
+$handler->display->display_options['relationships']['field_knowledge_base_target_id']['field'] = 'field_knowledge_base_target_id';
+$handler->display->display_options['defaults']['fields'] = FALSE;
+/* Field: Taxonomy term: Name */
+$handler->display->display_options['fields']['name']['id'] = 'name';
+$handler->display->display_options['fields']['name']['table'] = 'taxonomy_term_data';
+$handler->display->display_options['fields']['name']['field'] = 'name';
+$handler->display->display_options['fields']['name']['relationship'] = 'field_knowledge_base_target_id';
+$handler->display->display_options['fields']['name']['label'] = 'Articles';
+$handler->display->display_options['fields']['name']['exclude'] = TRUE;
+/* Field: Content: Title */
+$handler->display->display_options['fields']['title']['id'] = 'title';
+$handler->display->display_options['fields']['title']['table'] = 'node';
+$handler->display->display_options['fields']['title']['field'] = 'title';
+$handler->display->display_options['fields']['title']['label'] = '';
+$handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
+$handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
+$handler->display->display_options['fields']['title']['element_label_colon'] = FALSE;
+$handler->display->display_options['defaults']['arguments'] = FALSE;
+/* Contextual filter: Taxonomy term: Term ID */
+$handler->display->display_options['arguments']['tid']['id'] = 'tid';
+$handler->display->display_options['arguments']['tid']['table'] = 'taxonomy_term_data';
+$handler->display->display_options['arguments']['tid']['field'] = 'tid';
+$handler->display->display_options['arguments']['tid']['relationship'] = 'field_knowledge_base_target_id';
+$handler->display->display_options['arguments']['tid']['default_action'] = 'default';
+$handler->display->display_options['arguments']['tid']['default_argument_type'] = 'taxonomy_tid';
+$handler->display->display_options['arguments']['tid']['summary']['number_of_records'] = '0';
+$handler->display->display_options['arguments']['tid']['summary']['format'] = 'default_summary';
+$handler->display->display_options['arguments']['tid']['summary_options']['items_per_page'] = '25';
+
 
 $export['knowledge_base_search'] = $view;
 
