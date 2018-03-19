@@ -160,26 +160,28 @@ hide($content['links']);
 
     <!-- Add and enable Tabs sections. -->
     <script>
-      $(function() {
-        $( "#tabs" ).tabs(); // Instantiate the tabs UI.
+(function ($) {
+    $(function () {
+        $("#tabs").tabs(); // Instantiate the tabs UI.
 
         hash = $(location).attr('hash').slice(1);
         if (hash) {
-          clickid = $('[name*=' + hash + ']').closest('.ui-tabs-panel').attr('id');
-          $('.ui-tabs-anchor[href=#' + clickid + ']').trigger("click");
-          $('html, body').animate({
+            clickid = $('[name*=' + hash + ']').closest('.ui-tabs-panel').attr('id');
+            $('.ui-tabs-anchor[href=#' + clickid + ']').trigger("click");
+            $('html, body').animate({
 //            scrollTop: $('[name*=' + hash + ']').offset().top
-            scrollTop: $('#' + hash).offset().top
-          }, 1000);
+                scrollTop: $('#' + hash).offset().top
+            }, 1000);
         }
 
         // Enable the "See Products" button to show tab 3.
-        $('.show-products').click(function(e){
-          e.preventDefault(); // Stop the default behavior.
-          $("[href='#tabs-3']").trigger( "click" ); // Select the third tab.
-          location.href = $(this).attr("href"); // Drop to the matching anchor.
+        $('.show-products').click(function (e) {
+            e.preventDefault(); // Stop the default behavior.
+            $("[href='#tabs-3']").trigger("click"); // Select the third tab.
+            location.href = $(this).attr("href"); // Drop to the matching anchor.
         });
-      });
+    });
+})(jQuery);
 
     </script>
     <div class="clear_20px">&nbsp;</div>
