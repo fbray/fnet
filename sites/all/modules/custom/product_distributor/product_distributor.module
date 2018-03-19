@@ -1278,6 +1278,11 @@ function pd_l1_form($form, $form_state, $continent_code = NULL) {
     '#post_render' => ['process_product_text'],
     '#suffix' => '</div>',
   ];
+
+  $form['wtb-ps-widget'] = [
+    '#markup' => '<div id="ps-widget-btn"></div>',
+  ];
+
   // dpm($products);
   $form['buying_methods'] = [
     '#type' => 'select',

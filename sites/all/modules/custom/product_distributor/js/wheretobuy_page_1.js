@@ -96,7 +96,6 @@ console.log(urlData);
                         }
                         else {
                             // Display region & postal_code filters
-                            alert('Should display region and postal code stuff.')
                             $('#pd-l1-form #edit-submit').hide();
                             submitCallback = false;
                             submitCallbackData = false;

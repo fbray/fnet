@@ -72,7 +72,6 @@ function wheretobuy_get_regions($country_code = NULL) {
   }
 }
 
-
 /**
  * AJAX Callback handler: Get cities in a region of a country
  * Based on the country and product in the GET array,
@@ -84,17 +83,17 @@ function wheretobuy_get_cities() {
   $product = isset($_GET['product']) ? $_GET['product']: 0; //query on this at the end.
   $sales_channel = isset($_GET['channel']) ? $_GET['channel']: 0;
   $region = isset($_GET['region']) ? $_GET['region'] : '';
-  $buying_method = $_GET['buying']; //Not to be used in Query
+  $buying_method = $_GET['buying']; // Not to be used in Query
   $json_arr = [];
 
   if ($country && $region && $product && $buying_method) {
     $buying_methods = explode('|', $buying_method);
-    if (in_array('N', $buying_methods) && !in_array('S', $buying_methods)) { //If only buying method 'national default' is present, show Go button
-      $json_arr += array(
+    if (in_array('N', $buying_methods) && !in_array('S', $buying_methods)) { // If only buying method 'national default' is present, show Go button
+      $json_arr += [
         'status' => FALSE,
         'submitCallback' => 'get_distributors',
         'submitCallbackData' => FALSE,
-      );
+      ];
       echo json_encode($json_arr);
       exit;
     }
@@ -120,7 +119,7 @@ function wheretobuy_get_cities() {
       // Filter the locations according to the filtering criteria.
       if (!empty($locations)) {
         $query = db_select('node', 'n')->distinct();
-        $query->join('field_data_field_address', 'address', 'address.entity_id = n.nid ANd address.revision_id = n.vid');
+        $query->join('field_data_field_address', 'address', 'address.entity_id = n.nid AND address.revision_id = n.vid');
         $query->join('field_data_field_delivery_type', 'cfdt', 'cfdt.entity_id = n.nid AND cfdt.revision_id = n.vid');
         $query
           ->fields('address', array('field_address_locality'))
@@ -174,7 +173,7 @@ function wheretobuy_get_cities() {
       $region_query->join('field_data_field_address', 'address', 'address.entity_id = n.nid ANd address.revision_id = n.vid');
       $region_query->join('field_data_field_delivery_type', 'cfdt', 'cfdt.entity_id = n.nid AND cfdt.revision_id = n.vid');
       $region_query
-        ->fields('address', array('field_address_administrative_area'))
+        ->fields('address', ['field_address_administrative_area'])
         ->condition('n.status', 1, '=')
         ->condition('address.field_address_country', $country, '=')
         ->condition('cfdt.field_delivery_type_value', 'S', '=')
@@ -411,7 +410,7 @@ function wheretobuy_get_delivery_types() {
             'height' => '',
             'alt' => '',
             'title' => '',
-            'attributes' => array(),
+            'attributes' => [],
           ]);
 
         }
@@ -581,7 +580,8 @@ function wheretobuy_get_distributors() {
 
   }
 
-  if (in_array('S', $buying_methods)) { //Storefront locations
+  if (in_array('S', $buying_methods)) {
+    // Storefront locations
     $data = get_distributors('S', $data_nids);
     if ($data && $data['status']) {
       $storefront_results = TRUE;
@@ -628,7 +628,7 @@ function wheretobuy_get_distributors() {
       }
     }
   }
-  if (count($data_arr)) { //Locations found, return results
+  if (count($data_arr)) { // Locations found, return results
     echo json_encode(array(
       'status' => TRUE,
       'storefrontData' => $storefront_results,
@@ -643,7 +643,7 @@ function wheretobuy_get_distributors() {
     */
 
   }
-  else { //No locations found. Check error matrix and display error message.
+  else { // No locations found. Check error matrix and display error message.
     if (isset($_GET['channel']) && !$invalid_postal_code) { //Case Six: Filter by GSA Schedule
       echo json_encode(array(
         'status' => FALSE,
@@ -678,7 +678,8 @@ function wheretobuy_get_distributors() {
           'errorData' => wtb_get_error_message(3),
         ));
       }
-      else { //Case Three:  Search by Region: No locations found for entire country & skip-region-search active for selected country
+      else {
+        // Case Three:  Search by Region: No locations found for entire country & skip-region-search active for selected country
         echo json_encode(array(
           'status' => FALSE,
           'errorData' => wtb_get_error_message(2),
