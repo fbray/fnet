@@ -1,4 +1,4 @@
-(function($){
+$(document).ready(function(){
 	var kbwidget = $(".ui-widget-content a.active");
 	if($(".ui-widget-content a").hasClass("active")){
 		var headerindex = kbwidget.closest("div.ui-accordion-content").prev("h3.ui-accordion-header").index();
@@ -14,6 +14,6 @@
 				break;
 		}
     $(".ui-accordion").accordion('option', 'active' , headerindex); 
-		kbwidget.closest("span.field-content").closest("div.views-field-name").css("background-color","#F5F5F5");
+		kbwidget.closest("span.field-content").closest("div.views-field").css("background-color","#F5F5F5");
 	}
-})(jQuery);
+});

@@ -4317,6 +4317,9 @@ body.page-knowledge-base header#main-content-header {
     padding-bottom:15px;
     border-bottom:1px solid #999;
 }
+.ui-widget-content a.active {
+    font-weight: bold;
+}
 #views-exposed-form-knowledge-base-search-page h2 {
 	font-size: 28px;
 	font-weight: normal;
