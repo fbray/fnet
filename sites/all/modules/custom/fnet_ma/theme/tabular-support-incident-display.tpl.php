@@ -8,13 +8,13 @@
  */
 
 global $base_url, $user;
-//Paging Logic starts from here..!
+// Paging Logic starts from here..!
 $content_array = array_values($support_incidents);
-
-if (isset($content_array[0]) && ($content_array[0] == 'webservice_exception_error')) {
-  print '<span class="red-text">' . variable_get('myaccount_webservices_failure_notification_message', t('Our apologies. Your request is not currently available. A notification has been delivered to our web team to correct. If you need immediate assistance please call us at +1 425 446-4519.')) . '</span>';
-}
-else {
+?>
+<?php if (isset($content_array[0]) && ($content_array[0] == 'webservice_exception_error')): ?>
+  <span class="red-text"><?php print variable_get('myaccount_webservices_failure_notification_message', t('Our apologies. Your request is not currently available. A notification has been delivered to our web team to correct. If you need immediate assistance please call us at +1 425 446-4519.')); ?></span>
+<?php else: ?>
+  <?php
   $array_is_empty = FALSE;
   $array_total_count = count($content_array);
   if ($array_total_count) {
@@ -34,9 +34,9 @@ else {
   }
   ?>
   <div id='gold_support_section'>
-    <?php
-    if (!$array_is_empty) {
-      for ($div_counter = 1; $div_counter <= $total_number_of_pages; $div_counter++) {
+    <?php if (!$array_is_empty): ?>
+      <?php for ($div_counter = 1; $div_counter <= $total_number_of_pages; $div_counter++): ?>
+        <?php
         $visible_status = '';
         if ($div_counter == 1) {
           $visible_status = 'display:block';
@@ -73,64 +73,49 @@ else {
                   <?php print t('Created'); ?>
                 </td>
               </tr>
-              <?php
-              for ($array_element_count = (($div_counter - 1) * $rows_per_page) + 1; $array_element_count <= ($div_counter * $rows_per_page); $array_element_count++) {
-                if (trim($content_array[$array_element_count - 1]['iIncidentId'] != '')) {
-                  ?>
+              <?php for ($array_element_count = (($div_counter - 1) * $rows_per_page) + 1; $array_element_count <= ($div_counter * $rows_per_page); $array_element_count++): ?>
+                <?php if (trim($content_array[$array_element_count - 1]['iIncidentId'] != '')): ?>
                   <tr <?php print($array_element_count % 2 == 0 ? 'class="trAlternate"' : ''); ?>>
                     <td valign="top">
-                      <span
-                        class='actual_values'><?php print $content_array[$array_element_count - 1]['iIncidentId']; ?></span>
+                      <span class='actual_values'><?php print $content_array[$array_element_count - 1]['iIncidentId']; ?></span>
                     </td>
 
                     <td valign="top">
-                      <span
-                        class='actual_values'><?php print $content_array[$array_element_count - 1]['subject']; ?></span>
+                      <span class='actual_values'><?php print $content_array[$array_element_count - 1]['subject']; ?></span>
                     </td>
 
                     <td valign="top">
-                      <span
-                        class='actual_values'><?php print $content_array[$array_element_count - 1]['vchProductDesc']; ?></span>
+                      <span class='actual_values'><?php print $content_array[$array_element_count - 1]['vchProductDesc']; ?></span>
                     </td>
 
                     <td valign="top">
-                      <span
-                        class='actual_values'><?php print $content_array[$array_element_count - 1]['vchStatusDesc']; ?></span>
+                      <span class='actual_values'><?php print $content_array[$array_element_count - 1]['vchStatusDesc']; ?></span>
                     </td>
 
                     <td valign="top">
-                      <span
-                        class='actual_values'><?php print $content_array[$array_element_count - 1]['dtInsertDate']; ?></span>
+                      <span class='actual_values'><?php print $content_array[$array_element_count - 1]['dtInsertDate']; ?></span>
                     </td>
                   </tr>
-                <?php
-                }
-              }
-              ?>
+                <?php endif; ?>
+              <?php endfor; ?>
               <tr>
                 <td valign="top" colspan='5' class='see-more-link'>
-                  <?php
-                  if (isset($display) && ($display == 'view-registered-product')) {
-                    print l('(see more...)', 'myaccount/all-support-incidents/365/' . trim(check_plain(arg(3))));
+                  <?php if (isset($display) && ($display == 'view-registered-product')): ?>
+                    <?php print l(t('(see more...)'), 'myaccount/all-support-incidents/365/' . trim(check_plain(arg(3))));
                     print theme('fnet_button', array(
-                      'link' => l('Create Support Incident', 'myaccount/product-support-incidents/' . trim(check_plain(arg(3)))),
+                      'link' => l(t('Create Support Incident'), 'myaccount/product-support-incidents/' . trim(check_plain(arg(3)))),
                       'auto' => TRUE
-                    ));
-                  }
-                  else {
-                    print l('(see more...)', 'myaccount/all-support-incidents');
-                  }
-                  ?>
+                    )); ?>
+                  <?php else: ?>
+                    <?php print l('(see more...)', 'myaccount/all-support-incidents'); ?>
+                  <?php endif; ?>
                 </td>
               </tr>
             </table>
           </div>
         </div>
-      <?php
-      }
-    }
-    else {
-      ?>
+      <?php endfor; ?>
+    <?php else: ?>
       <div class='data_divs'>
         <table class='support-incident-summary-table' width="100%" border="0"
                cellspacing="0" cellpadding="5">
@@ -163,19 +148,14 @@ else {
           </tr>
         </table>
       </div>
-      <?php
-      if (isset($display) && ($display != 'view-registered-product')) {
-        ?>
+      <?php if (isset($display) && ($display != 'view-registered-product')): ?>
         <div id='add-new-products-link-myaccount-page'>
           <?php print theme('fnet_button', array(
-            'link' => l('Create Support Incident', 'myaccount/report-support-incidents'),
+            'link' => l(t('Create Support Incident'), 'myaccount/report-support-incidents'),
             'auto' => TRUE
           )); ?>
         </div>
-      <?php
-      }
-    }
-    ?>
+      <?php endif; ?>
+    <?php endif; ?>
   </div>
-<?php
-}
+<?php endif; ?>
