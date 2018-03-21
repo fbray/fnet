@@ -187,13 +187,6 @@ $product_case_studies = $content['product_case_studies'];
       $menuArray[] = array(str_replace("&","and",str_replace(" ","_",strtolower(fnet_common_safe_get($field_prod_ctab_name_5, 0, 'value')))), fnet_common_safe_get($field_prod_ctab_name_5, 0, 'value'));
     }
 
-/*
-only 5 tabs
-    // Custom Tab 06
-    if(fnet_common_safe_get($field_prod_ctab_name_6, 0, 'value') && fnet_common_safe_get($field_prod_ctab_data_6, 0, 'value')){
-      $menuArray[] = array(str_replace("&","and",str_replace(" ","_",strtolower(fnet_common_safe_get($field_prod_ctab_name_6, 0, 'value')))), fnet_common_safe_get($field_prod_ctab_name_6, 0, 'value'));
-    }
-*/
 ?>
     <?php for($i=0; $i < count($menuArray); $i++): ?>
         <?php
@@ -228,22 +221,21 @@ only 5 tabs
 
         <!-- Product image carousel -->
         <?php // TODO: Get rid of fnet_common_safe_get function. It sucks. ?>
-        <?php $file = file_load(fnet_common_safe_get($field_prod_carousel_img_lg_1, 0, 'field_prod_carousel_img_lg_1_fid')); ?>
-        <?php dpm($file); ?>
         <?php $youtubeUrl = "";
-        if(fnet_common_safe_get($field_prod_video_img_t_1, 0, 'field_prod_video_img_t_1_fid')
-          || fnet_common_safe_get($field_prod_carousel_img_lg_1, 0, 'field_prod_carousel_img_lg_1_fid')
-          || fnet_common_safe_get($field_prod_carousel_img_lg_2, 0, 'field_prod_carousel_img_lg_2_fid')
-          || fnet_common_safe_get($field_prod_carousel_img_lg_3, 0, 'field_prod_carousel_img_lg_3_fid')
-          || fnet_common_safe_get($field_prod_carousel_img_lg_4, 0, 'field_prod_carousel_img_lg_4_fid')
-          || fnet_common_safe_get($field_prod_carousel_img_lg_5, 0, 'field_prod_carousel_img_lg_5_fid')
-          || fnet_common_safe_get($field_prod_carousel_img_lg_6, 0, 'field_prod_carousel_img_lg_6_fid')
-          || fnet_common_safe_get($field_prod_carousel_img_lg_7, 0, 'field_prod_carousel_img_lg_7_fid')
-          || fnet_common_safe_get($field_prod_carousel_img_lg_8, 0, 'field_prod_carousel_img_lg_8_fid')
-          || fnet_common_safe_get($field_prod_carousel_img_lg_9, 0, 'field_prod_carousel_img_lg_9_fid')
-          || fnet_common_safe_get($field_prod_carousel_img_lg_10, 0, 'field_prod_carousel_img_lg_10_fid') ) {
 
+        // Define fields from CT.
+        $vid1 = fnet_common_safe_get($field_prod_video_img_t_1, 0, 'field_prod_video_img_t_1_fid');
+        $img1 = fnet_common_safe_get($field_prod_carousel_img_lg_1, 0, 'fid');
+        $img2 = fnet_common_safe_get($field_prod_carousel_img_lg_2, 0, 'fid');
+        $img3 = fnet_common_safe_get($field_prod_carousel_img_lg_3, 0, 'fid');
+        $img5 = fnet_common_safe_get($field_prod_carousel_img_lg_5, 0, 'fid');
+        $img6 = fnet_common_safe_get($field_prod_carousel_img_lg_6, 0, 'fid');
+        $img7 = fnet_common_safe_get($field_prod_carousel_img_lg_7, 0, 'fid');
+        $img8 = fnet_common_safe_get($field_prod_carousel_img_lg_8, 0, 'fid');
+        $img9 = fnet_common_safe_get($field_prod_carousel_img_lg_9, 0, 'fid');
+        $img10 = fnet_common_safe_get($field_prod_carousel_img_lg_10, 0, 'fid');
 
+        if ($vid1 || $img1 || $img2 || $img3 || $img4 || $img5 || $img6 || $img7 || $img8 || $img9 || $img10):
           if (fnet_common_safe_get($field_prod_video_youtube_url,0,'field_prod_video_youtube_url_url')) {
             $youtubeUrl = fnet_common_safe_get($field_prod_video_youtube_url, 0, 'field_prod_video_youtube_url_url');
             if (substr($youtubeUrl, 0, 5) == 'http:') {
@@ -381,8 +373,6 @@ only 5 tabs
                   <?php // TODO: Replace this crap with correct file names and functions!! ?>
                     <?php $fieldName = "field_prod_carousel_img_lg_".$i; ?>
                     <?php if (fnet_common_safe_get(${$fieldName}, 0, 'fid')): ?>
-                      <?php $file = file_load(fnet_common_safe_get(${$fieldName}, 0, 'fid')); ?>
-                      <?php dpm($file); ?>
                       <li><img width="488" src="<?php echo file_create_url(fnet_common_safe_get(${$fieldName}, 0, 'uri')); ?>">
                       </li>
                         <?php $j++; ?>
@@ -432,7 +422,7 @@ only 5 tabs
             </div>
           </div>
 
-        <?php } ?>
+        <?php endif; ?>
 
       </div><!-- .col-3-5 -->
 
@@ -442,9 +432,9 @@ only 5 tabs
 
           <h1 class="headline"
               title="<?php print $node->title; ?>"><?php print $node->title; ?></h1>
-          <h5><?php echo fnet_common_get_field_value('node', $node, 'field_product_desc'); ?></h5>
+          <h5><?php echo fnet_common_get_field_value('node', $node, 'field_description'); ?></h5>
 
-          <div><?php echo fnet_common_get_field_value('node', $node, 'field_product_ataglance'); ?></div>
+          <div><?php echo fnet_common_get_field_value('node', $node, 'field_at_a_glance'); ?></div>
 
           <table class="at-a-glance-buttons" width="100%" cellpadding="0" cellspacing="12px">
 
@@ -467,7 +457,7 @@ only 5 tabs
 
                 ?>
                 <td
-                  <?php 
+                  <?php
                   $attr=fnet_common_safe_get($field_prod_btn_calltoaction, $i, 'attributes');
                   if($attr == array("target" => "_blank") ){
                     $attr["onClick"] = "return false;"; ?>
@@ -485,7 +475,7 @@ only 5 tabs
                   $btn_words = fnet_common_safe_get($field_prod_btn_calltoaction, $i, 'title');
                   $btn_url = fnet_common_safe_get($field_prod_btn_calltoaction, $i, 'display_url');
                   $lines = explode('<br>', $btn_words);
-                  foreach ($lines as $btn_word) { 
+                  foreach ($lines as $btn_word) {
                     echo l( $btn_word , $btn_url ,  array('attributes'=> $attr) );
                     echo '<br>';
                   }
@@ -505,7 +495,7 @@ only 5 tabs
 
             ?>
 
-            <?php 
+            <?php
 $contact = fnet_common_safe_get($field_prod_contact_sales_button);
 $wtb = fnet_common_safe_get($field_prod_where_to_buy_button);
             if ( $contact || $wtb) : ?>
@@ -932,7 +922,7 @@ $wtb = fnet_common_safe_get($field_prod_where_to_buy_button);
 
         </div>
 
-      <?php } 
+      <?php }
 */
       ?><!-- Custom Tab 6 -->
 
