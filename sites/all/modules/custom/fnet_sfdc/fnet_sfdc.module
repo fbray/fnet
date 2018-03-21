@@ -615,6 +615,7 @@ function fnet_sfdc_contact_exists($email) {
  */
 function fnet_sfdc_create_contact_from_profile($email, $account) {
   $contact = new sfdc_Contact();
+
   $contact->FirstName = $account->field_address[LANGUAGE_NONE][0]['first_name'];
   $contact->LastName = $account->field_address[LANGUAGE_NONE][0]['last_name'];
   $contact->MailingStreet = $account->field_address[LANGUAGE_NONE][0]['thoroughfare'];
@@ -670,7 +671,8 @@ function fnet_sfdc_create_contact_from_form_values($email, $values) {
   $contact->Phone = check_plain(trim($values['phone']));
   $contact->Company__c = check_plain(trim($values['company']));
   $contact->Email = $email;
-  $contact->IndividualId__c = check_plain(fnet_common_get_field_value('user', $account, 'field_user_onyx_id'));
+  // Onyx ID no longer exists
+  // $contact->IndividualId__c = check_plain(fnet_common_get_field_value('user', $account, 'field_user_onyx_id'));
   if (empty($contact->MailingState)) {
     $contact->MailingState = $contact->MailingCountry;
   }
@@ -923,29 +925,35 @@ function fnet_sfdc_get_registered_products($email, $product_number = NULL) {
  * @param $asset_id
  * @param $gold_number
  * @param $gold_pin
- * @return \stdClass
+ * @return \sfdcDocument
  */
 function fnet_sfdc_get_registered_product_detail($email, $asset_id, $gold_number, $gold_pin) {
+  // Get the assets from Salesforce by providing the user email.
   $response = fnet_sfdc_get_assets($email);
+
+  // If there is a response, prep the data.
   if ($response->status && array_key_exists($asset_id, $response->data)) {
+    // Using the response,  put it into it a sfdc_Asset object.
     $asset = fnet_sfdc_cast_as_asset($response->data[$asset_id]);
+
+    // For weirdness reasons, place only the relevant properties into a blank object.
     $registered_product = new stdClass();
-    $registered_product->iProductId = $asset_id;
-    $registered_product->chProductNumber = $asset->Product_Name__c;
-    $registered_product->vchSerialNumber = $asset->SerialNumber;
-    $registered_product->dtPurchaseDate = $asset->PurchaseDate . 'T00:00:00';
-    $registered_product->vchDescription = $asset->Product_Description__c;
+
+    // TODO: Add isset checks here.
+    $registered_product->iProductId = isset($asset_id) ? $asset_id: 0;
+    $registered_product->chProductNumber = isset($asset->Product_Name__c) ? $asset->Product_Name__c : '';
+    $registered_product->vchSerialNumber = isset($asset->SerialNumber) ? $asset->SerialNumber : 0;
+    $registered_product->dtPurchaseDate = isset($asset->PurchaseDate)? ($asset->PurchaseDate . 'T00:00:00') : 0;
+    $registered_product->vchDescription = isset($asset->Product_Description__c) ? $asset->Product_Description__c : '';
     $registered_product->iHierarchyId = '';
-    $registered_product->chProductNumber1 = $asset->Product_Name__c;
+    $registered_product->chProductNumber1 = isset($asset->Product_Name__c) ? $asset->Product_Name__c : '' ;
     $registered_product->vchHierarchyDesc = '';
     $registered_product->isGoldProduct = fnet_sfdc_has_gold_coverage($gold_number, $gold_pin, $asset_id);
-    $doc = new stdClass();
-    $doc->NewDataSet = new stdClass();
-    $doc->NewDataSet->Table = $registered_product;
 
+    $doc = new sfdcDocument($registered_product);
   }
   else {
-    $doc = new stdClass();
+    $doc = new sfdcDocument();
   }
   return $doc;
 }
