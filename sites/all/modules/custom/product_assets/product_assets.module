@@ -643,7 +643,6 @@ function support_page_page() {
   $output  = '';
   // TODO: What the hell is this doing here? There is no longer a settings page.
   $support = variable_get('support_page_settings', array());
-  dpm($support);
   $output .= theme('support_page', array('support' => $support));
   return $output;
 }
