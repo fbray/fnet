@@ -27,7 +27,7 @@ function() {
                         var o = $("<li><h2>" + n.name.replace(/\n/g, "<br />") + '</h2><span class="special"></span></li>').addClass(n.id.toLowerCase()).appendTo("#family");
                         $("<img />").prependTo(o).on("load", function(n) {
                             $(this).addClass("loaded")
-                        }).attr("src", "http://www.flukenetworks.com/sites/flukenetworks.com/files" + "/" + n.id.toLowerCase() + ".png")
+                        }).attr("src", "http://www.flukenetworks.com/sites/default/files" + "/" + n.id.toLowerCase() + ".png")
                     }
                 })
             },
@@ -477,7 +477,7 @@ function() {
                                 o = $("<li></li>").addClass(n.id.toLowerCase()).appendTo(r);
                             $("<img />").appendTo(o).on("load", function(n) {
                                 $(this).addClass("loaded")
-                            }).attr("src", "http://www.flukenetworks.com/sites/flukenetworks.com/files" + "/" + n.id.toLowerCase() + "-sm.png")
+                            }).attr("src", "http://www.flukenetworks.com/sites/default/files" + "/" + n.id.toLowerCase() + "-sm.png")
                         }) 
                         // }
                     }), $("#summary-required").append(_.map(o, function(n) {

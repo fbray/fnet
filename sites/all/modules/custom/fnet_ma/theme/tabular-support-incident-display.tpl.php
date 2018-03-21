@@ -73,7 +73,7 @@ $content_array = array_values($support_incidents);
                   <?php print t('Created'); ?>
                 </td>
               </tr>
-              <?php for ($array_element_count = (($div_counter - 1) * $rows_per_page) + 1; $array_element_count <= ($div_counter * $rows_per_page); $array_element_count++): ?>
+              <?php for ($array_element_count = (($div_counter - 1) * $rows_per_page) + 1; ($array_element_count <= ($div_counter * $rows_per_page) && ($array_element_count <= $array_total_count)); $array_element_count++): ?>
                 <?php if (trim($content_array[$array_element_count - 1]['iIncidentId'] != '')): ?>
                   <tr <?php print($array_element_count % 2 == 0 ? 'class="trAlternate"' : ''); ?>>
                     <td valign="top">
