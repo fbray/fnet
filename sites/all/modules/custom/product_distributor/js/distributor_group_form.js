@@ -1,6 +1,6 @@
 jQuery.noConflict();
 (function ($) {
-    $(function() {
+    $(function () {
         var isNADChecked = false;
 
         $('#edit-field-not-available-value').change(function () {

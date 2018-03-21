@@ -1,6 +1,6 @@
 jQuery.noConflict();
 (function ($) {
-    $(function() {
+    $(function () {
         var isErrorOnTab2 = false;
         //When page loads...
         $(".tab_content").hide(); //Hide all content
@@ -59,7 +59,7 @@ jQuery.noConflict();
 
 //Default tab activation functionality
     function activateDefaultTab(isErrorOnTab2) {
-        if(isErrorOnTab2 == true) {
+        if (isErrorOnTab2 == true) {
             $("ul.wtbtabs li:nth-child(2)").addClass("active").show(); //Activate second tab
             $(".tab_content:nth-child(2)").show(); //Show second tab content
         } else {
@@ -72,6 +72,6 @@ jQuery.noConflict();
 //Read URL GET parameter by name
 function getURLParameter(name) {
     return decodeURI(
-        (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]
+        (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search) || [, null])[1]
     );
 }

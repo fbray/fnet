@@ -1,8 +1,36 @@
-#wtb-configure-countries-form #wtb-help-text{margin-bottom:10px}
-#wtb-configure-countries-form #wtb-help-text p{margin-bottom:8px}
-#wtb-configure-countries-form div#countries-checkbox-wrapper div.form-item-labeled{float:left;width:45%}
-#wtb-configure-countries-form div#countries-checkbox-wrapper div.form-item-labeled label{font-size:14px;color:#000;text-decoration:underline;}
-#countries-checkbox-wrapper{width:100%;display:table}
-div.form-checkboxes div.form-option{padding:1px 5px;}
-#wtb-configure-countries-form div#countries-checkbox-wrapper div.form-item-labeled div.form-checkboxes .form-option label{text-decoration:none;font-size:11px}
-#edit-Save-1{margin-left:10px}
+#wtb-configure-countries-form #wtb-help-text {
+    margin-bottom: 10px
+}
+
+#wtb-configure-countries-form #wtb-help-text p {
+    margin-bottom: 8px
+}
+
+#wtb-configure-countries-form div#countries-checkbox-wrapper div.form-item-labeled {
+    float: left;
+    width: 45%
+}
+
+#wtb-configure-countries-form div#countries-checkbox-wrapper div.form-item-labeled label {
+    font-size: 14px;
+    color: #000;
+    text-decoration: underline;
+}
+
+#countries-checkbox-wrapper {
+    width: 100%;
+    display: table
+}
+
+div.form-checkboxes div.form-option {
+    padding: 1px 5px;
+}
+
+#wtb-configure-countries-form div#countries-checkbox-wrapper div.form-item-labeled div.form-checkboxes .form-option label {
+    text-decoration: none;
+    font-size: 11px
+}
+
+#edit-Save-1 {
+    margin-left: 10px
+}

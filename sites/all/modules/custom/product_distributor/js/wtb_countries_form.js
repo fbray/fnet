@@ -1,6 +1,6 @@
 jQuery.noConflict();
 (function ($) {
-    $(function() {
+    $(function () {
         /*
         $('input[type=checkbox]').click(function () {
             if ($(this).attr("checked")) {
