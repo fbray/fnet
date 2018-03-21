@@ -109,13 +109,9 @@ hide($content['links']);
 
 $product_features = $content['product_features'];
 $product_moa = $content['product_moa'];
-//$product_models = $content['product_models'];
-//$product_accessories = $content['product_accessories'];
 $myDoc = $content['product_documents'];
 $myDemos = $content['product_demos'];
 $product_case_studies = $content['product_case_studies'];
-
-
 
 ?>
 
@@ -128,7 +124,7 @@ $product_case_studies = $content['product_case_studies'];
     $menuArray = array();
 
     // Overview
-    if( fnet_common_safe_get($field_product_details, 0, 'value') ){
+    if( fnet_common_safe_get($field_product_details) ){
       $menuArray[] = array("overview", "Overview");
     }
 
@@ -143,7 +139,7 @@ $product_case_studies = $content['product_case_studies'];
     }
 
     // Specifications
-    if( fnet_common_safe_get($field_product_specs, 0, 'value') ){
+    if( fnet_common_safe_get($field_product_specs) ){
       $menuArray[] = array("specifications", "Specifications");
     }
 
@@ -162,32 +158,26 @@ $product_case_studies = $content['product_case_studies'];
       $menuArray[] = array("case_studies", "Case Studies");
     }
 
-    // Custom Tab 01
-    if( fnet_common_safe_get($field_prod_ctab_name_1, 0, 'value')  && fnet_common_safe_get($field_prod_ctab_data_1, 0, 'value') ){
-      $menuArray[] = array(str_replace("&","and",str_replace(" ","_",strtolower(fnet_common_safe_get($field_prod_ctab_name_1, 0, 'value')))), fnet_common_safe_get($field_prod_ctab_name_1, 0, 'value'));
+    /*
+      Changed custom tabs to use dynamic variables to create DRY code.  This
+      could be interpreted as bad coding standards.  In reality, we should
+      re-architect the Product Display CT to use a compound field for Custom
+      Tabs configured for multiple instances.
+    */
+    // Add Custom Tabs to Menu
+    for ($i=1; $i < 6; $i++) {
+      $tab_name = fnet_common_safe_get(${"field_prod_ctab_name_" . $i});
+      $tab_data = fnet_common_safe_get(${"field_prod_ctab_data_" . $i});
+      $tab_link = fnet_common_safe_get(${"field_prod_ctab_link_" . $i}, 0, 'url');
+      if($tab_name && ($tab_data || $tab_link)){
+        $menuArray[] = [
+          str_replace("&", "and", str_replace(" ", "_", strtolower($tab_name))),
+          $tab_name,
+          $tab_link,
+        ];
+      }
     }
-
-    // Custom Tab 02
-    if( fnet_common_safe_get($field_prod_ctab_name_2, 0, 'value' ) && fnet_common_safe_get($field_prod_ctab_data_2, 0, 'value')){
-      $menuArray[] = array(str_replace("&","and",str_replace(" ","_",strtolower(fnet_common_safe_get($field_prod_ctab_name_2, 0, 'value')))), fnet_common_safe_get($field_prod_ctab_name_2, 0, 'value'));
-    }
-
-    // Custom Tab 03
-    if( fnet_common_safe_get($field_prod_ctab_name_3, 0, 'value') && fnet_common_safe_get($field_prod_ctab_data_3, 0, 'value')){
-      $menuArray[] = array(str_replace("&","and",str_replace(" ","_",strtolower(fnet_common_safe_get($field_prod_ctab_name_3, 0, 'value')))), fnet_common_safe_get($field_prod_ctab_name_3, 0, 'value'));
-    }
-
-    // Custom Tab 04
-    if (fnet_common_safe_get($field_prod_ctab_name_4, 0, 'value') && fnet_common_safe_get($field_prod_ctab_data_4, 0, 'value')) {
-      $menuArray[] = array(str_replace("&","and",str_replace(" ","_",strtolower(fnet_common_safe_get($field_prod_ctab_name_4, 0, 'value')))), fnet_common_safe_get($field_prod_ctab_name_4, 0, 'value'));
-    }
-
-    // Custom Tab 05
-    if(fnet_common_safe_get($field_prod_ctab_name_5, 0, 'value') && fnet_common_safe_get($field_prod_ctab_data_5, 0, 'value')){
-      $menuArray[] = array(str_replace("&","and",str_replace(" ","_",strtolower(fnet_common_safe_get($field_prod_ctab_name_5, 0, 'value')))), fnet_common_safe_get($field_prod_ctab_name_5, 0, 'value'));
-    }
-
-?>
+    ?>
     <?php for($i=0; $i < count($menuArray); $i++): ?>
         <?php
       // No-Wrap the last two elements in the section nav to avoid
@@ -197,7 +187,9 @@ $product_case_studies = $content['product_case_studies'];
         <span style="white-space:nowrap;">
       <?php endif; ?>
 
-      <a href="#<?php echo $menuArray[$i][0]; ?>"><?php echo $menuArray[$i][1]; ?></a>
+      <a href="<?php print isset($menuArray[$i][2]) ? $menuArray[$i][2] : '#' . $menuArray[$i][0]; ?>">
+        <?php echo $menuArray[$i][1]; ?>
+      </a>
 
       <?php if($i == count($menuArray) - 1): ?>
         </span>
@@ -220,7 +212,6 @@ $product_case_studies = $content['product_case_studies'];
       <div class="col-3-5">
 
         <!-- Product image carousel -->
-        <?php // TODO: Get rid of fnet_common_safe_get function. It sucks. ?>
         <?php $youtubeUrl = "";
 
         // Define fields from CT.
@@ -496,8 +487,8 @@ $product_case_studies = $content['product_case_studies'];
             ?>
 
             <?php
-$contact = fnet_common_safe_get($field_prod_contact_sales_button);
-$wtb = fnet_common_safe_get($field_prod_where_to_buy_button);
+            $contact = fnet_common_safe_get($field_prod_contact_sales_button);
+            $wtb = fnet_common_safe_get($field_prod_where_to_buy_button);
             if ( $contact || $wtb) : ?>
               <tr>
                 <?php if ( $contact ): ?>
@@ -825,106 +816,24 @@ $wtb = fnet_common_safe_get($field_prod_where_to_buy_button);
         <?php } ?>
       </div><!-- Case Studies -->
 
-      <!-- Custom Tab 1 -->
-      <?php if(fnet_common_safe_get($field_prod_ctab_name_1, 0, 'value') && fnet_common_safe_get($field_prod_ctab_data_1, 0, 'value')){ ?>
-
-        <div class="product-page-section column-grid">
-
-          <a class="toc-anchor" name="<?php print str_replace("&","and",str_replace(" ","_",strtolower(fnet_common_safe_get($field_prod_ctab_name_1, 0, 'value')))); ?>">&nbsp;</a>
-          <div class="section-container">
-            <h3 class="product-page-section-title"><span><?php echo fnet_common_safe_get($field_prod_ctab_name_1, 0, 'value'); ?></span></h3>
-            <div><?php echo fnet_common_safe_get($field_prod_ctab_data_1, 0, 'value'); ?></div>
-            <div style="clear:both;"></div>
+      <!-- Custom Tabs -->
+      <?php for ($i=1; $i < 6; $i++): ?>
+        <?php
+          $tab_name = fnet_common_safe_get(${"field_prod_ctab_name_" . $i});
+          $tab_data = fnet_common_safe_get(${"field_prod_ctab_data_" . $i});
+          $tab_link = fnet_common_safe_get(${"field_prod_ctab_link_" . $i}, 0, 'url');
+        ?>
+        <?php if($tab_name && $tab_data && !$tab_link): ?>
+          <div class="product-page-section column-grid">
+            <a class="toc-anchor" name="<?php print str_replace("&","and",str_replace(" ","_",strtolower($tab_name))); ?>">&nbsp;</a>
+            <div class="section-container">
+              <h3 class="product-page-section-title"><span><?php print $tab_name; ?></span></h3>
+              <div><?php print $tab_data; ?></div>
+              <div style="clear:both;"></div>
+            </div>
           </div>
-
-        </div>
-
-      <?php } ?><!-- Custom Tab 1 -->
-
-      <!-- Custom Tab 2 -->
-      <?php if(fnet_common_safe_get($field_prod_ctab_name_2, 0, 'value') && fnet_common_safe_get($field_prod_ctab_data_2, 0, 'value')){ ?>
-
-        <div class="product-page-section column-grid">
-
-          <a class="toc-anchor" name="<?php print str_replace("&","and",str_replace(" ","_",strtolower(fnet_common_safe_get($field_prod_ctab_name_2, 0, 'value')))); ?>">&nbsp;</a>
-          <div class="section-container">
-            <h3 class="product-page-section-title"><span><?php echo fnet_common_safe_get($field_prod_ctab_name_2, 0, 'value'); ?></span></h3>
-            <div><?php echo fnet_common_safe_get($field_prod_ctab_data_2, 0, 'value'); ?></div>
-            <div style="clear:both;"></div>
-          </div>
-
-        </div>
-
-      <?php } ?><!-- Custom Tab 2 -->
-
-      <!-- Custom Tab 3 -->
-      <?php if(fnet_common_safe_get($field_prod_ctab_name_3, 0, 'value') && fnet_common_safe_get($field_prod_ctab_data_3, 0, 'value')){ ?>
-
-        <div class="product-page-section column-grid">
-
-          <a class="toc-anchor" name="<?php print str_replace("&","and",str_replace(" ","_",strtolower(fnet_common_safe_get($field_prod_ctab_name_3, 0, 'value')))); ?>">&nbsp;</a>
-          <div class="section-container">
-            <h3 class="product-page-section-title"><span><?php echo fnet_common_safe_get($field_prod_ctab_name_3, 0, 'value'); ?></span></h3>
-            <div><?php echo fnet_common_safe_get($field_prod_ctab_data_3, 0, 'value'); ?></div>
-            <div style="clear:both;"></div>
-          </div>
-
-        </div>
-
-      <?php } ?><!-- Custom Tab 3 -->
-
-      <!-- Custom Tab 4 -->
-      <?php if(fnet_common_safe_get($field_prod_ctab_name_4, 0, 'value') && fnet_common_safe_get($field_prod_ctab_data_4, 0, 'value')){ ?>
-
-        <div class="product-page-section column-grid">
-
-          <a class="toc-anchor" name="<?php print str_replace("&","and",str_replace(" ","_",strtolower(fnet_common_safe_get($field_prod_ctab_name_4, 0, 'value')))); ?>">&nbsp;</a>
-          <div class="section-container">
-            <h3 class="product-page-section-title"><span><?php echo fnet_common_safe_get($field_prod_ctab_name_4, 0, 'value'); ?></span></h3>
-            <div><?php echo fnet_common_safe_get($field_prod_ctab_data_4, 0, 'value'); ?></div>
-            <div style="clear:both;"></div>
-          </div>
-
-        </div>
-
-      <?php } ?><!-- Custom Tab 4 -->
-
-      <!-- Custom Tab 5 -->
-      <?php if(fnet_common_safe_get($field_prod_ctab_name_5, 0, 'value') && fnet_common_safe_get($field_prod_ctab_data_5, 0, 'value')){ ?>
-
-        <div class="product-page-section column-grid">
-
-          <a class="toc-anchor" name="<?php print str_replace("&","and",str_replace(" ","_",strtolower(fnet_common_safe_get($field_prod_ctab_name_5, 0, 'value')))); ?>">&nbsp;</a>
-          <div class="section-container">
-            <h3 class="product-page-section-title"><span><?php echo fnet_common_safe_get($field_prod_ctab_name_5, 0, 'value'); ?></span></h3>
-            <div><?php echo fnet_common_safe_get($field_prod_ctab_data_5, 0, 'value'); ?></div>
-            <div style="clear:both;"></div>
-          </div>
-
-        </div>
-
-      <?php } ?><!-- Custom Tab 5 -->
-
-      <!-- Custom Tab 6 -->
-      <?php
-      /*
-      5 tabs ?
-       if(fnet_common_safe_get($field_prod_ctab_name_6, 0, 'value') && fnet_common_safe_get($field_prod_ctab_data_6, 0, 'value')){ ?>
-
-        <div class="product-page-section column-grid">
-
-          <a class="toc-anchor" name="<?php print str_replace("&","and",str_replace(" ","_",strtolower(fnet_common_safe_get($field_prod_ctab_name_6, 0, 'value')))); ?>">&nbsp;</a>
-          <div class="section-container">
-            <h3 class="product-page-section-title"><span><?php echo fnet_common_safe_get($field_prod_ctab_name_6, 0, 'value'); ?></span></h3>
-            <div><?php echo fnet_common_safe_get($field_prod_ctab_data_6, 0, 'value'); ?></div>
-            <div style="clear:both;"></div>
-          </div>
-
-        </div>
-
-      <?php }
-*/
-      ?><!-- Custom Tab 6 -->
+        <?php endif; ?>
+      <?php endfor; ?>
 
       <?php
       $has_related_products = FALSE;
