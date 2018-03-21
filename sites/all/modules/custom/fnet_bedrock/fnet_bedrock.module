@@ -8,39 +8,39 @@ include 'includes/pretty-json.php';
  *
  */
 function fnet_bedrock_menu() {
-  $items['admin/fnet/fnet_bedrock'] = array(
-    'title' => 'FNET Bedrock',
+  $items['admin/fnet/bedrock'] = [
+    'title' => 'Bedrock',
     'description' => "Settings for fnet_bedrock module.",
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('fnet_bedrock_admin_form'),
-    'access arguments' => array('administer site configuration'),
+    'page arguments' => ['fnet_bedrock_admin_form'],
+    'access arguments' => ['administer site configuration'],
     'type' => MENU_NORMAL_ITEM,
     'file' => 'fnet_bedrock.admin.inc',
-  );
-  $items['admin/fnet/fnet_bedrock/settings'] = array(
+  ];
+  $items['admin/fnet/bedrock/settings'] = [
     'title' => 'Settings',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -1,
-  );
-  $items['admin/fnet/fnet_bedrock_support'] = array(
-    'title' => 'Bedrock support',
+  ];
+  $items['admin/fnet/bedrock/support'] = [
+    'title' => 'Bedrock Support',
     'description' => "Support functions for Bedrock authentication.",
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('fnet_bedrock_support'),
-    'access arguments' => array('access bedrock support functions'),
+    'page arguments' => ['fnet_bedrock_support'],
+    'access arguments' => ['access bedrock support functions'],
     'type' => MENU_NORMAL_ITEM,
     'file' => 'fnet_bedrock.support.inc',
-  );
+  ];
   if ($_SERVER['HTTP_HOST'] != 'www.flukenetworks.com') {
-    $items['admin/fnet/fnet_bedrock/test'] = array(
+    $items['admin/fnet/bedrock/test'] = [
       'title' => 'Test',
       'description' => "Exercise bedrock interface.",
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('fnet_bedrock_test'),
-      'access arguments' => array('administer site configuration'),
+      'page arguments' => ['fnet_bedrock_test'],
+      'access arguments' => ['administer site configuration'],
       'type' => MENU_LOCAL_TASK,
       'file' => 'fnet_bedrock.test.inc',
-    );
+    ];
   }
   return $items;
 }
@@ -51,12 +51,12 @@ function fnet_bedrock_menu() {
  * @return array
  */
 function fnet_bedrock_permission() {
-  $perms = array(
-    'access bedrock support functions' => array(
+  $perms = [
+    'access bedrock support functions' => [
       'title' => t('Access Bedrock support functions'),
       'description' => t('Access bedrock troubleshooting functions'),
-    ),
-  );
+    ],
+  ];
   return $perms;
 }
 
@@ -162,10 +162,12 @@ function fnet_bedrock_delete_user($bedrock_user) {
  *
  * @param $uid
  * @param \fnet_bedrock_user
+ * @return mixed
+ * @throws \Exception
  */
 function fnet_bedrock_create_user_profile($uid, fnet_bedrock_user $bedrock_user) {
   $account = user_load($uid);
-  $addressfield_data = array(
+  $addressfield_data = [
     'first_name' => $bedrock_user->first_name,
     'last_name' => $bedrock_user->last_name,
     'organisation_name' => $bedrock_user->company_name,
@@ -175,11 +177,16 @@ function fnet_bedrock_create_user_profile($uid, fnet_bedrock_user $bedrock_user)
     'administrative_area' => $bedrock_user->state_code,
     'postal_code' => $bedrock_user->postal_code,
     'country' => $bedrock_user->country_code,
-  );
+  ];
   $account->field_address[LANGUAGE_NONE][0] = $addressfield_data;
   $account->field_user_preferred_language[LANGUAGE_NONE][0]['value'] = $bedrock_user->language_code;
   $account->field_user_telephone[LANGUAGE_NONE][0]['value'] = $bedrock_user->phone_number;
-  user_save($account);
+  try {
+    user_save($account);
+  }
+  catch (Exception $e) {
+    watchdog('FNET Bedrock', $e->getMessage());
+  }
   return $account;
 }
 
@@ -198,7 +205,7 @@ function fnet_bedrock_create_drupal_user(fnet_bedrock_user $bedrock_user) {
   if (function_exists('email_registration_unique_username')) {
     $name = email_registration_unique_username($name, 0);
   }
-  $user_information = array(
+  $user_information = [
     'name' => $name,
     'pass' => $pass_new,
     'mail' => $bedrock_user->email,
@@ -208,13 +215,13 @@ function fnet_bedrock_create_drupal_user(fnet_bedrock_user $bedrock_user) {
     'language' => $bedrock_user->language_code,
     'timezone' => $bedrock_user->time_zone,
     'authname_fnet_bedrock' => $bedrock_user->email,
-  );
+  ];
   $account = user_save('', $user_information);
 
-  watchdog('fnet_bedrock', 'New user %name/%mail created from the Bedrock user', array(
+  watchdog('fnet_bedrock', 'New user %name/%mail created from the Bedrock user', [
     '%name' => $account->name,
     '%mail' => $account->mail,
-  ), WATCHDOG_NOTICE, l(t('edit'), 'user/' . $account->uid . '/edit'));
+  ], WATCHDOG_NOTICE, l(t('edit'), 'user/' . $account->uid . '/edit'));
   return $account;
 }
 
@@ -246,18 +253,18 @@ function fnet_bedrock_log_failure($result, $data = NULL) {
   if (isset($result->request)) {
     $request = explode(' ', $result->request);
     $rest_method = $request[0] . ' ' . $request[1];
-    $variables = array(
+    $variables = [
       '%method' => $rest_method,
       '%data_sent' => $data,
       '%code' => $result->code,
       '%error' => $result->error,
       '%data' => $result->data,
-    );
+    ];
 
   }
   else {
     $message = 'No result information';
-    $variables = array();
+    $variables = [];
   }
   watchdog('fnet_bedrock', $message, $variables, WATCHDOG_NOTICE);
 }
@@ -276,33 +283,33 @@ function fnet_bedrock_rest($http_method, $rest_method, $data = NULL) {
   $href .= $rest_method;
   switch (strtoupper($http_method)) {
     case 'PUT':
-      $headers = array('Content-Type' => 'application/json');
-      $result = drupal_http_request($href, array(
+      $headers = ['Content-Type' => 'application/json'];
+      $result = drupal_http_request($href, [
         'headers' => $headers,
         'method' => 'PUT',
         'data' => $data
-      ));
+      ]);
       break;
     case 'POST':
-      $headers = array('Content-Type' => 'application/json');
-      $result = drupal_http_request($href, array(
+      $headers = ['Content-Type' => 'application/json'];
+      $result = drupal_http_request($href, [
         'headers' => $headers,
         'method' => 'POST',
         'data' => $data
-      ));
+      ]);
       break;
     case 'DELETE':
-      $headers = array('Content-Type' => 'application/json');
-      $result = drupal_http_request($href, array(
+      $headers = ['Content-Type' => 'application/json'];
+      $result = drupal_http_request($href, [
         'headers' => $headers,
         'method' => 'DELETE',
         'data' => $data
-      ));
+      ]);
       break;
     case 'GET':
     default:
       $href .= '?' . fnet_bedrock_query_string_encode($data);
-      $result = drupal_http_request($href, array('headers' => array()));
+      $result = drupal_http_request($href, ['headers' => []]);
       break;
   }
   return $result;
@@ -314,7 +321,7 @@ function fnet_bedrock_rest($http_method, $rest_method, $data = NULL) {
  * @return \fnet_bedrock_user
  */
 function fnet_bedrock_make_bedrock_user($email, $password) {
-  $uid = db_query("SELECT uid FROM {users} WHERE mail = :mail LIMIT 1", array(':mail' => $email))->fetchField();
+  $uid = db_query("SELECT uid FROM {users} WHERE mail = :mail LIMIT 1", [':mail' => $email])->fetchField();
 
   $account = user_load($uid);
   $addressfield_data = $account->field_address[LANGUAGE_NONE][0];
@@ -341,6 +348,9 @@ function fnet_bedrock_make_bedrock_user($email, $password) {
 
 /**
  * Implements hook_form_alter().
+ * @param $form
+ * @param $form_state
+ * @param $form_id
  */
 function fnet_bedrock_form_alter(&$form, &$form_state, $form_id) {
   switch ($form_id) {
@@ -451,8 +461,8 @@ function fnet_bedrock_trim_string($value, $length) {
  * @return string
  *   An urlencoded string which can be appended to/as the URL query string.
  */
-function fnet_bedrock_query_string_encode($query, $exclude = array(), $parent = '') {
-  $params = array();
+function fnet_bedrock_query_string_encode($query, $exclude = [], $parent = '') {
+  $params = [];
 
   foreach ($query as $key => $value) {
     $key = rawurlencode($key);

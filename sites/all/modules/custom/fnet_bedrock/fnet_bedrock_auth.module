@@ -10,6 +10,9 @@
 /**
  * Implement hook_help() to display a small help message
  * if somebody clicks the "Help" link on the modules list.
+ * @param $path
+ * @param $arg
+ * @return string
  */
 function fnet_bedrock_auth_help($path, $arg) {
   switch ($path) {
@@ -28,7 +31,7 @@ function fnet_bedrock_auth_form_user_login_alter(&$form, &$form_state) {
   // Replace the drupal authenticate function used as validation.
   // if ldap_authentication has already replaced it, replace that.
   if (variable_get('fnet_bedrock_authentication', FALSE)) {
-    $validations = array();
+    $validations = [];
     $bedrock_validation_inserted = FALSE;
     foreach ($form['#validate'] as $validation) {
       switch ($validation) {
@@ -61,6 +64,8 @@ function fnet_bedrock_auth_form_user_login_block_alter(&$form, $form_state) {
 /**
  * Implement hook_user_profile_form_alter() to disable the ability to change email address
  * for externally authenticated users.
+ * @param $form
+ * @param $form_state
  */
 function fnet_bedrock_auth_form_user_profile_form_alter(&$form, $form_state) {
   global $user;
@@ -120,6 +125,7 @@ function fnet_bedrock_auth_user_profile_form_submit($form, &$form_state) {
  *
  * @param $form
  * @param $form_state
+ * @throws \Exception
  */
 function fnet_bedrock_auth_user_login_validate($form, &$form_state) {
   // Check if Flood control was triggered; if so, don't authenticate
@@ -137,7 +143,7 @@ function fnet_bedrock_auth_user_login_validate($form, &$form_state) {
     $email = $user_name;
   }
   else {
-    $email = db_query("SELECT mail FROM {users}  WHERE `name` = :name", array(':name' => $user_name))->fetchCol();
+    $email = db_query("SELECT mail FROM {users}  WHERE `name` = :name", [':name' => $user_name])->fetchCol();
     if (empty($email)) {
       $email = $user_name;
     }
@@ -148,18 +154,26 @@ function fnet_bedrock_auth_user_login_validate($form, &$form_state) {
     if (!$account) {
       $bedrock_user = fnet_bedrock_get_user($email);
       $account = fnet_bedrock_create_drupal_user($bedrock_user);
-      $account = fnet_bedrock_create_user_profile($account->uid, $bedrock_user);
+      try {
+        $account = fnet_bedrock_create_user_profile($account->uid, $bedrock_user);
+      } catch (Exception $e) {
+        watchdog('FNET Bedrock Auth', $e->getMessage());
+      }
     }
     //check to see if the user is in the authmap table
-    $uid = db_query("SELECT uid FROM {authmap} WHERE authname = :authname", array(':authname' => $email))->fetchField();
+    $uid = db_query("SELECT uid FROM {authmap} WHERE authname = :authname", [':authname' => $email])->fetchField();
     if (!$uid) {
-      $authmaps = array('authname_' . 'fnet_bedrock_auth' => $email);
+      $authmaps = ['authname_' . 'fnet_bedrock_auth' => $email];
       user_set_authmaps($account, $authmaps);
     }
     user_external_login_register($email, 'fnet_bedrock_auth');
     $form_state['uid'] = $user->uid;
     if (empty($user->mail)) {
-      user_save($user, array('mail' => $user_name));
+      try {
+        user_save($user, ['mail' => $user_name]);
+      } catch (Exception $e) {
+        watchdog('FNET Bedrock Auth', $e->getMessage());
+      }
     }
   }
   else {
@@ -191,10 +205,10 @@ function fnet_bedrock_auth_user_authenticate($email, $password) {
   // this user is critical for all drupal admin and upgrade operations so it is best
   // left with drupal's native authentication.
   $sql = "SELECT uid FROM {users} WHERE name = :name AND uid = :uid";
-  $account = db_query($sql, array(
+  $account = db_query($sql, [
     ':name' => $email,
     ':uid' => '1'
-  ))->fetchCol();
+  ])->fetchCol();
   if ($account) {
     return FALSE;
   }
@@ -209,7 +223,7 @@ function fnet_bedrock_auth_user_authenticate($email, $password) {
   }
   else {
     // What was the response code? Log the error.
-    watchdog('Bedrock', 'Failed to connect. Received HTTP Response Code %code.', array('%code' => $result->code), WATCHDOG_ERROR, $link = NULL);
+    watchdog('Bedrock', 'Failed to connect. Received HTTP Response Code %code.', ['%code' => $result->code], WATCHDOG_ERROR, $link = NULL);
 
     $response = json_decode($result->data);
     if (stristr($email, '@fluke')) {
