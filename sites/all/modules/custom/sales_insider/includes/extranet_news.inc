@@ -12,98 +12,98 @@
  * @return array
  */
 function _sales_insider_extranet_news_field_instances() {
-  $field_instances = array();
+  $field_instances = [];
 
   // Exported field_instance: 'node-extranet_news-body'.
-  $field_instances['node-extranet_news-body'] = array(
+  $field_instances['node-extranet_news-body'] = [
     'bundle' => 'extranet_news',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
-    'display' => array(
-      'default' => array(
+    'display' => [
+      'default' => [
         'label' => 'hidden',
         'module' => 'text',
-        'settings' => array(
+        'settings' => [
           'field_formatter_filter' => NULL,
-        ),
+        ],
         'type' => 'text_default',
         'weight' => 0,
-      ),
-      'teaser' => array(
+      ],
+      'teaser' => [
         'label' => 'hidden',
         'module' => 'text',
-        'settings' => array(
+        'settings' => [
           'field_formatter_filter' => NULL,
           'trim_length' => 600,
-        ),
+        ],
         'type' => 'text_summary_or_trimmed',
         'weight' => 0,
-      ),
-    ),
+      ],
+    ],
     'entity_type' => 'node',
     'field_name' => 'body',
     'label' => 'Body',
     'required' => FALSE,
-    'settings' => array(
+    'settings' => [
       'display_summary' => TRUE,
       'entity_translation_sync' => FALSE,
       'text_processing' => 1,
       'user_register_form' => FALSE,
-    ),
-    'widget' => array(
+    ],
+    'widget' => [
       'module' => 'text',
-      'settings' => array(
+      'settings' => [
         'rows' => 20,
         'summary_rows' => 5,
-      ),
+      ],
       'type' => 'text_textarea_with_summary',
       'weight' => 7,
-    ),
-  );
+    ],
+  ];
 
   // Exported field_instance: 'node-extranet_news-field_display_title'.
-  $field_instances['node-extranet_news-field_display_title'] = array(
+  $field_instances['node-extranet_news-field_display_title'] = [
     'bundle' => 'extranet_news',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
-    'display' => array(
-      'default' => array(
+    'display' => [
+      'default' => [
         'label' => 'above',
         'module' => 'text',
-        'settings' => array(
+        'settings' => [
           'field_formatter_filter' => NULL,
-        ),
+        ],
         'type' => 'text_default',
         'weight' => 1,
-      ),
-      'teaser' => array(
+      ],
+      'teaser' => [
         'label' => 'above',
-        'settings' => array(),
+        'settings' => [],
         'type' => 'hidden',
         'weight' => 0,
-      ),
-    ),
+      ],
+    ],
     'entity_type' => 'node',
     'field_name' => 'field_display_title',
     'label' => 'Display Title',
     'required' => 0,
-    'settings' => array(
+    'settings' => [
       'entity_translation_sync' => FALSE,
       'text_processing' => 0,
       'user_register_form' => FALSE,
-    ),
-    'widget' => array(
+    ],
+    'widget' => [
       'active' => 1,
       'module' => 'text',
-      'settings' => array(
+      'settings' => [
         'size' => 30,
-      ),
+      ],
       'type' => 'text_textfield',
       'weight' => 1,
-    ),
-  );
+    ],
+  ];
 
   return $field_instances;
 }

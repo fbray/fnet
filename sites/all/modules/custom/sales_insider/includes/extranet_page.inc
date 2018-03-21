@@ -14,54 +14,54 @@
  * @return array
  */
 function _sales_insider_extranet_page_field_instances() {
-  $field_instances = array();
+  $field_instances = [];
 
   // Exported field_instance: 'node-extranet_page-body'.
-  $field_instances['node-extranet_page-body'] = array(
+  $field_instances['node-extranet_page-body'] = [
     'bundle' => 'extranet_page',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
-    'display' => array(
-      'default' => array(
+    'display' => [
+      'default' => [
         'label' => 'hidden',
         'module' => 'text',
-        'settings' => array(
+        'settings' => [
           'field_formatter_filter' => NULL,
-        ),
+        ],
         'type' => 'text_default',
         'weight' => 0,
-      ),
-      'teaser' => array(
+      ],
+      'teaser' => [
         'label' => 'hidden',
         'module' => 'text',
-        'settings' => array(
+        'settings' => [
           'field_formatter_filter' => NULL,
           'trim_length' => 600,
-        ),
+        ],
         'type' => 'text_summary_or_trimmed',
         'weight' => 0,
-      ),
-    ),
+      ],
+    ],
     'entity_type' => 'node',
     'field_name' => 'body',
     'label' => 'Body',
     'required' => FALSE,
-    'settings' => array(
+    'settings' => [
       'display_summary' => TRUE,
       'entity_translation_sync' => FALSE,
       'text_processing' => 1,
       'user_register_form' => FALSE,
-    ),
-    'widget' => array(
+    ],
+    'widget' => [
       'module' => 'text',
-      'settings' => array(
+      'settings' => [
         'rows' => 20,
         'summary_rows' => 5,
-      ),
+      ],
       'type' => 'text_textarea_with_summary',
       'weight' => 41,
-    ),
-  );
+    ],
+  ];
   return $field_instances;
 }
