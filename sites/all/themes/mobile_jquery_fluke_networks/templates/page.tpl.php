@@ -84,7 +84,7 @@
                  </script>
                </li><!-- Search -->
 
-               <li data-theme="b"><a href="/product_finder">Product Finder</a></li>
+               <li data-theme="b"><a href="/product-finder">Product Finder</a></li>
                <li data-theme="b"><a href="/wheretobuy">Where to Buy</a></li>
                <li data-theme="b"><a href="/sitemap">Sitemap</a></li>
                <li data-theme="b"><a href="/contact">Contact Us</a></li>
