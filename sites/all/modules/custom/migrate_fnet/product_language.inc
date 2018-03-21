@@ -30,7 +30,8 @@ class FNETProductLanguageMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_prodlang_btnact_disable', 'field_prodlang_btnact_disable');
     $this->addFieldMapping('field_prod_btn_cta_size', 	'field_prodlang_btn_cta_size');
     $this->addFieldMapping('field_conversion_code', 	'field_conversion_code_language');
-    $this->addFieldMapping('field_conversion_code:format', 	'field_conversion_code_language:format');
+    $this->addFieldMapping('field_conversion_code:format', 	'field_conversion_code_language:format')
+      ->defaultValue('full_html');
 
     $this->addFieldMapping('field_prod_ctab_name_1', 	'field_prodlang_ctab_name_1');
     $this->addFieldMapping('field_prod_ctab_data_1', 	'field_prodlang_ctab_data_1');

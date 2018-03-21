@@ -27,7 +27,8 @@ class FNETAssetGatewayMigration extends FNETNode7Migration {
     $this->addFieldMapping('field_add_download_button', 'field_add_download_button');
     $this->addFieldMapping('field_download_button_text', 'field_download_button_text');
     $this->addFieldMapping('field_tracking_code', 'field_ag_tracking_code');
-    $this->addFieldMapping('field_tracking_code:format', 'field_ag_tracking_code:format');
+    $this->addFieldMapping('field_tracking_code:format', 'field_ag_tracking_code:format')
+      ->defaultValue('full_html');
 
     // Link Fields
     $this->addFieldMapping('field_ag_redirect', 'field_ag_redirect');

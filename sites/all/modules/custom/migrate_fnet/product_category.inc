@@ -138,7 +138,8 @@ class FNETProductCategoryMigration extends DrupalNode7Migration {
       ->defaultValue(LANGUAGE_NONE);
 
     $this->addFieldMapping('field_expertise_lhn_box', 'field_industry_expertise_box');
-    $this->addFieldMapping('field_expertise_lhn_box:format', 'field_industry_expertise_box:format');
+    $this->addFieldMapping('field_expertise_lhn_box:format', 'field_industry_expertise_box:format')
+      ->defaultValue('full_html');
 
 
     // Products Tab Right-hand Navigation Fields
@@ -207,7 +208,8 @@ class FNETProductCategoryMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_trial_type_3', 'field_industry_trial_type_3');
 
     $this->addFieldMapping('field_products_rhn_box', 'field_industry_product_box');
-    $this->addFieldMapping('field_products_rhn_box:format', 'field_industry_product_box:format');
+    $this->addFieldMapping('field_products_rhn_box:format', 'field_industry_product_box:format')
+      ->defaultValue('full_html');
 
 
     // Image Fields
