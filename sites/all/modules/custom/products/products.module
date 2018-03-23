@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Functions related to Products.
@@ -6,8 +7,6 @@
 
 /**
  * Implements hook_views_api().
- *
- * @return array
  */
 function products_views_api() {
   return array(
@@ -35,10 +34,9 @@ function products_theme($existing, $type, $theme, $path) {
 /* =============================================================================
  *   Block functions
  * ========================================================================== */
+
 /**
  * Implements hook_block_info().
- *
- * @return mixed
  */
 function products_block_info() {
   $blocks['product_list_datacom'] = array(
@@ -64,9 +62,6 @@ function products_block_info() {
 
 /**
  * Implements hook_block_view().
- *
- * @param string $delta
- * @return array
  */
 function products_block_view($delta = '') {
   $block = array();
@@ -75,14 +70,17 @@ function products_block_view($delta = '') {
       $block['subject'] = t('Product Listing (Datacom Cabling)');
       $block['content'] = _product_list_contents('cabling-certification');
       break;
+
     case 'product_list_installation':
       $block['subject'] = t('Product Listing (IT Networking)');
       $block['content'] = _product_list_contents('installation-and-test');
       break;
+
     case 'product_list_telecom':
       $block['subject'] = t('Product Listing (Telecom)');
       $block['content'] = _product_list_contents('telecom-test');
       break;
+
     default:
       break;
   }
@@ -91,19 +89,16 @@ function products_block_view($delta = '') {
 
 /**
  * Helper function to provide content to Product List Blocks.
- *
- * @param $industryNid
- * @return string
  */
 function _product_list_contents($path_alias) {
   $path = drupal_get_normal_path($path_alias);
   $category = menu_get_object('node', 1, $path);
 
   $output = '<div class="product_industry_title">' . "\n"
-    . '<a href="/' . $path_alias .'">' . $category->title . "</a><br></div>\n";
+    . '<a href="/' . $path_alias . '">' . $category->title . "</a><br></div>\n";
 
-  //display family
-  $familyCount=1;
+  // Display family.
+  $familyCount = 1;
   $familyList = views_get_view('product_family');
   $familyList->set_items_per_page(0);
   $familyList->set_arguments(array($category->nid));
@@ -112,16 +107,20 @@ function _product_list_contents($path_alias) {
   $familyResult = $familyList->result;
 
   foreach ($familyResult as $family) {
-    if ($familyCount > 1) $output .= '<div class="clear_15px">&nbsp;</div>' . "\n";
-    else $output .= '<div class="clear_5px">&nbsp;</div>' . "\n";
+    if ($familyCount > 1) {
+      $output .= '<div class="clear_15px">&nbsp;</div>' . "\n";
+    }
+    else {
+      $output .= '<div class="clear_5px">&nbsp;</div>' . "\n";
+    }
     $output .= '<div class="product_family_title">' . "\n";
 
     if ($family->field_field_family_page_active[0]['raw']['value'] == "Yes") {
-      $output .= '<a href="/' . drupal_lookup_path('alias',"node/" . $family->nid)
+      $output .= '<a href="/' . drupal_lookup_path('alias', "node/" . $family->nid)
         . "#family-product-list-" . $family->nid . '">' . $family->node_title . "</a>";
     }
     else {
-      $output .= '<a href="/' . drupal_lookup_path('alias',"node/" . $category->nid)
+      $output .= '<a href="/' . drupal_lookup_path('alias', "node/" . $category->nid)
         . "#family-product-list-" . $family->nid . '">' . $family->node_title . "</a>";
     }
     $output .= "</div>\n";
@@ -129,18 +128,17 @@ function _product_list_contents($path_alias) {
     $productsList = views_get_view('product_family');
     $productsList->set_items_per_page(0);
 
-    // Fetch regLang value to pass as argument to 'industry_family_products' view
+    // Fetch regLang value to pass as arg to 'industry_family_products' view.
     $region = '';
-    if(isset($_COOKIE["regLang"])) {
+    if (isset($_COOKIE["regLang"])) {
       $region = strtolower($_COOKIE["regLang"]);
     }
-    // Default to US
+    // Default to US.
     if ($region == '') {
       $region = "en-us";
     }
 
     $productsList->set_arguments(array($family->nid, $region));
-//    $productsList->set_arguments(array($family->nid));
     $productsList->set_display('products_by_family');
     $productsList->execute();
     $productsListResult = $productsList->result;
@@ -148,19 +146,17 @@ function _product_list_contents($path_alias) {
     foreach ($productsListResult as $product) {
       $output .= '<div class="product_item_title">' . "\n"
         . '<a href="/' . drupal_lookup_path('alias', "node/" . $product->nid)
-        . '">' . $product->node_title . "</a>"
-        . "</div>\n";
+        . '">' . $product->node_title . "</a></div>\n";
     }
 
     $familyCount++;
   }
-//  $output .= '<div class="clear_20px;">&nbsp;</div>';
   $output .= '<div class="clear">&nbsp;</div>';
 
   return $output;
 }
 
-/**cu
+/**
  * Implements hook_preprocess_page().
  */
 function products_preprocess_page(&$variables) {
@@ -170,10 +166,10 @@ function products_preprocess_page(&$variables) {
     // Adds the Accordion UI library for this content type.
     drupal_add_library('system', 'ui.accordion');
 
-    // Enable product features accordion
+    // Enable product features accordion.
     drupal_add_js(drupal_get_path('module', 'products') . '/js/enable-ui-elements.js');
 
-    // Enable product page section menu
+    // Enable product page section menu.
     drupal_add_js(drupal_get_path('module', 'products') . '/js/toc/sticky/jquery.sticky.js');
     drupal_add_css(drupal_get_path('module', 'products') . '/js/toc/styles.css');
     drupal_add_css(drupal_get_path('module', 'products') . '/css/products.css');
@@ -194,7 +190,7 @@ function products_node_view($node, $view_mode) {
     return;
   }
 
-  // Substitute language/region content if necessary
+  // Substitute language/region content if necessary.
   if ($node->type == 'product_display') {
 
     products_language_override($node);
@@ -204,20 +200,29 @@ function products_node_view($node, $view_mode) {
     $node->content['product_features'] = $product_features;
 
     // Get product models and accessories information.
-    if(isset( $node->field_prod_hide_models_accessory[LANGUAGE_NONE][0]['value'] ) && $node->field_prod_hide_models_accessory[LANGUAGE_NONE][0]['value']) {
+    if (isset($node->field_prod_hide_models_accessory[LANGUAGE_NONE][0]['value']) && $node->field_prod_hide_models_accessory[LANGUAGE_NONE][0]['value']) {
       $product_moa = array();
-    } else {
+    }
+    else {
       $product_moa = views_get_view_result('product_content', 'product_moa', $node->nid);
     }
     $node->content['product_moa'] = $product_moa;
-    // dpm($product_moa);
     $tempArray = array();
-    for($i=0; $i<count($product_moa); $i++){
+    for ($i = 0; $i < count($product_moa); $i++) {
       $tempArray[$product_moa[$i]->taxonomy_term_data_node_name][] = $product_moa[$i];
     }
-    foreach (array("Models", "Suites", "Bundles", "Kits", "Options", "Accessories", "Upgrades", "Professional Services") as $modType) {
-      if ( isset($tempArray[$modType]) && (count($tempArray[$modType]) > 0) ) {
-        $node->content['product_moa_'.$modType] = $tempArray[$modType];
+    foreach ([
+      "Models",
+      "Suites",
+      "Bundles",
+      "Kits",
+      "Options",
+      "Accessories",
+      "Upgrades",
+      "Professional Services",
+    ] as $modType) {
+      if (isset($tempArray[$modType]) && (count($tempArray[$modType]) > 0)) {
+        $node->content['product_moa_' . $modType] = $tempArray[$modType];
       }
     }
 
@@ -227,7 +232,7 @@ function products_node_view($node, $view_mode) {
     $node->content['product_demos'] = $product_assets['demos'];
     $node->content['product_downloads'] = $product_assets['downloads'];
 
-    // Get Case Studies
+    // Get Case Studies.
     $prodExpertise = views_get_view_result('product_expertise', NULL, $node->nid);
     $product_case_studies = array();
 
@@ -242,7 +247,7 @@ function products_node_view($node, $view_mode) {
     }
     $node->content['product_case_studies'] = $product_case_studies;
 
-    // Related Products
+    // Related Products.
     $relatedProd = views_get_view_result('product_content', 'related_products_embed');
     $node->content['related_products'] = $relatedProd;
 
@@ -250,10 +255,12 @@ function products_node_view($node, $view_mode) {
 }
 
 /**
+ * Helper function to get associated assets for this product.
+ *
  * TODO: Are we getting rid of PCATID? If so, we need to rework this.
  *
- * @param $node
  * @return array
+ *   Assets associated with this product.
  */
 function products_get_assets(&$node) {
   global $theme_path;
@@ -311,6 +318,7 @@ function products_get_assets(&$node) {
           $myDemo .= "<td valign='top'>" . $myLockStatus . "</td></tr>";
           $demoRowCount++;
           break;
+
         case "software":
         case 'product software':
           $myDownload .= "<tr class='row" . ($downloadRowCount % 2) . "'><td><div class='OneLinkNoTx'><strong>" . $amsAsset[$j]["ASSETTITLE"] . "</strong><br>" . $amsAsset[$j]["ASSETDESCRIPTION"] . "</div></td>";
@@ -318,6 +326,7 @@ function products_get_assets(&$node) {
           $myDownload .= "<td valign='top'>" . $myLockStatus . "</td></tr>";
           $downloadRowCount++;
           break;
+
         case 'application notes':
         case "application note":
         case "white paper":
@@ -330,12 +339,13 @@ function products_get_assets(&$node) {
         case 'catalogs':
         case "flyer":
         case 'flyers':
-        if (!isset($docRowCount[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]])) {
+          if (!isset($docRowCount[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]])) {
             $docRowCount[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] = 0;
           }
-        if (!isset($myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]])) {
-          $myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] = '';
-        }
+          if (!isset($myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]])) {
+            $myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] = '';
+          }
+
           $myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] .= "<tr class='row" . ($docRowCount[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] % 2) . "'><td>";
           $myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] .= "<div class='OneLinkNoTx'>\n";
           $myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] .= "<strong>" . $amsAsset[$j]["ASSETTITLE"] . "</strong><br>" . $amsAsset[$j]["ASSETDESCRIPTION"];
@@ -345,26 +355,27 @@ function products_get_assets(&$node) {
           $myDoc[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] .= "<td valign='top'>" . $myLockStatus . "</td></tr>";
           $docRowCount[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]]++;
           break;
+
         default:
       }
     }
   }
 
-  return array('documents'=>$myDoc, 'demos'=>$myDemo, 'downloads'=>$myDownload);
+  return ['documents' => $myDoc, 'demos' => $myDemo, 'downloads' => $myDownload];
 }
 
 /**
- * Custom function which performs language override content substitution on a given node.
- * TODO: This goes away with the switch to Entity Translation.
+ * Custom function that performs language override content substitution.
  *
- * @param $node
+ * TODO: This goes away with the switch to Entity Translation.
  */
 function products_language_override(&$node) {
   // Fetch the current user's region/language.
   $siteReg = module_invoke('fnet_helper', 'site_region');
   $regLang = $siteReg["regLang"];
 
-  // Get all the selected language override nodes associated with the default node through the node reference field.
+  // Get all the selected language override nodes associated with the default
+  // node through the node reference field.
   $language_override_field_values = fnet_common_get_field_values('product', $node, 'field_prod_language');
 
   $override_nids = array();
@@ -383,17 +394,19 @@ function products_language_override(&$node) {
 
   // Create a variable to hold the language override node id that is
   // associated with the default node AND matches the user's reglang.
-  $qualified_language_override_node = null;
+  $qualified_language_override_node = NULL;
 
-  // Loop thru all the selected language override nodes to determine if their reglang matches user's reglang.
+  // Loop thru all the selected language override nodes to determine if their
+  // reglang matches user's reglang.
   foreach ($override_nodes as $language_override_field_item) {
 
     $language_override_field_item_reglang = fnet_common_get_field_value('productlanguage', $language_override_field_item, 'field_prodlang_language');
 
     // Compare lang node's reglang value with user's reglang value.
-    if (strpos($language_override_field_item_reglang, $regLang) !== false) {
+    if (strpos($language_override_field_item_reglang, $regLang) !== FALSE) {
 
-      // We have a reglang match so do assign it to the $qualified_language_override_node_id variable.
+      // We have a reglang match so do assign it to the
+      // $qualified_language_override_node_id variable.
       $qualified_language_override_node = $language_override_field_item;
       break;
     }
@@ -407,7 +420,8 @@ function products_language_override(&$node) {
     /*
      * Call to Action Buttons
      */
-    // Clear the contents of the four call to action buttons if the override asks us to hide them.
+    // Clear the contents of the four call to action buttons if the override
+    // asks us to hide them.
     if (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btnact_disable', 'value') == "Yes") {
 
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["title"] = "";
@@ -419,12 +433,13 @@ function products_language_override(&$node) {
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["title"] = "";
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["display_url"] = "";
 
-
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["title"] = "";
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["display_url"] = "";
 
-      // Otherwise, if there is any available override button content, go ahead and perform content substitution.
-    } else if (
+      // Otherwise, if there is any available override button content,
+      // go ahead and perform content substitution.
+    }
+    elseif (
       (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title') && fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url'))
       || (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 1) && fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 1))
       || (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 2) && fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 2))
@@ -435,26 +450,26 @@ function products_language_override(&$node) {
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["title"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title');
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["display_url"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url');
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["attributes"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'attributes');
-      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["translate"] = false;
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["translate"] = FALSE;
       $node->cta_btn_translate[0] = FALSE;
 
       // Substitutions for button two.
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["title"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 1);
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["display_url"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 1);
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["attributes"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'attributes', 1);
-      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["translate"] = false;
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["translate"] = FALSE;
 
       // Substitutions for button three.
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["title"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 2);
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["display_url"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 2);
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["attributes"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'attributes', 2);
-      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["translate"] = false;
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["translate"] = FALSE;
 
       // Substitutions for button four.
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["title"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 3);
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["display_url"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 3);
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["attributes"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'attributes', 3);
-      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["translate"] = false;
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["translate"] = FALSE;
 
     }
 
@@ -467,17 +482,12 @@ function products_language_override(&$node) {
       $node->field_prod_video_img_t_1[0]['uri'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_img_t_1', 'uri');
       $node->field_prod_video_img_t_1[0]['alt'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_img_t_1', 'alt');
 
-//      $node->field_prod_video_img_t_1[LANGUAGE_NONE][0]['filepath'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_img_t_1', 'filepath');
       $node->field_prod_video_youtube_url[0]['url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_youtube_url', 'url');
       $node->field_prod_video_youtube_url[0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_youtube_url', 'url');
-//      $node->field_prod_video_youtube_url[LANGUAGE_NONE][0]['query'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_youtube_url', 'query');
 
-//      $node->field_prod_video_lg_1[LANGUAGE_NONE][0]['filepath'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_lg_1', 'filepath');
       $node->field_prod_video_lg_1[0]['filename'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_lg_1', 'filename');
       $node->field_prod_video_lg_1[0]['uri'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_lg_1', 'uri');
       $node->field_prod_video_lg_1[0]['filemime'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_lg_1', 'filemime');
-//      $thumb = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_img_t_1', 'data');
-//      if ( is_array($thumb) && isset($thumb['alt']) ) $node->field_prod_video_img_t_1[LANGUAGE_NONE][0]['data']['alt'] = $thumb['alt'];
     }
 
     /*
@@ -498,8 +508,10 @@ function products_language_override(&$node) {
       $node->field_prod_sol_link_4[LANGUAGE_NONE][0]["title"] = "";
       $node->field_prod_sol_link_4[LANGUAGE_NONE][0]["display_url"] = "";
 
-      // Otherwise, if there is any available override solutions content, go ahead and perform content substitution.
-    } else if (
+      // Otherwise, if there is any available override solutions content,
+      // go ahead and perform content substitution.
+    }
+    elseif (
       fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_1', 'title')
       || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_2', 'title')
       || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_3', 'title')
@@ -507,31 +519,31 @@ function products_language_override(&$node) {
     ) {
 
       $node->field_prod_sol_title[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_title', 'value');
-      $noTranslation["field_prod_solutions"] = true;
+      $noTranslation["field_prod_solutions"] = TRUE;
 
       $node->field_prod_sol_link_1[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_1', 'title');
       $node->field_prod_sol_link_1[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_1', 'display_url');
       $node->field_prod_sol_link_1[LANGUAGE_NONE][0]['attributes'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_1', 'attributes');
       $node->field_prod_sol_desc_1[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_desc_1', 'value');
-      $node->field_prod_sol_desc_1[LANGUAGE_NONE][0]['translate'] = false;
+      $node->field_prod_sol_desc_1[LANGUAGE_NONE][0]['translate'] = FALSE;
 
       $node->field_prod_sol_link_2[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_2', 'title');
       $node->field_prod_sol_link_2[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_2', 'display_url');
       $node->field_prod_sol_link_2[LANGUAGE_NONE][0]['attributes'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_2', 'attributes');
       $node->field_prod_sol_desc_2[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_desc_2', 'value');
-      $node->field_prod_sol_desc_2[LANGUAGE_NONE][0]['translate'] = false;
+      $node->field_prod_sol_desc_2[LANGUAGE_NONE][0]['translate'] = FALSE;
 
       $node->field_prod_sol_link_3[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_3', 'title');
       $node->field_prod_sol_link_3[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_3', 'display_url');
       $node->field_prod_sol_link_3[LANGUAGE_NONE][0]['attributes'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_3', 'attributes');
       $node->field_prod_sol_desc_3[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_desc_3', 'value');
-      $node->field_prod_sol_desc_3[LANGUAGE_NONE][0]['translate'] = false;
+      $node->field_prod_sol_desc_3[LANGUAGE_NONE][0]['translate'] = FALSE;
 
       $node->field_prod_sol_link_4[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_4', 'title');
       $node->field_prod_sol_link_4[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_4', 'display_url');
       $node->field_prod_sol_link_4[LANGUAGE_NONE][0]['attributes'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_4', 'attributes');
       $node->field_prod_sol_desc_4[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_desc_4', 'value');
-      $node->field_prod_sol_desc_4[LANGUAGE_NONE][0]['translate'] = false;
+      $node->field_prod_sol_desc_4[LANGUAGE_NONE][0]['translate'] = FALSE;
 
     }
 
@@ -547,15 +559,15 @@ function products_language_override(&$node) {
 
       $node->field_prod_wtb_online[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'title');
       $node->field_prod_wtb_online[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'url');
-      $node->field_prod_wtb_online[LANGUAGE_NONE][0]['translate'] = false;
+      $node->field_prod_wtb_online[LANGUAGE_NONE][0]['translate'] = FALSE;
 
       $node->field_prod_wtb_online[LANGUAGE_NONE][1]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'title', 1);
       $node->field_prod_wtb_online[LANGUAGE_NONE][1]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'url', 1);
-      $node->field_prod_wtb_online[LANGUAGE_NONE][1]['translate'] = false;
+      $node->field_prod_wtb_online[LANGUAGE_NONE][1]['translate'] = FALSE;
 
       $node->field_prod_wtb_online[LANGUAGE_NONE][2]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'title', 2);
       $node->field_prod_wtb_online[LANGUAGE_NONE][2]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'url', 2);
-      $node->field_prod_wtb_online[LANGUAGE_NONE][2]['translate'] = false;
+      $node->field_prod_wtb_online[LANGUAGE_NONE][2]['translate'] = FALSE;
     }
   }
 }
@@ -572,151 +584,163 @@ function products_language_override(&$node) {
  * that apply to the same product NID and then doing some guesswork based on
  * the string IDs for them. This is some convoluted code. ¡Cuidado!
  *
- * @param (string) $moa_nid - Specific model/accessory NID of a given sub-product
+ * @param string $moa_nid
+ *   Specific model/accessory NID of a given sub-product.
  *
- * @return (array) A formatted list of support contracts that correspond to a
+ * @return array
+ *   A formatted list of support contracts that correspond to a
  *   given product moa.
  */
 function products_support_by_moa($moa_nid) {
-    $moa_plans_list = array();
-    $moa_name = '';
+  $moa_plans_list = array();
+  $moa_name = '';
+  $product = FALSE;
+  $support_tid = 0;
+  $tids = taxonomy_get_term_by_name('Support', 'product_sub_types');
+  foreach ($tids as $tid) {
+    $support_tid = $tid->tid;
+  }
+
+  // A list of all support options available for each MOA.
+  $sql = "
+    SELECT n.nid AS moa_nid, n.title AS moa_name, so.field_available_support_options_target_id AS support_option
+    FROM {node} n
+    LEFT JOIN {node_revision} nr
+      ON n.vid = nr.vid
+    INNER JOIN {field_data_field_available_support_options} so
+      ON n.vid = so.revision_id
+    LEFT JOIN {taxonomy_index} t
+      ON n.nid = t.nid
+    WHERE t.tid != :support_tid
+      AND n.status > 0
+      AND so.field_available_support_options_target_id IS NOT NULL
+    ORDER BY moa_nid ASC, delta ASC
+  ";
+  $result = db_query($sql, array(':support_tid' => $support_tid));
+
+  foreach ($result as $row) {
+    $moa_plans_list[$row->moa_nid]['moa_name'] = $row->moa_name;
+    $moa_plans_list[$row->moa_nid]['support_options'][$row->support_option] = TRUE;
+  }
+
+  $support_details_list = array();
+  $sql = "
+    SELECT n.nid, n.title AS support_name, body.body_value as description
+    FROM {node} n
+    LEFT JOIN {field_data_body} body
+      ON n.vid = body.revision_id
+    LEFT JOIN {taxonomy_index} t
+      ON n.nid = t.nid
+    WHERE t.tid = :support_tid
+    AND n.status > 0";
+  $result = db_query($sql, array(':support_tid' => $support_tid));
+
+  foreach ($result as $row) {
+    $support_details_list[$row->nid]['name'] = $row->support_name;
+    $support_details_list[$row->nid]['description'] = $row->description;
+  }
+
+  $rows = array();
+  $moa_plans = array();
+
+  if (isset($moa_plans_list[$moa_nid])) {
+    $moa_plans = $moa_plans_list[$moa_nid]['support_options'];
+    $moa_name = $moa_plans_list[$moa_nid]['moa_name'];
+  }
+
+  // There may be no plans configured for this MOA.
+  if (!is_array($moa_plans) || empty($moa_name)) {
+    return FALSE;
+  }
+  foreach (array_keys($moa_plans) as $plan) {
     $product = FALSE;
-    $support_tid = 0;
-    $tids = taxonomy_get_term_by_name('Support', 'product_sub_types');
-    foreach($tids as $tid) {
-      $support_tid = $tid->tid;
-    }
+    $row = array();
+    $row[] = array(
+      'data' => $support_details_list[$plan]['name'],
+      'class' => 'plan',
+    );
+    $row[] = array(
+      'data' => $support_details_list[$plan]['description'],
+      'class' => 'description',
+    );
+    $rows[] = $row;
+  }
 
-    // A list of all support options available for each MOA
-    $sql = "
-      SELECT n.nid AS moa_nid, n.title AS moa_name, so.field_available_support_options_target_id AS support_option
-      FROM {node} n
-      LEFT JOIN {node_revision} nr
-        ON n.vid = nr.vid
-      INNER JOIN {field_data_field_available_support_options} so
-        ON n.vid = so.revision_id
-      LEFT JOIN {taxonomy_index} t
-        ON n.nid = t.nid
-      WHERE t.tid != :support_tid
-        AND n.status > 0
-        AND so.field_available_support_options_target_id IS NOT NULL
-      ORDER BY moa_nid ASC, delta ASC
-    ";
-    $result = db_query($sql, array(':support_tid' => $support_tid));
+  $plans_label = '<div class="plan_label">' . $moa_name . ' ' . t('Gold Support') . ': </div>';
 
-    foreach ($result as $row) {
-      $moa_plans_list[$row->moa_nid]['moa_name'] = $row->moa_name;
-      $moa_plans_list[$row->moa_nid]['support_options'][$row->support_option] = TRUE;
-    }
-
-    $support_details_list = array();
-    $sql = "
-      SELECT n.nid, n.title AS support_name, body.body_value as description
-      FROM {node} n
-      LEFT JOIN {field_data_body} body
-        ON n.vid = body.revision_id
-      LEFT JOIN {taxonomy_index} t
-        ON n.nid = t.nid
-      WHERE t.tid = :support_tid
-      AND n.status > 0";
-    $result = db_query($sql, array(':support_tid' => $support_tid));
-
-    foreach ($result as $row) {
-      $support_details_list[$row->nid]['name'] = $row->support_name;
-      $support_details_list[$row->nid]['description'] = $row->description;
-    }
-
-    $rows = array();
-    $moa_plans = array();
-
-    if (isset($moa_plans_list[$moa_nid])) {
-      $moa_plans = $moa_plans_list[$moa_nid]['support_options'];
-      $moa_name = $moa_plans_list[$moa_nid]['moa_name'];
-    }
-
-    // There may be no plans configured for this MOA
-    if (!is_array($moa_plans) || empty($moa_name)) {
-      return FALSE;
-    }
-    foreach (array_keys($moa_plans) as $plan) {
-      $product = FALSE;
-      $row = array();
-      $row[] = array(
-        'data' => $support_details_list[$plan]['name'],
-        'class' => 'plan'
-      );
-      $row[] = array(
-        'data' => $support_details_list[$plan]['description'],
-        'class' => 'description'
-      );
-      $rows[] = $row;
-    }
-
-    $plans_label = '<div class="plan_label">' . $moa_name . ' ' . t('Gold Support') . ': </div>';
-
-    if (count($rows) > 0) {
-      $table_attributes = array(
-        'class' => 'gold-support-plans',
-      );
-      $product = $plans_label . theme('table', array(
-          'rows' => $rows,
-          'attributes' => $table_attributes
-        ));
-    }
+  if (count($rows) > 0) {
+    $table_attributes = array(
+      'class' => 'gold-support-plans',
+    );
+    $product = $plans_label . theme('table', [
+      'rows' => $rows,
+      'attributes' => $table_attributes,
+    ]);
+  }
   return $product;
 }
 
 /**
- * Return unicode char by its code
+ * Return unicode char by its code.
  *
  * @param int $u
+ *   The unicode code.
+ *
  * @return char
+ *   The actual character representing the code.
  */
 function products_unichr($u) {
   return mb_convert_encoding('&#' . intval($u) . ';', 'UTF-8', 'HTML-ENTITIES');
 }
 
 /**
- * @param $string
+ * Change out certain unicode characters in a string.
+ *
+ * @param string $string
+ *   The string to work on.
+ *
  * @return mixed
+ *   The corrected string.
  */
 function products_clean_string($string) {
   $string = str_replace('<sup>', '', $string);
   $string = str_replace('</sup>', '', $string);
-  $string = str_replace(products_unichr(0xAE), '', $string); //registered symbol
-  $string = str_replace(products_unichr(0x26), '', $string); //comma
-  $string = str_replace(products_unichr(0x2c), '', $string); //ampersand
-  $string = str_replace(products_unichr(0x3a), '', $string); //colon
-  $string = str_replace(products_unichr(0x28), '', $string); //left paren
-  $string = str_replace(products_unichr(0x29), '', $string); //right paren
-  $string = str_replace(products_unichr(0x2122), '', $string); //TradeMark symbol
+  // Registered symbol.
+  $string = str_replace(products_unichr(0xAE), '', $string);
+  // Comma.
+  $string = str_replace(products_unichr(0x26), '', $string);
+  // Ampersand.
+  $string = str_replace(products_unichr(0x2c), '', $string);
+  // Colon.
+  $string = str_replace(products_unichr(0x3a), '', $string);
+  // Left Paren.
+  $string = str_replace(products_unichr(0x28), '', $string);
+  // Right Paren.
+  $string = str_replace(products_unichr(0x29), '', $string);
+  // Trademark symbol.
+  $string = str_replace(products_unichr(0x2122), '', $string);
   $string = str_replace(' ', '', $string);
   return $string;
 }
 
 /**
- * @param $form
- * @param $form_state
- * @param $form_id
- * @return mixed
+ * Implements hook_form_alter().
  */
-function products_form_alter(&$form, &$form_state, $form_id){
-	if($form_id == 'product_node_form'){
-		$form['#after_build']=array('language_options');		
-	}
-	return $form;
+function products_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'product_node_form') {
+    $form['#after_build'] = ['language_options'];
+  }
+  return $form;
 }
 
 /**
- * @param $form
- * @param $form_state
- * @return mixed
+ * Helper function.
  */
 function language_options(&$form, &$form_state){
 	$nid = $form['nid']['#value'];
 	$lang_arr = array();
 	$lang_override_query = db_select('node','n')
-          ->fields('n',array('nid','title'))          
+          ->fields('n',array('nid','title'))
 					->fields('fpg', array('entity_id'))
 					->fields('flr', array('field_prodlang_language_value'))
 					->condition('n.type', 'product', '=')
@@ -727,6 +751,6 @@ function language_options(&$form, &$form_state){
 	foreach($result as $item) {
 		$lang_arr[$item->entity_id]= '<span class="views-field views-field-field-language-region"> <span class="field-content">'.$item->field_prodlang_language_value .'</span> </span> - <span class="views-field views-field-nid"> <span class="field-content"><a href="/node/'.$item->entity_id .'/edit">(Right Click to Edit in New Window)</a></span> </span> - <span class="views-field views-field-title"> <span class="field-content"><a href="/node/'.$item->entity_id .'">'.$item->title .'</a></span> </span>';
 	}
-	$form['field_prod_language']['und']['#options']=$lang_arr;	
-	return $form;	
+	$form['field_prod_language']['und']['#options']=$lang_arr;
+	return $form;
 }
