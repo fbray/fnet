@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Adaptivetheme implementation to display a node.
@@ -14,8 +15,8 @@
  * - $last_update: last updated date/time, formatted with time element and
  *   pubdate attribute.
  * - $custom_date_and_time: date time string used in $last_update.
- * - $header_attributes: attributes such as classes to apply to the header element.
- * - $footer_attributes: attributes such as classes to apply to the footer element.
+ * - $header_attributes: attributes such as classes to apply to header element.
+ * - $footer_attributes: attributes such as classes to apply to footer element.
  * - $links_attributes: attributes such as classes to apply to the nav element.
  * - $is_mobile: Mixed, requires the Mobile Detect or Browscap module to return
  *   TRUE for mobile.  Note that tablets are also considered mobile devices.
@@ -98,7 +99,7 @@
  */
 
 /**
- * Hide Content and Print it Separately
+ * Hide Content and Print it Separately.
  *
  * Use the hide() function to hide fields and other content, you can render it
  * later using the render() function. Install the Devel module and use
@@ -120,40 +121,41 @@ $product_case_studies = $content['product_case_studies'];
     <!-- Top -->
     <a href="#topanchor" id="top">&nbsp;&nbsp;&nbsp;</a>
 
-    <?php // Build array of menu item data
+    <?php
+    // Build array of menu item data.
     $menuArray = array();
 
-    // Overview
-    if( fnet_common_safe_get($field_product_details) ){
+    // Overview.
+    if(fnet_common_safe_get($field_product_details)){
       $menuArray[] = array("overview", "Overview");
     }
 
-    // Features
+    // Features.
     if(count($product_features) > 0){
       $menuArray[] = array("features", "Features");
     }
 
-    // Models & Accessories
+    // Models & Accessories.
     if(count($product_moa) > 0){
       $menuArray[] = array("models_and_accessories", "Models & Accessories");
     }
 
-    // Specifications
-    if( fnet_common_safe_get($field_product_specs) ){
+    // Specifications.
+    if(fnet_common_safe_get($field_product_specs)){
       $menuArray[] = array("specifications", "Specifications");
     }
 
-    // Documents
+    // Documents.
     if($myDoc && count($myDoc) > 0){
       $menuArray[] = array("documents", "Documents");
     }
 
-    // Demos
+    // Demos.
     if($myDemos && count($myDemos) > 0){
       $menuArray[] = array("demos", "Demos");
     }
 
-    // Case Studies
+    // Case Studies.
     if(count($product_case_studies)){
       $menuArray[] = array("case_studies", "Case Studies");
     }
@@ -164,8 +166,8 @@ $product_case_studies = $content['product_case_studies'];
       re-architect the Product Display CT to use a compound field for Custom
       Tabs configured for multiple instances.
     */
-    // Add Custom Tabs to Menu
-    for ($i=1; $i < 6; $i++) {
+    // Add Custom Tabs to Menu.
+    for ($i = 1; $i < 6; $i++) {
       $tab_name = fnet_common_safe_get(${"field_prod_ctab_name_" . $i});
       $tab_data = fnet_common_safe_get(${"field_prod_ctab_data_" . $i});
       $tab_link = fnet_common_safe_get(${"field_prod_ctab_link_" . $i}, 0, 'url');
@@ -178,11 +180,11 @@ $product_case_studies = $content['product_case_studies'];
       }
     }
     ?>
-    <?php for($i=0; $i < count($menuArray); $i++): ?>
-        <?php
+    <?php for($i = 0; $i < count($menuArray); $i++): ?>
+      <?php
       // No-Wrap the last two elements in the section nav to avoid
       // having only one menu item by itself on the bottom row.
-        ?>
+      ?>
       <?php if($i == count($menuArray) - 2): ?>
         <span style="white-space:nowrap;">
       <?php endif; ?>
@@ -205,7 +207,6 @@ $product_case_studies = $content['product_case_studies'];
   <?php print render($title_prefix); ?>
 
   <div<?php print $content_attributes; ?>>
-    <?php // print render($content); ?>
 
     <div class="product-page-section column-grid">
 
@@ -227,14 +228,14 @@ $product_case_studies = $content['product_case_studies'];
         $img10 = fnet_common_safe_get($field_prod_carousel_img_lg_10, 0, 'fid');
 
         if ($vid1 || $img1 || $img2 || $img3 || $img4 || $img5 || $img6 || $img7 || $img8 || $img9 || $img10):
-          if (fnet_common_safe_get($field_prod_video_youtube_url,0,'field_prod_video_youtube_url_url')) {
+          if (fnet_common_safe_get($field_prod_video_youtube_url, 0, 'field_prod_video_youtube_url_url')) {
             $youtubeUrl = fnet_common_safe_get($field_prod_video_youtube_url, 0, 'field_prod_video_youtube_url_url');
             if (substr($youtubeUrl, 0, 5) == 'http:') {
               $youtubeUrl = str_replace("http:", "", $youtubeUrl);
-            } else if (substr($youtubeUrl, 0, 6) == 'https:') {
+            } elseif (substr($youtubeUrl, 0, 6) == 'https:') {
               $youtubeUrl = str_replace("https:", "", $youtubeUrl);
-            } else if (substr($youtubeUrl, 0, 2) != '//') {
-              $youtubeUrl = "//". $youtubeUrl;
+            } elseif (substr($youtubeUrl, 0, 2) != '//') {
+              $youtubeUrl = "//" . $youtubeUrl;
             }
           } ?>
 
@@ -285,7 +286,7 @@ $product_case_studies = $content['product_case_studies'];
                   $('#youtubeInnerFrame').attr('src', '<?php print $youtubeUrl; ?>');
                 });
               <?php endif; ?>
-              <?php if (fnet_common_safe_get($field_prod_video_img_t_1, 0, 'filename') && fnet_common_safe_get($field_prod_video_lg_1,0,'filename')): ?>
+              <?php if (fnet_common_safe_get($field_prod_video_img_t_1, 0, 'filename') && fnet_common_safe_get($field_prod_video_lg_1, 0, 'filename')): ?>
                 $('.image_frame').click(function() {
                   $('#movieFrame').attr('data', '');
                 });
@@ -343,10 +344,10 @@ $product_case_studies = $content['product_case_studies'];
             <div class="stage">
               <div class="carousel carousel-stage">
                 <ul>
-                  <?php if(fnet_common_safe_get($field_prod_video_img_t_1,0,'field_prod_video_img_t_1_fid')): ?>
-                    <li><?php if (fnet_common_safe_get($field_prod_video_lg_1,0,'field_prod_video_lg_1_fid')): ?>
-                        <object id="movieFrame" type="<?php print fnet_common_safe_get($field_prod_video_lg_1,0,'filemime'); ?>" data="<?php echo file_create_url(fnet_common_safe_get($field_prod_video_lg_1,0,'uri')); ?>" style="margin:0 10px;width:488px;height:385px;">
-                          <param name="movie" value="<?php echo file_create_url(fnet_common_safe_get($field_prod_video_lg_1,0,'uri')); ?>" />
+                  <?php if(fnet_common_safe_get($field_prod_video_img_t_1, 0, 'field_prod_video_img_t_1_fid')): ?>
+                    <li><?php if (fnet_common_safe_get($field_prod_video_lg_1, 0, 'field_prod_video_lg_1_fid')): ?>
+                        <object id="movieFrame" type="<?php print fnet_common_safe_get($field_prod_video_lg_1, 0, 'filemime'); ?>" data="<?php echo file_create_url(fnet_common_safe_get($field_prod_video_lg_1, 0, 'uri')); ?>" style="margin:0 10px;width:488px;height:385px;">
+                          <param name="movie" value="<?php echo file_create_url(fnet_common_safe_get($field_prod_video_lg_1, 0, 'uri')); ?>" />
                           <param name="wmode" value="transparent" />
                           <param name="FlashVars" value="" />
                           <param name="quality" value="high" />
@@ -355,25 +356,24 @@ $product_case_studies = $content['product_case_studies'];
                       <?php elseif ($youtubeUrl): ?>
                         <iframe width="488px" height="385px" id="youtubeInnerFrame" src="<?php print $youtubeUrl; ?>" frameborder="0" allowfullscreen></></iframe>
                       <?php else: ?>
-                        <img width="488" src="<?php echo file_create_url(fnet_common_safe_get($field_prod_video_img_t_1,0,'uri')); ?>">
+                        <img width="488" src="<?php echo file_create_url(fnet_common_safe_get($field_prod_video_img_t_1, 0, 'uri')); ?>">
                       <?php endif; ?>
                     </li>
                   <?php endif; ?>
                   <?php $j = 0; ?>
-                  <?php for($i=1; $i<11; $i++): ?>
-                  <?php // TODO: Replace this crap with correct file names and functions!! ?>
-                    <?php $fieldName = "field_prod_carousel_img_lg_".$i; ?>
+                  <?php for($i = 1; $i < 11; $i++): ?>
+                    <?php $fieldName = "field_prod_carousel_img_lg_" . $i; ?>
                     <?php if (fnet_common_safe_get(${$fieldName}, 0, 'fid')): ?>
                       <li><img width="488" src="<?php echo file_create_url(fnet_common_safe_get(${$fieldName}, 0, 'uri')); ?>">
                       </li>
                         <?php $j++; ?>
-                      <?php endif; ?>
+                    <?php endif; ?>
                   <?php endfor;?>
                 </ul>
               </div>
             </div>
             <?php if ($j < 5): ?>
-                <?php $selectorWidth = $j*80 - 1; ?>
+                <?php $selectorWidth = $j * 80 - 1; ?>
                 <style>
               .product-page .connected-carousels .navigation {
                 width: <?php print $selectorWidth; ?>px;
@@ -389,16 +389,16 @@ $product_case_studies = $content['product_case_studies'];
 
               <div class="carousel carousel-navigation">
                 <ul>
-                  <?php if(fnet_common_safe_get($field_prod_video_img_t_1,0,'filename')): ?>
+                  <?php if(fnet_common_safe_get($field_prod_video_img_t_1, 0, 'filename')): ?>
                     <li class="video_frame"><div class="thumb_image">
-                      <img width="73" height='58px' src="<?php echo file_create_url(fnet_common_safe_get($field_prod_video_img_t_1,0,'uri')); ?>">
+                      <img width="73" height='58px' src="<?php echo file_create_url(fnet_common_safe_get($field_prod_video_img_t_1, 0, 'uri')); ?>">
                         </div>
                     </li>
                   <?php endif; ?>
                   <?php
                   $j = 0;
-                  for ($i=1; $i<11; $i++) {
-                    $fieldName = "field_prod_carousel_img_t_".$i;
+                  for ($i = 1; $i < 11; $i++) {
+                    $fieldName = "field_prod_carousel_img_t_" . $i;
                     if (fnet_common_safe_get(${$fieldName}, 0, 'uri')) { ?>
                       <li class="image_frame"><div class="thumb_image">
                           <img width="73px" height='58px' src="<?php echo file_create_url(fnet_common_safe_get(${$fieldName}, 0, 'uri')); ?>">
@@ -430,27 +430,30 @@ $product_case_studies = $content['product_case_studies'];
           <table class="at-a-glance-buttons" width="100%" cellpadding="0" cellspacing="12px">
 
             <?php
-            $buttonCount = 0; // Used to determine where to add <tr> tags.
-            //TODO: figure out how to propigate translation status from $node
+            // Used to determine where to add <tr> tags.
+            $buttonCount = 0;
+            // TODO: figure out how to propigate translation status from $node.
             $noTranslation = array(
               'cta_btn' => array(FALSE, FALSE, FALSE, FALSE, FALSE),
               'field_prod_wtb_online' => FALSE,
             );
-            $btnSize = fnet_common_get_field_value('node', $node, 'field_prod_btn_cta_size'); // "1 line" or "2 lines"
-            for ($i=0; $i<4; $i++) {
-              if ( fnet_common_safe_get($field_prod_btn_calltoaction, $i, 'title') && fnet_common_safe_get($field_prod_btn_calltoaction, $i, 'display_url') ) {
+            // Show "1 line" or "2 lines".
+            $btnSize = fnet_common_get_field_value('node', $node, 'field_prod_btn_cta_size');
+            for ($i = 0; $i < 4; $i++) {
+              if (fnet_common_safe_get($field_prod_btn_calltoaction, $i, 'title') && fnet_common_safe_get($field_prod_btn_calltoaction, $i, 'display_url')) {
 
                 if ($buttonCount == 0 || $buttonCount == 2) {
                   echo "<tr>";
                 } // Open table row at beginning of every two button
 
-                if($noTranslation["cta_btn"][$i+1]) echo "<div class='OneLinkNoTx'>\n";
-
+                if($noTranslation["cta_btn"][$i + 1]) {
+                  echo "<div class='OneLinkNoTx'>\n";
+                }
                 ?>
                 <td
                   <?php
-                  $attr=fnet_common_safe_get($field_prod_btn_calltoaction, $i, 'attributes');
-                  if($attr == array("target" => "_blank") ){
+                  $attr = fnet_common_safe_get($field_prod_btn_calltoaction, $i, 'attributes');
+                  if($attr == array("target" => "_blank")){
                     $attr["onClick"] = "return false;"; ?>
                     onclick="window.open('<?php echo fnet_common_safe_get($field_prod_btn_calltoaction, $i, 'display_url'); ?>');"
                   <?php }else{ ?>
@@ -462,12 +465,12 @@ $product_case_studies = $content['product_case_studies'];
                   title="<?php echo $field_prod_btn_calltoaction[$i]['title']; ?>"
                   >
                   <?php
-                  // apply line breaks in title by splitting title into separate lines
+                  // Apply linebreaks in title by splitting into separate lines.
                   $btn_words = fnet_common_safe_get($field_prod_btn_calltoaction, $i, 'title');
                   $btn_url = fnet_common_safe_get($field_prod_btn_calltoaction, $i, 'display_url');
                   $lines = explode('<br>', $btn_words);
                   foreach ($lines as $btn_word) {
-                    echo l( $btn_word , $btn_url ,  array('attributes'=> $attr) );
+                    echo l($btn_word, $btn_url, array('attributes' => $attr));
                     echo '<br>';
                   }
                   ?>
@@ -476,22 +479,31 @@ $product_case_studies = $content['product_case_studies'];
 
                 <?php
 
-                if($noTranslation["cta_btn"][$i+1]) echo "</div>\n";
+                if($noTranslation["cta_btn"][$i + 1]) {
+                  echo "</div>\n";
+                }
                 $buttonCount++;
-                if($buttonCount == 2 || $buttonCount == 4) echo "</tr>"; // Close table row after every two buttons.
+                if($buttonCount == 2 || $buttonCount == 4) {
+                  // Close table row after every two buttons.
+                  echo "</tr>";
+                }
               }
             }
 
-            if($buttonCount == 1 || $buttonCount == 3) echo "</tr>"; // After buttons are rendered, close table row if it ended on an odd number of buttons.
+            if($buttonCount == 1 || $buttonCount == 3) {
+              // After buttons are rendered, close table row if it ended on an
+              // odd number of buttons.
+              echo "</tr>";
+            }
 
             ?>
 
             <?php
             $contact = fnet_common_safe_get($field_prod_contact_sales_button);
             $wtb = fnet_common_safe_get($field_prod_where_to_buy_button);
-            if ( $contact || $wtb) : ?>
+            if ($contact || $wtb) : ?>
               <tr>
-                <?php if ( $contact ): ?>
+                <?php if ($contact): ?>
                   <td
                     class="blue"
                     onclick="location.href = '/contact_sales?epi=<?php print products_clean_string($node->title); ?>';"
@@ -532,10 +544,13 @@ $product_case_studies = $content['product_case_studies'];
             <div id="buy-online-links-list" style="padding-left:15px;">
               <h2>Buy Online</h2>
               <?php
-              if ($noTranslation["field_prod_wtb_online"]) print ("<div class=\"OneLinkNoTx\">");
+
+              if ($noTranslation["field_prod_wtb_online"]) {
+                print "<div class=\"OneLinkNoTx\">";
+              }
               $wtbBuf = "";
               $linkBuf = "";
-              for ($i=0; $i<3; $i++) {
+              for ($i = 0; $i < 3; $i++) {
                 $addSpace = "";
                 if ($field_prod_wtb_online[LANGUAGE_NONE][$i]['title']) {
                   if ($wtbBuf) {
@@ -546,19 +561,22 @@ $product_case_studies = $content['product_case_studies'];
                   $wtbBuf .= ('<div style="float:left;font-weight: bold ;font-size: 13px;">');
                   $wtbBuf .= $addSpace;
 
-                  $wtbBuf .= l($field_prod_wtb_online[LANGUAGE_NONE][$i]['title'], $field_prod_wtb_online[LANGUAGE_NONE][$i]['display_url'], array('attributes' => array('class'=>'buy-online-link', 'target'=>'new', 'title'=>$field_prod_wtb_online[LANGUAGE_NONE][$i]['title'])));
+                  $wtbBuf .= l($field_prod_wtb_online[LANGUAGE_NONE][$i]['title'], $field_prod_wtb_online[LANGUAGE_NONE][$i]['display_url'], ['attributes' => ['class' => 'buy-online-link', 'target' => 'new', 'title' => $field_prod_wtb_online[LANGUAGE_NONE][$i]['title']]]);
                   $wtbBuf .= ('</div>');
                 }
               }
-              // Max character to keep all links in one line = 48
-              if (strlen($linkBuf) > 43) $wtbBuf = str_ireplace("<div style=\"float:left;font-weight: bold ;font-size: 13px;\">&nbsp;&nbsp;|&nbsp;&nbsp;", "<div style=\"clear:both; line-height: 0px;\">&nbsp;</div><div style=\"float:left;font-weight: bold ;font-size: 13px;\">", $wtbBuf);
+              // Max character to keep all links in one line = 48.
+              if (strlen($linkBuf) > 43) {
+                $wtbBuf = str_ireplace("<div style=\"float:left;font-weight: bold ;font-size: 13px;\">&nbsp;&nbsp;|&nbsp;&nbsp;", "<div style=\"clear:both; line-height: 0px;\">&nbsp;</div><div style=\"float:left;font-weight: bold ;font-size: 13px;\">", $wtbBuf);
+              }
               print $wtbBuf;
-              if ($noTranslation["field_prod_wtb_online"]) print ("</div>");
+              if ($noTranslation["field_prod_wtb_online"]) {
+                print ("</div>");
+              }
               ?>
               <div style="clear:both; line-height: 12px;">&nbsp;</div>
-              <?php // if ($node->field_prod_where_to_buy_button[0]['value'] == 'on'): ?>
               <div style="font-weight: bold ;font-size: 13px;">
-                <?php print l('See more online resellers or buy locally','wheretobuy',array('query' => array('tab' => '3', 'product' => $node->nid))); ?>
+                <?php print l(t('See more online resellers or buy locally'), 'wheretobuy', array('query' => array('tab' => '3', 'product' => $node->nid))); ?>
               </div>
             </div>
 
@@ -632,10 +650,10 @@ $product_case_studies = $content['product_case_studies'];
                              "Options",
                              "Accessories",
                              "Upgrades",
-                             "Professional Services"
+                             "Professional Services",
                            ) as $modType): ?>
               <?php $moas = array(); ?>
-              <?php if ( isset($content['product_moa_' . $modType]) && count( $content['product_moa_' . $modType] ) > 0): ?>
+              <?php if (isset($content['product_moa_' . $modType]) && count($content['product_moa_' . $modType]) > 0): ?>
                 <?php $moas = $content['product_moa_' . $modType]; ?>
                 <div class="clear_15px">&nbsp;</div>
                 <h6 class="product-moa-title"><?php print $modType; ?></h6>
@@ -695,7 +713,7 @@ $product_case_studies = $content['product_case_studies'];
       <?php endif ?><!-- Models & Accessories -->
 
       <!-- Specifications -->
-      <?php if( fnet_common_safe_get($field_product_specs, 0, 'value') ): ?>
+      <?php if(fnet_common_safe_get($field_product_specs, 0, 'value')): ?>
 
         <div class="product-page-section column-grid">
 
@@ -726,7 +744,7 @@ $product_case_studies = $content['product_case_studies'];
                              'catalogs',
                              'application notes',
                              'white papers',
-                             'flyers'
+                             'flyers',
                            ) as $type) {
               if (isset($myDoc[$type])) { ?>
                 <div class="clear_15px;">&nbsp;</div>
@@ -787,13 +805,13 @@ $product_case_studies = $content['product_case_studies'];
       <div class="product-page-section column-grid">
         <?php if (count($product_case_studies) > 0) {
 
-          $headerPrinted = false;
+          $headerPrinted = FALSE;
 
           foreach ($product_case_studies as $case_study) {
 
             if (!$headerPrinted){
 
-              $headerPrinted = true; ?>
+              $headerPrinted = TRUE; ?>
               <a class="toc-anchor" name="case_studies">&nbsp;</a>
               <div class="section-container">
                 <h3 class="product-page-section-title"><span>Case Studies</span></h3>
@@ -817,7 +835,7 @@ $product_case_studies = $content['product_case_studies'];
       </div><!-- Case Studies -->
 
       <!-- Custom Tabs -->
-      <?php for ($i=1; $i < 6; $i++): ?>
+      <?php for ($i = 1; $i < 6; $i++): ?>
         <?php
           $tab_name = fnet_common_safe_get(${"field_prod_ctab_name_" . $i});
           $tab_data = fnet_common_safe_get(${"field_prod_ctab_data_" . $i});
@@ -825,7 +843,7 @@ $product_case_studies = $content['product_case_studies'];
         ?>
         <?php if($tab_name && $tab_data && !$tab_link): ?>
           <div class="product-page-section column-grid">
-            <a class="toc-anchor" name="<?php print str_replace("&","and",str_replace(" ","_",strtolower($tab_name))); ?>">&nbsp;</a>
+            <a class="toc-anchor" name="<?php print str_replace("&", "and", str_replace(" ", "_", strtolower($tab_name))); ?>">&nbsp;</a>
             <div class="section-container">
               <h3 class="product-page-section-title"><span><?php print $tab_name; ?></span></h3>
               <div><?php print $tab_data; ?></div>
@@ -845,6 +863,7 @@ $product_case_studies = $content['product_case_studies'];
 
           if ($related_product_file && $related_product_nid && $related_product_title) {
             $has_related_products = TRUE;
+            break;
           }
         }
       }
