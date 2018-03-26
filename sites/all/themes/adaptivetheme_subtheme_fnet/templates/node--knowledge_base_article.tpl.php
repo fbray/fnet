@@ -3,7 +3,7 @@
 	<!-- START: Breadcrumbs -->
 	<div id="kb-breadcrumbs">										
 		<?php 
-				$tid = isset($node->field_knowledge_base[LANGUAGE_NONE][0]['entity']->tid) ? $node->field_knowledge_base[LANGUAGE_NONE][0]['entity']->tid:'';
+				$tid = !empty($node->field_knowledge_base[LANGUAGE_NONE][0]['entity']->tid)?$node->field_knowledge_base[LANGUAGE_NONE][0]['entity']->tid:'';
 				$term_parents = $tid != "all" ? array_reverse(taxonomy_get_parents_all($tid)) : false; // Build an array of the hierarchical parents of the term 
 		?>	
 		<a href="/knowledge-base" id="bc-link">KB Home</a>
@@ -30,13 +30,13 @@
 	<div id="kb-article" <?php //if ($node->do_not_translate) { // print 'class="OneLinkNoTx"';	} ?>>
 	
 	<?php
-		// echo "<pre>"; print_r($node); echo "</pre>";
+		// echo "<pre>"; print_r(user_load($node->uid)); echo "</pre>";
 	?>
 		<h1 id="article-title"><?php echo $node->title; ?></h1>
 		<div id="article-body"><?php echo $node->body[LANGUAGE_NONE][0]['value']; ?></div>
 
 		<div id="article-author">
-			<p class="info"><strong>Author: </strong><?php echo isset($node->field_article_author[0]["value"]) ? $node->field_article_author[0]["value"] : user_load($node->uid)->realname; ?></p>
+			<p class="info"><strong>Author: </strong><?php echo isset($node->field_article_author[LANGUAGE_NONE][0]["value"]) ? $node->field_article_author[LANGUAGE_NONE][0]["value"] : user_load($node->uid)->realname; ?></p>
 			<p class="info"><strong>Creation
 					Date: </strong><?php echo date('Y-m-d',$node->created); ?></p>
 			<p class="info"><strong>Last

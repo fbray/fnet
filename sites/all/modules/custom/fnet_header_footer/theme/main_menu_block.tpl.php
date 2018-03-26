@@ -20,7 +20,7 @@
 
             <div class="mega_nav_outer_sep">
               <div class="mega_nav_inner">
-                <div class="topnav_submenu_title"><a href="/solutions/roles"><?php print t('Roles'); ?></a></div>
+                <div class="topnav_submenu_title"><?php print t('Roles'); ?></div>
                 <div class="topnav_submenu_item">
                   <a href="/expertise/role/Architects-Consultants-Designers"><?php print t('Architects, Consultants and Designers'); ?></a>
                 </div>
@@ -39,7 +39,7 @@
 
             <div class="mega_nav_outer_sep">
               <div class="mega_nav_inner">
-                <div class="topnav_submenu_title"><a href="/solutions/learn-about"><?php print t('Learn About'); ?></a></div>
+                <div class="topnav_submenu_title"><?php print t('Learn About'); ?></div>
                 <div class="topnav_submenu_item">
                   <a href="/Expertise/Learn-About/Cable-Installation"><?php print t('Cable Installation Tools'); ?></a>
                 </div>
@@ -70,8 +70,7 @@
 
             <div class="mega_nav_outer">
               <div class="mega_nav_inner">
-                <div class="topnav_submenu_title"><a href="/solutions/case-studies"><?php print t('Case Studies'); ?></a>
-                </div>
+                <div class="topnav_submenu_title"><?php print t('Case Studies'); ?></div>
                 <div class="topnav_submenu_item">
                   <a href="/content/compucom-case-study"><?php print t('CompuCom Case Study'); ?></a>
                 </div>

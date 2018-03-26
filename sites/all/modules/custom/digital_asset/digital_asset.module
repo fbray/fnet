@@ -1280,7 +1280,7 @@ function digital_asset_list_assets_by_type($type, $language = 'en', $industry = 
  * @return array
  */
 function digital_asset_get_products_with_assets($type) {
-  $result_set = array();
+  $result_set = [];
   $sql = "SELECT
 	p.field_pcatid_value,
 	n.title
@@ -1292,19 +1292,22 @@ WHERE
 			SELECT DISTINCT
 				fp.field_product_product_id
 			FROM
-				{field_data_field_dam_asset_type} a
+				{field_data_field_asset_type} a
 			INNER JOIN {node} AS n ON a.revision_id = n.vid
 			INNER JOIN {field_data_field_product} AS fp ON n.vid = fp.revision_id
 			WHERE
 				fp.field_product_product_id IS NOT NULL
-			AND a.field_dam_asset_type_target_id IN (:type)
+			AND a.field_asset_type_value IN (:type)
 			ORDER BY
 				fp.field_product_product_id ASC
 		)
   AND p.field_pcatid_value IS NOT NULL
 	AND n.status = 1
 ORDER BY n.title";
-  $result = db_query($sql, array(':type' => $type));
+  $result = db_query($sql, [':type' => $type]);
+  foreach($result as $row) {
+    $result_set[$row->field_pcatid_value] = $row->title;
+  }
   return $result_set;
 }
 

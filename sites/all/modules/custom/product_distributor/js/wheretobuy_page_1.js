@@ -1,6 +1,6 @@
 jQuery.noConflict();
 (function ($) {
-    $(function() {
+    $(function () {
         var infowindow = null;
         var preIwindow = null;
         var buyingMethodCount = 0;
@@ -73,7 +73,7 @@ jQuery.noConflict();
                 var url = Drupal.settings.basePath + 'wheretobuy_ajax/get_delivery_types';
                 var urlData = 'country=' + $('#edit-countries').val();
                 urlData += '&product=' + $('#edit-products').val();
-console.log(urlData);
+                console.log(urlData);
                 $('#ajax-loader-wrapper').show();
                 $.ajax({
                     type: "GET",
@@ -96,17 +96,17 @@ console.log(urlData);
                         }
                         else {
                             // Display region & postal_code filters
-                            alert('Should display region and postal code stuff.')
                             $('#pd-l1-form #edit-submit').hide();
                             submitCallback = false;
                             submitCallbackData = false;
 
                             // Display the Price spider WTB button if country is US
                             if ($('#edit-countries').val() == 'US' && jdata.wtbcheck == 1) {
-                                if(jdata.psmodel == null){
-                                    jdata.psmodel= '';
+                                if (jdata.psmodel == null) {
+                                    jdata.psmodel = '';
                                 }
-                                $('#ps-widget-btn').html('<div class="ps-widget" ps-sku="'+jdata.psmodel+'"></div>');
+                                alert('Cue the WTB button!');
+                                $('#ps-widget-btn').html('<div class="ps-widget" ps-sku="' + jdata.psmodel + '"></div>');
                                 PriceSpider.rebind();
                                 $('.ps-widget').fadeIn();
                             }
@@ -144,8 +144,8 @@ console.log(urlData);
                                     if (($('#edit-countries').val() == 'US') && ($('input#edit-gsa-schedule').is(':checked'))) {
                                         urlData += '&channel=1';
                                     }
-                                    // alert(url);
-                                    // alert(urlData);
+                                    alert(url);
+                                    alert(urlData);
                                     $('#ajax-loader-wrapper').show();
                                     $.ajax({
                                         type: "GET",
@@ -428,7 +428,7 @@ console.log(urlData);
     // Show/Hide Sales channel radios
     function checkboxGSA() {
         //Show only if country is US
-        if(($('#edit-products').val() != 0) && ($('#edit-countries').val() == 'US')) {
+        if (($('#edit-products').val() != 0) && ($('#edit-countries').val() == 'US')) {
             $('#edit-gsa-schedule-wrapper').fadeIn();
         }
         else {
@@ -440,16 +440,16 @@ console.log(urlData);
         $('#dsearch-results').empty();
 
         $('#gmap-wrapper').hide();
-        if(isCountry == true) {
+        if (isCountry == true) {
             $('#map-wrapper').show();
             $('#pimg-wrapper').hide();
         }
         else {
-            if($('#pimg-wrapper').html() == '') {
+            if ($('#pimg-wrapper').html() == '') {
                 $('#map-wrapper').show();
                 $('#pimg-wrapper').hide();
             }
-            else  {
+            else {
                 $('#map-wrapper').hide();
                 $('#pimg-wrapper').show();
             }
@@ -459,7 +459,7 @@ console.log(urlData);
 //Show WTB error message and contact form
     function wtbSetErrorMessage(message) {
         $('#dsearch-results').html(message);
-        if($('#dsearch-results #wtb-contact-form-wrapper').html())
+        if ($('#dsearch-results #wtb-contact-form-wrapper').html())
             $('#dsearch-results #wtb-contact-form-wrapper').html($('#wtb-contact-us-form-wrapper').html());
     }
 
@@ -490,15 +490,15 @@ console.log(urlData);
 
         //find the first valid lat-lon and use it to center map
         var counter = lats.length;
-        for(i = 0; i<counter; i++) {
-            if(lats[i] != 'NULL' && lons[i] != 'NULL') {
+        for (i = 0; i < counter; i++) {
+            if (lats[i] != 'NULL' && lons[i] != 'NULL') {
                 clat = lats[i];
                 clon = lons[i];
                 break;
             }
         }
         //Check if ther is atleast one coordinate to display
-        if(i == counter)
+        if (i == counter)
             return false;
         var myLatlng = new google.maps.LatLng(clat, clon);
 
@@ -520,26 +520,26 @@ console.log(urlData);
          */
         //Use bounds calculated by google maps
         var myBounds = new google.maps.LatLngBounds();
-        for(i = 0; i<counter; i++) {
-            if(lats[i] != 'NULL' && lons[i] != 'NULL') {
+        for (i = 0; i < counter; i++) {
+            if (lats[i] != 'NULL' && lons[i] != 'NULL') {
                 tmpLatlng[i] = new google.maps.LatLng(lats[i], lons[i]);
                 //Use bounds calculated by extending bounds
-                if(i < 10) {
+                if (i < 10) {
                     myBounds.extend(tmpLatlng[i]);
                 }
                 marker[i] = new google.maps.Marker({
                     position: tmpLatlng[i],
                     title: gtitle[i],
-                    html: '<b>'+gtitle[i]+'</b><br/>'+gaddress[i]
+                    html: '<b>' + gtitle[i] + '</b><br/>' + gaddress[i]
                 });
                 // To add the marker to the map, call setMap();
                 marker[i].setMap(map);
                 var mrkr = marker[i];
-                google.maps.event.addListener(mrkr, 'click', function() {
+                google.maps.event.addListener(mrkr, 'click', function () {
                     infowindow = new google.maps.InfoWindow();
                     infowindow.setContent(this.html);
-                    infowindow.open(map,this);
-                    if(preIwindow) {
+                    infowindow.open(map, this);
+                    if (preIwindow) {
                         preIwindow.close();
                     }
                     preIwindow = infowindow;
@@ -548,9 +548,9 @@ console.log(urlData);
         }
         //Add GMap listner to set zoom level to 16 if the zoom in higher than 16 after executing FitBounds()
         //This is listner removed after firing once.
-        google.maps.event.addListenerOnce(map,'bounds_changed', function() {
-            if(map.getZoom()) {
-                if(map.getZoom() > 16)
+        google.maps.event.addListenerOnce(map, 'bounds_changed', function () {
+            if (map.getZoom()) {
+                if (map.getZoom() > 16)
                     map.setZoom(16);
             }
         });
@@ -561,7 +561,7 @@ console.log(urlData);
 
 //---------------- Email Us ----------------//
     function AirMagnetHowToBuy(element) {
-        if($(element).is(':checked')) {
+        if ($(element).is(':checked')) {
             window.open("http://www.flukenetworks.com/content/wlan-how-buy-form");
         }
     }

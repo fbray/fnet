@@ -23,24 +23,29 @@ class FNETNewMarketoFormMigration extends FNETNode7Migration {
     $this->addFieldMapping('field_fnet_mkto_disp_title:language', 'field_fnet_mkto_disp_title:language')
       ->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('field_fnet_mkto_banner_html', 'field_fnet_mkto_banner_html');
-    $this->addFieldMapping('field_fnet_mkto_banner_html:format', 'field_fnet_mkto_banner_html:format');
+    $this->addFieldMapping('field_fnet_mkto_banner_html:format', 'field_fnet_mkto_banner_html:format')
+      ->defaultValue('full_html');
     $this->addFieldMapping('field_fnet_mkto_banner_html:language', 'field_fnet_mkto_banner_html:language')
       ->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('field_fnet_mkto_main_content', 'field_fnet_mkto_main_content');
-    $this->addFieldMapping('field_fnet_mkto_main_content:format', 'field_fnet_mkto_main_content:format');
+    $this->addFieldMapping('field_fnet_mkto_main_content:format', 'field_fnet_mkto_main_content:format')
+      ->defaultValue('full_html');
     $this->addFieldMapping('field_fnet_mkto_main_content:language', 'field_fnet_mkto_main_content:language')
       ->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('field_fnet_mkto_export_ctrl', 'field_fnet_mkto_export_ctrl');
     $this->addFieldMapping('field_fnet_mkto_title', 'field_fnet_mkto_title');
-    $this->addFieldMapping('field_fnet_mkto_title:format', 'field_fnet_mkto_title:format');
+    $this->addFieldMapping('field_fnet_mkto_title:format', 'field_fnet_mkto_title:format')
+      ->defaultValue('full_html');
     $this->addFieldMapping('field_fnet_mkto_title:language', 'field_fnet_mkto_title:language')
       ->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('field_fnet_mkto_form_btm_html', 'field_fnet_mkto_form_btm_html');
-    $this->addFieldMapping('field_fnet_mkto_form_btm_html:format', 'field_fnet_mkto_form_btm_html:format');
+    $this->addFieldMapping('field_fnet_mkto_form_btm_html:format', 'field_fnet_mkto_form_btm_html:format')
+      ->defaultValue('full_html');
     $this->addFieldMapping('field_fnet_mkto_form_btm_html:language', 'field_fnet_mkto_form_btm_html:language')
       ->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('field_fnet_mkto_adtracker', 'field_fnet_mkto_adtracker');
-    $this->addFieldMapping('field_fnet_mkto_adtracker:format', 'field_fnet_mkto_adtracker:format');
+    $this->addFieldMapping('field_fnet_mkto_adtracker:format', 'field_fnet_mkto_adtracker:format')
+      ->defaultValue('full_html');
     $this->addFieldMapping('field_fnet_mkto_form_number', 'field_fnet_mkto_form_number');
 
 

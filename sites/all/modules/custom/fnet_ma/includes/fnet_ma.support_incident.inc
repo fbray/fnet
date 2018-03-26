@@ -371,7 +371,7 @@ function fnet_ma_display_all_support_incidents($days_history = 30, $asset_id = N
   drupal_add_js(drupal_get_path('module', 'fnet_ma') . '/js/fnet_ma_helper.js');
   if (!empty($asset_id)) {
     $support_incidents = fnet_ma_fetch_support_incidents($days);
-    $incidents = array();
+    $incidents = [];
     foreach ($support_incidents as $incident) {
       if ($incident['asset_id'] == $asset_id) {
         $incidents[] = $incident;
@@ -385,10 +385,10 @@ function fnet_ma_display_all_support_incidents($days_history = 30, $asset_id = N
   }
   $search_form = drupal_get_form('fnet_ma_support_incident_search_form');
   $rendered_search_form = drupal_render($search_form);
-  $html .= theme("all_support_incident_display", array(
+  $html .= theme("all_support_incident_display", [
     'support_incidents' => $support_incidents,
     'search_form' => $rendered_search_form
-  ));
+  ]);
   return $html;
 }
 
@@ -414,7 +414,7 @@ function fnet_ma_get_model_name($model_number) {
  */
 function fnet_ma_display_support_incident_thanks_message() {
   $text = variable_get('myaccount_thankyou_message_support_incident', t('Thank you for posting the support incident.'));
-  $html = check_markup($text, FILTER_FORMAT_DEFAULT, $langcode = '' /* TODO Set this variable. */, TRUE);
+  $html = check_markup($text,  	filter_fallback_format(), $langcode = '' /* TODO Set this variable. */, TRUE);
   $html .= '<br /><br />';
   $html .= t('Click to !link_to_register_again', array(
     '!link_to_register_again' => l(t("Create a support incident."), 'myaccount/report-support-incidents', $options = array(

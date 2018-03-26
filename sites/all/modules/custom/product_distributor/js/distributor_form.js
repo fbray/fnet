@@ -1,6 +1,6 @@
 jQuery.noConflict();
 (function ($) {
-    $(function() {
+    $(function () {
         var isRegionRequired = false;
         var isBuyOnlineURLRequired = false;
         var oldCountryVal = null;

@@ -1,6 +1,4 @@
 <?php
-// $Id: all-support-incident-display.tpl.php 80 2015-05-15 21:55:45Z sogden1 $
-
 /**
  * @file
  * This file is used to theme the page that displays the listing of all the
@@ -37,7 +35,7 @@ else {
   </div>
 </div>
 
-<?php if (arg(2) != 'products-all-support-incidents') { ?>
+<?php if (arg(2) != 'products-all-support-incidents'): ?>
   <div id='all-support-incidents-listing-section-expanding-master-key-div'
        Onclick="return toggle_sections('all-support-incidents-listing-section');"
        class='my-account-headlines my-account-header-minus-background'>
@@ -63,19 +61,11 @@ else {
       )); ?>
     </div>
   </div>
-<?php } ?>
+<?php endif; ?>
 <div id='gold_support_section'>
-  <?php
-  if (!$array_is_empty) {
-    for ($div_counter = 1; $div_counter <= $total_number_of_pages; $div_counter++) {
-      $visible_status = '';
-      if ($div_counter == 1) {
-        $visible_status = 'display:block';
-      }
-      else {
-        $visible_status = 'display:none';
-      }
-      ?>
+  <?php if (!$array_is_empty): ?>
+    <?php for ($div_counter = 1; $div_counter <= $total_number_of_pages; $div_counter++): ?>
+      <?php $visible_status = ($div_counter == 1) ? 'display:block' : 'display:none'; ?>
       <div class='full-available-width OneLinkNoTx'>
         <div class='data_divs' id="div_number_<?php print $div_counter; ?>"
              style='<?php print $visible_status; ?>;'>
@@ -99,78 +89,67 @@ else {
                 <?php print t('Created'); ?>
               </td>
             </tr>
-            <?php
-            for ($array_element_count = (($div_counter - 1) * $rows_per_page) + 1; $array_element_count <= ($div_counter * $rows_per_page); $array_element_count++) {
-              if (trim($content_array[$array_element_count - 1]['iIncidentId'] != '')) {
-                ?>
+            <?php // for ($array_element_count = (($div_counter - 1) * $rows_per_page) + 1; ($array_element_count <= ($div_counter * $rows_per_page) || $array_element_count < ; $array_element_count++): ?>
+            <?php $array_element_count = 1; ?>
+            <?php foreach($content_array as $incident): ?>
+              <?php if (trim($incident['iIncidentId'] != '')): ?>
                 <tr <?php print($array_element_count % 2 == 0 ? 'class="trAlternate"' : ''); ?>>
                   <td valign="top">
                     <span
-                      class='actual_values'><?php print $content_array[$array_element_count - 1]['iIncidentId']; ?></span>
+                      class='actual_values'><?php print $incident['iIncidentId']; ?></span>
                   </td>
 
                   <td valign="top">
                     <span
-                      class='actual_values'><?php print $content_array[$array_element_count - 1]['subject']; ?></span>
+                      class='actual_values'><?php print $incident['subject']; ?></span>
                   </td>
 
                   <td valign="top">
                     <span
-                      class='actual_values'><?php print $content_array[$array_element_count - 1]['vchProductDesc']; ?></span>
+                      class='actual_values'><?php print $incident['vchProductDesc']; ?></span>
                   </td>
 
                   <td valign="top">
                     <span
-                      class='actual_values'><?php print $content_array[$array_element_count - 1]['vchStatusDesc']; ?></span>
+                      class='actual_values'><?php print $incident['vchStatusDesc']; ?></span>
                   </td>
 
                   <td valign="top">
                     <span
-                      class='actual_values'><?php print $content_array[$array_element_count - 1]['dtInsertDate']; ?></span>
+                      class='actual_values'><?php print $incident['dtInsertDate']; ?></span>
                   </td>
                 </tr>
-              <?php
-              }
-            }
-            ?>
+              <?php endif; ?>
+              <?php $array_element_count++; ?>
+            <?php endforeach; ?>
           </table>
           <div class='see_more_link_with_pager'>
-            <?php
-            if ($div_counter != 1) {
-              ?>
+            <?php if ($div_counter != 1): ?>
               <a href='Javascript://'
                  Onclick='return move_backward("<?php print($div_counter - 1); ?>");'>
               <span class='actual_values link_text'>
                 <?php print t('<< Previous&nbsp;&nbsp;&nbsp;'); ?>
               </span>
               </a>
-            <?php
-            }
-            ?>
+            <?php endif;?>
 
-            <?php
-            if ($div_counter != $total_number_of_pages) {
-              ?>
+            <?php if ($div_counter != $total_number_of_pages): ?>
               <a href='Javascript://'
                  Onclick='return move_forward("<?php print($div_counter + 1); ?>");'>
               <span class='actual_values link_text'>
                 <?php print t('Next >>'); ?>
               </span>
               </a>
-            <?php
-            }
-            ?>
+            <?php endif; ?>
 
             <div
               class='page_number'><?php print t('Page - '); ?><?php print $div_counter; ?><?php print t(' of '); ?><?php print $total_number_of_pages ?><?php print t(' Pages.'); ?></div>
           </div>
         </div>
       </div>
-    <?php
-    }
-  }
-  else {
-    ?>
+    <?php endfor; ?>
+
+  <?php else: ?>
     <div class='data_divs'>
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr>
@@ -197,7 +176,5 @@ else {
         </tr>
       </table>
     </div>
-  <?php
-  }
-  ?>
+  <?php endif; ?>
 </div>

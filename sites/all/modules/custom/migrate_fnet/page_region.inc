@@ -25,7 +25,8 @@ class FNETPageRegionMigration extends FNETNode7Migration {
     // Individual Fields
     $this->addFieldMapping('field_removenav', 'field_removenav');
     $this->addFieldMapping('field_tracking_code', 'field_page_adtracker');
-    $this->addFieldMapping('field_tracking_code:format', 'field_page_adtracker:format');
+    $this->addFieldMapping('field_tracking_code:format', 'field_page_adtracker:format')
+      ->defaultValue('full_html');
 
   }
 

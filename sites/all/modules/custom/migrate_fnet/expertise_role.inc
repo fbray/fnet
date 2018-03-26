@@ -61,6 +61,7 @@ class FNETExpertiseRoleMigration extends FNETNode7Migration {
     // Metatags
   }
 
+  // TODO: File paths in body and other fields.
   public function complete($node, stdClass $row) {
     // Generate URL Redirects.
     parent::generateNodeRedirect($node, $row);

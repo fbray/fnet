@@ -27,10 +27,12 @@ class FNETMicrositePageMigration extends FNETNode7Migration {
     $this->addFieldMapping('body:language', 'body:language')
       ->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('field_intro', 'field_ms_page_intro_content');
-    $this->addFieldMapping('field_intro:format', 'field_ms_page_intro_content:format');
+    $this->addFieldMapping('field_intro:format', 'field_ms_page_intro_content:format')
+      ->defaultValue('full_html');
     $this->addFieldMapping('field_background_color', 'field_ms_page_bg_color');
     $this->addFieldMapping('field_tracking_code', 'field_microsite_page_adtracker');
-    $this->addFieldMapping('field_tracking_code:format', 'field_microsite_page_adtracker:format');
+    $this->addFieldMapping('field_tracking_code:format', 'field_microsite_page_adtracker:format')
+      ->defaultValue('full_html');
 
     // Image field
     $this->addFieldMapping('field_background_image', 'field_ms_page_bg_image')

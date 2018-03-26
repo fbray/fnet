@@ -1884,10 +1884,10 @@ div.messages {
 /* ==========================================================================
    Product Page
    ========================================================================== */
-body.node-type-product #main-content {
+body.node-type-product-display #main-content {
   padding-top: 0; }
 
-article.node-product {
+article.node-product-display {
   padding-top: 6em; }
 
 .product-page-section-title {

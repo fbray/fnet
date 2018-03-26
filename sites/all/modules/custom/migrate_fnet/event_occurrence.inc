@@ -35,17 +35,22 @@ class FNETEventOccurrenceMigration extends FNETNode7Migration {
     $this->addFieldMapping('field_event_occ_waitlist', 'field_evnt_occ_waitlist');
     $this->addFieldMapping('field_event_occ_accommodations', 'field_evnt_occ_accommodations')
       ->defaultValue(NULL);
-    $this->addFieldMapping('field_event_occ_accommodations:format', 'field_evnt_occ_accommodations:format');
+    $this->addFieldMapping('field_event_occ_accommodations:format', 'field_evnt_occ_accommodations:format')
+      ->defaultValue('full_html');;
     $this->addFieldMapping('field_event_occ_transportation', 'field_evnt_occ_transportation')
       ->defaultValue(NULL);
-    $this->addFieldMapping('field_event_occ_transportation:format', 'field_evnt_occ_transportation:format');
+    $this->addFieldMapping('field_event_occ_transportation:format', 'field_evnt_occ_transportation:format')
+      ->defaultValue('full_html');;
     $this->addFieldMapping('field_event_occ_contact', 'field_evnt_occ_contact')
       ->defaultValue(NULL);
-    $this->addFieldMapping('field_event_occ_contact:format', 'field_evnt_occ_contact:format');
+    $this->addFieldMapping('field_event_occ_contact:format', 'field_evnt_occ_contact:format')
+      ->defaultValue('full_html');;
     $this->addFieldMapping('field_notes', 'field_evnt_occ_notes');
-    $this->addFieldMapping('field_notes:format', 'field_evnt_occ_notes:format');
+    $this->addFieldMapping('field_notes:format', 'field_evnt_occ_notes:format')
+      ->defaultValue('full_html');;
     $this->addFieldMapping('field_event_occ_thank_you', 'field_evnt_occ_thank_you');
-    $this->addFieldMapping('field_event_occ_thank_you:format', 'field_evnt_occ_thank_you:format');
+    $this->addFieldMapping('field_event_occ_thank_you:format', 'field_evnt_occ_thank_you:format')
+      ->defaultValue('full_html');;
 
 
     // Convert Location data to Address field

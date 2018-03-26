@@ -4,28 +4,32 @@
  * User: rositis
  * Date: 1/4/18
  * Time: 2:47 PM
+ * @param $form
+ * @param $form_state
+ * @param $gid
+ * @return array
  */
 
 /*
 * Callback for Extranet request form
 */
 function sales_insider_custom_request_form($form, &$form_state, $gid) {
-  $form = array();
+  $form = [];
 
-  $form['instructions'] = array(
+  $form['instructions'] = [
     '#markup' => variable_get('extranet_instructions_request_access', ''),
-  );
+  ];
 
-  $form['gid'] = array(
+  $form['gid'] = [
     '#type' => 'hidden',
     '#name' => 'gid',
     '#value' => $gid,
-  );
+  ];
 
-  $form['submit'] = array(
+  $form['submit'] = [
     '#type' => 'submit',
     '#value' => t('Request Sales Insider access'),
-  );
+  ];
 
   return $form;
 }
@@ -39,12 +43,12 @@ function sales_insider_custom_request_form_submit($form, &$form_state) {
   //  $uid = $form_state['values']['uid'];
 
   if ($gid && $user->uid) {
-    $out = entity_create('group_membership', array(
+    $out = entity_create('group_membership', [
       'uid' => $user->uid,
       'gid' => $gid,
       'status' => 'requested',
       'requested_on' => time(),
-    ));
+    ]);
     // Saving the Group Membership entity triggers a number of Rules for sending emails.
     entity_save('group_membership', $out);
     // Direct the user to the Request Received page.

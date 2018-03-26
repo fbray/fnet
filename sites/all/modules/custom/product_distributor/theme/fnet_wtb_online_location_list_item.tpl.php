@@ -7,21 +7,21 @@ else {
 }
 ?>
 <li class="<?php print $data['classes'] ?>">
-  <h4><?php print $data['name'] ?></h4>
+    <h4><?php print $data['name'] ?></h4>
 
-  <div class="buy-online-wrapper">
-    <div class="btn_94w" id="edit-submit" style="display: block;">
-      <a target="_blank"
-         href="<?php print $data['buy_online_url'] ?>"><?php print $button_text; ?></a>
+    <div class="buy-online-wrapper">
+        <div class="btn_94w" id="edit-submit" style="display: block;">
+            <a target="_blank"
+               href="<?php print $data['buy_online_url'] ?>"><?php print $button_text; ?></a>
+        </div>
     </div>
-  </div>
 
-  <div class="dist-address">
+    <div class="dist-address">
 
-    <?php if (trim($data['toll_free_phone']) != ''): ?>
-    Toll-Free: <?php print $data['toll_free_phone'] ?>
-    <br/>
-    <?php endif; ?>
+      <?php if (trim($data['toll_free_phone']) != ''): ?>
+          Toll-Free: <?php print $data['toll_free_phone'] ?>
+          <br/>
+      <?php endif; ?>
 
-  </div>
+    </div>
 </li>

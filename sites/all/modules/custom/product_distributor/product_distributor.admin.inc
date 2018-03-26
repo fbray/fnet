@@ -10,36 +10,36 @@
  * @return mixed
  */
 function product_distributor_admin() {
-  $form = array();
+  $form = [];
 
-  $form['product_distributor_tab1_title'] = array(
+  $form['product_distributor_tab1_title'] = [
     '#type' => 'textarea',
     '#title' => t('First Tab Title'),
     '#default_value' => variable_get('product_distributor_tab1_title', ''),
     '#required' => FALSE,
-  );
+  ];
 
-  $form['product_distributor_tab2_title'] = array(
+  $form['product_distributor_tab2_title'] = [
     '#type' => 'textarea',
     '#title' => t('Second Tab Title'),
     '#default_value' => variable_get('product_distributor_tab2_title', ''),
     '#required' => TRUE,
-  );
+  ];
 
-  $form['product_distributor_tab2_content'] = array(
+  $form['product_distributor_tab2_content'] = [
     '#type' => 'textarea',
     '#title' => t('Second Tab Content'),
     '#default_value' => variable_get('product_distributor_tab2_content', ''),
     '#required' => TRUE,
-  );
-  
-  $form['product_distributor_contact_us'] = array(
+  ];
+
+  $form['product_distributor_contact_us'] = [
     '#type' => 'textarea',
     '#title' => t('Contact Us Page Title'),
     '#default_value' => variable_get('product_distributor_contact_us', ''),
     '#required' => TRUE,
-  );
-  
+  ];
+
   return system_settings_form($form);
 }
 
@@ -54,7 +54,7 @@ function wtb_configure_countries_form() {
   dpm($handlers);
 
   $address = 'SW61HS';
-  $point = geocoder('google',$address);
+  $point = geocoder('google', $address);
   $geoJSON = $point->out('json');
   $geo = json_decode($geoJSON);
   dpm($geo);
@@ -123,7 +123,7 @@ function views_distributor_list_customfield($data) {
  * @return string
  */
 function wtb_countries_regions_listing() {
-  $countries = array();
+  $countries = [];
   $countries_base = array_change_key_case(location_get_iso3166_list(), CASE_UPPER);
 
   if ((isset($_GET['country'])) && (isset($countries_base[$_GET['country']]))) {
@@ -134,7 +134,7 @@ function wtb_countries_regions_listing() {
   }
   asort($countries);
 
-  $flagged_countries = variable_get('wtb_countries_skip_region', array());
+  $flagged_countries = variable_get('wtb_countries_skip_region', []);
   $listing = '';
   $listing = ' <div><fieldset>';
   $listing .= drupal_render(drupal_get_form('wtb_country_region_form', $countries_base));
@@ -181,7 +181,7 @@ function wtb_countries_regions_listing() {
     }
   }
   $wtb_listing_base = base_path() . 'admin/content/countries-regions/';
-  $param = array();
+  $param = [];
   if ((isset($_GET['country'])) && (isset($countries_base[$_GET['country']]))) {
     $param[] = 'country=' . $_GET['country'];
   }
@@ -250,35 +250,35 @@ function wtb_countries_regions_listing() {
  * @return array
  */
 function wtb_country_region_form($form, $form_state, $countries = NULL) {
-  $form = array();
-  $countries = array(0 => 'Select Country') + $countries;
+  $form = [];
+  $countries = [0 => 'Select Country'] + $countries;
   $get_country = (isset($_GET['country']) ? $_GET['country'] : '');
-  $form['country'] = array(
+  $form['country'] = [
     '#type' => 'select',
     '#title' => t('Country List'),
     '#description' => t('Select to filter by Country name'),
     '#default_value' => isset($countries[$get_country]) ? $get_country : 0,
     '#options' => $countries,
-  );
-  $form['status'] = array(
+  ];
+  $form['status'] = [
     '#type' => 'select',
     '#title' => t('Country Status'),
     '#description' => t('Select to filter by Country status'),
     '#default_value' => isset($_GET['status']) ? $_GET['status'] : 0,
-    '#options' => array(
+    '#options' => [
       0 => 'Select Status',
       1 => 'Active',
       2 => 'Inactive',
-    ),
-  );
-  $form['apply'] = array(
+    ],
+  ];
+  $form['apply'] = [
     '#type' => 'submit',
     '#value' => t('Apply'),
-  );
-  $form['clear-field'] = array(
+  ];
+  $form['clear-field'] = [
     '#type' => 'submit',
     '#value' => t('Clear Selection'),
-  );
+  ];
   return $form;
 }
 
@@ -291,12 +291,12 @@ function wtb_country_region_form($form, $form_state, $countries = NULL) {
  */
 function wtb_country_region_form_submit(&$form, &$form_state) {
   if ($form_state['values']['op'] == 'Apply') {
-    drupal_goto('/admin/content/countries-regions', array(
-      'query' => array(
+    drupal_goto('/admin/content/countries-regions', [
+      'query' => [
         'country' => $form_state['values']['country'],
         'status' => $form_state['values']['status']
-      )
-    ));
+      ]
+    ]);
 //    $form_state['#redirect'] = array(base_path() . '/admin/content/countries-regions', 'country=' . $form_state['values']['country'] . '&status=' . $form_state['values']['status']);
   }
   else {
@@ -311,27 +311,27 @@ function wtb_country_region_form_submit(&$form, &$form_state) {
  * TODO: Switch this to a View.
  */
 function export_distributor_records() {
-  $data = array();
-  $prod_arr = array();
+  $data = [];
+  $prod_arr = [];
   //Build product array("nid"=>title)
-  $iresults = db_query('SELECT node.nid, node.title FROM {node} node WHERE node.type = :node_type', array(':node_type' => "product"));
+  $iresults = db_query('SELECT node.nid, node.title FROM {node} node WHERE node.type = :node_type', [':node_type' => "product"]);
   foreach ($iresults as $idata) {
     $prod_arr[$idata->nid] = $idata->title;
   }
   //Base query to get distributors and its products
   db_query('SET SESSION group_concat_max_len = 1000000'); //Prevent GROUP_CONCAT from truncating data
-/*  $fresults = db_query("SELECT node.title AS GroupName,
-                      node.nid AS GroupNid,
-                      GROUP_CONCAT(DISTINCT gn.nid SEPARATOR ', ') AS ProductNids,
-                      GROUP_CONCAT(DISTINCT gn.title SEPARATOR '||') AS ProductNames
-                      FROM {node} node
-                      LEFT JOIN {content_type_product_distributor_group} node_data_field_not_available ON node.vid = node_data_field_not_available.vid
-                      LEFT JOIN {content_field_products} node_data_field_products ON node.vid = node_data_field_products.vid
-                      LEFT JOIN {node} gn ON node_data_field_products.field_products_nid = gn.nid
-                      LEFT JOIN {content_type_product} ctp ON node_data_field_products.field_products_nid = ctp.nid
-                      WHERE node.type in ('product_distributor_group')
-                      GROUP BY node.title
-                      ORDER BY node.title ASC", array()); */
+  /*  $fresults = db_query("SELECT node.title AS GroupName,
+                        node.nid AS GroupNid,
+                        GROUP_CONCAT(DISTINCT gn.nid SEPARATOR ', ') AS ProductNids,
+                        GROUP_CONCAT(DISTINCT gn.title SEPARATOR '||') AS ProductNames
+                        FROM {node} node
+                        LEFT JOIN {content_type_product_distributor_group} node_data_field_not_available ON node.vid = node_data_field_not_available.vid
+                        LEFT JOIN {content_field_products} node_data_field_products ON node.vid = node_data_field_products.vid
+                        LEFT JOIN {node} gn ON node_data_field_products.field_products_nid = gn.nid
+                        LEFT JOIN {content_type_product} ctp ON node_data_field_products.field_products_nid = ctp.nid
+                        WHERE node.type in ('product_distributor_group')
+                        GROUP BY node.title
+                        ORDER BY node.title ASC", array()); */
   $fresults = db_query("SELECT node.title AS GroupName,
                       node.nid AS GroupNid,
                       GROUP_CONCAT(DISTINCT gn.nid SEPARATOR ', ') AS ProductNids,
@@ -341,7 +341,7 @@ function export_distributor_records() {
                       LEFT JOIN {node} gn ON node_data_field_products.field_products_nid = gn.nid
                       WHERE node.type in ('product_distributor_group')
                       GROUP BY node.title
-                      ORDER BY node.title ASC", array());  // CONFUSE ???
+                      ORDER BY node.title ASC", []);  // CONFUSE ???
 
   //export in CSV format
   $filename = "distributors.csv";

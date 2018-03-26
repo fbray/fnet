@@ -209,7 +209,7 @@
         <div class="suites-spotlight-box-inner">
             <div class="suites-spotlight-title">Careers</div>
             <div class="clear_10px">&nbsp;</div>
-            <div class="suites-spotlight-image"><img src='/sites/flukenetworks.com/files/Job_Openings_0.jpg' width='95' height='110' border='0' align='left' /></div>
+            <div class="suites-spotlight-image"><img src='/sites/default/files/Job_Openings_0.jpg' width='95' height='110' border='0' align='left' /></div>
             <div class="suites-spotlight-desc"><p>Check out current job postings and apply online!</p>
                 <p><a href="/jobs" target="_blank">Go to Career Site</a></p></div>
             <div class="clear_1px">&nbsp;</div>
@@ -219,7 +219,7 @@
         <div class="suites-spotlight-box-inner">
             <div class="suites-spotlight-title">Follow Fluke Networks</div>
             <div class="clear_10px">&nbsp;</div>
-            <div class="suites-spotlight-image"><img src="/sites/flukenetworks.com/files/Community_0.jpg" style="width:95px; height:110px;" /></div>
+            <div class="suites-spotlight-image"><img src="/sites/default/files/Community_0.jpg" style="width:95px; height:110px;" /></div>
             <div class="suites-spotlight-desc">
                 <p>See updates from our subject matter experts online by connecting with us on Facebook, Twitter, LinkedIn and
                     YouTube.</p>
@@ -233,7 +233,7 @@
         <div class="suites-spotlight-box-inner">
             <div class="suites-spotlight-title">Contact Us</div>
             <div class="clear_10px">&nbsp;</div>
-            <div class="suites-spotlight-image"><img src="/sites/flukenetworks.com/files/Contact_Us.jpg" style="width:95px; height:110px;" /></div>
+            <div class="suites-spotlight-image"><img src="/sites/defaultfiles/Contact_Us.jpg" style="width:95px; height:110px;" /></div>
             <div class="suites-spotlight-desc">
                 <p>Call 1-800-283-5853 (US/CA) or 425-446-4519 (Other Locations) or email <a href="mailto:info@flukenetworks.com">info@flukenetworks.com</a></p>
                 <p><a href="/wheretobuy?tab=2">Fill out the contact us form</a></p></div>

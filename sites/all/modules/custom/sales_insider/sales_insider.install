@@ -17,11 +17,11 @@ function sales_insider_install() {
 
   // Menu
   if(!menu_load('extranet')) {
-    $menu = array(
+    $menu = [
       'menu_name' => 'extranet',
       'title' => 'Sales Insider Extranet',
       'description' => 'Menu Items for Extranet',
-    );
+    ];
     menu_save($menu);
   }
 
@@ -39,82 +39,82 @@ function sales_insider_install() {
   $types = node_type_get_types();
 
   // Field definitions
-  $fields = array(
+  $fields = [
     // Display Title field
-    'field_display_title' => array(
+    'field_display_title' => [
       'active' => 1,
       'cardinality' => 1,
       'deleted' => 0,
-      'entity_types' => array(),
+      'entity_types' => [],
       'field_name' => 'field_display_title',
-      'indexes' => array(
-        'format' => array(
+      'indexes' => [
+        'format' => [
           0 => 'format',
-        ),
-      ),
+        ],
+      ],
       'locked' => 0,
       'module' => 'text',
-      'settings' => array(
+      'settings' => [
         'entity_translation_sync' => FALSE,
         'max_length' => 255,
-      ),
+      ],
       'translatable' => 1,
       'type' => 'text',
-    ),
+    ],
     // Promotion Date field
-    'field_promotion_date' => array(
+    'field_promotion_date' => [
       'active' => 1,
       'cardinality' => 1,
       'deleted' => 0,
-      'entity_types' => array(),
+      'entity_types' => [],
       'field_name' => 'field_promotion_date',
-      'indexes' => array(),
+      'indexes' => [],
       'locked' => 0,
       'module' => 'date',
-      'settings' => array(
+      'settings' => [
         'cache_count' => 4,
         'cache_enabled' => 1,
         'entity_translation_sync' => FALSE,
-        'granularity' => array(
+        'granularity' => [
           'day' => 'day',
           'hour' => 0,
           'minute' => 0,
           'month' => 'month',
           'second' => 0,
           'year' => 'year',
-        ),
+        ],
         'timezone_db' => '',
         'todate' => 'required',
         'tz_handling' => 'none',
-      ),
+      ],
       'translatable' => 0,
       'type' => 'date',
-    ),
+    ],
 
     // Extranet Group Countries
-    'field_extranet_group_countries' => array(
+    'field_extranet_group_countries' => [
       'active' => 1,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'deleted' => 0,
-      'entity_types' => array(),
+      'entity_types' => [],
       'field_name' => 'field_extranet_group_countries',
-      'indexes' => array(
-        'value' => array(
+      'indexes' => [
+        'value' => [
           0 => 'value',
-        ),
-      ),
+        ],
+      ],
       'locked' => 0,
       'module' => 'list',
-      'settings' => array(
-        'allowed_values' => array(),
+      'settings' => [
+        'allowed_values' => [],
         'allowed_values_function' => 'country_get_list',
         'allowed_values_php' => '',
         'entity_translation_sync' => FALSE,
-      ),
+      ],
       'translatable' => 0,
       'type' => 'list_text',
-    ),
-  );
+    ],
+  ];
 
   foreach($fields as $field) {
     try {
@@ -204,8 +204,8 @@ function sales_insider_uninstall() {
   // Content Types
   $content_types = ['extranet_page', 'extranet_news', 'extranet_promotion'];
   $sql = 'SELECT nid FROM {node} n WHERE n.type IN (:type)';
-  $result = db_query($sql, array(':type' => $content_types));
-  $nids = array();
+  $result = db_query($sql, [':type' => $content_types]);
+  $nids = [];
   foreach ($result as $row) {
     $nids[] = $row->nid;
   }
@@ -231,7 +231,7 @@ function sales_insider_uninstall() {
     field_attach_delete_bundle('group', $name->name);
     $groups = group_load_by_type($name->name);
     foreach($groups as $group) {
-      group_delete_multiple(array($group->gid));
+      group_delete_multiple([$group->gid]);
     }
 
   }
@@ -241,10 +241,10 @@ function sales_insider_uninstall() {
  * Helper function to add Extranet roles and permissions.
  */
 function _sales_insider_add_role_permissions() {
-    $role_names = array(
-        'extranet user' => array('access extranet',),
-        'extranet admin' => array('access extranet', 'administer extranet'),
-    );
+    $role_names = [
+        'extranet user' => ['access extranet',],
+        'extranet admin' => ['access extranet', 'administer extranet'],
+    ];
 
     foreach ($role_names as $role_name => $permissions) {
         $role = user_role_load_by_name($role_name);
@@ -256,7 +256,7 @@ function _sales_insider_add_role_permissions() {
         }
 
         $rid = $role->rid;
-        $permissions_to_add = array();
+        $permissions_to_add = [];
 
         foreach ($permissions as $permission) {
             $permissions_to_add[$permission] = TRUE;
@@ -277,7 +277,7 @@ function _sales_insider_create_extranet_news_type() {
     //  Verify the content type does not already exist.
     if (!in_array( $extranet_news, node_type_get_names() ) ) {
         //  Create the type definition array.
-        $type = array(
+        $type = [
             'type' => $extranet_news,
             'name' => st( 'Extranet News' ),
             'base' => 'node_content',
@@ -285,7 +285,7 @@ function _sales_insider_create_extranet_news_type() {
             'custom' => 1,
             'modified' => 1,
             'locked' => 0,
-        );
+        ];
         $type = node_type_set_defaults( $type );
         node_type_save( $type );
         //  Add a body field.
@@ -295,40 +295,40 @@ function _sales_insider_create_extranet_news_type() {
 }
 
 function _sales_insider_group_type_field_instances() {
-  $field_instances = array();
+  $field_instances = [];
 
-  $field_instances['group-sales_insider_region-field_extranet_group_countries'] = array(
+  $field_instances['group-sales_insider_region-field_extranet_group_countries'] = [
     'bundle' => 'sales_insider_region',
     'default_value' => NULL,
     'default_value_function' => '',
     'default_value_php' => '',
     'deleted' => 0,
     'description' => 'Select the countries within this region.',
-    'display' => array(
-      'default' => array(
+    'display' => [
+      'default' => [
         'label' => 'above',
         'module' => 'list',
-        'settings' => array(),
+        'settings' => [],
         'type' => 'list_default',
         'weight' => 0,
-      ),
-    ),
+      ],
+    ],
     'entity_type' => 'group',
     'field_name' => 'field_extranet_group_countries',
     'label' => 'Extranet Group Countries',
     'required' => 0,
-    'settings' => array(
+    'settings' => [
       'entity_translation_sync' => FALSE,
       'user_register_form' => FALSE,
-    ),
-    'widget' => array(
+    ],
+    'widget' => [
       'active' => 0,
       'module' => 'multiselect',
-      'settings' => array(),
+      'settings' => [],
       'type' => 'multiselect',
       'weight' => 1,
-    ),
-  );
+    ],
+  ];
 
   return $field_instances;
 }
@@ -356,7 +356,7 @@ function _sales_insider_group_type_entities() {
  * @return array
  */
 function _sales_insider_get_group_type_entities() {
-  $types = array();
+  $types = [];
 
   // Sales Insider Region
   $types['sales_insider_region'] = entity_import('group_type', '{

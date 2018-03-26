@@ -50,7 +50,8 @@ class FNETProductCategoryLanguageMigration extends DrupalNode7Migration {
 
     // Overview Tab Right-hand Navigation Fields
     $this->addFieldMapping('field_overview_intro', 'field_indlang_overview_intro');
-    $this->addFieldMapping('field_overview_intro:format', 'field_indlang_overview_intro:format');
+    $this->addFieldMapping('field_overview_intro:format', 'field_indlang_overview_intro:format')
+      ->defaultValue('full_html');
 
     $this->addFieldMapping('field_overview_box_1_disable', 'field_indlang_box_disable_1');
     $this->addFieldMapping('field_overview_box_1_title', 'field_indlang_box_title_1');
@@ -132,7 +133,8 @@ class FNETProductCategoryLanguageMigration extends DrupalNode7Migration {
       ->defaultValue(NULL);
     
     $this->addFieldMapping('field_expertise_lhn_box', 'field_indlang_expertise_box');
-    $this->addFieldMapping('field_expertise_lhn_box:format', 'field_indlang_expertise_box:format');
+    $this->addFieldMapping('field_expertise_lhn_box:format', 'field_indlang_expertise_box:format')
+      ->defaultValue('full_html');
 
     // Products Tab Right-hand Navigation Fields
     $this->addFieldMapping('field_promotions_disable', 'field_indlang_promo_disable');
@@ -195,7 +197,8 @@ class FNETProductCategoryLanguageMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_trial_type_3', 'field_indlang_trial_type_3');
 
     $this->addFieldMapping('field_products_rhn_box', 'field_indlang_product_box');
-    $this->addFieldMapping('field_products_rhn_box:format', 'field_indlang_product_box:format');
+    $this->addFieldMapping('field_products_rhn_box:format', 'field_indlang_product_box:format')
+      ->defaultValue('full_html');
 
 
     // Image Fields

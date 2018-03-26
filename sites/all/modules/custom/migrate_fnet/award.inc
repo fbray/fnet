@@ -25,7 +25,8 @@ class FNETAwardMigration extends FNETNode7Migration {
 
     // Individual Fields
     $this->addFieldMapping('field_intro', 'field_award_intro'); // Long text
-    $this->addFieldMapping('field_intro:format', 'field_award_intro:format'); // Long text
+    $this->addFieldMapping('field_intro:format', 'field_award_intro:format')
+      ->defaultValue('full_html');
     $this->addFieldMapping('field_intro:language', 'field_award_intro:language')
       ->defaultValue(LANGUAGE_NONE); // Long text
 

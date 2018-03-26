@@ -31,7 +31,8 @@ class FNETEventMigration extends FNETNode7Migration {
       ->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('weight', 'field_event_priority'); // Move to Weight
     $this->addFieldMapping('field_tracking_code', 'field_event_adtracker');
-    $this->addFieldMapping('field_tracking_code:format', 'field_event_adtracker:format');
+    $this->addFieldMapping('field_tracking_code:format', 'field_event_adtracker:format')
+      ->defaultValue('full_html');;
 
     // Link fields
     $this->addFieldMapping('field_workshop_reglink', 'field_workshop_link');

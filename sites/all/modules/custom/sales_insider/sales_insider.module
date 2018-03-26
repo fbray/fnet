@@ -18,16 +18,16 @@
  * @return array
  */
 function sales_insider_permission() {
-    return array(
-        'administer extranet' => array(
-            'title' => t('Administer Extranet'),
-            'description' => t('Access Extranet Administration pages.'),
-        ),
-        'access extranet' => array(
-            'title' => t('Access Extranet'),
-            'description' => t('Allow most basic Extranet access. Other restriction types will also usually be used.'),
-        ),
-    );
+  return [
+    'administer extranet' => [
+      'title' => t('Administer Extranet'),
+      'description' => t('Access Extranet Administration pages.'),
+    ],
+    'access extranet' => [
+      'title' => t('Access Extranet'),
+      'description' => t('Allow most basic Extranet access. Other restriction types will also usually be used.'),
+    ],
+  ];
 }
 
 /**
@@ -36,107 +36,107 @@ function sales_insider_permission() {
  * @return array
  */
 function sales_insider_menu() {
-    $items = [];
+  $items = [];
 
-    // Public facing paths start with 'extranet'
-    $items['extranet'] = [
-        'menu_name' => 'extranet',
-        'title' => t('Sales Insider'),
-        'page callback' => '_sales_insider_initial_content',
-        'access arguments' => ['access content'],
-        'type' => MENU_CALLBACK,
-    ];
+  // Public facing paths start with 'extranet'
+  $items['extranet'] = [
+    'menu_name' => 'extranet',
+    'title' => t('Sales Insider'),
+    'page callback' => '_sales_insider_initial_content',
+    'access arguments' => ['access content'],
+    'type' => MENU_CALLBACK,
+  ];
 
-    $items['extranet/request-received'] = [
-        'title' => t('Sales Insider Access Request Received'),
-        'description' => t('Thank you page for Access Requests'),
-        'page callback' => '_sales_insider_access_request_received',
-        'access arguments' => ['access content'],
-        'type' => MENU_CALLBACK,
-    ];
+  $items['extranet/request-received'] = [
+    'title' => t('Sales Insider Access Request Received'),
+    'description' => t('Thank you page for Access Requests'),
+    'page callback' => '_sales_insider_access_request_received',
+    'access arguments' => ['access content'],
+    'type' => MENU_CALLBACK,
+  ];
 
-    $items['extranet-access-denied'] = [
-        'title' => t('Access Denied'),
-        'description' => t('Access Denied page'),
-        'page callback' => '_sales_insider_access_denied',
-        'access arguments' => ['access content'],
-        'type' => MENU_CALLBACK,
-    ];
+  $items['extranet-access-denied'] = [
+    'title' => t('Access Denied'),
+    'description' => t('Access Denied page'),
+    'page callback' => '_sales_insider_access_denied',
+    'access arguments' => ['access content'],
+    'type' => MENU_CALLBACK,
+  ];
 
-    $items['extranet/tools'] = [
-        'title' => t('Sales Tools'),
-        'description' => t('Extranet Sales Tools'),
-        'page callback' => '_sales_insider_sales_tool_page',
-        'access arguments' => ['access extranet'],
-        'type' => MENU_NORMAL_ITEM,
-        'menu_name' => 'extranet',
-    ];
+  $items['extranet/tools'] = [
+    'title' => t('Sales Tools'),
+    'description' => t('Extranet Sales Tools'),
+    'page callback' => '_sales_insider_sales_tool_page',
+    'access arguments' => ['access extranet'],
+    'type' => MENU_NORMAL_ITEM,
+    'menu_name' => 'extranet',
+  ];
 
-    $items['extranet/contacts'] = [
-        'title' => t('Contacts'),
-        'description' => t('Extranet Contacts'),
-        'page callback' => '_sales_insider_contacts_page',
-        'access arguments' => ['access extranet'],
-        'type' => MENU_NORMAL_ITEM,
-        'menu_name' => 'extranet',
-    ];
+  $items['extranet/contacts'] = [
+    'title' => t('Contacts'),
+    'description' => t('Extranet Contacts'),
+    'page callback' => '_sales_insider_contacts_page',
+    'access arguments' => ['access extranet'],
+    'type' => MENU_NORMAL_ITEM,
+    'menu_name' => 'extranet',
+  ];
 
-    // box item download.  get box, then item url
-    // send back as redirect location
-    $items['extranet/download/%/%'] = [
-        'menu_name' => 'extranet',
-        'title' => 'Photo Download',
-        'page callback' => '_sales_insider_download_gallery_asset',
-        'page arguments' => [2, 3],
-        'access arguments' => ['access content'],
-        'type' => MENU_CALLBACK,
-    ];
+  // box item download.  get box, then item url
+  // send back as redirect location
+  $items['extranet/download/%/%'] = [
+    'menu_name' => 'extranet',
+    'title' => 'Photo Download',
+    'page callback' => '_sales_insider_download_gallery_asset',
+    'page arguments' => [2, 3],
+    'access arguments' => ['access content'],
+    'type' => MENU_CALLBACK,
+  ];
 
-    // Autocomplete callback
-    $items['productname/autocomplete'] = [
-        'page callback' => '_sales_insider_products_autocomplete',
-        'access arguments' => ['access content'],
-        'type' => MENU_CALLBACK
-    ];
+  // Autocomplete callback
+  $items['productname/autocomplete'] = [
+    'page callback' => '_sales_insider_products_autocomplete',
+    'access arguments' => ['access content'],
+    'type' => MENU_CALLBACK
+  ];
 
-    // Extranet Administrative Pages
-    $items['admin/fnet/extranet'] = [
-        'title' => t('Extranet'),
-        'description' => t('Adminstrative functions for managing the Extranet'),
-        'access arguments' => ['administer extranet'],
-        'page callback' => 'system_admin_menu_block_page',
-        'file' => 'system.admin.inc',
-        'file path' => drupal_get_path('module', 'system'),
-    ];
+  // Extranet Administrative Pages
+  $items['admin/fnet/extranet'] = [
+    'title' => t('Extranet'),
+    'description' => t('Adminstrative functions for managing the Extranet'),
+    'access arguments' => ['administer extranet'],
+    'page callback' => 'system_admin_menu_block_page',
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+  ];
 
-    $items['admin/fnet/extranet/instructions'] = [
-        'title' => t('Instruction Text'),
-        'type' => MENU_NORMAL_ITEM,
-        'page callback' => 'drupal_get_form',
-        'page arguments' => ['sales_insider_admin_instructions_form'],
-        'access arguments' => ['administer extranet'],
-        'file' => 'sales_insider.admin.inc'
-    ];
+  $items['admin/fnet/extranet/instructions'] = [
+    'title' => t('Instruction Text'),
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['sales_insider_admin_instructions_form'],
+    'access arguments' => ['administer extranet'],
+    'file' => 'sales_insider.admin.inc'
+  ];
 
-    /* Web service config page */
-    $items['admin/fnet/extranet/salesforce'] = [
-        'title' => t('Configure Salesforce Connection'),
-        'description' => t('Settings for connecting Salesforce to the Extranet.'),
-        'file' => 'sales_insider.admin.inc',
-        'page callback' => 'drupal_get_form',
-        'page arguments' => ['_salesforce_admin_salesforce_config'],
-        'access arguments' => ['administer extranet'],
-        'type' => MENU_NORMAL_ITEM,
-    ];
+  /* Web service config page */
+  $items['admin/fnet/extranet/salesforce'] = [
+    'title' => t('Configure Salesforce Connection'),
+    'description' => t('Settings for connecting Salesforce to the Extranet.'),
+    'file' => 'sales_insider.admin.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['_salesforce_admin_salesforce_config'],
+    'access arguments' => ['administer extranet'],
+    'type' => MENU_NORMAL_ITEM,
+  ];
 
-    /* Web service callback for new Salesforce-enabled processing */
-    $items['insider/v1/post'] = [
-        'page callback' => '_fextranet_insider_processing',
-        'access arguments' => ['access content'],
-        'type' => MENU_CALLBACK,
-    ];
+  /* Web service callback for new Salesforce-enabled processing */
+  $items['insider/v1/post'] = [
+    'page callback' => '_fextranet_insider_processing',
+    'access arguments' => ['access content'],
+    'type' => MENU_CALLBACK,
+  ];
 
-    return $items;
+  return $items;
 }
 
 /**
@@ -145,25 +145,25 @@ function sales_insider_menu() {
  * @return array
  */
 function sales_insider_theme() {
-  $base = array(
+  $base = [
     'path' => drupal_get_path('module', 'sales_insider') . '/theme',
-  );
-  return array(
-    'product_assets' => $base + array(
+  ];
+  return [
+    'product_assets' => $base + [
         'template' => 'product_assets',
-        'variables' => array(
+        'variables' => [
           'elements' => NULL
-        ),
-      ),
-    'sales_insider_default_page_menu_item' => $base + array(
+        ],
+      ],
+    'sales_insider_default_page_menu_item' => $base + [
         'template' => 'sales_insider_default_page_menu_item',
-        'variables' => array('items' => NULL),
-      ),
-    'sales_insider_request_thanks_message' => $base + array(
+        'variables' => ['items' => NULL],
+      ],
+    'sales_insider_request_thanks_message' => $base + [
         'template' => 'sales_insider_request_thanks_message',
-        'variables' => array(),
-      ),
-  );
+        'variables' => [],
+      ],
+  ];
 }
 
 /**
@@ -172,37 +172,38 @@ function sales_insider_theme() {
  * @return array
  */
 function sales_insider_node_info() {
-  $types = array(
-    'extranet_page' => array(
+  $types = [
+    'extranet_page' => [
       'name' => t('Extranet Page'),
       'base' => 'node_content',
       'description' => t('Extranet Page'),
       'has_title' => '1',
       'title_label' => t('Title'),
       'help' => t('Extranet Page'),
-    ),
-    'extranet_news' => array(
+    ],
+    'extranet_news' => [
       'name' => t('Extranet News'),
       'base' => 'node_content',
       'description' => t('Extranet News: Sales Alerts and Announcements'),
       'has_title' => '1',
       'title_label' => t('Title'),
       'help' => t('Extranet News: Sales Alerts and Announcements'),
-    ),
-    'extranet_promotion' => array(
+    ],
+    'extranet_promotion' => [
       'name' => t('Extranet Promotion'),
       'base' => 'node_content',
       'description' => t('Extranet Promotions, optional start and end date.'),
       'has_title' => '1',
       'title_label' => t('Title'),
       'help' => t('Extranet Promotions, optional start and end date.'),
-    ),
-  );
+    ],
+  ];
   return $types;
 }
 
 /**
  * Implements hook_preprocess_page(&$vars)
+ * @param $vars
  */
 function sales_insider_preprocess_page(&$vars) {
   global $user;  // Get the current user.
@@ -217,14 +218,14 @@ function sales_insider_preprocess_page(&$vars) {
       $vars['page']['#access_extranet'] = TRUE;
       $groups = group_membership_load_by_user($user->uid);
 
-      foreach($groups as $group){
+      foreach ($groups as $group) {
         $mygroup = group_load($group->gid);
         if ($mygroup->type = 'sales_insider_region') {
           $regional_groups[] = $mygroup;
         }
       }
       if (count($regional_groups) > 0) {
-        if(count($regional_groups) >1) {
+        if (count($regional_groups) > 1) {
 
           $subhead = t('Multiple Regions');
         }
@@ -267,13 +268,13 @@ function _sales_insider_initial_content() {
     else {
       // Does the user have any pending requests?
       $pending_query = "SELECT requested_on, blocked_on, status, added_on FROM group_membership WHERE uid = :uid";
-      $access_requests = db_query($pending_query, array(':uid' => $user->uid))->fetchAssoc();
+      $access_requests = db_query($pending_query, [':uid' => $user->uid])->fetchAssoc();
 
       // A request has been made and is pending.
       if ($access_requests) {
-        $requested_on = !empty($access_requests['requested_on']) ? format_date($access_requests['requested_on'], 'medium', ''): NULL;
-        $blocked_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['blocked_on'], 'medium', ''): NULL;
-        $added_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['added_on'], 'medium', ''): NULL;
+        $requested_on = !empty($access_requests['requested_on']) ? format_date($access_requests['requested_on'], 'medium', '') : NULL;
+        $blocked_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['blocked_on'], 'medium', '') : NULL;
+        $added_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['added_on'], 'medium', '') : NULL;
         $status = $access_requests['status'];
 
         // Display the 'You requested access on X, but it
@@ -287,10 +288,10 @@ function _sales_insider_initial_content() {
             // has not yet been approved.'
             $message .= 'but your request has not yet been approved.';
           }
-          $localized_message = t($message, array(
+          $localized_message = t($message, [
             '@request_date' => $requested_on,
             '@blocked_date' => $blocked_on
-          ));
+          ]);
         }
         elseif (!empty($added_on)) {
           // if there is nothing in the requested_on field, the user was added manually.
@@ -303,10 +304,10 @@ function _sales_insider_initial_content() {
             // has not yet been approved.'
             $message .= 'but something has gone wrong.';
           }
-          $localized_message = t($message, array(
+          $localized_message = t($message, [
             '@added_date' => $added_on,
             '@blocked_date' => $blocked_on
-          ));
+          ]);
         }
 
         // Give a default message,
@@ -341,16 +342,16 @@ function _sales_insider_initial_content() {
     $login_form = drupal_get_form('user_login');
     $url = urldecode($login_form['#action']);
     // If there is an existing query string, extract those values.
-    $query_string_values = array();
-    parse_str( parse_url($url, PHP_URL_QUERY), $query_string_values );
+    $query_string_values = [];
+    parse_str(parse_url($url, PHP_URL_QUERY), $query_string_values);
     $query_string_values['destination'] = 'extranet';
     // Trim the query off the URL to be able to rebuild.
     $url = preg_replace('/\?.*/', '', $url);
     // This puts in the '?destination=extranet'.
-    $action = url($url, array('query' => $query_string_values));
+    $action = url($url, ['query' => $query_string_values]);
     $login_form['#action'] = $action; // URL Decoding to clean up some weirdness.
     $login_form['#redirect'] = 'extranet';
-    $login_form['#after_build'] = array();
+    $login_form['#after_build'] = [];
     return $login_form;
   }
 }
@@ -359,11 +360,16 @@ function _sales_insider_initial_content() {
  * Callback for Sales Tools page content.
  *
  * @return null|string
+ * @throws \Exception
  */
 function _sales_insider_sales_tool_page() {
   $content = variable_get('extranet_instructions_sales_tools', '');
-  $items = array('items' => _sales_insider_submenu_page_items('extranet/tools'));
-  $content .= theme('sales_insider_default_page_menu_item', $items);
+  $items = ['items' => _sales_insider_submenu_page_items('extranet/tools')];
+  try {
+    $content .= theme('sales_insider_default_page_menu_item', $items);
+  } catch (Exception $e) {
+    watchdog('Sales Insider', $e->getMessage());
+  }
   return $content;
 }
 
@@ -371,11 +377,16 @@ function _sales_insider_sales_tool_page() {
  * Helper function for Contacts page content.
  *
  * @return null|string
+ * @throws \Exception
  */
 function _sales_insider_contacts_page() {
   $content = variable_get('extranet_instructions_contacts', '');
-  $items = array('items' => _sales_insider_submenu_page_items('extranet/contacts'));
-  $content .= theme('sales_insider_default_page_menu_item', $items);
+  $items = ['items' => _sales_insider_submenu_page_items('extranet/contacts')];
+  try {
+    $content .= theme('sales_insider_default_page_menu_item', $items);
+  } catch (Exception $e) {
+    watchdog('Sales Insider', $e->getMessage());
+  }
   return $content;
 }
 
@@ -388,15 +399,26 @@ function _sales_insider_contacts_page() {
  */
 function _sales_insider_submenu_page_items($path) {
   //Stop and return an empty array if node path is empty
-  if(empty($path)) {
-    return array();
+  if (empty($path)) {
+    return [];
   }
 
   //Init empty array to hold the results
-  $pages = array();
+  $pages = [];
 
   //Init parent keys. Check 'foreach' loop on parent keys for more info.
-  $parent_keys = array('plid', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9');
+  $parent_keys = [
+    'plid',
+    'p1',
+    'p2',
+    'p3',
+    'p4',
+    'p5',
+    'p6',
+    'p7',
+    'p8',
+    'p9'
+  ];
 
   //Collect menu item corresponding to this path to begin updates.
   //Reference: http://stackoverflow.com/a/11615338/136696
@@ -407,8 +429,8 @@ function _sales_insider_submenu_page_items($path) {
   $parent_menu_item = menu_link_get_preferred($path);
 
   //Stop and return empty array if a proper current menu item couldn't be found
-  if(empty($parent_menu_item['menu_name']) || empty($parent_menu_item['mlid'])) {
-    return array();
+  if (empty($parent_menu_item['menu_name']) || empty($parent_menu_item['mlid'])) {
+    return [];
   }
 
   //Init parent item mlid for easier usage since now we know it's not empty
@@ -423,40 +445,40 @@ function _sales_insider_submenu_page_items($path) {
   menu_reset_static_cache();
 
   //Init processing array. This will hold menu items as we process them.
-  $menu_items_to_process = array();
+  $menu_items_to_process = [];
 
   //First run to fill up the processing array with the top level items
-  foreach($menu as $top_level_menu_item) {
+  foreach ($menu as $top_level_menu_item) {
     $menu_items_to_process[] = $top_level_menu_item;
   }
 
   //While the processing array is not empty, keep looping into lower
   //menu items levels until all are processed.
-  while(count($menu_items_to_process) > 0) {
+  while (count($menu_items_to_process) > 0) {
     //Pop the top item from the processing array
     $mi = array_pop($menu_items_to_process);
 
     //Get its node id and add it to $nids if it's a current item child
     //Note that $parent_keys contains all keys that drupal uses to
     //set a menu item inside a tree up to 9 levels.
-    foreach($parent_keys as $parent_key) {
+    foreach ($parent_keys as $parent_key) {
       //First, ensure the current parent key is set and also mlid is set
-      if(!empty($mi['link']['mlid']) && !empty($mi['link'][$parent_key])) {
+      if (!empty($mi['link']['mlid']) && !empty($mi['link'][$parent_key])) {
         //If the link we're at is the parent one, don't add it to $nids
         //We need this check cause Drupal sets p1 to p9 in a way you
         //can easily use to generate breadcrumbs which means we will
         //also match the current parent, but here we only want children
-        if($mi['link']['mlid'] != $parent_menu_item_mlid) {
+        if ($mi['link']['mlid'] != $parent_menu_item_mlid) {
           //Try to match the link to the parent menu item
-          if($mi['link'][$parent_key] == $parent_menu_item_mlid) {
+          if ($mi['link'][$parent_key] == $parent_menu_item_mlid) {
             //It's a child, add it to $pages and stop foreach loop.
             //Link_path has the path to the node. Example: node/63.
-            if(!empty($mi['link']['link_path'])) {
-              $pages[] = array(
+            if (!empty($mi['link']['link_path'])) {
+              $pages[] = [
                 'path' => $mi['link']['link_path'],
                 'title' => $mi['link']['link_title'],
                 'description' => $mi['link']['description'],
-              );
+              ];
             }
             break;
           }
@@ -466,8 +488,8 @@ function _sales_insider_submenu_page_items($path) {
 
     //Add its child items, if any, to the processing array
 
-    if(!empty($mi['below']) && is_array($mi['below'])) {
-      foreach($mi['below'] as $child_menu_item) {
+    if (!empty($mi['below']) && is_array($mi['below'])) {
+      foreach ($mi['below'] as $child_menu_item) {
         //Add child item at the beginning of the array so that when
         //we get the list of node ids it's sorted by level with
         //the top level elements first; which is easy to attain
@@ -480,17 +502,16 @@ function _sales_insider_submenu_page_items($path) {
 }
 
 
-
 /**
  * Implements hook_views_api().
  *
  * @return array
  */
 function sales_insider_views_api() {
-    return [
-        'api' => 3.0,
-        'path' => drupal_get_path('module', 'sales_insider') . '/views',
-    ];
+  return [
+    'api' => 3.0,
+    'path' => drupal_get_path('module', 'sales_insider') . '/views',
+  ];
 }
 
 /**
@@ -503,11 +524,11 @@ function sales_insider_views_api() {
  * @return bool
  */
 function _sales_insider_group_access($gid) {
-    $group = group_load($gid);
-    if ($group) {
-        return group_access('access member overview', $group);
-    }
-    return FALSE;
+  $group = group_load($gid);
+  if ($group) {
+    return group_access('access member overview', $group);
+  }
+  return FALSE;
 }
 
 /**
@@ -516,11 +537,11 @@ function _sales_insider_group_access($gid) {
  * @return array|bool
  */
 function _sales_insider_gnode_node_add($gid, $node_type) {
-    $group = group_load($gid);
-    if ($group) {
-        return gnode_node_add($group, $node_type);
-    }
-    return FALSE;
+  $group = group_load($gid);
+  if ($group) {
+    return gnode_node_add($group, $node_type);
+  }
+  return FALSE;
 }
 
 /**
@@ -529,11 +550,11 @@ function _sales_insider_gnode_node_add($gid, $node_type) {
  * @return bool
  */
 function _sales_insider_gnode_add_node_access($gid, $node_type) {
-    $group = group_load($gid);
-    if ($group) {
-        return gnode_add_node_access($group, $node_type);
-    }
-    return FALSE;
+  $group = group_load($gid);
+  if ($group) {
+    return gnode_add_node_access($group, $node_type);
+  }
+  return FALSE;
 }
 
 /**
@@ -548,16 +569,17 @@ function _sales_insider_gnode_add_node_access($gid, $node_type) {
 function _sales_insider_get_group_by_country($country) {
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'group')
-    ->fieldCondition('field_extranet_group_countries', 'value', $country , '=');
+    ->fieldCondition('field_extranet_group_countries', 'value', $country, '=');
   $query->propertyOrderBy('gid', 'DESC');
-  $query->range(0,1);
+  $query->range(0, 1);
   $entity_array = $query->execute();
 
   if ($entity_array) {
-    $group_num = key( $entity_array['group']);
+    $group_num = key($entity_array['group']);
     $group = group_load($group_num);
     return $group;
-  } else {
+  }
+  else {
     return FALSE;
   }
 }
@@ -569,14 +591,14 @@ function _sales_insider_get_group_by_country($country) {
  * @return array
  */
 function sales_insider_variable_group_info() {
-    $groups = array();
-    $groups['sales_insider'] = array(
-        'title' => t('Sales Insider Extranet'),
-        'description' => t('Extranet variables'),
-        'access' => 'administer extranet',
-    );
+  $groups = [];
+  $groups['sales_insider'] = [
+    'title' => t('Sales Insider Extranet'),
+    'description' => t('Extranet variables'),
+    'access' => 'administer extranet',
+  ];
 
-    return $groups;
+  return $groups;
 }
 
 /**
@@ -586,49 +608,49 @@ function sales_insider_variable_group_info() {
  * @return array
  */
 function sales_insider_variable_info($options) {
-    $variable = array();
+  $variable = [];
 
-    $variable['extranet_instructions_main'] = array(
-        'type' => 'string',
-        'title' => t('Extranet Main Instructions', array(), $options),
-        'description' => t('Instructions given to users on the main Sales Insider page.'),
-        'group' => 'sales_insider',
-        'default' => '',
-    );
+  $variable['extranet_instructions_main'] = [
+    'type' => 'string',
+    'title' => t('Extranet Main Instructions', [], $options),
+    'description' => t('Instructions given to users on the main Sales Insider page.'),
+    'group' => 'sales_insider',
+    'default' => '',
+  ];
 
-    $variable['extranet_instructions_sales_tools'] = array(
-        'type' => 'string',
-        'title' => t('Extranet Sales Tools Instructions', array(), $options),
-        'description' => t('Instructions given to users on the Sales Insider Extranet Sales Tools page.'),
-        'group' => 'sales_insider',
-        'default' => '',
-    );
+  $variable['extranet_instructions_sales_tools'] = [
+    'type' => 'string',
+    'title' => t('Extranet Sales Tools Instructions', [], $options),
+    'description' => t('Instructions given to users on the Sales Insider Extranet Sales Tools page.'),
+    'group' => 'sales_insider',
+    'default' => '',
+  ];
 
-    $variable['extranet_instructions_services'] = array(
-        'type' => 'string',
-        'title' => t('Extranet Services Instructions', array(), $options),
-        'description' => t('Instructions given to users on the Sales Insider Services page.'),
-        'group' => 'sales_insider',
-        'default' => '',
-    );
+  $variable['extranet_instructions_services'] = [
+    'type' => 'string',
+    'title' => t('Extranet Services Instructions', [], $options),
+    'description' => t('Instructions given to users on the Sales Insider Services page.'),
+    'group' => 'sales_insider',
+    'default' => '',
+  ];
 
-    $variable['extranet_instructions_access_denied'] = array(
-        'type' => 'string',
-        'title' => t('Extranet Access Denied', array(), $options),
-        'description' => t('Message given when user is denied access to the Sales Insider section.'),
-        'group' => 'sales_insider',
-        'default' => '',
-    );
+  $variable['extranet_instructions_access_denied'] = [
+    'type' => 'string',
+    'title' => t('Extranet Access Denied', [], $options),
+    'description' => t('Message given when user is denied access to the Sales Insider section.'),
+    'group' => 'sales_insider',
+    'default' => '',
+  ];
 
-    $variable['extranet_instructions_request_access'] = array(
-        'type' => 'string',
-        'title' => t('Extranet Request Access', array(), $options),
-        'description' => t('Message given when user needs to request access to the Sales Insider section.'),
-        'group' => 'sales_insider',
-        'default' => '',
-    );
+  $variable['extranet_instructions_request_access'] = [
+    'type' => 'string',
+    'title' => t('Extranet Request Access', [], $options),
+    'description' => t('Message given when user needs to request access to the Sales Insider section.'),
+    'group' => 'sales_insider',
+    'default' => '',
+  ];
 
-    return $variable;
+  return $variable;
 }
 
 
@@ -641,19 +663,25 @@ function sales_insider_variable_info($options) {
  * @param $form_state
  */
 function sales_insider_form_views_exposed_form_alter(&$form, &$form_state) {
-  if (empty($form_state['view']) || !in_array($form_state['view']->name, array('sales_insider_products', 'product_page'))) {
+  if (empty($form_state['view']) || !in_array($form_state['view']->name, [
+      'sales_insider_products',
+      'product_page'
+    ])) {
     // We alter the exposed form of a single views display, so return if this is
     // not the expected view.
     return;
   }
   if (isset($form['field_dam_asset_type_value'])) {
     // Add option to select all items (equals to resetting the filter).
-    $options = array(
+    $options = [
       'All' => variable_get('views_exposed_filter_any_label', 'new_any') == 'old_any' ? t('<Any>') : t('- Any -'),
-    );
+    ];
     $options += $form['field_dam_asset_type_value']['#options'];
     // Change size of field based on number of options (max: 5 items).
-    $form['field_dam_asset_type_value']['#size'] = min(array(count($options), 5));
+    $form['field_dam_asset_type_value']['#size'] = min([
+      count($options),
+      5
+    ]);
     if (count($options) <= 2) {
       // Hide filter if there is only one option available (additional
       // to "All").
@@ -663,38 +691,38 @@ function sales_insider_form_views_exposed_form_alter(&$form, &$form_state) {
   }
 
   // Alter multi-value dropdowns.
-  $form_multiple_selects = array();
+  $form_multiple_selects = [];
   foreach (element_children($form) as $element_name) {
     if (isset($form[$element_name]['#type']) && $form[$element_name]['#type'] == 'select' && !empty($form[$element_name]['#multiple'])) {
-      $form_multiple_selects[$element_name] = array(
+      $form_multiple_selects[$element_name] = [
         'size' => isset($form[$element_name]['#size']) ? $form[$element_name]['#size'] : 5,
-      );
+      ];
     }
   }
   if (count($form_multiple_selects)) {
     if (isset($form['#attached'])) {
-      $form['#attached'] += array(
-        'js' => array(),
-        'css' => array(),
-      );
+      $form['#attached'] += [
+        'js' => [],
+        'css' => [],
+      ];
     }
     else {
-      $form['#attached'] = array(
-        'js' => array(),
-        'css' => array(),
-      );
+      $form['#attached'] = [
+        'js' => [],
+        'css' => [],
+      ];
     }
 
     // Attach custom javascript to the form.
     $form['#attached']['js'][] = drupal_get_path('module', 'sales_insider') . '/js/sales_insider.admin.js';
-    $form['#attached']['js'][] = array(
-      'data' => array(
-        'fextranet' => array(
+    $form['#attached']['js'][] = [
+      'data' => [
+        'fextranet' => [
           'multiple_selects' => $form_multiple_selects,
-        ),
-      ),
+        ],
+      ],
       'type' => 'setting',
-    );
+    ];
   }
 }
 
@@ -704,7 +732,7 @@ function sales_insider_form_views_exposed_form_alter(&$form, &$form_state) {
  * @return array
  */
 function sales_insider_default_search_api_index() {
-  $items = array();
+  $items = [];
   $items['extranet_index'] = entity_import('search_api_index', '{
     "name" : "Extranet Index",
     "machine_name" : "extranet_index",

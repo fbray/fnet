@@ -39,123 +39,123 @@ function product_distributor_init() {
  * @return array
  */
 function product_distributor_menu() {
-  $items = array();
-  //Where To Buy public facing page
-  $items['wheretobuy'] = array(  //
+  $items = [];
+  // Where To Buy public facing page
+  $items['wheretobuy'] = [
     'title' => 'Where to Buy',
     'page callback' => 'wheretobuy_page',
-    'access arguments' => array('access wtb'),
+    'access arguments' => ['access wtb'],
     'type' => MENU_CALLBACK,
-  );
+  ];
 
-  $items['contactus'] = array(
+  $items['contactus'] = [
     'title' => 'Contact Us',
     'page callback' => 'contactus_page',
-    'access arguments' => array('access wtb'),
+    'access arguments' => ['access wtb'],
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   //AJAX callbacks:
   //Get cities in a region of a country
-  $items['wheretobuy_ajax/get_cities'] = array(
+  $items['wheretobuy_ajax/get_cities'] = [
     'title' => 'Where to Buy: AJAX Response Handler: Get cities by regions',
     'file' => 'product_distributor.ajax.inc',
     'page callback' => 'wheretobuy_get_cities',
-    'access arguments' => array('access wtb'),
+    'access arguments' => ['access wtb'],
     'type' => MENU_CALLBACK,
-  );
+  ];
   //Get available delivery types in a country
-  $items['wheretobuy_ajax/get_delivery_types'] = array(
+  $items['wheretobuy_ajax/get_delivery_types'] = [
     'title' => 'Where to Buy: AJAX Response Handler: Get delivery types by country',
     'file' => 'product_distributor.ajax.inc',
     'page callback' => 'wheretobuy_get_delivery_types',
-    'access arguments' => array('access wtb'),
+    'access arguments' => ['access wtb'],
     'type' => MENU_CALLBACK,
-  );
+  ];
   //Get distributors' search result
-  $items['wheretobuy_ajax/get_distributors'] = array(
+  $items['wheretobuy_ajax/get_distributors'] = [
     'title' => 'Where to Buy: Get Distributors',
     'file' => 'product_distributor.ajax.inc',
     'page callback' => 'wheretobuy_get_distributors',
-    'access arguments' => array('access wtb'),
+    'access arguments' => ['access wtb'],
     'type' => MENU_CALLBACK,
-  );
+  ];
   //Get WTB error message
-  $items['wheretobuy_ajax/wtb_error_message'] = array(
+  $items['wheretobuy_ajax/wtb_error_message'] = [
     'title' => 'Where to Buy: Get Distributors',
     'file' => 'product_distributor.ajax.inc',
     'page callback' => 'wtb_error_message',
-    'access arguments' => array('access wtb'),
+    'access arguments' => ['access wtb'],
     'type' => MENU_CALLBACK,
-  );
+  ];
   //Is country flagged to skip region
-  $items['distributor_location_form_ajax/is_country_flagged'] = array(
+  $items['distributor_location_form_ajax/is_country_flagged'] = [
     'title' => 'Distributor Location Form: Is country flagged to skip region search',
     'file' => 'product_distributor.ajax.inc',
     'page callback' => 'is_country_flagged',
-    'access arguments' => array('access wtb'),
+    'access arguments' => ['access wtb'],
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   //Admin callbacks
-  $items['admin/fnet/wtb'] = array(
+  $items['admin/fnet/wtb'] = [
     'title' => 'Where To Buy',
     'description' => 'Where To Buy configuration',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('product_distributor_admin'),
-    'access arguments' => array('configure wtb tabs'),
+    'page arguments' => ['product_distributor_admin'],
+    'access arguments' => ['configure wtb tabs'],
     'file' => 'product_distributor.admin.inc',
-  );
-  $items['admin/fnet/wtb/configure'] = array(
+  ];
+  $items['admin/fnet/wtb/configure'] = [
     'title' => 'Configure Tabs',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -11,
-  );
-  $items['admin/fnet/wtb/configure-countries'] = array(
+  ];
+  $items['admin/fnet/wtb/configure-countries'] = [
     'title' => 'Configure countries',
     'file' => 'product_distributor.admin.inc',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('wtb_configure_countries_form'),
-    'access arguments' => array('configure wtb countries'),
+    'page arguments' => ['wtb_configure_countries_form'],
+    'access arguments' => ['configure wtb countries'],
     'type' => MENU_LOCAL_TASK,
     'weight' => -10,
-  );
-  $items['admin/fnet/wtb/export-distributors'] = array(
+  ];
+  $items['admin/fnet/wtb/export-distributors'] = [
     'title' => 'Export Product Distributors',
     'file' => 'product_distributor.admin.inc',
     'page callback' => 'export_distributor_records',
-    'access arguments' => array('export distributors'),
+    'access arguments' => ['export distributors'],
     'type' => MENU_LOCAL_TASK,
     'weight' => -9,
-  );
-  $items['admin/content/wtb-location-query'] = array(
+  ];
+  $items['admin/content/wtb-location-query'] = [
     'title' => 'WTB location query',
     'page callback' => 'product_distributor_location_query',
-    'access arguments' => array('export distributors'),
+    'access arguments' => ['export distributors'],
     'type' => MENU_NORMAL_ITEM,
     'weight' => 10,
-  );
-  
+  ];
+
   // TODO: Is this needed?
-  $items['admin/content/countries-regions'] = array(
+  $items['admin/content/countries-regions'] = [
     'title' => 'Countries & Regions',
     'description' => 'List of Countries and Regions.',
     'page callback' => 'wtb_countries_regions_listing',
     'file' => 'product_distributor.admin.inc',
-    'access arguments' => array('view countries-regions list'),
-  );
-  $items['admin/content/countries-regions/configure'] = array(
+    'access arguments' => ['view countries-regions list'],
+  ];
+  $items['admin/content/countries-regions/configure'] = [
     'title' => 'Countries & Regions',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -11,
-  );
+  ];
 
-  $items['admin/content/product-distributor-sync/configure'] = array(
+  $items['admin/content/product-distributor-sync/configure'] = [
     'title' => 'Update distributors',
     'type' => MENU_DEFAULT_LOCAL_TASK,
-    'access arguments' => array('view countries-regions list'),
+    'access arguments' => ['view countries-regions list'],
     'weight' => -11,
-  );
+  ];
   return $items;
 }
 
@@ -166,36 +166,36 @@ function product_distributor_menu() {
  * @return array
  */
 function product_distributor_permission() {
-  return array(
-    'access wtb' => array(
+  return [
+    'access wtb' => [
       'title' => t('access wtb'),
       'description' => t('Access WhereToBuy'),
-    ),
-    'configure wtb tabs' => array(
+    ],
+    'configure wtb tabs' => [
       'title' => t('configure wtb tabs'),
       'description' => t('Configure WhereToBuy Tabs'),
-    ),
-    'configure wtb countries' => array(
+    ],
+    'configure wtb countries' => [
       'title' => t('configure wtb countries'),
       'description' => t('Configure WhereToBuy Countries'),
-    ),
-    'administer wtb' => array(
+    ],
+    'administer wtb' => [
       'title' => t('administer wtb'),
       'description' => t('Administer WhereToBuy'),
-    ),
-    'view countries-regions list' => array(
+    ],
+    'view countries-regions list' => [
       'title' => t('view countries-regions list'),
       'description' => t('View countries-regions List'),
-    ),
-    'synchronize distributors' => array(
+    ],
+    'synchronize distributors' => [
       'title' => t('synchronize distributors'),
       'description' => t('Synchronize Distributors'),
-    ),
-    'export distributors' => array(
+    ],
+    'export distributors' => [
       'title' => t('export distributors'),
       'description' => t('Export Distributors'),
-    ),
-  );
+    ],
+  ];
 }
 
 
@@ -204,23 +204,23 @@ function product_distributor_permission() {
  * @return array
  */
 function product_distributor_theme() {
-  $base = array(
+  $base = [
     'path' => drupal_get_path('module', 'product_distributor') . '/theme',
-  );
-  return array(
-    'fnet_wtb_online_location_list_item' => $base + array(
-      'template' => 'fnet_wtb_online_location_list_item',
-      'variables' => array('data' => array()),
-    ),
-    'fnet_wtb_storefront_location_list_item' => $base + array(
-      'template' => 'fnet_wtb_storefront_location_list_item',
-      'variables' => array('data' => array()),
-    ),
-    'fnet_wtb_national_default_location_list_item' => $base + array(
-      'template' => 'fnet_wtb_national_default_location_list_item',
-      'variables' => array('data' => array()),
-    ),
-  );
+  ];
+  return [
+    'fnet_wtb_online_location_list_item' => $base + [
+        'template' => 'fnet_wtb_online_location_list_item',
+        'variables' => ['data' => []],
+      ],
+    'fnet_wtb_storefront_location_list_item' => $base + [
+        'template' => 'fnet_wtb_storefront_location_list_item',
+        'variables' => ['data' => []],
+      ],
+    'fnet_wtb_national_default_location_list_item' => $base + [
+        'template' => 'fnet_wtb_national_default_location_list_item',
+        'variables' => ['data' => []],
+      ],
+  ];
 }
 
 
@@ -231,6 +231,7 @@ function product_distributor_theme() {
  */
 function product_distributor_menu_alter(&$menu) {
   // TODO: No longer using Location module. Replace with something from Locale or Addressfield.
+  // TODO: If we want to use an autocomplete, the callback should be the _adminstrative_area_autocomplete.
   /*
   if (isset($menu['location/autocomplete'])) {
     $menu['location/autocomplete']['page callback'] = '_custom_location_autocomplete';
@@ -243,29 +244,28 @@ function product_distributor_menu_alter(&$menu) {
  * Helper function to modify the list of regions that show in autocomplete suggestions
  * This function overrides the default autocomplete function "_location_autocomplete" of location module
  * located in location.module
- * TODO: Deprecated. Use Location or Addressfield module for similar functionality.
  */
-/*
-function _custom_location_autocomplete($country, $string = '') {
+
+function _administrative_area_autocomplete($country, $string = '') {
   $counter = 0;
-  $string   = strtolower($string);
-  $string   = '/^' . $string . '/';
-  $matches  = array();
+  $string = strtolower($string);
+  $string = '/^' . $string . '/';
+  $matches = [];
 
   if (strpos($country, ',') !== FALSE) {
     // Multiple countries specified.
-    $provinces = array();
+    $areas = [];
     $country = explode(',', $country);
     foreach ($country as $c) {
-      $provinces = $provinces + location_get_provinces($c);
+      $areas = $areas + addressfield_get_administrative_areas($c);
     }
   }
   else {
-    $provinces = location_get_provinces($country);
+    $areas = addressfield_get_administrative_areas($country);
   }
 
-  if (!empty($provinces)) {
-    while (list($code, $name) = each($provinces)) {
+  if (!empty($areas)) {
+    foreach ($areas as $name) {
       if (preg_match($string, strtolower($name))) {
         $matches[$name] = $name;
       }
@@ -273,7 +273,6 @@ function _custom_location_autocomplete($country, $string = '') {
   }
   drupal_json_output($matches);
 }
-*/
 
 
 /**
@@ -295,7 +294,7 @@ function product_distributor_form_alter(&$form, &$form_state, $form_id) {
       drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/distributor_group_form.css');
       //To resolve multiselect issue: Product with &reg; does not show in Selected Products list
       //Bring the entire multiselect form in same text format with htmlentities
-      $form['#after_build'] = array('modify_distributor_form');
+      $form['#after_build'] = ['modify_distributor_form'];
       //Confert entire form back into HTML entities
       $form['field_products']['#post_render'][] = 'process_product_text';
 
@@ -322,7 +321,7 @@ function product_distributor_form_alter(&$form, &$form_state, $form_id) {
       drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/distributor_form.js');
       drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/distributor_form.css');
       $form['title']['#description'] = 'This is an internal facing name to help you search and manage your locations. It does not appear to the customer.';
-      $form['#after_build'] = array('modify_location_form');
+      $form['#after_build'] = ['modify_location_form'];
 
       //Set default value of custom published flag according
       if ($form['field_custom_publish_content']['#default_value'][0]['value'] != $form['#node']->status) {
@@ -349,11 +348,11 @@ function product_distributor_form_alter(&$form, &$form_state, $form_id) {
     /**
      * See filter_distributors_by_countries() to know where the filtering code is implemented
      */
-    $countries = array();
+    $countries = [];
     $countries = array_change_key_case(location_get_iso3166_list(), CASE_UPPER);
     $inactive_countries = get_inactive_countries();
     $countries = array_diff_key($countries, $inactive_countries);
-    $form['countries'] =  array(
+    $form['countries'] = [
       '#type' => 'select',
       '#default_value' => NULL,
       '#title' => '',
@@ -362,17 +361,17 @@ function product_distributor_form_alter(&$form, &$form_state, $form_id) {
       '#multiple' => TRUE,
       '#size' => 15,
       '#weight' => -10,
-    );
+    ];
 
     // Add label and reposition the field after 'title' field
     // this value determines the position of the new element.
     $insert_index = 1;
-    $element_to_insert = array();
-    $element_to_insert['filter-countries'] = array(
+    $element_to_insert = [];
+    $element_to_insert['filter-countries'] = [
       'operator' => 'countries_op',
       'value' => 'countries',
       'label' => 'Location: Country',
-    );
+    ];
     $form_info_top = array_slice($form['#info'], 0, $insert_index);
     $form_info_bottom = array_slice($form['#info'], $insert_index);
     $new_form_info = $form_info_top + $element_to_insert + $form_info_bottom;
@@ -384,7 +383,7 @@ function product_distributor_form_alter(&$form, &$form_state, $form_id) {
 
 /**
  * Implements hook_ajax_data_alter().
-().
+ * ().
  */
 function product_distributor_ajax_data_alter(&$object, $type, $view) {
   if ($type == 'views' && $view->display_handler->uses_exposed() && $view->display_handler->get_option('exposed_block')) {
@@ -408,15 +407,15 @@ function modify_distributor_form($form_element, &$form_state) {
 
   ////Second part of form
   if (is_array($form_element['field_products']['nid']['#options'])) {
-    $prod_arr = array();
+    $prod_arr = [];
     foreach ($form_element['field_products']['nid']['#options'] as $key => $val) {
       //$form_element['field_products']['nid']['#options'][$key] = htmlentities($val);
       $prod_arr[] = $key;
     }
     if (count($prod_arr) > 0) {
-      $result = db_query("SELECT n.nid, n.title " . "FROM {node} n " . "WHERE n.nid IN (" . implode(',', $prod_arr) . ") " . "ORDER BY n.title ASC", array());
+      $result = db_query("SELECT n.nid, n.title " . "FROM {node} n " . "WHERE n.nid IN (" . implode(',', $prod_arr) . ") " . "ORDER BY n.title ASC", []);
       unset($prod_arr);
-      $prod_arr = array();
+      $prod_arr = [];
       foreach ($result as $record) {
         $prod_arr[$record->nid] = $record->title;
       }
@@ -449,20 +448,32 @@ function modify_location_form($form_element, &$form_state) {
  */
 function wheretobuy_page() {
   $default_map_img = 'productcollage.jpg';
-  drupal_add_js('//cdn.pricespider.com/1/lib/ps-widget.js','external');
+  drupal_add_js('//cdn.pricespider.com/1/lib/ps-widget.js', 'external');
   drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/tabs.css');
-  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/tabs.js', array('defer' => TRUE, 'preprocess' => FALSE));
+  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/tabs.js', [
+    'defer' => TRUE,
+    'preprocess' => FALSE
+  ]);
 
-  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/wheretobuy_page_1.js', array('defer' => TRUE, 'preprocess' => FALSE));
+  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/wheretobuy_page_1.js', [
+    'defer' => TRUE,
+    'preprocess' => FALSE
+  ]);
   // drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/wheretobuy_page.css');
 
-  drupal_add_js(array('wheretobuy_path' => drupal_get_path('module', 'product_distributor')), ['type' => 'setting', 'scope' => JS_DEFAULT]);
-  drupal_add_js(array('wheretobuy_default_img' => base_path() . drupal_get_path('module', 'product_distributor') . '/images/' . $default_map_img), array('type' => 'setting', 'scope' => JS_DEFAULT));
+  drupal_add_js(['wheretobuy_path' => drupal_get_path('module', 'product_distributor')], [
+    'type' => 'setting',
+    'scope' => JS_DEFAULT
+  ]);
+  drupal_add_js(['wheretobuy_default_img' => base_path() . drupal_get_path('module', 'product_distributor') . '/images/' . $default_map_img], [
+    'type' => 'setting',
+    'scope' => JS_DEFAULT
+  ]);
 
 
-  $vars1 = variable_get('wtb_settings_tab1', array());
+  $vars1 = variable_get('wtb_settings_tab1', []);
 //  $vars2 = variable_get('wtb_settings_tab2', array());
-  $vars3 = variable_get('wtb_settings_tab3', array());
+  $vars3 = variable_get('wtb_settings_tab3', []);
   $output = '';
   // <li class="second"><a href="#tab2">' . $vars2['tab2_title'] . '</a></li>
 //        <div id="tab2" style="display:none" class="tab_content">' . get_tab_content(2) . '
@@ -495,11 +506,20 @@ function contactus_page() {
   drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/tabs.css');
 //  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/tabs.js', 'module', 'header', TRUE, TRUE, FALSE);
 
-  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/wheretobuy_page_1.js', array('defer' => TRUE, 'preprocess' => FALSE));
+  drupal_add_js(drupal_get_path('module', 'product_distributor') . '/js/wheretobuy_page_1.js', [
+    'defer' => TRUE,
+    'preprocess' => FALSE
+  ]);
   drupal_add_css(drupal_get_path('module', 'product_distributor') . '/css/wheretobuy_page.css');
 
-  drupal_add_js(array('wheretobuy_path' => drupal_get_path('module', 'product_distributor')), array('type' => 'setting', 'scope' => JS_DEFAULT));
-  drupal_add_js(array('wheretobuy_default_img' => base_path() . drupal_get_path('module', 'product_distributor') . '/images/' . $default_map_img), array('type' => 'setting', 'scope' => JS_DEFAULT));
+  drupal_add_js(['wheretobuy_path' => drupal_get_path('module', 'product_distributor')], [
+    'type' => 'setting',
+    'scope' => JS_DEFAULT
+  ]);
+  drupal_add_js(['wheretobuy_default_img' => base_path() . drupal_get_path('module', 'product_distributor') . '/images/' . $default_map_img], [
+    'type' => 'setting',
+    'scope' => JS_DEFAULT
+  ]);
 
   $output = '<ul class="wtbtabs">
         <li class="fulltab active"><a>' . variable_get('product_distributor_tab2_title', '') . '</a></li>
@@ -529,12 +549,12 @@ function get_tab_content($tab = 1) {
       $output .= drupal_render($form);
       break;
     case 3:
-      $form = array();
+      $form = [];
       $default_map_img = 'productcollage.jpg';
       $continent_code = ''; //should probably have some value
       $output .= '<div id="w2b-form-img-wrapper"><div id="w2b-form-wrapper">';
       $form = drupal_get_form('pd_l1_form');
-      $output .=  drupal_render($form);
+      $output .= drupal_render($form);
       $output .= '</div>';
       $output .= '<div id="global-img-map-wrapper">'
         . '<div id="map-wrapper"><img width="488" height="385" border="0" id="fpAnimswapImgFP1" src="' . drupal_get_path('module', 'product_distributor') . '/images/' . $default_map_img . '"></div>'
@@ -562,80 +582,80 @@ function get_tab_content($tab = 1) {
  * @return array
  */
 function eloqua_form($form) {
-  $form = array();
+  $form = [];
 
-  $form['elqFormName'] = array(
+  $form['elqFormName'] = [
     '#type' => 'hidden',
     '#value' => 'WheretoBuy',
-  );
-  $form['C_Campaign1'] = array(
+  ];
+  $form['C_Campaign1'] = [
     '#type' => 'hidden',
     '#value' => 'WheretoBuy',
-  );
-  $form['C_FirstName'] = array(
+  ];
+  $form['C_FirstName'] = [
     '#type' => 'textfield',
     '#title' => t('First Name'),
-    '#attributes' =>array('class'=>array('elqFormField')),
+    '#attributes' => ['class' => ['elqFormField']],
     '#size' => 25,
     '#required' => TRUE,
-  );
-  $form['C_LastName'] = array(
+  ];
+  $form['C_LastName'] = [
     '#type' => 'textfield',
     '#title' => t('Last Name'),
-    '#attributes' => array('class' => array('elqFormField')),
+    '#attributes' => ['class' => ['elqFormField']],
     '#size' => 25,
     '#required' => TRUE,
-  );
-  $form['C_EmailAddress'] = array(
+  ];
+  $form['C_EmailAddress'] = [
     '#type' => 'textfield',
     '#title' => t('Email'),
-    '#attributes' => array('class' => array('elqFormField')),
+    '#attributes' => ['class' => ['elqFormField']],
     '#size' => 25,
     '#required' => TRUE,
-  );
-  $form['C_Title'] = array(
+  ];
+  $form['C_Title'] = [
     '#type' => 'textfield',
     '#title' => t('Job Title'),
-    '#attributes' => array('class' => array('elqFormField')),
+    '#attributes' => ['class' => ['elqFormField']],
     '#size' => 25,
     '#required' => TRUE,
-  );
-  $form['C_Company'] = array(
+  ];
+  $form['C_Company'] = [
     '#type' => 'textfield',
     '#title' => t('Company'),
-    '#attributes' => array('class' => array('elqFormField')),
+    '#attributes' => ['class' => ['elqFormField']],
     '#size' => 25,
     '#required' => TRUE,
-  );
-  $form['C_BusPhone'] = array(
+  ];
+  $form['C_BusPhone'] = [
     '#type' => 'textfield',
     '#title' => t('Telephone'),
-    '#attributes' => array('class' => array('elqFormField')),
+    '#attributes' => ['class' => ['elqFormField']],
     '#size' => 25,
     '#required' => TRUE,
-  );
-  $form['C_Address1'] = array(
+  ];
+  $form['C_Address1'] = [
     '#type' => 'textfield',
     '#title' => t('Address Line 1'),
-    '#attributes' => array('class' => array('elqFormField')),
+    '#attributes' => ['class' => ['elqFormField']],
     '#size' => 25,
     '#required' => TRUE,
-  );
-  $form['C_Address2'] = array(
+  ];
+  $form['C_Address2'] = [
     '#type' => 'textfield',
     '#title' => t('Address Line 2'),
-    '#attributes' => array('class' => array('elqFormField')),
+    '#attributes' => ['class' => ['elqFormField']],
     '#size' => 25,
     '#required' => FALSE,
-  );
-  $form['C_City'] = array(
+  ];
+  $form['C_City'] = [
     '#type' => 'textfield',
     '#title' => t('City'),
-    '#attributes' => array('class' => array('elqFormField')),
+    '#attributes' => ['class' => ['elqFormField']],
     '#size' => 25,
     '#required' => TRUE,
-  );
-  $state_prov_options = array(
+  ];
+  $state_prov_options = [
     "" => "Please Select",
     "AK" => "Alaska",
     "AL" => "Alabama",
@@ -712,22 +732,22 @@ function eloqua_form($form) {
     "QC" => "Quebec",
     "SK" => "Saskatchewan",
     "YT" => "Yukon Territory",
-  );
-  $form['C_State_Prov'] = array(
+  ];
+  $form['C_State_Prov'] = [
     '#type' => 'select',
     '#title' => t('State or Province'),
     '#default_value' => '',
     '#required' => FALSE,
     '#options' => $state_prov_options,
-  );
-  $form['C_Zip_Postal'] = array(
+  ];
+  $form['C_Zip_Postal'] = [
     '#type' => 'textfield',
     '#title' => t('Zip or Postal Code'),
-    '#attributes' => array('class' => array('elqFormField')),
+    '#attributes' => ['class' => ['elqFormField']],
     '#size' => 25,
     '#required' => FALSE,
-  );
-  $country_options = array(
+  ];
+  $country_options = [
     "" => "Please Select",
     "US" => "United States",
     "AC" => "Ascension Island",
@@ -960,20 +980,23 @@ function eloqua_form($form) {
     "ZM" => "Zambia",
     "ZR" => "Zaire",
     "ZW" => "Zimbabwe",
-  );
+  ];
   $submit_button = '<div class="btn_143w">
                       <a href="#" id="edit-Submit-dummy" onclick="$(this).parents(\'form\').find(\'#edit-Submit\').click();return false;">Submit &raquo;</a>
                     </div>';
-  $form['C_Country'] = array(
+  $form['C_Country'] = [
     '#type' => 'select',
     '#title' => t('Country'),
     '#default_value' => '',
     '#required' => TRUE,
     '#options' => $country_options,
-  );
+  ];
 
-  $presults = db_query('SELECT nid, title FROM {node} WHERE type = :type AND status = :status ORDER BY title ASC', array(':type' => "product", ':status' => 1));
-  $products = array();
+  $presults = db_query('SELECT nid, title FROM {node} WHERE type = :type AND status = :status ORDER BY title ASC', [
+    ':type' => "product",
+    ':status' => 1
+  ]);
+  $products = [];
 
   $products[0] = 'Select a Product';
   //$products[-1] = 'All Products';
@@ -982,23 +1005,23 @@ function eloqua_form($form) {
     $products[trim($product_data->title)] = trim($product_data->title);
   }
 
-  $form['C_Product'] = array(
+  $form['C_Product'] = [
     '#type' => 'select',
     '#title' => t('Which product are you interested in?'),
     '#default_value' => '',
     '#required' => FALSE,
     '#options' => $products,
     '#suffix' => $submit_button,
-  );
+  ];
 
-  $form['Submit'] = array(
+  $form['Submit'] = [
     '#type' => 'image_button',
     '#value' => t('Submit'),
-    '#attributes' => array(
-      'class' =>array('form-submit'),
+    '#attributes' => [
+      'class' => ['form-submit'],
       'src' => drupal_get_path('module', 'product_distributor') . '/images/submit_button.gif',
-    ),
-  );
+    ],
+  ];
 
   return $form;
 }
@@ -1019,7 +1042,7 @@ function eloqua_form_validate($form, &$form_state) {
  */
 function eloqua_form_submit($form, &$form_state) {
   $Url = "http://now.eloqua.com/e/f.aspx?elqSiteID=1194";
-  $skipFieldArray = array(
+  $skipFieldArray = [
     "Submit" => TRUE,
     "elqSiteID" => TRUE,
     "Submit_x" => TRUE,
@@ -1027,7 +1050,7 @@ function eloqua_form_submit($form, &$form_state) {
     "form_build_id" => TRUE,
     "form_token" => TRUE,
     "form_id" => TRUE,
-  );
+  ];
   $allKeys = array_keys($form['#post']);
   foreach ($form['#post'] as $k => $v) {
     if (!$skipFieldArray[$k] && $v) {
@@ -1056,7 +1079,7 @@ function eloqua_form_submit($form, &$form_state) {
  * Return a list of inactive countries
  */
 function get_inactive_countries() {
-  return array(
+  return [
     "AX" => "Aland Islands",
     "AL" => "Albania",
     "AS" => "American Samoa",
@@ -1078,7 +1101,7 @@ function get_inactive_countries() {
     "TL" => "East Timor",
     "GQ" => "Equatorial Guinea",
     "ER" => "Eritrea",
-  //  "EE" => "Estonia",
+    //  "EE" => "Estonia",
     "FK" => "Falkland Islands",
     "FO" => "Faroe Islands",
     "FJ" => "Fiji",
@@ -1136,7 +1159,7 @@ function get_inactive_countries() {
     "VU" => "Vanuatu",
     "VA" => "Vatican",
     "WF" => "Wallis and Futuna",
-  );
+  ];
 }
 
 
@@ -1186,8 +1209,7 @@ function pd_l1_form($form, $form_state, $continent_code = NULL) {
           $continent_text = ' in South America';
           break;
       }
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       // $countries = country_get_list();
       // $countries = array_diff_key($countries, $inactive_countries);
       watchdog('Product Distributor', $e->getMessage());
@@ -1251,10 +1273,12 @@ function pd_l1_form($form, $form_state, $continent_code = NULL) {
         $country_code = $country_arr[1];
       }
     }
+    /* Testing
     if (module_exists('devel')) {
       dpm('IP address:' . $ip);
       dpm($country_code);
     }
+    */
   }
   // Debugging
 
@@ -1268,7 +1292,6 @@ function pd_l1_form($form, $form_state, $continent_code = NULL) {
     '#default_value' => $country_code,
     '#options' => $countries,
   ];
-  // dpm($countries);
   $form['products'] = [
     '#type' => 'select',
     '#prefix' => '<div class="OneLinkNoTx">',
@@ -1278,13 +1301,17 @@ function pd_l1_form($form, $form_state, $continent_code = NULL) {
     '#post_render' => ['process_product_text'],
     '#suffix' => '</div>',
   ];
-  // dpm($products);
+
+  $form['wtb-ps-widget'] = [
+    '#markup' => '<div id="ps-widget-btn"></div>',
+  ];
+
   $form['buying_methods'] = [
     '#type' => 'select',
     '#title' => t('3. Select a Buying Method'),
     '#options' => $buying_methods,
   ];
-  // dpm($buying_methods);
+
   $form['regions'] = [
     '#type' => 'select',
     '#title' => t('4. Select a Region'),
@@ -1318,8 +1345,8 @@ function pd_l1_form($form, $form_state, $continent_code = NULL) {
  * Sanitize string to display in select list
  */
 function process_product_text($element, $children) {
-  $src_strs = array('&lt;sup&gt;TM&lt;/sup&gt;', '&#0153;');
-  $rep_strs = array('&trade;', '&trade;');
+  $src_strs = ['&lt;sup&gt;TM&lt;/sup&gt;', '&#0153;'];
+  $rep_strs = ['&trade;', '&trade;'];
   return html_entity_decode(str_replace($src_strs, $rep_strs, $element));
 }
 
@@ -1328,15 +1355,15 @@ function process_product_text($element, $children) {
  * Implements hook_views_api().
  */
 function product_distributor_views_api() {
-  return array(
+  return [
     'api' => 3,
     'path' => drupal_get_path('module', 'product_distributor') . '/views',
-  );
+  ];
 }
 
 /**
  * Implements hook_views_pre_render
-().
+ * ().
  */
 function product_distributor_views_pre_render(&$view) {
   if ($view->name == 'improved_admin_content' || $view->name == 'improved_admin_content_wtb' || $view->name == 'wtb_distributor_countries') {
@@ -1376,8 +1403,8 @@ function product_distributor_node_load($nodes, $types) {
     //Product Distributor Group - Sort products alphabetically
     if ($node->type == 'product_distributor_group' && is_array($node->field_products[LANGUAGE_NONE])) {
       foreach ($node->field_products[LANGUAGE_NONE] as $key => $value) {
-        $result = db_query("SELECT title FROM {node} WHERE nid = :nid", array(':nid' => $value['nid']));
-        $data = (object)$result->fetchObject();
+        $result = db_query("SELECT title FROM {node} WHERE nid = :nid", [':nid' => $value['nid']]);
+        $data = (object) $result->fetchObject();
         $node->field_products[LANGUAGE_NONE][$key]['title'] = $data->title;
         unset($node->field_products[LANGUAGE_NONE][$key]['nid']);
         $node->field_products[LANGUAGE_NONE][$key]['nid'] = $value['nid'];
@@ -1398,19 +1425,19 @@ function product_distributor_node_load($nodes, $types) {
  */
 function get_countries_of_distributors($distributor_nid = NULL, $csv = FALSE, $return_country_code_array = FALSE) {
   if ($distributor_nid) {
-    $countries = array();
+    $countries = [];
     $location_countries = location_get_iso3166_list();
     $lresults = db_query('SELECT n.vid FROM {node} n'
       . ' INNER JOIN {field_data_field_product_groups} cfpg ON cfpg.revision_id = n.vid'
       . ' WHERE cfpg.field_product_groups_nid = :distributorNid '
-      , array(":distributorNid"=>$distributor_nid));
+      , [":distributorNid" => $distributor_nid]);
 
     foreach ($lresults as $ldata) {
       $cresults = db_query('SELECT DISTINCT l.country FROM {location} l'
         . ' INNER JOIN {location_instance} li ON li.lid = l.lid'
         . ' INNER JOIN {node} n ON n.vid = li.vid'
         . ' WHERE n.vid = :dataVid '
-        , array(":dataVid"=>$ldata->vid));
+        , [":dataVid" => $ldata->vid]);
       foreach ($cresults as $cdata) {
         if (!isset($countries[$cdata->country])) {
           $countries[$cdata->country] = $location_countries[$cdata->country];
@@ -1448,20 +1475,20 @@ function filter_distributors_by_countries() {
 
     $cresults = db_query('SELECT DISTINCT n.nid FROM {node} n'
       . ' INNER JOIN {location_instance} li ON li.vid = n.vid'
-      . ' INNER JOIN {location} l ON l.lid = li.lid AND l.country IN (\'' . implode("','",$countries_filter) . '\')'
-      , array());
-    $distributors = array();
-    $locations = array();
+      . ' INNER JOIN {location} l ON l.lid = li.lid AND l.country IN (\'' . implode("','", $countries_filter) . '\')'
+      , []);
+    $distributors = [];
+    $locations = [];
     foreach ($cresults as $cdata) {
       $locations[] = $cdata->nid;
     }
     if (count($locations)) {
-/*      $dresults = db_query('SELECT n.nid FROM {node} n'
-        . ' INNER JOIN {content_field_product_groups} cfpg ON cfpg.field_product_groups_nid = n.nid AND cfpg.nid IN (' . implode(',',$locations) . ')'
-        , array()); */
+      /*      $dresults = db_query('SELECT n.nid FROM {node} n'
+              . ' INNER JOIN {content_field_product_groups} cfpg ON cfpg.field_product_groups_nid = n.nid AND cfpg.nid IN (' . implode(',',$locations) . ')'
+              , array()); */
       $dresults = db_query('SELECT n.nid FROM {node} n'
-        . ' INNER JOIN {field_data_field_product_groups} cfpg ON cfpg.field_product_groups_nid = n.nid AND cfpg.entity_id IN (' . implode(',',$locations) . ')'
-        , array());
+        . ' INNER JOIN {field_data_field_product_groups} cfpg ON cfpg.field_product_groups_nid = n.nid AND cfpg.entity_id IN (' . implode(',', $locations) . ')'
+        , []);
 
       foreach ($dresults as $ddata) {
         $distributors[] = $ddata->nid;
@@ -1482,7 +1509,7 @@ function filter_distributors_by_countries() {
  * @param bool $return_array
  * @return array
  */
-function product_distributor_get_products_for_distributor($distributor_vid = NULL, $csv = FALSE, $return_array = FALSE ) {
+function product_distributor_get_products_for_distributor($distributor_vid = NULL, $csv = FALSE, $return_array = FALSE) {
   if ($distributor_vid) {
     $sql = <<<sql
 SELECT DISTINCT n.title AS product, IF(n.`status`,'','(unpublished)') AS status
@@ -1492,8 +1519,8 @@ WHERE cfp.revision_id = :distributorVid
 ORDER BY product ASC;
 sql;
 
-    $products = array();
-    $result = db_query($sql, array(":distributorVid"=>$distributor_vid));
+    $products = [];
+    $result = db_query($sql, [":distributorVid" => $distributor_vid]);
     if ($result) {
       foreach ($result as $record) {
         $product = ($csv) ? _product_distributor_clean_string($record->product) : $record->product;
@@ -1520,47 +1547,47 @@ sql;
  * TODO: Oh, FFS! Get rid of the Location module.
  */
 function product_distributor_location_query() {
-/*  $sql = <<<sql
-SELECT node.nid AS LocationNID,
-   node.title AS LocationTitle,
-   node_data_field_display_name.field_display_name_value AS LocationDisplayName,
-   node_data_field_product_groups.field_product_groups_nid AS DistributorNID,
-   dn.title AS DistributorName,
-   location.lid AS LocationID,
-   location.name AS LocationName,
-   location.street AS LocationStreet,
-   location.additional AS LocationStreet2,
-   location.city AS LocationCity,
-   location.province AS LocationProvince,
-   location.country AS LocationCountry,
-   location.postal_code AS LocationPostalCode,
-   location_phone.phone AS LocationPhone,
-   location_fax.fax AS LocationFax,
-   node_data_field_display_name.field_toll_free_phone_value AS TollFreePhone,
-   node_data_field_display_name.field_email_contact_value AS Email,
-   node_data_field_display_name.field_website_url_value AS WebsiteURL,
-   node_data_field_display_name.field_buy_online_url_value AS BuyOnlineURL,
-   node_data_field_display_name.field_gsa_schedule_value AS GSA,
-   node_data_field_display_name.field_stocking_rating_value AS Stocking,
-   node_data_field_display_name.field_sales_force_rating_value AS SalesForce,
-   node_data_field_display_name.field_point_of_sale_rating_value AS PointOfSale,
-   node_data_field_display_name.field_distributor_type_rating_value AS DistributorType,
-   GROUP_CONCAT(DISTINCT node_data_field_delivery_type.field_delivery_type_value
-   SEPARATOR '|') AS DeliveryType,
-   node_data_field_display_name.field_comments_value AS Comments
-FROM node node
-LEFT JOIN content_type_distributor node_data_field_display_name ON node.vid = node_data_field_display_name.vid
-LEFT JOIN content_field_product_groups node_data_field_product_groups ON node.vid = node_data_field_product_groups.vid
-LEFT JOIN location_instance location_instance ON node.vid = location_instance.vid
-LEFT JOIN location location ON location_instance.lid = location.lid
-LEFT JOIN location_phone location_phone ON location_instance.lid = location_phone.lid
-LEFT JOIN location_fax location_fax ON location_instance.lid = location_fax.lid
-LEFT JOIN content_field_delivery_type node_data_field_delivery_type ON node.vid = node_data_field_delivery_type.vid
-LEFT JOIN node dn ON node_data_field_product_groups.field_product_groups_nid = dn.nid
-WHERE node.type = 'distributor'
-GROUP BY node.nid
-ORDER BY node.title;
-sql; */
+  /*  $sql = <<<sql
+  SELECT node.nid AS LocationNID,
+     node.title AS LocationTitle,
+     node_data_field_display_name.field_display_name_value AS LocationDisplayName,
+     node_data_field_product_groups.field_product_groups_nid AS DistributorNID,
+     dn.title AS DistributorName,
+     location.lid AS LocationID,
+     location.name AS LocationName,
+     location.street AS LocationStreet,
+     location.additional AS LocationStreet2,
+     location.city AS LocationCity,
+     location.province AS LocationProvince,
+     location.country AS LocationCountry,
+     location.postal_code AS LocationPostalCode,
+     location_phone.phone AS LocationPhone,
+     location_fax.fax AS LocationFax,
+     node_data_field_display_name.field_toll_free_phone_value AS TollFreePhone,
+     node_data_field_display_name.field_email_contact_value AS Email,
+     node_data_field_display_name.field_website_url_value AS WebsiteURL,
+     node_data_field_display_name.field_buy_online_url_value AS BuyOnlineURL,
+     node_data_field_display_name.field_gsa_schedule_value AS GSA,
+     node_data_field_display_name.field_stocking_rating_value AS Stocking,
+     node_data_field_display_name.field_sales_force_rating_value AS SalesForce,
+     node_data_field_display_name.field_point_of_sale_rating_value AS PointOfSale,
+     node_data_field_display_name.field_distributor_type_rating_value AS DistributorType,
+     GROUP_CONCAT(DISTINCT node_data_field_delivery_type.field_delivery_type_value
+     SEPARATOR '|') AS DeliveryType,
+     node_data_field_display_name.field_comments_value AS Comments
+  FROM node node
+  LEFT JOIN content_type_distributor node_data_field_display_name ON node.vid = node_data_field_display_name.vid
+  LEFT JOIN content_field_product_groups node_data_field_product_groups ON node.vid = node_data_field_product_groups.vid
+  LEFT JOIN location_instance location_instance ON node.vid = location_instance.vid
+  LEFT JOIN location location ON location_instance.lid = location.lid
+  LEFT JOIN location_phone location_phone ON location_instance.lid = location_phone.lid
+  LEFT JOIN location_fax location_fax ON location_instance.lid = location_fax.lid
+  LEFT JOIN content_field_delivery_type node_data_field_delivery_type ON node.vid = node_data_field_delivery_type.vid
+  LEFT JOIN node dn ON node_data_field_product_groups.field_product_groups_nid = dn.nid
+  WHERE node.type = 'distributor'
+  GROUP BY node.nid
+  ORDER BY node.title;
+  sql; */
   $sql = <<<sql
 SELECT node.nid AS LocationNID,
    node.title AS LocationTitle,
@@ -1620,10 +1647,10 @@ sql;
     drupal_set_message('Error opening output file', 'error');
     return;
   }
-  $result = db_query($sql, array());
+  $result = db_query($sql, []);
   $headers = NULL;
   foreach ($result as $record) {
-    $record = json_decode(json_encode($record), true);
+    $record = json_decode(json_encode($record), TRUE);
     if (!$headers) {
       $headers = array_keys($record);
       fputcsv($output, $headers);
@@ -1632,15 +1659,16 @@ sql;
   }
   fclose($output);
 //  $headers = array("Content-Type: text/csv", "Content-Disposition: attachment; filename=\"$output_filename\"");
-  $http_headers = array(
+  $http_headers = [
     'Content-Type' => 'text/csv',
     'Content-Disposition' => 'attachment; filename="' . $output_filename . '"',
     'Content-Length' => filesize($output_filepath),
-  );
-  if(strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE')) {
+  ];
+  if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE')) {
     $http_headers['Cache-Control'] = 'must-revalidate, post-check=0, pre-check=0';
     $http_headers['Pragma'] = 'public';
-  } else {
+  }
+  else {
     $http_headers['Pragma'] = 'no-cache';
   }
 
@@ -1696,16 +1724,18 @@ function product_distributor_clone_node_alter(&$node, $original_node, $method) {
  */
 function product_distributor_action_info() {
   if (!module_exists('content')) {
-    return array();
+    return [];
   }
-  return array('wtb_remove_product_action' => array(
+  return [
+    'wtb_remove_product_action' => [
       'type' => 'node',
       'label' => t('Distributor: Remove products'),
       'configurable' => TRUE,
-      'behavior' => array('changes_node_property'),
-      'form properties' => array('#field_info'),
+      'behavior' => ['changes_node_property'],
+      'form properties' => ['#field_info'],
       'rules_ignore' => TRUE,
-    ));
+    ]
+  ];
 }
 
 
@@ -1717,11 +1747,11 @@ function product_distributor_action_info() {
  * @return array
  */
 function wtb_remove_product_action_theme() {
-  return array(
-    'wtb_remove_product_action_form' => array(
-      'arguments' => array('form' => NULL),
-    ),
-  );
+  return [
+    'wtb_remove_product_action_form' => [
+      'arguments' => ['form' => NULL],
+    ],
+  ];
 }
 
 
@@ -1734,11 +1764,11 @@ function wtb_remove_product_action_theme() {
 function wtb_remove_product_action(&$node, $context) {
 
   //Remove selected products.
-  $products_selected = array();
-  foreach ( $context['values']['field_products'] as $sp) {
+  $products_selected = [];
+  foreach ($context['values']['field_products'] as $sp) {
     $products_selected[] = $sp['nid'];
   }
-  $new_field_products = array();
+  $new_field_products = [];
   foreach ($node->field_products as $fp) {
     if (in_array($fp['nid'], $products_selected)) {
       continue;
@@ -1759,14 +1789,14 @@ function wtb_remove_product_action(&$node, $context) {
  */
 function wtb_remove_product_action_form($context) {
   module_load_include('inc', 'content', 'includes/content.node_form');
-  $form = array();
+  $form = [];
 
   //Pull multiselect field used to select products
   $field = content_fields('field_products');
   $field['widget']['description'] = t('Select products to be removed');
   $field['required'] = TRUE;
   $form['#field_info']['field_products'] = $field;
-  $form_state = array();
+  $form_state = [];
   $form += content_field_form($form, $form_state, $field);
 
   return $form;
@@ -1781,5 +1811,5 @@ function wtb_remove_product_action_form($context) {
  * @return array
  */
 function wtb_remove_product_action_submit($form, $form_state) {
-  return (array('values' => $form_state['values']));
+  return (['values' => $form_state['values']]);
 }

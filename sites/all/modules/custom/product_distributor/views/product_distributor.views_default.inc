@@ -8,7 +8,7 @@
  * Implementation of hook_views_default_views()
  */
 function product_distributor_views_default_views() {
-  $views = array();
+  $views = [];
   $files = file_scan_directory(drupal_get_path('module', 'product_distributor') . '/views', '/.*\.view.inc$/');
   foreach ($files as $filepath => $file) {
     require $filepath;

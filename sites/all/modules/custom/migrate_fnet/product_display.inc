@@ -41,13 +41,15 @@ class FNETProductDisplayMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_include_price_spider_code', 'field_wtb_pricespider_code');
     $this->addFieldMapping('field_wtb_ps_model_sku', 'field_wtb_ps_model_sku');
     $this->addFieldMapping('field_conversion_code', 'field_conversion_code');
-    $this->addFieldMapping('field_conversion_code:format', 'field_conversion_code:format');
+    $this->addFieldMapping('field_conversion_code:format', 'field_conversion_code:format')
+      ->defaultValue('plain_text');;
     $this->addFieldMapping('field_prod_hide_models_accessory', 'field_prod_hide_models_accessory');
     $this->addFieldMapping('field_product_details', 'field_product_details');
     $this->addFieldMapping('field_product_details:format', 'field_product_details:format')
       ->defaultValue('plain_text');
     $this->addFieldMapping('field_product_specs', 'field_product_specs');
-    $this->addFieldMapping('field_product_specs:format', 'field_product_specs:format');
+    $this->addFieldMapping('field_product_specs:format', 'field_product_specs:format')
+      ->defaultValue('full_html');;
 
     $this->addFieldMapping('field_prod_ctab_name_1', 'field_prod_ctab_name_1');
     $this->addFieldMapping('field_prod_ctab_data_1', 'field_prod_ctab_data_1');
@@ -95,7 +97,8 @@ class FNETProductDisplayMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_prod_sol_desc_4', 'field_prod_sol_desc_4');
 
     $this->addFieldMapping('field_tracking_code', 'field_product_adtracker');
-    $this->addFieldMapping('field_tracking_code:format', 'field_product_adtracker:format');
+    $this->addFieldMapping('field_tracking_code:format', 'field_product_adtracker:format')
+      ->defaultValue('full_html');;
     $this->addFieldMapping('field_do_not_distribute', 'field_do_not_distribute');
 
 

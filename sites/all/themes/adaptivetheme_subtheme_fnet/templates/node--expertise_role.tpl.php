@@ -132,9 +132,11 @@ hide($content['links']);
     <?php } ?>
 
     <script>
-      $(function() {
-        $( "#tabs" ).tabs();
-      });
+(function ($) {
+    $(function () {
+        $("#tabs").tabs();
+    });
+})(jQuery);
     </script>
     <div id="solutions_tabs_wrapper">
       <div id="tabs">

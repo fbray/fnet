@@ -1801,7 +1801,7 @@ function fnet_ma_gold_type_product_activation_form($form, $form_state) {
   if ($current_step_for_activate_product_process == 'three') {
     if (check_plain($current_form_array['status']) == 'success') {
       $form['message'] = array(
-        '#markup' => "<span>" . check_markup(variable_get('fnet_ma_gold_type_pop_code_success_status_message', t("Your request has been sent to Gold Contract Administrator, Thanks.")), FILTER_FORMAT_DEFAULT, $langcode = '' /* TODO Set this variable. */, TRUE) . "</span><br />",
+        '#markup' => "<span>" . check_markup(variable_get('fnet_ma_gold_type_pop_code_success_status_message', t("Your request has been sent to Gold Contract Administrator, Thanks.")), filter_fallback_format(), $langcode = '' /* TODO Set this variable. */, TRUE) . "</span><br />",
       );
     }
     elseif (check_plain($current_form_array['status']) == 'failure') {

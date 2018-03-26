@@ -24,14 +24,16 @@ class FNETMarketoFormMigration extends FNETNode7Migration {
 
     // Individual Fields
     $this->addFieldMapping('field_banner_html', 'field_mkt_banner_html');
-    $this->addFieldMapping('field_banner_html:format', 'field_mkt_banner_html:format');
+    $this->addFieldMapping('field_banner_html:format', 'field_mkt_banner_html:format')
+      ->defaultValue('full_html');
     $this->addFieldMapping('field_left_content', 'field_mkt_left_content');
     $this->addFieldMapping('field_export_control', 'field_mkt_export_ctrl');
     $this->addFieldMapping('field_enable_share_buttons', 'field_mkt_frm_share');
     $this->addFieldMapping('field_display_footer', 'field_mkt_frm_display_footer');
     $this->addFieldMapping('field_remove_nav', 'field_removenav');
     $this->addFieldMapping('field_form_bottom', 'field_mkt_form_bottom');
-    $this->addFieldMapping('field_form_bottom:format', 'field_mkt_form_bottom:format');
+    $this->addFieldMapping('field_form_bottom:format', 'field_mkt_form_bottom:format')
+      ->defaultValue('full_html');
     $this->addFieldMapping('field_mkt_frm_default_lang', 'field_mkt_frm_default_lang');
     $this->addFieldMapping('field_iframe_height', 'field_mkt_iframe_height');
     $this->addFieldMapping('field_marketo_form_title', 'field_mkt_form_title');
