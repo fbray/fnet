@@ -1199,6 +1199,22 @@ function fnet_ma_get_asset_details($asset_id) {
 }
 
 /**
+ * Implements hook_mail().
+ *
+ * @param $key
+ * @param $message
+ * @param $params
+ */
+function fnet_ma_mail($key, &$message, $params) {
+  switch ($key) {
+    case 'flukenetworks_myaccount_product_registration_success_email':
+      $message['subject'] = $params['subject'];
+      $message['body'][] = $params['body'];
+      break;
+  }
+}
+
+/**
  * This function sends the Product Registration email to the user.
  */
 function fnet_ma_send_product_registration_email_to_user() {
@@ -1211,18 +1227,19 @@ function fnet_ma_send_product_registration_email_to_user() {
   // Default to English if not set.
   $preferred_language_value = isset($preferred_language_field['#markup']) ? $preferred_language_field['#markup'] : 'en';
 
-  //The Mail key for this email is - fnet_ma_product_registration_success_email
+  // The Mail key for this email is - fnet_ma_product_registration_success_email
   $key = 'flukenetworks_myaccount_product_registration_success_email';
   $mail_to_address = check_plain($account->mail);
   $from = variable_get('site_mail', ini_get('sendmail_from'));
+
   $options['language'] = $language;
   $options['language']->language = $preferred_language_value;
   $email_body = variable_get_value('my_account_product_registration_success_email', $options);
+
   $params = [
     'body' => $email_body,
     'subject' => t('Registration Confirmation'),
   ];
-  dpm($params);
   $mail = drupal_mail('fnet_ma', $key, $mail_to_address, $preferred_language_value, $params, $from);
 }
 
