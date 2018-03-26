@@ -19,58 +19,58 @@ function fnet_ma_support_incident_form($form, $form_state) {
   $registered_product_list = fnet_ma_load_registered_products();
   $product_name_array = fnet_ma_load_registered_products('name only');
   if (count($registered_product_list)) {
-    $registered_products = array("-1" => ' - Select a Product - ') + $registered_product_list;
-    $form['static_message_three'] = array(
+    $registered_products = ["-1" => ' - Select a Product - '] + $registered_product_list;
+    $form['static_message_three'] = [
       '#type' => 'item',
       '#title' => '',
       '#value' => '<div class="my-account-headlines header-border_bottom">' . t("Submit a Support Incident") . '</div>',
-    );
+    ];
   }
   else {
-    $registered_products = array('0' => t('-No registered products found-'));
+    $registered_products = ['0' => t('-No registered products found-')];
     drupal_set_message('You must have a registered product to open a support incident', 'error');
   }
 
-  $form['complete_product_array'] = array(
+  $form['complete_product_array'] = [
     '#type' => 'value',
     '#value' => $product_name_array,
-  );
+  ];
 
-  $form['static_message_two'] = array(
+  $form['static_message_two'] = [
     '#type' => 'item',
     '#title' => '',
     '#value' => '<b>' . variable_get('fn_myaccount_support_incident_header_text', t('DESCRIBE YOUR PROBLEM OR ENTER A QUESTION: ')) . '</b>',
-  );
+  ];
 
-  $form['product_numbers'] = array(
+  $form['product_numbers'] = [
     '#type' => 'select',
     '#title' => t('Registered Products'),
     '#options' => $registered_products,
     '#required' => TRUE,
     '#default_value' => '',
-  );
+  ];
 
-  $form['support_incident_subject'] = array(
+  $form['support_incident_subject'] = [
     '#type' => 'textfield',
     '#title' => t('Enter a Subject'),
     '#required' => TRUE,
     '#default_value' => '',
-  );
+  ];
 
-  $form['support_incident_description'] = array(
+  $form['support_incident_description'] = [
     '#type' => 'textarea',
     '#title' => t('Please describe your problem or question. Maximum of 4000 characters allowed'),
     '#required' => TRUE,
     '#default_value' => '',
     '#cols' => 80,
     '#rows' => 15,
-    '#attributes' => array('maxlength' => 4000),
-  );
+    '#attributes' => ['maxlength' => 4000],
+  ];
 
-  $form['submit'] = array(
+  $form['submit'] = [
     '#type' => 'submit',
     '#value' => t('Submit'),
-  );
+  ];
 
   return $form;
 }
@@ -113,92 +113,92 @@ function fnet_ma_support_incident_form_submit($form, &$form_state) {
 function fnet_ma_product_support_incident_form($form, $form_state, $asset_id) {
   $registered_product_list = fnet_ma_load_registered_products();
   $product_names = fnet_ma_load_registered_products('name only');
-  $form['asset_id'] = array(
+  $form['asset_id'] = [
     '#type' => 'value',
     '#value' => $asset_id,
-  );
+  ];
   if (count($registered_product_list)) {
     if (array_key_exists($asset_id, $registered_product_list)) {
-      $form['static_message_one'] = array(
+      $form['static_message_one'] = [
         '#type' => 'item',
         '#title' => '',
-        '#value' => '<div class="my-account-headlines header-border_bottom ">' . t("Submit a Support Incident for @product_name", array('@product_name' => htmlspecialchars_decode($product_names[$asset_id]))) . '</div>',
-      );
+        '#value' => '<div class="my-account-headlines header-border_bottom ">' . t("Submit a Support Incident for @product_name", ['@product_name' => htmlspecialchars_decode($product_names[$asset_id])]) . '</div>',
+      ];
 
       $product_name = $registered_product_list[$asset_id];
-      $substitute_array = array(
+      $substitute_array = [
         '%product_name' => $product_name,
         '%asset_id' => $asset_id,
-      );
-      $form['static_message'] = array(
+      ];
+      $form['static_message'] = [
         '#type' => 'item',
         '#title' => t('<b>DESCRIBE YOUR PROBLEM OR ENTER A QUESTION FOR PRODUCT - "%product_name" (Asset Id: %asset_id)</b>', $substitute_array),
         '#value' => '',
-      );
+      ];
     }
     else {
-      $registered_product_list = array('0' => t('- No registered products found -'));
-      $form['static_message_two'] = array(
+      $registered_product_list = ['0' => t('- No registered products found -')];
+      $form['static_message_two'] = [
         '#type' => 'item',
         '#title' => '',
-        '#value' => '<span title="This field is required." class="form-required">*</span>' . t(' You have not registered the product for which you are trying to post support incident, please click !link_to_register to see the list of all products you have registered on Fluke Networks. ', array('!link_to_register' => l('here', 'myaccount/registered-products'))),
-      );
+        '#value' => '<span title="This field is required." class="form-required">*</span>' . t(' You have not registered the product for which you are trying to post support incident, please click !link_to_register to see the list of all products you have registered on Fluke Networks. ', ['!link_to_register' => l('here', 'myaccount/registered-products')]),
+      ];
     }
   }
   else {
-    $registered_product_list = array('0' => t('- No registered products found -'));
-    $form['static_message_two'] = array(
+    $registered_product_list = ['0' => t('- No registered products found -')];
+    $form['static_message_two'] = [
       '#type' => 'item',
       '#title' => '',
-      '#value' => '<span title="This field is required." class="form-required">*</span>' . t(' There are no products registered yet, click !link_to_register to register a product.', array('!link_to_register' => l('here', 'myaccount/register-products-step-one'))),
-    );
+      '#value' => '<span title="This field is required." class="form-required">*</span>' . t(' There are no products registered yet, click !link_to_register to register a product.', ['!link_to_register' => l('here', 'myaccount/register-products-step-one')]),
+    ];
   }
 
-  $form['product_numbers'] = array(
+  $form['product_numbers'] = [
     '#type' => 'select',
     '#title' => t('Registered Products'),
     '#options' => $registered_product_list,
     '#required' => TRUE,
     '#default_value' => $asset_id,
-    '#attributes' => array('disabled' => TRUE),
-  );
+    '#attributes' => ['disabled' => TRUE],
+  ];
 
-  $form['support_incident_subject'] = array(
+  $form['support_incident_subject'] = [
     '#type' => 'textfield',
     '#title' => t('Enter a Subject'),
     '#required' => TRUE,
     '#default_value' => '',
-  );
+  ];
 
-  $form['support_incident_description'] = array(
+  $form['support_incident_description'] = [
     '#type' => 'textarea',
     '#title' => t('Please describe your problem or question'),
     '#required' => TRUE,
     '#default_value' => '',
     '#cols' => 80,
     '#rows' => 15,
-  );
+  ];
 
-  $form['complete_product_array'] = array(
+  $form['complete_product_array'] = [
     '#type' => 'value',
     '#value' => $product_names,
-  );
+  ];
 
-  $form['static_link_to_KB'] = array(
+  $form['static_link_to_KB'] = [
     '#type' => 'item',
     '#title' => '',
-    '#value' => "<br />" . t('Please refer to the following article when submitting a ticket for the Network Time Machine: !link', array(
-        '!link' => l('NTM Support Request Questionnaire', 'http://myaccount.flukenetworks.com/fnet/en-us/supportAndDownloads/KB/IT+Networking/Network+Time+Machine/NTM+Support+Request+Questionnaire+-+Network+Time+Machine.htm', array(
+    '#value' => "<br />" . t('Please refer to the following article when submitting a ticket for the Network Time Machine: !link', [
+        '!link' => l('NTM Support Request Questionnaire', 'http://myaccount.flukenetworks.com/fnet/en-us/supportAndDownloads/KB/IT+Networking/Network+Time+Machine/NTM+Support+Request+Questionnaire+-+Network+Time+Machine.htm', [
           'html' => TRUE,
-          'attributes' => array('target' => '_blank')
-        ))
-      )) . "<br />",
-  );
+          'attributes' => ['target' => '_blank']
+        ])
+      ]) . "<br />",
+  ];
 
-  $form['submit'] = array(
+  $form['submit'] = [
     '#type' => 'submit',
     '#value' => t('Submit'),
-  );
+  ];
 
   return $form;
 }
@@ -231,6 +231,8 @@ function fnet_ma_product_support_incident_form_submit($form, &$form_state) {
  *
  * @param $form
  * @param $form_state
+ * @param $incident_id
+ *
  * @return mixed
  */
 function fnet_ma_view_support_incident_form($form, $form_state, $incident_id) {
@@ -259,86 +261,86 @@ function fnet_ma_view_support_incident_form($form, $form_state, $incident_id) {
     }
   }
 
-  $form['product_section_header_message'] = array(
-    '#markup' => '<div class="my-account-headlines header-border_bottom">' . t('Support Incident - @support_incident_ID', array('@support_incident_ID' => check_plain($incident_id))) . '</div>',
-  );
+  $form['product_section_header_message'] = [
+    '#markup' => '<div class="my-account-headlines header-border_bottom">' . t('Support Incident - @support_incident_ID', ['@support_incident_ID' => check_plain($incident_id)]) . '</div>',
+  ];
   if ($product_details['has_product_details']) {
-    $form['static_product_name'] = array(
+    $form['static_product_name'] = [
       '#type' => 'item',
       '#title' => t('Product'),
       '#markup' => $product_details['vchDescription'],
-    );
+    ];
 
-    $form['static_product_model'] = array(
+    $form['static_product_model'] = [
       '#type' => 'item',
       '#title' => t('Model'),
       '#markup' => $product_details['vchSecondaryId'],
-    );
+    ];
 
-    $form['static_product_serial_number'] = array(
+    $form['static_product_serial_number'] = [
       '#type' => 'item',
       '#title' => t('Serial Number'),
       '#markup' => $product_details['vchSerialNumber'],
-    );
+    ];
 
     $gold_support = ($product_details['isGoldProduct']) ? t('Yes') : t('No');
-    $form['static_network_supervision_gold_support'] = array(
+    $form['static_network_supervision_gold_support'] = [
       '#type' => 'item',
       '#title' => t('Gold Support'),
       '#markup' => $gold_support,
       '#suffix' => '<div class = "ruler-bar"></div>',
-    );
+    ];
   }
 
-  $form['supportincident_section_header_message'] = array(
+  $form['supportincident_section_header_message'] = [
     '#markup' => '<div class="my-account-headlines top-margin-20px">' . t('PROBLEM OR QUESTION') . '</div>',
-  );
+  ];
 
-  $form['static_support_incident_subject'] = array(
+  $form['static_support_incident_subject'] = [
     '#type' => 'item',
     '#title' => t('Subject'),
     '#markup' => check_plain($support_incident_details['vchDesc1']),
-  );
+  ];
 
-  $form['static_support_incident_status'] = array(
+  $form['static_support_incident_status'] = [
     '#type' => 'item',
     '#title' => t('Status'),
     '#markup' => check_plain($support_incident_details['vchStatusDesc']),
     '#suffix' => '<div class = "ruler-bar"></div>',
-  );
+  ];
 
   if (trim(check_plain($support_incident_details['vchStatusDesc'])) != 'Closed') {
-    $form['support_incident_description'] = array(
+    $form['support_incident_description'] = [
       '#type' => 'textarea',
       '#title' => t('You can add comments to this support incident here. Maximum of 4000 characters allowed'),
       '#required' => TRUE,
       '#default_value' => '',
       '#cols' => 80,
       '#rows' => 10,
-      '#attributes' => array('maxlength' => 4000),
-    );
+      '#attributes' => ['maxlength' => 4000],
+    ];
 
-    $form['support_incident_ID'] = array(
+    $form['support_incident_ID'] = [
       '#type' => 'hidden',
       '#value' => $support_incident_details['iIncidentId'],
-    );
+    ];
 
-    $form['submit'] = array(
+    $form['submit'] = [
       '#type' => 'submit',
       '#value' => t('Submit'),
       '#suffix' => '<br /><br /><div class = "ruler-bar"></div>',
-    );
+    ];
   }
 
-  $form['supportincident_detail_history'] = array(
+  $form['supportincident_detail_history'] = [
     '#markup' => '<div class="my-account-headlines header-border_bottom top-margin-20px">' . t('Detail History') . '</div>',
-  );
+  ];
 
-  $form['supportincident_detail_history_string'] = array(
+  $form['supportincident_detail_history_string'] = [
     '#type' => 'item',
     '#title' => 'History',
     '#markup' => $incident_history_detail_string,
-  );
+  ];
 
   return $form;
 }
@@ -357,9 +359,11 @@ function fnet_ma_view_support_incident_form_submit($form, &$form_state) {
  * Displays a list of the Support Incidents.
  * TODO: Can this be replaced by a View?
  *
- * @param int $user_id
+ * @param int $days_history
  * @param int $asset_id
+ *
  * @return string
+ * @throws \Exception
  */
 function fnet_ma_display_all_support_incidents($days_history = 30, $asset_id = NULL) {
   global $user;
@@ -385,10 +389,14 @@ function fnet_ma_display_all_support_incidents($days_history = 30, $asset_id = N
   }
   $search_form = drupal_get_form('fnet_ma_support_incident_search_form');
   $rendered_search_form = drupal_render($search_form);
-  $html .= theme("all_support_incident_display", [
-    'support_incidents' => $support_incidents,
-    'search_form' => $rendered_search_form
-  ]);
+  try {
+    $html .= theme("all_support_incident_display", [
+      'support_incidents' => $support_incidents,
+      'search_form' => $rendered_search_form,
+    ]);
+  } catch (Exception $e) {
+    watchdog('My Account', $e->getMessage());
+  }
   return $html;
 }
 
@@ -416,11 +424,11 @@ function fnet_ma_display_support_incident_thanks_message() {
   $text = variable_get('myaccount_thankyou_message_support_incident', t('Thank you for posting the support incident.'));
   $html = check_markup($text,  	filter_fallback_format(), $langcode = '' /* TODO Set this variable. */, TRUE);
   $html .= '<br /><br />';
-  $html .= t('Click to !link_to_register_again', array(
-    '!link_to_register_again' => l(t("Create a support incident."), 'myaccount/report-support-incidents', $options = array(
-      'attributes' => array('style' => ''),
+  $html .= t('Click to !link_to_register_again', [
+    '!link_to_register_again' => l(t("Create a support incident."), 'myaccount/report-support-incidents', $options = [
+      'attributes' => ['style' => ''],
       'html' => TRUE
-    ))
-  ));
+    ])
+  ]);
   return $html;
 }
