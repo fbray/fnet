@@ -19,13 +19,13 @@ function product_assets_menu() {
   // TODO: Create as a view! Move to product_assets module.
   // Support homepage
 
-  $items['support'] = array(
+  $items['support'] = [
     'title' => 'Support',
     'page callback' => 'support_page_page',
     'access callback' => true,
-    'access arguments' => array(),
+    'access arguments' => [],
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   // TODO: Build an Admin page for settings! - rositis 12/11/2017
   /*
@@ -49,95 +49,95 @@ function product_assets_menu() {
     );
   */
   // Manuals
-  $items['support/manuals'] = array(
+  $items['support/manuals'] = [
     'title' => 'Product Manuals',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('product_assets_manuals_form', 2),
+    'page arguments' => ['product_assets_manuals_form', 2],
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
-  );
+  ];
   // TODO: Move to View. Get rid of title thingy.
-  $items['support/manuals/%/%'] = array(
+  $items['support/manuals/%/%'] = [
     'title callback' => 'product_assets_title_generator',
-    'title arguments' => array('Product Manuals', 3),
+    'title arguments' => ['Product Manuals', 3],
     'page callback' => 'product_assets_manuals_results_page',
-    'page arguments' => array(2),
+    'page arguments' => [2],
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   // Training videos
-  $items['support/training'] = array(
+  $items['support/training'] = [
     'title' => 'Training Videos',
     'page callback' => 'product_assets_training_results_page',
     'page arguments' => NULL,
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
-  );
+  ];
   // TODO: Move to View. Get rid of title thingy.
-  $items['support/training/%/%'] = array(
+  $items['support/training/%/%'] = [
     'title callback' => 'product_assets_title_generator',
-    'title arguments' => array('Training Videos', 3),
+    'title arguments' => ['Training Videos', 3],
     'page callback' => 'product_assets_training_results_page',
-    'page arguments' => array(2),
+    'page arguments' => [2],
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   // TODO: Move to View. Get rid of title thingy.
-  $items['expertise/whitepapers/%/%'] = array(
+  $items['expertise/whitepapers/%/%'] = [
     'title' => '',
     'title callback' => 'product_assets_title_generator',
-    'title arguments' => array(1, 3),
+    'title arguments' => [1, 3],
     'page callback' => 'product_assets_technical_docs_page',
-    'page arguments' => array(1, 2),
+    'page arguments' => [1, 2],
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   // Technical docs: Application notes
-  $items['support/application-notes'] = array(
+  $items['support/application-notes'] = [
     'title' => '',
     'title callback' => 'product_assets_title_generator',
-    'title arguments' => array('Application Notes'),
+    'title arguments' => ['Application Notes'],
     'page callback' => 'product_assets_technical_docs_page',
-    'page arguments' => array(1),
+    'page arguments' => [1],
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   // TODO: Move to View. Get rid of title thingy.
-  $items['support/application-notes/%/%'] = array(
+  $items['support/application-notes/%/%'] = [
     'title' => '',
     'title callback' => 'product_assets_title_generator',
-    'title arguments' => array('Application Notes', 3),
+    'title arguments' => ['Application Notes', 3],
     'page callback' => 'product_assets_technical_docs_page',
-    'page arguments' => array(1, 2),
+    'page arguments' => [1, 2],
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   // Technical docs: Datasheets
-  $items['support/datasheets'] = array(
+  $items['support/datasheets'] = [
     'title' => '',
     'title callback' => 'product_assets_title_generator',
-    'title arguments' => array(1),
+    'title arguments' => [1],
     'page callback' => 'product_assets_technical_docs_page',
-    'page arguments' => array(1),
+    'page arguments' => [1],
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   // TODO: Move to View. Get rid of title thingy.
-  $items['support/datasheets/%/%'] = array(
+  $items['support/datasheets/%/%'] = [
     'title' => '',
     'title callback' => 'product_assets_title_generator',
-    'title arguments' => array(1, 3),
+    'title arguments' => [1, 3],
     'page callback' => 'product_assets_technical_docs_page',
-    'page arguments' => array(1, 2),
+    'page arguments' => [1, 2],
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   return $items;
 }
@@ -146,29 +146,29 @@ function product_assets_menu() {
  * Implements hook_theme().
  */
 function product_assets_theme() {
-  $base = array(
+  $base = [
     'path' => drupal_get_path('module', 'product_assets') . '/theme',
-  );
-  return array(
-    'assets_listing' => $base + array(
+  ];
+  return [
+    'assets_listing' => $base + [
       'template' => 'assets_listing',
-      'variables' => array(
-        'assets' => array()
-      )
-    ),
-    'assets_webcasts_listing' => $base + array(
+      'variables' => [
+        'assets' => []
+      ]
+      ],
+    'assets_webcasts_listing' => $base + [
       'template' => 'assets_webcasts_listing',
-      'variables' => array(
-        'assets' => array(),
-      )
-    ),
-    'support_page' => $base + array(
+      'variables' => [
+        'assets' => [],
+      ]
+      ],
+    'support_page' => $base + [
       'template' => 'support_page',
-      'variables' => array(
-        'support' => array(),
-      ),
-    ),
-  );
+      'variables' => [
+        'support' => [],
+      ],
+      ],
+  ];
 }
 
 /**
@@ -177,15 +177,18 @@ function product_assets_theme() {
  * @return array
  */
 function product_assets_views_api() {
-  return array(
+  return [
     'api' => 3.0,
     'path' => drupal_get_path('module', 'product_assets') . '/views',
     'template path' => drupal_get_path('module', 'product_assets') . '/theme',
-  );
+  ];
 }
 
 /**
  * Title pre-processor for technical document page view.
+ * @param $title
+ * @param null $subtitle
+ * @return string
  */
 function product_assets_title_generator($title, $subtitle = NULL) {
   return ucwords($title);
@@ -193,10 +196,12 @@ function product_assets_title_generator($title, $subtitle = NULL) {
 
 /**
  * Helper: Gets list of products having downloadable items depending on assets type.
+ * @param null $type
+ * @return array
  */
 function product_assets_get_valid_products($type = NULL) {
   if ($type) {
-    $products = array(t('Select a Product'));
+    $products = [t('Select a Product')];
     if (function_exists('digital_asset_get_products_with_assets')) {
       $products += digital_asset_get_products_with_assets($type);
     }
@@ -207,53 +212,63 @@ function product_assets_get_valid_products($type = NULL) {
 
 /**
  * Generate base form for product assets.
+ * @param int $product_id
+ * @param null $asset_type
+ * @param null $title
+ * @return array
  */
 function product_assets_form_generator($product_id = 0, $asset_type = NULL, $title = NULL) {
   drupal_add_css(drupal_get_path('module', 'product_assets') . '/css/product_assets.css');
 
-  $form = array();
+  $form = [];
   if (!empty($title)) {
-    $form['title'] = array(
+    $form['title'] = [
       '#markup' => "<h2>$title</h2>",
-    );
+    ];
   }
-  $form['product'] = array(
+  $form['product'] = [
     '#type' => 'select',
     '#prefix' => '<div id="product-assets-form-wrapper">',
     '#title' => t('Select a product'),
     '#default_value' => $product_id,
     '#options' => product_assets_get_valid_products($asset_type),
-    '#post_render' => array('_product_assets_trademark_decode'),
-  );
-  $form['save'] = array(
+    '#post_render' => ['_product_assets_trademark_decode'],
+  ];
+  $form['save'] = [
     '#type' => 'submit',
     '#value' => t('Go'),
     '#suffix' => '</div>',
-  );
+  ];
   return $form;
 }
 
 
 function _product_assets_trademark_decode($element, $children) {
-  $source = array('&lt;sup&gt;TM&lt;/sup&gt;', '&#0153;');
-  $replacement = array('&trade;', '&trade;');
+  $source = ['&lt;sup&gt;TM&lt;/sup&gt;', '&#0153;'];
+  $replacement = ['&trade;', '&trade;'];
   return html_entity_decode(str_replace($source, $replacement, $element));
 }
 
 /**
  * Software download form for Products
+ * @param $form
+ * @param $form_state
+ * @param null $product_id
+ * @return array
  */
 function product_assets_download_form($form, $form_state, $product_id = NULL) {
-  $form = product_assets_form_generator($product_id, array(
+  $form = product_assets_form_generator($product_id, [
     'product software',
     'product software release notes'
-  ), 'Downloads');
+  ], 'Downloads');
   return $form;
 }
 
 
 /**
  * Process a Product Assets block search form submission.
+ * @param $form
+ * @param $form_state
  */
 function product_assets_download_form_submit($form, &$form_state) {
   $product_id = $form_state['values']['product'];
@@ -268,15 +283,17 @@ function product_assets_download_form_submit($form, &$form_state) {
 
 /**
  * Implementations of Search results page view.
+ * @param null $product_id
+ * @return string
  */
 function product_assets_download_results_page($product_id = NULL) {
   $siteReg = module_invoke('fnet_helper', 'site_region');
   $language = $siteReg["lang"];
   $product_id = (int) check_plain(urldecode($product_id));
-  $digital_asset_type = array(
+  $digital_asset_type = [
     'product software',
     'product software release notes'
-  );
+  ];
   $download_link_base = '/findit/';
   $download_form = drupal_get_form('product_assets_download_form', $product_id);
   $output = drupal_render($download_form);
@@ -290,7 +307,11 @@ function product_assets_download_results_page($product_id = NULL) {
   }
   else {
     // Create theme
-    $output .= theme('assets_listing', array('assets' => _product_assets_get_asset_list($assets, $download_link_base)));
+    try {
+      $output .= theme('assets_listing', ['assets' => _product_assets_get_asset_list($assets, $download_link_base)]);
+    } catch (Exception $e) {
+      watchdog('Product Assets', $e->getMessage());
+    }
   }
 
   return $output;
@@ -300,6 +321,10 @@ function product_assets_download_results_page($product_id = NULL) {
 // Assets: Manuals
 /**
  * Manual download form for Products
+ * @param $form
+ * @param $form_state
+ * @param null $product_id
+ * @return array
  */
 function product_assets_manuals_form($form, $form_state, $product_id=NULL) {
   $form = product_assets_form_generator($product_id, 'manuals', 'Manuals');
@@ -309,6 +334,8 @@ function product_assets_manuals_form($form, $form_state, $product_id=NULL) {
 
 /**
  * Process a Product Assets block search form submission.
+ * @param $form
+ * @param $form_state
  */
 function product_assets_manuals_form_submit($form, &$form_state) {
   $product_id = $form_state['values']['product'];
@@ -321,13 +348,15 @@ function product_assets_manuals_form_submit($form, &$form_state) {
 
 /**
  * Implementations of Search results page view.
+ * @param null $product_id
+ * @return string
  */
 function product_assets_manuals_results_page($product_id = NULL) {
 
   $siteReg = module_invoke('fnet_helper', 'site_region');
   $language = $siteReg["lang"];
   $product_id = (int) check_plain(urldecode($product_id));
-  $digital_asset_type = array('manuals', 'product software release notes');
+  $digital_asset_type = ['manuals', 'product software release notes'];
   $download_link_base = '/findit/';
   $output = drupal_render(drupal_get_form('product_assets_manuals_form', $product_id));
 
@@ -339,7 +368,11 @@ function product_assets_manuals_results_page($product_id = NULL) {
   }
   else {
     // Create theme
-    $output .= theme('assets_listing', array('assets' => _product_assets_get_asset_list($assets, $download_link_base)));
+    try {
+      $output .= theme('assets_listing', ['assets' => _product_assets_get_asset_list($assets, $download_link_base)]);
+    } catch (Exception $e) {
+      watchdog('Product Assets', $e->getMessage());
+    }
   }
   return $output;
 }
@@ -348,6 +381,10 @@ function product_assets_manuals_results_page($product_id = NULL) {
 // Assets: Training videos
 /**
  * Training videos download form for Products
+ * @param $form
+ * @param $form_state
+ * @param null $product_id
+ * @return array
  */
 function product_assets_training_form($form, $form_state, $product_id=NULL) {
 
@@ -358,6 +395,8 @@ function product_assets_training_form($form, $form_state, $product_id=NULL) {
 
 /**
  * Process a Training videos search form submission.
+ * @param $form
+ * @param $form_state
  */
 function product_assets_training_form_submit($form, &$form_state) {
   $product_id = $form_state['values']['product'];
@@ -390,7 +429,7 @@ function product_assets_training_results_page($product_id = NULL) {
   }
   else {
     // Create theme
-    $output .= theme('assets_webcasts_listing', array('assets' => _product_assets_get_asset_list($assets, $download_link_base, 'webcast')));
+    $output .= theme('assets_webcasts_listing', ['assets' => _product_assets_get_asset_list($assets, $download_link_base, 'webcast')]);
   }
   return $output;
 }
@@ -406,14 +445,14 @@ function product_assets_training_results_page($product_id = NULL) {
  */
 function product_assets_technical_documents_form($form) {
   // drupal_add_css(drupal_get_path('module', 'product_assets') . '/product_assets.css');
-  $form = array();
+  $form = [];
   // Todo: link this into either the taxonomy or Category field.
-  $industries = array(
+  $industries = [
     -1 => t('Show all'),
     1 => t('Cabling Certification'),
     2 => t('Installation and Test'),
     3 => t('Telecom Test'),
-  );
+  ];
 
   if (arg(2)) {
     $industry_id = (int) arg(2);
@@ -422,19 +461,19 @@ function product_assets_technical_documents_form($form) {
     $industry_id = -1; //0, for now defaulted to Datacom cabling
   }
 
-  $form['industry'] = array(
+  $form['industry'] = [
     '#type' => 'select',
     '#title' => t('Filter by industry'),
     '#default_value' => (int) $industry_id,
     '#options' => $industries,
     '#prefix' => '<div id="product-assets-form-wrapper">',
-  );
+  ];
 
-  $form['save'] = array(
+  $form['save'] = [
     '#type' => 'submit',
     '#value' => t('Go'),
     '#suffix' => '</div>',
-  );
+  ];
   return $form;
 }
 
@@ -487,15 +526,15 @@ function product_assets_technical_docs_page($op, $industry = -1) {
   $output .= drupal_render($form);
   if (!$assets) {
     $asset_name_arr = explode(':', drupal_get_title());
-    $output .= '<div id="product-assets-download-wrapper">' . t('No %asset available for download.', array('%asset' => strtolower($asset_name_arr[0]))) . '</div>';
+    $output .= '<div id="product-assets-download-wrapper">' . t('No %asset available for download.', ['%asset' => strtolower($asset_name_arr[0])]) . '</div>';
   }
   else {
     // Create theme
     if ($op == 'webcasts') {
-      $output .= theme('assets_webcasts_listing', array('assets' => _product_assets_get_asset_list($assets, $download_link_base, 'webcast')));
+      $output .= theme('assets_webcasts_listing', ['assets' => _product_assets_get_asset_list($assets, $download_link_base, 'webcast')]);
     }
     else {
-      $output .= theme('assets_listing', array('assets' => _product_assets_get_asset_list($assets, $download_link_base)));
+      $output .= theme('assets_listing', ['assets' => _product_assets_get_asset_list($assets, $download_link_base)]);
     }
   }
   return $output;
@@ -507,7 +546,7 @@ function product_assets_technical_docs_page($op, $industry = -1) {
  */
 function _product_assets_get_asset_list($xmlObj, $download_link_base, $list_type = 'asset') {
   global $user;
-  $asset_list = array();
+  $asset_list = [];
   $i = 0;
   $locked_image = base_path() . path_to_theme() . '/images/lock.gif';
   $unlocked_image = base_path() . path_to_theme() . '/images/unlock.gif';
@@ -546,6 +585,8 @@ function _product_assets_get_asset_list($xmlObj, $download_link_base, $list_type
 
 /**
  * Supplementary function providing CuRL implementation
+ * @param $url
+ * @return bool|mixed
  */
 function do_curl_request($url) {
 
@@ -642,8 +683,12 @@ function support_page_page() {
   drupal_add_js(drupal_get_path('module', 'product_assets') . '/js/support_page.js');
   $output  = '';
   // TODO: What the hell is this doing here? There is no longer a settings page.
-  $support = variable_get('support_page_settings', array());
-  $output .= theme('support_page', array('support' => $support));
+  $support = variable_get('support_page_settings', []);
+  try {
+    $output .= theme('support_page', ['support' => $support]);
+  } catch (Exception $e) {
+    watchdog('Product Assets', $e->getMessage());
+  }
   return $output;
 }
 
@@ -655,10 +700,14 @@ function expertise_page_page() {
   drupal_add_js(drupal_get_path('module', 'product_assets') . '/js/expertise_page.js');
 
   $output                       = '';
-  $expertise                    = variable_get('expertise_page_settings', array());
+  $expertise                    = variable_get('expertise_page_settings', []);
   $expertise['casestudies']     = get_top_expertise_items('cs', 3);
   $expertise['learn_about']     = get_top_expertise_items('la', 3);
-  $output                      .= theme('expertise_page', array('expertise' => $expertise));
+  try {
+    $output .= theme('expertise_page', ['expertise' => $expertise]);
+  } catch (Exception $e) {
+    watchdog('Product Assets', $e->getMessage());
+  }
   return $output;
 }
 

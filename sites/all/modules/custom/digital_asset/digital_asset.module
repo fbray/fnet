@@ -1274,11 +1274,37 @@ function digital_asset_list_assets_by_type($type, $language = 'en', $industry = 
 }
 
 /**
- * Return array of products keyed by pcat id that have related products
+ * Return array of products keyed by pcat id that have related products that
+ * have assets.
  *
  * @param $type
  * @return array
  */
+/*
+SELECT
+	p.field_pcatid_value,
+	n.title
+FROM field_data_field_pcatid AS p
+INNER JOIN node n ON p.revision_id = n.vid
+WHERE
+	n.nid IN
+(
+  SELECT DISTINCT
+				fp.field_products_target_id
+			FROM
+				field_data_field_asset_type a
+			INNER JOIN node AS n ON a.revision_id = n.vid
+			INNER JOIN field_data_field_products AS fp ON fp.revision_id = n.vid
+			WHERE a.field_asset_type_value IN ('manual')
+			ORDER BY
+				fp.field_products_target_id ASC
+		)
+  AND p.field_pcatid_value IS NOT NULL
+AND n.status = 1
+ORDER BY n.title
+
+fp.field_product_product_id IS NOT NULL
+*/
 function digital_asset_get_products_with_assets($type) {
   $result_set = [];
   $sql = "SELECT
@@ -1290,16 +1316,14 @@ WHERE
 	n.nid IN
 		(
 			SELECT DISTINCT
-				fp.field_product_product_id
+				fp.field_products_target_id
 			FROM
-				{field_data_field_asset_type} a
-			INNER JOIN {node} AS n ON a.revision_id = n.vid
-			INNER JOIN {field_data_field_product} AS fp ON n.vid = fp.revision_id
-			WHERE
-				fp.field_product_product_id IS NOT NULL
-			AND a.field_asset_type_value IN (:type)
+				field_data_field_asset_type a
+			INNER JOIN node AS n ON a.revision_id = n.vid
+			INNER JOIN field_data_field_products AS fp ON fp.revision_id = n.vid
+			WHERE a.field_asset_type_value IN (:type)
 			ORDER BY
-				fp.field_product_product_id ASC
+				fp.field_products_target_id ASC
 		)
   AND p.field_pcatid_value IS NOT NULL
 	AND n.status = 1
