@@ -216,7 +216,7 @@ $product_case_studies = $content['product_case_studies'];
         <?php $youtubeUrl = "";
 
         // Define fields from CT.
-        $vid1 = fnet_common_safe_get($field_prod_video_img_t_1, 0, 'field_prod_video_img_t_1_fid');
+        $vid1 = fnet_common_safe_get($field_prod_video_img_t_1, 0, 'fid');
         $img1 = fnet_common_safe_get($field_prod_carousel_img_lg_1, 0, 'fid');
         $img2 = fnet_common_safe_get($field_prod_carousel_img_lg_2, 0, 'fid');
         $img3 = fnet_common_safe_get($field_prod_carousel_img_lg_3, 0, 'fid');
@@ -228,8 +228,8 @@ $product_case_studies = $content['product_case_studies'];
         $img10 = fnet_common_safe_get($field_prod_carousel_img_lg_10, 0, 'fid');
 
         if ($vid1 || $img1 || $img2 || $img3 || $img4 || $img5 || $img6 || $img7 || $img8 || $img9 || $img10):
-          if (fnet_common_safe_get($field_prod_video_youtube_url, 0, 'field_prod_video_youtube_url_url')) {
-            $youtubeUrl = fnet_common_safe_get($field_prod_video_youtube_url, 0, 'field_prod_video_youtube_url_url');
+          if (fnet_common_safe_get($field_prod_video_youtube_url, 0, 'url')) {
+            $youtubeUrl = fnet_common_safe_get($field_prod_video_youtube_url, 0, 'url');
             if (substr($youtubeUrl, 0, 5) == 'http:') {
               $youtubeUrl = str_replace("http:", "", $youtubeUrl);
             } elseif (substr($youtubeUrl, 0, 6) == 'https:') {
@@ -344,8 +344,8 @@ $product_case_studies = $content['product_case_studies'];
             <div class="stage">
               <div class="carousel carousel-stage">
                 <ul>
-                  <?php if(fnet_common_safe_get($field_prod_video_img_t_1, 0, 'field_prod_video_img_t_1_fid')): ?>
-                    <li><?php if (fnet_common_safe_get($field_prod_video_lg_1, 0, 'field_prod_video_lg_1_fid')): ?>
+                  <?php if(fnet_common_safe_get($field_prod_video_img_t_1, 0, 'fid')): ?>
+                    <li><?php if (fnet_common_safe_get($field_prod_video_lg_1, 0, 'fid')): ?>
                         <object id="movieFrame" type="<?php print fnet_common_safe_get($field_prod_video_lg_1, 0, 'filemime'); ?>" data="<?php echo file_create_url(fnet_common_safe_get($field_prod_video_lg_1, 0, 'uri')); ?>" style="margin:0 10px;width:488px;height:385px;">
                           <param name="movie" value="<?php echo file_create_url(fnet_common_safe_get($field_prod_video_lg_1, 0, 'uri')); ?>" />
                           <param name="wmode" value="transparent" />
@@ -820,7 +820,7 @@ $product_case_studies = $content['product_case_studies'];
             <div class="clear_15px;">&nbsp;</div>
             <h6><strong><?php echo $case_study->node_title; ?></strong></h6>
             <div><?php echo $case_study->field_body[0]['rendered']['#markup']; ?></div>
-            <div style="clear: both;line-height: 1px;;">&nbsp;</div>
+            <div style="clear: both;line-height: 1px;">&nbsp;</div>
             <div class="clear_1px;"><img
                 src="/sites/all/themes/adaptivetheme_subtheme_fnet/images/hub_product_divider.gif"
                 width="650" height="1" border="0"></div>

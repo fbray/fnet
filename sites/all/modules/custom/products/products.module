@@ -311,34 +311,40 @@ function products_get_assets(&$node) {
         }
       }
       switch (strtolower($amsAsset[$j]["ASSETTYPEDESCRIPTION"])) {
-        case "virtual demo":
-        case 'virtual demos':
+        case 'presentation':
+        case 'video':
+        case 'virtual_demonstration':
+        case 'webcast':
           $myDemo .= "<tr class='row" . ($demoRowCount % 2) . "'><td><div class='OneLinkNoTx'><strong>" . $amsAsset[$j]["ASSETTITLE"] . "</strong></div></td>";
           $myDemo .= "<td><a href='/findit/" . $langReg . "/" . $amsAsset[$j]["ASSETID"] . "'>View Demo</a></td>";
           $myDemo .= "<td valign='top'>" . $myLockStatus . "</td></tr>";
           $demoRowCount++;
           break;
 
-        case "software":
-        case 'product software':
+        case 'image':
+        case 'miscellaneous':
+        case 'product_software':
           $myDownload .= "<tr class='row" . ($downloadRowCount % 2) . "'><td><div class='OneLinkNoTx'><strong>" . $amsAsset[$j]["ASSETTITLE"] . "</strong><br>" . $amsAsset[$j]["ASSETDESCRIPTION"] . "</div></td>";
           $myDownload .= "<td><a href='/findit/" . $langReg . "/" . $amsAsset[$j]["ASSETID"] . "'>Download</a><br>" . $myFileSize . "</td>";
           $myDownload .= "<td valign='top'>" . $myLockStatus . "</td></tr>";
           $downloadRowCount++;
           break;
 
-        case 'application notes':
-        case "application note":
-        case "white paper":
-        case 'white papers':
-        case "datasheet":
-        case 'data sheets':
-        case "brochure":
-        case "brochures":
-        case "catalog":
-        case 'catalogs':
-        case "flyer":
-        case 'flyers':
+        case 'application_notes':
+        case 'brochure':
+        case 'case_study':
+        case 'catalog':
+        case 'corporate':
+        case 'data_sheet':
+        case 'extended_specification':
+        case 'flyer':
+        case 'gold_training':
+        case 'letter':
+        case 'manual':
+        case 'product_software_release_notes':
+        case 'sales_guide':
+        case 'user_guide':
+        case 'white_paper':
           if (!isset($docRowCount[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]])) {
             $docRowCount[$amsAsset[$j]["ASSETTYPEDESCRIPTION"]] = 0;
           }
