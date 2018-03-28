@@ -853,10 +853,9 @@ $product_case_studies = $content['product_case_studies'];
       <?php
       $has_related_products = FALSE;
       foreach ($content['related_products'] as $rProd) {
-        if (isset($rProd->field_field_prod_related_img[0]['rendered']['#path']['path'])) {
-          $file = $rProd->field_field_prod_related_img[0]['rendered']['#path']['path'];
-          $nid = $rProd->node_field_data_field_products_nid;
-          $title = $rProd->node_field_data_field_products_title;
+        if (isset($rProd->field_field_product_image[0]['rendered']['#path']['path'])) {
+          $file = $rProd->field_field_product_image[0]['rendered']['#path']['path'];
+          $title = $rProd->node_field_data_field_related_products_title;
 
           if ($file && $nid && $title) {
             $has_related_products = TRUE;
