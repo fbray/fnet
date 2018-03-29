@@ -1,15 +1,12 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 10/3/17
- * Time: 1:18 PM
+ * @file
+ * fnet_site_search.module
  */
 
 /**
  * Implements hook_views_api().
- *
- * @return array
  */
 function fnet_site_search_views_api() {
   return array(
@@ -19,9 +16,8 @@ function fnet_site_search_views_api() {
 
 /**
  * Implements hook_default_search_api_index().
- * Defines the Main Site Search index.
  *
- * @return array
+ * Defines the Main Site Search index.
  */
 function fnet_site_search_default_search_api_index() {
   $items = array();
@@ -168,9 +164,8 @@ function fnet_site_search_default_search_api_index() {
 
 /**
  * Implements hook_default_search_api_server().
- * Defines the Local Search server.
  *
- * @return array
+ * Defines the Local Search server.
  */
 function main_site_search_default_search_api_server() {
   $items = array();
@@ -277,8 +272,8 @@ function main_site_search_default_search_api_server() {
             "type" : "list\\u003Cinteger\\u003E",
             "boost" : "1.0"
           },
-          "field_products" : {
-            "table" : "search_api_db_extranet_index_field_products",
+          "field_related_products" : {
+            "table" : "search_api_db_extranet_index_field_related_products",
             "column" : "value",
             "type" : "list\\u003Cinteger\\u003E",
             "boost" : "1.0"
