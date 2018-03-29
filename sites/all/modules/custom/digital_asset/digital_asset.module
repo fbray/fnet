@@ -1,5 +1,9 @@
 <?php
-// $Id$
+
+/**
+ * @file
+ * digital_asset.module
+ */
 
 define('DA_CCS_ADD', 'Add - New Asset');
 define('DA_CCS_UPDATE', 'Update - Asset Attributes');
@@ -8,8 +12,6 @@ define('DA_CCS_REMOVE', 'Remove - Existing Asset');
 
 /**
  * Implements hook_menu().
- *
- * @return array
  */
 function digital_asset_menu() {
   $items = [];
@@ -200,8 +202,6 @@ function digital_asset_menu() {
 
 /**
  * Implements hook_permission().
- *
- * @return array
  */
 function digital_asset_permission() {
   $perms = [
@@ -219,9 +219,6 @@ function digital_asset_permission() {
 
 /**
  * Implements hook_form_FORM_ID_alter().
- *
- * @param $form
- * @param $form_state
  */
 function digital_asset_form_digital_asset_node_form_alter(&$form, &$form_state) {
   global $user;
@@ -299,11 +296,7 @@ function digital_asset_form_digital_asset_node_form_alter(&$form, &$form_state) 
 }
 
 /**
- *  Node form hook_form_after_build
- *
- * @param $form
- * @param $form_state
- * @return mixed
+ * Implements hook_node_form_after_build().
  */
 function digital_asset_node_form_after_build($form, &$form_state) {
   unset($form['group_dam_ccs_printing']['field_dam_cdn_status_pod']);
@@ -311,9 +304,7 @@ function digital_asset_node_form_after_build($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_theme().
- *
- * @return array
+ * Implements hook_theme().
  */
 function digital_asset_theme() {
   $hooks = [];
@@ -323,45 +314,46 @@ function digital_asset_theme() {
   $hooks['digital_asset_node_form'] = $base + [
     'template' => 'digital_asset_node_form',
     'render element' => 'form',
-    ];
+  ];
   $hooks['digital_asset_child_node_form'] = $base + [
     'template' => 'digital_asset_child_node_form',
     'render element' => 'form',
-    ];
+  ];
   $hooks['digital_asset_main_menu'] = $base + [
     'template' => 'digital_asset_main_menu',
     'variables' => [
       'menu_items' => NULL,
     ],
-    ];
+  ];
   $hooks['digital_asset'] = $base + [
     'template' => 'digital_asset',
     'variables' => [
       'node' => NULL,
     ],
-    ];
+  ];
   $hooks['digital_asset_page_view_form'] = $base + [
     'template' => 'digital_asset_page_view_form',
     'render element' => 'form',
-    ];
+  ];
   $hooks['digital_asset_asset_query_form'] = $base + [
     'template' => 'theme/digital_asset_asset_query_form',
     'render element' => 'form',
-    ];
+  ];
   $hooks['digital_asset_query_by_product_form'] = $base + [
     'template' => 'digital_asset_query_by_product_form',
     'render element' => 'form',
-    ];
+  ];
   return $hooks;
 }
 
 /**
- * Node entry form
+ * Node entry form.
  *
  * @param $form
  * @param $form_state
  * @param $node
  * @param bool $is_child
+ *
  * @return form array
  */
 /* Turning off to test things. Should this be in a form_alter function? */
@@ -402,10 +394,7 @@ if (fnet_common_get_field_value('digital_asset', $node, 'field_dam_parent', 'nid
  */
 
 /**
- * Node form validation
- *
- * @param $form
- * @param $form_state
+ * Implements hook_node_form_validate().
  */
 function digital_asset_node_form_validate($form, &$form_state) {
   $values = &$form_state['values'];
@@ -435,7 +424,7 @@ function digital_asset_node_form_validate($form, &$form_state) {
     }
   }
   else {
-    // if the document id field is empty assign a number.
+    // If the document id field is empty assign a number.
     if (empty($values['field_dam_document_id'][LANGUAGE_NONE][0]['value'])) {
       $values['field_dam_document_id'][LANGUAGE_NONE][0]['value'] = variable_get('digital_asset_next_document_id', 7000000);
       variable_set('digital_asset_next_document_id', $values['field_dam_document_id'][LANGUAGE_NONE][0]['value'] + 1);
@@ -1292,14 +1281,14 @@ WHERE
 	n.nid IN
 (
   SELECT DISTINCT
-				fp.field_products_target_id
+				fp.field_related_products_target_id
 			FROM
 				field_data_field_asset_type a
 			INNER JOIN node AS n ON a.revision_id = n.vid
-			INNER JOIN field_data_field_products AS fp ON fp.revision_id = n.vid
+			INNER JOIN field_data_field_related_products AS fp ON fp.revision_id = n.vid
 			WHERE a.field_asset_type_value IN ('manual')
 			ORDER BY
-				fp.field_products_target_id ASC
+				fp.field_related_products_target_id ASC
 		)
   AND p.field_pcatid_value IS NOT NULL
 AND n.status = 1
@@ -1318,14 +1307,14 @@ WHERE
 	n.nid IN
 		(
 			SELECT DISTINCT
-				fp.field_products_target_id
+				fp.field_related_products_target_id
 			FROM
 				field_data_field_asset_type a
 			INNER JOIN node AS n ON a.revision_id = n.vid
-			INNER JOIN field_data_field_products AS fp ON fp.revision_id = n.vid
+			INNER JOIN field_data_field_related_products AS fp ON fp.revision_id = n.vid
 			WHERE a.field_asset_type_value IN (:type)
 			ORDER BY
-				fp.field_products_target_id ASC
+				fp.field_related_products_target_id ASC
 		)
   AND p.field_pcatid_value IS NOT NULL
 	AND n.status = 1
@@ -1367,7 +1356,7 @@ function digital_asset_list_by_product($pcat_id, $language = 'en', $asset_type =
     $query->fields('doc_id', ['field_dam_document_id_value']);
     $query->addJoin('INNER', 'node_revision', 'r', 'n.vid = r.vid');
     $query->fields('r', ['title']);
-    $query->addJoin('INNER', 'field_data_field_products', 'rp', 'n.vid = rp.revision_id');
+    $query->addJoin('INNER', 'field_data_field_related_products', 'rp', 'n.vid = rp.revision_id');
     $query->addJoin('INNER', 'field_data_field_asset_type', 'type', 'n.nid = type.entity_id');
     $query->fields('type', ['field_asset_type_value']);
     $query->addJoin('INNER', 'field_data_field_dam_language', 'lang', 'n.nid = lang.entity_id');
@@ -1379,7 +1368,7 @@ function digital_asset_list_by_product($pcat_id, $language = 'en', $asset_type =
     $query->addJoin('INNER', 'field_data_field_dam_document_status', 'status', 'n.nid = status.entity_id');
     $query->fields('status', ['field_dam_document_status_value']);
     $query->addJoin('LEFT OUTER', 'weight_weights', 'weight', 'n.nid = weight.entity_id');
-    $query->condition('field_products_target_id', $product_nid);
+    $query->condition('field_related_products_target_id', $product_nid);
     $query->condition('field_dam_language_value', $language);
     $query->condition('field_dam_document_status_value', 'live');
     $query->condition('field_dam_entitlement_level_value', 'do_not_display', '<>');

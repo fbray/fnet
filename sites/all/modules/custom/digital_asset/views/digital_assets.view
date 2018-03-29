@@ -412,10 +412,10 @@ $handler->display->display_options['fields']['field_dam_document_status']['table
 $handler->display->display_options['fields']['field_dam_document_status']['field'] = 'field_dam_document_status';
 $handler->display->display_options['fields']['field_dam_document_status']['label'] = 'Status';
 /* Field: Content: Products */
-$handler->display->display_options['fields']['field_products']['id'] = 'field_products';
-$handler->display->display_options['fields']['field_products']['table'] = 'field_data_field_products';
-$handler->display->display_options['fields']['field_products']['field'] = 'field_products';
-$handler->display->display_options['fields']['field_products']['settings'] = array(
+$handler->display->display_options['fields']['field_related_products']['id'] = 'field_related_products';
+$handler->display->display_options['fields']['field_related_products']['table'] = 'field_data_field_related_products';
+$handler->display->display_options['fields']['field_related_products']['field'] = 'field_related_products';
+$handler->display->display_options['fields']['field_related_products']['settings'] = array(
   'bypass_access' => 0,
   'link' => 0,
 );
@@ -491,16 +491,16 @@ $handler->display->display_options['filters']['type']['value'] = array(
   'digital_asset' => 'digital_asset',
 );
 $handler->display->display_options['filters']['type']['group'] = 1;
-/* Filter criterion: Content: Products (field_products) */
-$handler->display->display_options['filters']['field_products_target_id']['id'] = 'field_products_target_id';
-$handler->display->display_options['filters']['field_products_target_id']['table'] = 'field_data_field_products';
-$handler->display->display_options['filters']['field_products_target_id']['field'] = 'field_products_target_id';
-$handler->display->display_options['filters']['field_products_target_id']['exposed'] = TRUE;
-$handler->display->display_options['filters']['field_products_target_id']['expose']['operator_id'] = 'field_products_target_id_op';
-$handler->display->display_options['filters']['field_products_target_id']['expose']['label'] = 'Related Product(s)';
-$handler->display->display_options['filters']['field_products_target_id']['expose']['operator'] = 'field_products_target_id_op';
-$handler->display->display_options['filters']['field_products_target_id']['expose']['identifier'] = 'field_products_target_id';
-$handler->display->display_options['filters']['field_products_target_id']['expose']['remember_roles'] = array(
+/* Filter criterion: Content: Products (field_related_products) */
+$handler->display->display_options['filters']['field_related_products_target_id']['id'] = 'field_related_products_target_id';
+$handler->display->display_options['filters']['field_related_products_target_id']['table'] = 'field_data_field_related_products';
+$handler->display->display_options['filters']['field_related_products_target_id']['field'] = 'field_related_products_target_id';
+$handler->display->display_options['filters']['field_related_products_target_id']['exposed'] = TRUE;
+$handler->display->display_options['filters']['field_related_products_target_id']['expose']['operator_id'] = 'field_related_products_target_id_op';
+$handler->display->display_options['filters']['field_related_products_target_id']['expose']['label'] = 'Related Product(s)';
+$handler->display->display_options['filters']['field_related_products_target_id']['expose']['operator'] = 'field_related_products_target_id_op';
+$handler->display->display_options['filters']['field_related_products_target_id']['expose']['identifier'] = 'field_related_products_target_id';
+$handler->display->display_options['filters']['field_related_products_target_id']['expose']['remember_roles'] = array(
   2 => '2',
   3 => 0,
   7 => 0,
@@ -840,10 +840,10 @@ $handler->display->display_options['fields']['field_dam_asset_type']['settings']
   'link' => 0,
 );
 /* Field: Content: Products */
-$handler->display->display_options['fields']['field_products']['id'] = 'field_products';
-$handler->display->display_options['fields']['field_products']['table'] = 'field_data_field_products';
-$handler->display->display_options['fields']['field_products']['field'] = 'field_products';
-$handler->display->display_options['fields']['field_products']['settings'] = array(
+$handler->display->display_options['fields']['field_related_products']['id'] = 'field_related_products';
+$handler->display->display_options['fields']['field_related_products']['table'] = 'field_data_field_related_products';
+$handler->display->display_options['fields']['field_related_products']['field'] = 'field_related_products';
+$handler->display->display_options['fields']['field_related_products']['settings'] = array(
   'bypass_access' => 0,
   'link' => 0,
 );
