@@ -2,8 +2,12 @@
 
 /**
  * @file
+ * products.module
+ *
  * Functions related to Products.
  */
+
+include_once 'products.features.inc';
 
 /**
  * Implements hook_views_api().
@@ -742,21 +746,23 @@ function products_form_alter(&$form, &$form_state, $form_id) {
 /**
  * Helper function.
  */
-function language_options(&$form, &$form_state){
-	$nid = $form['nid']['#value'];
-	$lang_arr = array();
-	$lang_override_query = db_select('node','n')
-          ->fields('n',array('nid','title'))
-					->fields('fpg', array('entity_id'))
-					->fields('flr', array('field_prodlang_language_value'))
-					->condition('n.type', 'product', '=')
-					->condition('n.nid', $nid, '=');
-	$lang_override_query->innerJoin('field_data_field_prodlang_product', 'fpg', 'fpg.field_prodlang_product_nid = n.nid');
-	$lang_override_query->innerJoin('field_data_field_prodlang_language', 'flr', 'flr.entity_id = fpg.entity_id');
-	$result = $lang_override_query->execute();
-	foreach($result as $item) {
-		$lang_arr[$item->entity_id]= '<span class="views-field views-field-field-language-region"> <span class="field-content">'.$item->field_prodlang_language_value .'</span> </span> - <span class="views-field views-field-nid"> <span class="field-content"><a href="/node/'.$item->entity_id .'/edit">(Right Click to Edit in New Window)</a></span> </span> - <span class="views-field views-field-title"> <span class="field-content"><a href="/node/'.$item->entity_id .'">'.$item->title .'</a></span> </span>';
-	}
-	$form['field_prod_language']['und']['#options']=$lang_arr;
-	return $form;
+function language_options(&$form, &$form_state) {
+  $nid = $form['nid']['#value'];
+  $lang_arr = array();
+  $lang_override_query = db_select('node', 'n')
+    ->fields('n', ['nid', 'title'])
+    ->fields('fpg', ['entity_id'])
+    ->fields('flr', ['field_prodlang_language_value'])
+    ->condition('n.type', 'product', '=')
+    ->condition('n.nid', $nid, '=');
+  $lang_override_query->innerJoin('field_data_field_prodlang_product', 'fpg', 'fpg.field_prodlang_product_nid = n.nid');
+  $lang_override_query->innerJoin('field_data_field_prodlang_language', 'flr', 'flr.entity_id = fpg.entity_id');
+  $result = $lang_override_query->execute();
+
+  foreach ($result as $item) {
+    $lang_arr[$item->entity_id] = '<span class="views-field views-field-field-language-region"> <span class="field-content">' . $item->field_prodlang_language_value . '</span> </span> - <span class="views-field views-field-nid"> <span class="field-content"><a href="/node/' . $item->entity_id . '/edit">(Right Click to Edit in New Window)</a></span> </span> - <span class="views-field views-field-title"> <span class="field-content"><a href="/node/' . $item->entity_id . '">' . $item->title . '</a></span> </span>';
+  }
+  $form['field_prod_language']['und']['#options'] = $lang_arr;
+
+  return $form;
 }

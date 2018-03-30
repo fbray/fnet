@@ -1,19 +1,27 @@
 <?php
-// $Id: ems.module 2118 2016-08-30 13:01:15Z gkakade $
-require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'ems') . '/library/base62.php';
-include_once DRUPAL_ROOT . '/includes/locale.inc';
 
 /**
  * @file
+ * ems.module
+ */
+
+require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'ems') . '/library/base62.php';
+include_once DRUPAL_ROOT . '/includes/locale.inc';
+include_once 'ems.features.inc';
+
+/**
+ * @file
+ * ems.module
  */
 
 /**
  * @defgroup ems
  * @ingroup
  * @{
- * A module to register anonymous users to a node, specifically and event_occurrence node.
- * The module provides a form for registering and un-registering, submits registrant to Marketo, and
- * provides some basic reporting
+ * A module to register anonymous users to a node, specifically an
+ * event_occurrence node.
+ * The module provides a form for registering and un-registering,
+ * submits registrant to Marketo, and provides some basic reporting.
  */
 
 /**
@@ -147,12 +155,13 @@ function ems_permission() {
 }
 
 /**
- * Presents a thank you for registering page after a successful event_occurrence registration.
+ * Presents Thank You page after a successful event_occurrence registration.
  *
  * @param int $event_occurrence_id
- *  The node id of the event_occurrence that the registration 'thank you' is for.
+ *   The nid of the event_occurrence that the registration 'thank you' is for.
+ *
  * @return string
- *  HTML for page body.
+ *   HTML for page body.
  */
 function ems_registration_thank_you($event_occurrence_id) {
   $event_occurrence = node_load($event_occurrence_id);
@@ -168,8 +177,13 @@ function ems_registration_thank_you($event_occurrence_id) {
 }
 
 /**
+ * Returns a html when an event is full.
+ *
  * @param null $event_occurrence_id
- * @return string Event full message to be displayed as page
+ *   The nid of the event occurence.
+ *
+ * @return string
+ *   Event full message to be displayed as page
  */
 function ems_registration_event_full($event_occurrence_id = NULL) {
   if ($event_occurrence_id) {
@@ -188,20 +202,21 @@ function ems_registration_event_full($event_occurrence_id = NULL) {
 
 /**
  * Present a page listing all those registered for an event.
+ *
  * TODO: Replace this function with a View.
  *
  * @param int $event_occurrence_id
- *  Node id of the event_occurrence to be listed.
+ *   Node id of the event_occurrence to be listed.
  * @return string
- *  HTML for page body.
+ *   HTML for page body.
  */
 function ems_registration_list($event_occurrence_id) {
   $event_occurrence_id = check_plain($event_occurrence_id);
-  $result = db_query("SELECT count(*) FROM {node} WHERE nid = :nid AND type = :type AND status = :status", array(
-      ':nid' => $event_occurrence_id,
-      ':type' => 'event_occurrence',
-      ':status' => 1
-    ))->fetchField();
+  $result = db_query("SELECT count(*) FROM {node} WHERE nid = :nid AND type = :type AND status = :status", [
+    ':nid' => $event_occurrence_id,
+    ':type' => 'event_occurrence',
+    ':status' => 1,
+  ])->fetchField();
   if ($result == 0) {
     drupal_set_message(t('Event occurrence not found'), 'error');
     return '';
@@ -214,14 +229,14 @@ function ems_registration_list($event_occurrence_id) {
       'email',
       'job_title',
       'company',
-      'phone'
+      'phone',
     ))
     ->fields('t', array(
       'nid',
       'payment_status',
       'registration_status',
       'registration_sequence',
-      'cancellation_token'
+      'cancellation_token',
     ))
     ->condition('t.nid', $event_occurrence_id)
     ->orderBy('t.registration_sequence');
@@ -237,7 +252,7 @@ function ems_registration_list($event_occurrence_id) {
     'Pmt Status',
     'Status',
     '',
-    ''
+    '',
   );
   $rows = array();
   foreach ($result as $record) {
@@ -251,64 +266,62 @@ function ems_registration_list($event_occurrence_id) {
     $row[] = $record->email;
     $row[] = $record->payment_status;
     $row[] = $record->registration_status;
-    $row[] = l('Edit', 'ems/registration/edit/' . $record->nid . '/' . $record->rid);
-    $row[] = l('Cancel Registration', 'ems/registration/cancel/' . $record->cancellation_token);
+    $row[] = l(t('Edit'), 'ems/registration/edit/' . $record->nid . '/' . $record->rid);
+    $row[] = l(t('Cancel Registration'), 'ems/registration/cancel/' . $record->cancellation_token);
     $rows[] = $row;
   }
   $output = theme('event_summary', array('event_occurrence_id' => $event_occurrence_id));
-  $output .= theme('table', array(
-      'header' => $header,
-      'rows' => $rows,
-      'attributes' => array('width' => 900),
-    ));
-  $output .= l('Download to Excel', 'ems/registration/list/' . $event_occurrence_id . '/csv');
+  $output .= theme('table', [
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array('width' => 900),
+  ]);
+  $output .= l(t('Download to Excel'), 'ems/registration/list/' . $event_occurrence_id . '/csv');
   return $output;
 }
 
 /**
- *  Output a CSV file with a list of all those registered for an event_occurrence
+ * Output CSV file with a list of all those registered for an event_occurrence.
  *
  * TODO: Replace this with a View CSV output display.
  *
  * @param int $event_occurrence_id
- *  Node id for the event_occurrence to be listed
- *
- * @return void
+ *   Node id for the event_occurrence to be listed.
  */
 function ems_registration_list_csv($event_occurrence_id) {
   $event_occurrence_id = check_plain($event_occurrence_id);
-  $result = db_query("SELECT count(*) FROM {node} WHERE nid = :nid AND type = :type AND status = :status", array(
+  $result = db_query("SELECT count(*) FROM {node} WHERE nid = :nid AND type = :type AND status = :status", [
     ':nid' => $event_occurrence_id,
     ':type' => 'event_occurrence',
-    ':status' => 1
-  ))->fetchField();
+    ':status' => 1,
+  ])->fetchField();
   if ($result == 0) {
     drupal_set_message(t('Event occurrence not found'), 'error');
     return;
   }
 
-  $sql = "SELECT 
-      r.rid, 
-      r.first_name, 
-      r.last_name, 
-      r.email, 
-      r.job_title, 
-      r.job_role, 
-      r.company, 
-      r.address, 
-      r.phone, 
-      r.city, 
-      r.state, 
-      r.postal_code, 
-      r.country, 
-      t.gold_number, 
-      t.payment_status, 
-      t.region, 
+  $sql = "SELECT
+      r.rid,
+      r.first_name,
+      r.last_name,
+      r.email,
+      r.job_title,
+      r.job_role,
+      r.company,
+      r.address,
+      r.phone,
+      r.city,
+      r.state,
+      r.postal_code,
+      r.country,
+      t.gold_number,
+      t.payment_status,
+      t.region,
       t.`language`,
-      t.registration_status, 
-      t.registration_sequence, 
+      t.registration_status,
+      t.registration_sequence,
       t.cancellation_token
-    FROM {ems_registrant} AS r 
+    FROM {ems_registrant} AS r
     INNER JOIN {ems_registration} AS t ON r.rid = t.rid
     WHERE t.nid = :node_id
     ORDER BY t.registration_status ASC, t.registration_sequence ASC";
@@ -340,7 +353,7 @@ function ems_registration_list_csv($event_occurrence_id) {
   $fh = fopen('php://output', 'w');
   fputcsv($fh, $fields);
   foreach ($result as $row) {
-    // create the record array, since fputcsv only handles arrays. Grr...
+    // Create the record array, since fputcsv only handles arrays. Grr...
     $record = array(
       $row->rid,
       $row->first_name,
@@ -361,7 +374,7 @@ function ems_registration_list_csv($event_occurrence_id) {
       $row->language,
       $row->registration_status,
       $row->registration_sequence,
-      $row->cancellation_token
+      $row->cancellation_token,
     );
     fputcsv($fh, $record);
   }
@@ -371,27 +384,30 @@ function ems_registration_list_csv($event_occurrence_id) {
 }
 
 /**
- * Presents the registration form to the user.  The same page is used for both adding and editing a registration.
+ * Presents the registration form to the user.
+ *
+ * The same page is used for both adding and editing a registration.
  * TODO: Rework Event Registrations into an Entity.
  *
  * @param string $op
- *  Operation being preformed. Can be 'add' or 'edit'.
+ *   Operation being preformed. Can be 'add' or 'edit'.
  * @param $event_occurrence_id
- *  Node id for the event_occurrence
+ *   Node id for the event_occurrence.
  * @param null|int $registrant_id
- *  If the operation is 'edit', the id of the registration to edit.
+ *   If the operation is 'edit', the id of the registration to edit.
+ *
  * @return string
- *  HTML for page containing the registration form.
+ *   HTML for page containing the registration form.
  */
 function ems_registration_page($op, $event_occurrence_id, $registrant_id = NULL) {
   $event_occurrence = node_load($event_occurrence_id);
   if (!$event_occurrence) {
-    //if there is no event occurrence, form validation will catch it.
+    // If there is no event occurrence, form validation will catch it.
     $event_occurrence = new stdClass();
     $event_occurrence->nid = $event_occurrence_id;
   }
   $registration = new emsRegistration();
-  // set default for add form
+  // Set default for add form.
   if (isset($_COOKIE['regCountry'])) {
     $registration->country = strtolower($_COOKIE['regCountry']);
     if ($registration->country == 'gb') {
@@ -410,6 +426,7 @@ function ems_registration_page($op, $event_occurrence_id, $registrant_id = NULL)
         drupal_access_denied();
       }
       break;
+
     case 'add':
       if ($event_occurrence->event_full) {
         drupal_goto('ems/registration/event_full/' . $event_occurrence_id);
@@ -428,19 +445,19 @@ function ems_registration_page($op, $event_occurrence_id, $registrant_id = NULL)
 /**
  * The EMS registration form.
  *
- * @param string $form_id
- *  The name of the form.
+ * @param string $form
+ *   The name of the form.
  * @param string $op
- *  The operation being performed, add or edit.
+ *   The operation being performed, add or edit.
  * @param object $event_occurrence
- *  An event_occurrence node object for the registration.
+ *   An event_occurrence node object for the registration.
  * @param object $registration
- *  A registration object.
+ *   A registration object.
+ *
  * @return array
  */
 function ems_registration_form($form, $form_state, $op, $event_occurrence, $registration) {
   // Make sure the properties of the $registration object are actually set.
-
   $form = array();
   $form['nid'] = array(
     '#type' => 'value',
@@ -611,26 +628,23 @@ function ems_registration_form($form, $form_state, $op, $event_occurrence, $regi
 }
 
 /**
- * Performs validation for the ems_registration_form
+ * Implements hook_form_validate().
  *
- * @param string $form_id
- *  The name of the form being validated.
- * @param array $form_state
- *  Array containing the drupal form state.
+ * Performs validation for the ems_registration_form.
  */
 function ems_registration_form_validate($form, &$form_state) {
   $email = $form_state['values']['email'];
   $event_occurrence_nid = $form_state['values']['nid'];
   $op = $form_state['values']['operation'];
-  // check for valid email
+  // Check for valid email.
   if (filter_var($email, FILTER_VALIDATE_EMAIL) == FALSE) {
     form_set_error('email', 'Email address does not appear to be valid');
   }
-  //check that event_occurrence_id is valid
+  // Check that event_occurrence_id is valid.
   $result = db_query("SELECT count(*) FROM {node} WHERE nid = :nid AND type = :type AND status = :status", array(
     ':nid' => $event_occurrence_nid,
     ':type' => 'event_occurrence',
-    ':status' => 1
+    ':status' => 1,
   ))->fetchField();
   if ($result == 0) {
     form_set_error('Event', 'The event occurrence id is invalid');
@@ -638,12 +652,9 @@ function ems_registration_form_validate($form, &$form_state) {
 }
 
 /**
- * Process submitted ems_registration_form.
+ * Implements hook_form_submit().
  *
- * @param string $form_id
- *  The name of the form submitted.
- * @param array $form_state
- *  Array containing Drupal form state.
+ * Process submitted ems_registration_form.
  */
 function ems_registration_form_submit($form, &$form_state) {
   $values = $form_state['values'];
@@ -652,7 +663,7 @@ function ems_registration_form_submit($form, &$form_state) {
     case 'add':
       $rid = ems_add_registrant($values);
       $result = ems_add_registration($rid, $values);
-      // if registration was not successful, don't sync the lead to Marketo
+      // If registration was not successful, don't sync the lead to Marketo.
       if (is_array($result)) {
         $values['registration_status'] = $result['registration_status'];
         $values['cancellation_token'] = $result['cancellation_token'];
@@ -661,9 +672,11 @@ function ems_registration_form_submit($form, &$form_state) {
       }
       $form_state['redirect'] = 'ems/registration/thank_you/' . $values['nid'];
       break;
+
     case 'edit':
       ems_registration_save($values);
-      //we don't change registration status so update the lead but don't do a request_campaign
+      // We don't change registration status so update the lead
+      // but don't do a request_campaign.
       ems_registration_marketo_lead_sync($values);
       $form_state['redirect'] = 'ems/registration/list/' . $values['nid'];
       break;
@@ -674,38 +687,39 @@ function ems_registration_form_submit($form, &$form_state) {
  * Load and event_occurrence registration and return it as an object.
  *
  * @param int $event_occurrence
- *  Node id of the event_occurrence for the registration.
+ *   Node id of the event_occurrence for the registration.
  * @param int $rid
- *  Registration id of the registration
+ *   Registration id of the registration.
+ *
  * @return object|stdClass
- *  Either a populated registration object or an empty stdClass.
+ *   Either a populated registration object or an empty stdClass.
  */
 function ems_registration_load($event_occurrence, $rid) {
-  $sql = "SELECT 
-    r.nid, 
-    r.rid, 
-    p.first_name, 
-    p.last_name, 
-    p.email, 
-    p.job_title, 
-    p.job_role, 
+  $sql = "SELECT
+    r.nid,
+    r.rid,
+    p.first_name,
+    p.last_name,
+    p.email,
+    p.job_title,
+    p.job_role,
     p.company,
-    p.address, 
-    p.phone, 
-    p.city, 
-    p.state, 
-    p.postal_code, 
-    p.country, 
-    r.gold_number, 
-    r.payment_status, 
+    p.address,
+    p.phone,
+    p.city,
+    p.state,
+    p.postal_code,
+    p.country,
+    r.gold_number,
+    r.payment_status,
     r.region,
-    r.language, 
-    r.registration_status, 
-    r.registration_sequence, 
+    r.language,
+    r.registration_status,
+    r.registration_sequence,
     r.cancellation_token
-    FROM {ems_registrant} AS p 
-    INNER JOIN {ems_registration} AS r ON p.rid = r.rid 
-    WHERE r.nid = :nid 
+    FROM {ems_registrant} AS p
+    INNER JOIN {ems_registration} AS r ON p.rid = r.rid
+    WHERE r.nid = :nid
     AND p.rid = :rid";
   $result = db_query($sql, array(':nid' => $event_occurrence, ':rid' => $rid));
   foreach ($result as $record) {
@@ -718,12 +732,14 @@ function ems_registration_load($event_occurrence, $rid) {
  * Saves a registration to the database.
  *
  * @param array|object $values
- *  Either an array of values from a submitted form or a registration object.
+ *   Either an array of values from a submitted form or a registration object.
+ *
  * @return bool
- *  Returns true if both writes are successful, or false.
+ *   Returns true if both writes are successful, or false.
  */
 function ems_registration_save($values) {
-  // we overload the save function to take either an array of values or a registration object
+  // We overload the save function to take either an array of values
+  // or a registration object.
   if (is_array($values)) {
     $registrant = new stdClass();
     $registrant->rid = $values['rid'];
@@ -748,18 +764,20 @@ function ems_registration_save($values) {
 
   }
   elseif (is_object($values)) {
-    // we can use the registration object directly.  Drupal will just ignore the fields that it doesn't need.
+    // We can use the registration object directly.
+    // Drupal will just ignore the fields that it doesn't need.
     $registrant = $values;
     $registration = $values;
   }
-  $return_result = TRUE; // set the default return
+  // Set the default return.
+  $return_result = TRUE;
   $result = drupal_write_record('ems_registrant', $registrant, 'rid');
   if (($result != SAVED_UPDATED) && ($result != SAVED_NEW)) {
     $return_result = FALSE;
   }
   $result = drupal_write_record('ems_registration', $registration, array(
     'nid',
-    'rid'
+    'rid',
   ));
   if (($result != SAVED_UPDATED) && ($result != SAVED_NEW)) {
     $return_result = FALSE;
@@ -771,9 +789,10 @@ function ems_registration_save($values) {
  * Add a person to the ems_registrant table.
  *
  * @param array $values
- *  Values from a submitted form.
+ *   Values from a submitted form.
+ *
  * @return int|bool
- *  Record rid if the add is successful or false.
+ *   Record rid if the add is successful or false.
  */
 function ems_add_registrant($values) {
   $result = db_query("SELECT rid FROM {ems_registrant} WHERE email = :email", array(':email' => $values['email']));
@@ -816,11 +835,12 @@ function ems_add_registrant($values) {
  * Add a registration to the ems_registration table.
  *
  * @param int $rid
- *  Record rid of the ems_registrant being registered.
+ *   Record rid of the ems_registrant being registered.
  * @param array $values
- *  Array of values from a submitted registration form
+ *   Array of values from a submitted registration form.
+ *
  * @return array|bool
- *  Either an array containing values for registration status and cancellation token or false.
+ *   Either an array containing values for registration status and cancellation token or false.
  */
 function ems_add_registration($rid, $values) {
   $record = new stdClass();
@@ -879,14 +899,15 @@ function ems_add_registration($rid, $values) {
 }
 
 /**
- * Confirm event registration cancel
+ * Confirm event registration cancel.
  *
  * @param string $form_id
- *  Form name, required by Drupal
+ *   Form name, required by Drupal.
  * @param string $token
- *  The cancellation token from the cancel url
+ *   The cancellation token from the cancel url.
+ *
  * @return array
- *  Drupal form array structure
+ *   Drupal form array structure.
  */
 function ems_registration_cancel_form($form, $form_id, $token) {
   global $base_url, $base_path;
@@ -895,7 +916,7 @@ function ems_registration_cancel_form($form, $form_id, $token) {
     '#type' => 'value',
     '#value' => $token,
   );
-  // redirect path if user cancels
+  // Redirect path if user cancels.
   $path = $base_url . $base_path;
   $description = t('<strong>Cancel the registration? </strong><br/> This action cannot be undone.');
   $confirm_form = confirm_form($form, t("Cancel the registration?"), $path, $description);
@@ -903,12 +924,12 @@ function ems_registration_cancel_form($form, $form_id, $token) {
 }
 
 /**
- * Submit handler for ems_registration_cancel_form
+ * Submit handler for ems_registration_cancel_form.
  *
  * @param string $form_id
- *  The name of the form
+ *   The name of the form.
  * @param array $form_state
- *  Form state array passed by reference
+ *   Form state array passed by reference.
  */
 function ems_registration_cancel_form_submit($form_id, &$form_state) {
   $token = $form_state['values']['token'];
@@ -916,23 +937,25 @@ function ems_registration_cancel_form_submit($form_id, &$form_state) {
 }
 
 /**
- * Cancel the registration associated with a cancellation token.  The function also registers the next
+ * Cancel the registration associated with a cancellation token.
+ *
+ * The function also registers the next
  * wait listed registrant, and updates the associated Marketo program.
  *
  * @param string $token
- *  A cancellation token corresponding to a record in the registration table.
+ *   A cancellation token corresponding to a record in the registration table.
  */
 function ems_registration_cancel($token) {
   $token = check_plain($token);
   if (strlen($token) > 10) {
     return;
   }
-  $result = db_select('ems_registration', 'r')->fields('r', array(
-      'nid',
-      'rid',
-      'registration_status',
-      'cancellation_token'
-    ))->condition('cancellation_token', $token)->execute();
+  $result = db_select('ems_registration', 'r')->fields('r', [
+    'nid',
+    'rid',
+    'registration_status',
+    'cancellation_token',
+  ])->condition('cancellation_token', $token)->execute();
   $registration = (object) $result->fetchAssoc();
   if ($registration) {
     switch ($registration->registration_status) {
@@ -950,7 +973,7 @@ function ems_registration_cancel($token) {
         ems_registration_marketo_lead_sync($registration);
         ems_registration_marketo_request_campaign($registration);
         drupal_set_message(t('The registration for this event is canceled.'));
-        // see if anyone is on the waitlist
+        // See if anyone is on the waitlist.
         $event_occurrence = node_load($registration->nid);
         ems_register_from_waitlist($event_occurrence);
         drupal_goto('node/' . $registration->nid);
@@ -967,17 +990,19 @@ function ems_registration_cancel($token) {
     drupal_set_message(t('We could not find an event registration matching this token.'));
     drupal_goto('news');
   }
-  return;
 }
 
 /**
- * Update the registrant's information in the Marketo database with a user_sync transaction and do a
+ * Update the registrant's information in the Marketo database.
+ *
+ * Update with a user_sync transaction and do a
  * request_campaign transaction via the Marketo API.
  *
- * @param object $registration Registration object
+ * @param object $registration
+ *   Registration object.
  */
 function ems_registration_marketo_lead_sync($registration) {
-  // if $registration is a form array cast it as an object
+  // If $registration is a form array cast it as an object.
   if (is_array($registration)) {
     $registration = (object) $registration;
   }
@@ -1000,8 +1025,10 @@ function ems_registration_marketo_lead_sync($registration) {
 }
 
 /**
+ * Look up campaign information from Marketo.
+ *
  * @param object $registration
- * An ems registration object
+ *   An ems registration object.
  */
 function ems_registration_marketo_request_campaign($registration) {
   global $base_url, $base_path;
@@ -1009,10 +1036,9 @@ function ems_registration_marketo_request_campaign($registration) {
     $registration = (object) $registration;
   }
   $event_occurrence = node_load($registration->nid);
-  dpm($event_occurrence);
   $event = node_load($event_occurrence->field_event_parent[LANGUAGE_NONE][0]['nid']);
   $marketo_program = $event_occurrence->field_marketo_program[LANGUAGE_NONE][0]['value'];
-  // If we don't have a program name we can't do Marketo requestCampaign
+  // If we don't have a program name we can't do Marketo requestCampaign.
   if ($marketo_program <> '') {
     $campaign = variable_get('ems_marketo_campaign_name', 'EMS Registration');
     $marketo_campaign = $marketo_program . '.' . $campaign;
@@ -1034,22 +1060,25 @@ function ems_registration_marketo_request_campaign($registration) {
 }
 
 /**
- * Register the next waitlist registrant to an event_occurrence when someone cancels their registration
+ * Register the next waitlist registrant to an event_occurrence.
  *
- * @param $event_occurrence object
- *  Node object of the event_occurrence.
+ * Occurs when someone cancels their registration.
+ *
+ * @param object $event_occurrence
+ *   Node object of the event_occurrence.
+ *
  * @return bool
- *  True if someone was registered from waiting list.
+ *   True if someone was registered from waiting list.
  */
 function ems_register_from_waitlist($event_occurrence) {
-  //check to see if there is any room
-  $registered = db_query("SELECT COUNT(*) FROM ems_registration WHERE nid = :nid AND (registration_status = :registration_status1 OR registration_status = :registration_status2)", array(
+  // Check to see if there is any room.
+  $registered = db_query("SELECT COUNT(*) FROM ems_registration WHERE nid = :nid AND (registration_status = :registration_status1 OR registration_status = :registration_status2)", [
     ':nid' => $event_occurrence->nid,
     ':registration_status1' => 'registered',
-    ':registration_status2' => 'waitlist-registered'
-  ))->fetchField();
+    ':registration_status2' => 'waitlist-registered',
+  ])->fetchField();
   if ($registered < $event_occurrence->field_event_occ_capacity[LANGUAGE_NONE][0]['value']) {
-    //check to see if there is anyone waiting
+    // Check to see if there is anyone waiting.
     $query = db_select('ems_registrant', 'p')
       ->fields('r', array(
         'nid',
@@ -1060,7 +1089,7 @@ function ems_register_from_waitlist($event_occurrence) {
         'language',
         'registration_status',
         'registration_sequence',
-        'cancellation_token'
+        'cancellation_token',
       ))
       ->fields('p', array(
         'first_name',
@@ -1074,7 +1103,7 @@ function ems_register_from_waitlist($event_occurrence) {
         'city',
         'state',
         'postal_code',
-        'country'
+        'country',
       ))
       ->condition('r.registration_status', 'waitlist')
       ->condition('r.nid', $event_occurrence->nid)
@@ -1082,7 +1111,7 @@ function ems_register_from_waitlist($event_occurrence) {
     $query->addJoin('INNER', 'ems_registration', 'r', 'p.rid = r.rid');
     $query->execute();
     foreach ($query as $registration) {
-      //register them
+      // Register them.
       $registration->registration_status = 'waitlist-registered';
       ems_registration_save($registration);
       ems_registration_marketo_lead_sync($registration);
@@ -1096,6 +1125,9 @@ function ems_register_from_waitlist($event_occurrence) {
   }
 }
 
+/**
+ * Implements hook_node_load().
+ */
 function ems_node_load($nodes, $types) {
   $our_types = array();
   foreach ($types as $type) {
@@ -1109,11 +1141,11 @@ function ems_node_load($nodes, $types) {
     return;
   }
   foreach ($nodes as &$node) {
-    $registered = db_query("SELECT COUNT(*) FROM ems_registration WHERE nid = :nid AND (registration_status = :registration_status1 OR registration_status = :registration_status2)", array(
+    $registered = db_query("SELECT COUNT(*) FROM ems_registration WHERE nid = :nid AND (registration_status = :registration_status1 OR registration_status = :registration_status2)", [
       ':nid' => $node->nid,
       ':registration_status1' => 'registered',
-      ':registration_status2' => 'waitlist-registered'
-    ))->fetchField();
+      ':registration_status2' => 'waitlist-registered',
+    ])->fetchField();
     $capacity = $node->field_event_occ_capacity[LANGUAGE_NONE][0]['value'];
     $waitlist = $node->field_event_occ_waitlist[LANGUAGE_NONE][0]['value'];
     if (($registered >= $capacity) && (!$waitlist)) {
@@ -1130,7 +1162,7 @@ function ems_node_load($nodes, $types) {
  */
 function ems_node_view($node, $view_mode, $langcode) {
   if ($node->type == 'event_occurrence') {
-    //fix up the node before we display it in a normal view
+    // Fix up the node before we display it in a normal view.
     $node->content['body'][0]['#markup'] = "<div class='content_body'>" . $node->content['body'][0]['#markup'] . "</div>";
     unset($node->content['field_event_parent']);
     unset($node->content['field_marketo_program']);
@@ -1147,7 +1179,8 @@ function ems_node_view($node, $view_mode, $langcode) {
  * Implements hook_node_delete().
  */
 function ems_node_delete($node) {
-  // if an event_occurrence node is being deleted, delete all of the registrations that go with it.
+  // If an event_occurrence node is being deleted,
+  // delete all of the registrations that go with it.
   if ($node->type == 'event_occurrence') {
     $records_deleted = db_delete('ems_registration')
       ->condition('nid', $node->nid)
@@ -1176,8 +1209,8 @@ function ems_node_delete($node) {
  */
 function ems_node_update($node) {
   if ($node->type == 'event_occurrence') {
-    // capacity may have changed so, check to see if waitlisted users cab be registered.
-    // loop until event is full or no one is on the waiting list
+    // Capacity may have changed so, check to see if waitlisted users can be
+    // registered. Loop until event is full or no one is on the waiting list.
     do {
       $result = ems_register_from_waitlist($node);
       if ($result) {
@@ -1189,20 +1222,17 @@ function ems_node_update($node) {
 
 /**
  * Implements hook_form_alter().
- *
- * @param array $form
- * @param array $form_state
- * @param string $form_id
  */
 function ems_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'event_occurrence_node_form') {
     $form['#validate'][] = 'ems_validate_marketo_program';
   }
-  return;
 }
 
 /**
- * Form validation for event_occurrence_node_form.  Validates that Marketo program is valid and has a campaign
+ * Form validation for event_occurrence_node_form.
+ *
+ * Validates that Marketo program is valid and has a campaign
  * with the right name, and is registered to receive requestCampaign.
  *
  * @param string $form_id
@@ -1233,7 +1263,6 @@ function ems_validate_marketo_program($form_id, &$form_state) {
 
 /**
  * Implements hook_init().
- *
  */
 function ems_init() {
   drupal_add_css(drupal_get_path('module', 'ems') . '/styles/event.css');
@@ -1242,8 +1271,6 @@ function ems_init() {
 
 /**
  * Implements hook_theme().
- *
- * @return array
  */
 function ems_theme() {
   $base = array(
@@ -1260,27 +1287,27 @@ function ems_theme() {
 }
 
 /**
- * implements hook_preprocess_node
- **/
+ * Implements hook_preprocess_node().
+ */
 function ems_preprocess_node(&$variables) {
   if ($variables['type'] == 'event_occurrence') {
     $occurrence = $variables['node'];
-    $event = node_load( fnet_common_get_field_value('event_occurrence', $occurrence, 'field_event_parent', 'target_id') );
+    $event = node_load(fnet_common_get_field_value('event_occurrence', $occurrence, 'field_event_parent', 'target_id'));
     $variables['parent_title'] = l($event->title, 'node/' . $event->nid);
-    $link = l('Register for this event', 'ems/registration/add/' . $variables['nid']);
+    $link = l(t('Register for this event'), 'ems/registration/add/' . $variables['nid']);
     $buttons = theme('fnet_button', array('link' => $link, 'auto' => TRUE));
     $admin_user = user_access('edit any registration');
     if ($admin_user) {
-      $link = l('View registrations', 'ems/registration/list/' . $variables['nid']);
-      $buttons .= '<br/><br/>' . theme('fnet_button', array(
-          'link' => $link,
-          'auto' => TRUE
-        ));
+      $link = l(t('View registrations'), 'ems/registration/list/' . $variables['nid']);
+      $buttons .= '<br/><br/>' . theme('fnet_button', [
+        'link' => $link,
+        'auto' => TRUE,
+      ]);
     }
     $variables['buttons'] = $buttons;
   }
   if ($variables['type'] == 'event') {
-    if ($link = fnet_common_get_field_value('event', $variables['node'], 'field_workshop_reglink', 'url') ) {
+    if ($link = fnet_common_get_field_value('event', $variables['node'], 'field_workshop_reglink', 'url')) {
       drupal_goto($link);
     }
     if (function_exists('fnet_helper_site_region')) {
@@ -1298,7 +1325,7 @@ function ems_preprocess_node(&$variables) {
       }
       else {
         $variables['occurrences'] = $view;
-        $variables['more_occurrences'] = l('See all dates and locations', 'ems/list/' . $variables['nid']);
+        $variables['more_occurrences'] = l(t('See all dates and locations'), 'ems/list/' . $variables['nid']);
       }
     }
     else {
@@ -1311,8 +1338,6 @@ function ems_preprocess_node(&$variables) {
 
 /**
  * Implements hook_preprocess_page().
- *
- * @param $variables
  */
 function ems_preprocess_page(&$variables) {
   if (isset($variables['node']) && $variables['node']->type == 'event_occurrence') {
@@ -1325,13 +1350,13 @@ function ems_preprocess_page(&$variables) {
  * The preprocess function for theme_event_summary.
  *
  * @param $variables
- *  Page variables.
+ *   Page variables.
  */
 function template_preprocess_event_summary(&$variables) {
   $event_occurrence_id = $variables['event_occurrence_id'];
   $occurrence = node_load($event_occurrence_id);
   $variables['occurrence'] = $occurrence;
-  $variables['event'] = node_load( fnet_common_get_field_value('event_occurrence', $occurrence, 'field_event_parent', 'target_id') );
+  $variables['event'] = node_load(fnet_common_get_field_value('event_occurrence', $occurrence, 'field_event_parent', 'target_id'));
   $variables['intro'] = fnet_common_get_field_value('event', $variables['event'], 'field_intro', 'value');
 }
 
@@ -1341,13 +1366,14 @@ function ems_state_province_ajax($form, &$form_state) {
 
 /**
  * Provides an array of states for the registration form state field.
- * Uses the Addressfield module for the list
+ *
+ * Uses the Addressfield module for the list.
  *
  * @return array
- *  Associative array of state abbreviations and names.
+ *   Associative array of state abbreviations and names.
  */
 function ems_get_state_province_options($country_code) {
-  $administrative_areas  = addressfield_get_administrative_areas(trim(check_plain(strtolower($country_code))));
+  $administrative_areas = addressfield_get_administrative_areas(trim(check_plain(strtolower($country_code))));
   return $administrative_areas;
 }
 
@@ -1355,8 +1381,8 @@ function ems_get_state_province_options($country_code) {
  * Provides an array of countries for the registration form country field.
  *
  * @return array
- *  Associative array of country codes and country names.
- *  Uses the Locale module for the country list.
+ *   Associative array of country codes and country names.
+ *   Uses the Locale module for the country list.
  */
 function ems_get_country_options() {
   $countries = country_get_list();
@@ -1364,9 +1390,10 @@ function ems_get_country_options() {
 }
 
 /**
- * Provides a list of job roles for the registration form job_role field
+ * Provides a list of job roles for the registration form job_role field.
+ *
  * @return array
- *  An Associative array of job role names.
+ *   An Associative array of job role names.
  */
 function ems_get_job_role_options() {
   $job_role_options = array(
@@ -1390,7 +1417,8 @@ function ems_get_job_role_options() {
 }
 
 /**
- * Test returning a Marketo user based on the _mkto_trk cookie
+ * Test returning a Marketo user based on the _mkto_trk cookie.
+ *
  * @return string
  */
 function ems_marketo_test() {
@@ -1431,9 +1459,12 @@ function ems_build_location_string($location) {
 }
 
 /**
- * Return an array of valid marketo programs suitable for use as options for a select element
+ * Return array of valid marketo programs.
+ *
+ * These are used as options for a select element.
  *
  * @return array
+ *   List of Marketo Programs.
  */
 function ems_events_get_valid_marketo_programs() {
   try {
@@ -1450,13 +1481,14 @@ function ems_events_get_valid_marketo_programs() {
       }
     }
     return $programs;
-  } catch (Exception $e) {
-    watchdog('ems_events', 'Caught SOAP exception: %message', array('%message' => $e->getMessage()), WATCHDOG_ERROR);
+  }
+  catch (Exception $e) {
+    watchdog('ems_events', 'Caught SOAP exception: %message', ['%message' => $e->getMessage()], WATCHDOG_ERROR);
   }
 }
 
 /**
- * Implements hook_views_api()
+ * Implements hook_views_api().
  */
 function ems_views_api() {
   return array(

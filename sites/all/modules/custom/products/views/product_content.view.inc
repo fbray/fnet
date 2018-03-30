@@ -1,10 +1,10 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 11/14/17
- * Time: 11:23 AM
+ * @file
+ * product_content.view.inc
  */
+
 $view = new view();
 $view->name = 'product_content';
 $view->description = 'Views used for the Product Display content type. Stored in the Products module.';
@@ -129,14 +129,14 @@ $handler->display->display_options['sorts']['title']['id'] = 'title';
 $handler->display->display_options['sorts']['title']['table'] = 'node';
 $handler->display->display_options['sorts']['title']['field'] = 'title';
 $handler->display->display_options['defaults']['arguments'] = FALSE;
-/* Contextual filter: Content: Products (field_products) */
-$handler->display->display_options['arguments']['field_products_target_id']['id'] = 'field_products_target_id';
-$handler->display->display_options['arguments']['field_products_target_id']['table'] = 'field_data_field_products';
-$handler->display->display_options['arguments']['field_products_target_id']['field'] = 'field_products_target_id';
-$handler->display->display_options['arguments']['field_products_target_id']['default_argument_type'] = 'fixed';
-$handler->display->display_options['arguments']['field_products_target_id']['summary']['number_of_records'] = '0';
-$handler->display->display_options['arguments']['field_products_target_id']['summary']['format'] = 'default_summary';
-$handler->display->display_options['arguments']['field_products_target_id']['summary_options']['items_per_page'] = '25';
+/* Contextual filter: Content: Products (field_related_products) */
+$handler->display->display_options['arguments']['field_related_products_target_id']['id'] = 'field_related_products_target_id';
+$handler->display->display_options['arguments']['field_related_products_target_id']['table'] = 'field_data_field_related_products';
+$handler->display->display_options['arguments']['field_related_products_target_id']['field'] = 'field_related_products_target_id';
+$handler->display->display_options['arguments']['field_related_products_target_id']['default_argument_type'] = 'fixed';
+$handler->display->display_options['arguments']['field_related_products_target_id']['summary']['number_of_records'] = '0';
+$handler->display->display_options['arguments']['field_related_products_target_id']['summary']['format'] = 'default_summary';
+$handler->display->display_options['arguments']['field_related_products_target_id']['summary_options']['items_per_page'] = '25';
 $handler->display->display_options['defaults']['filter_groups'] = FALSE;
 $handler->display->display_options['defaults']['filters'] = FALSE;
 /* Filter criterion: Content: Published */
@@ -235,14 +235,14 @@ $handler->display->display_options['sorts']['title']['id'] = 'title';
 $handler->display->display_options['sorts']['title']['table'] = 'node';
 $handler->display->display_options['sorts']['title']['field'] = 'title';
 $handler->display->display_options['defaults']['arguments'] = FALSE;
-/* Contextual filter: Content: Products (field_products) */
-$handler->display->display_options['arguments']['field_products_target_id']['id'] = 'field_products_target_id';
-$handler->display->display_options['arguments']['field_products_target_id']['table'] = 'field_data_field_products';
-$handler->display->display_options['arguments']['field_products_target_id']['field'] = 'field_products_target_id';
-$handler->display->display_options['arguments']['field_products_target_id']['default_argument_type'] = 'fixed';
-$handler->display->display_options['arguments']['field_products_target_id']['summary']['number_of_records'] = '0';
-$handler->display->display_options['arguments']['field_products_target_id']['summary']['format'] = 'default_summary';
-$handler->display->display_options['arguments']['field_products_target_id']['summary_options']['items_per_page'] = '25';
+/* Contextual filter: Content: Products (field_related_products) */
+$handler->display->display_options['arguments']['field_related_products_target_id']['id'] = 'field_related_products_target_id';
+$handler->display->display_options['arguments']['field_related_products_target_id']['table'] = 'field_data_field_related_products';
+$handler->display->display_options['arguments']['field_related_products_target_id']['field'] = 'field_related_products_target_id';
+$handler->display->display_options['arguments']['field_related_products_target_id']['default_argument_type'] = 'fixed';
+$handler->display->display_options['arguments']['field_related_products_target_id']['summary']['number_of_records'] = '0';
+$handler->display->display_options['arguments']['field_related_products_target_id']['summary']['format'] = 'default_summary';
+$handler->display->display_options['arguments']['field_related_products_target_id']['summary_options']['items_per_page'] = '25';
 $handler->display->display_options['defaults']['filter_groups'] = FALSE;
 $handler->display->display_options['defaults']['filters'] = FALSE;
 /* Filter criterion: Content: Published */
@@ -267,33 +267,26 @@ $handler->display->display_options['pager']['type'] = 'none';
 $handler->display->display_options['pager']['options']['offset'] = '0';
 $handler->display->display_options['defaults']['relationships'] = FALSE;
 /* Relationship: Entity Reference: Referenced Entity */
-$handler->display->display_options['relationships']['field_products_target_id']['id'] = 'field_products_target_id';
-$handler->display->display_options['relationships']['field_products_target_id']['table'] = 'field_data_field_products';
-$handler->display->display_options['relationships']['field_products_target_id']['field'] = 'field_products_target_id';
+$handler->display->display_options['relationships']['field_related_products_target_id']['id'] = 'field_related_products_target_id';
+$handler->display->display_options['relationships']['field_related_products_target_id']['table'] = 'field_data_field_related_products';
+$handler->display->display_options['relationships']['field_related_products_target_id']['field'] = 'field_related_products_target_id';
 $handler->display->display_options['defaults']['fields'] = FALSE;
+/* Field: Content: Related Product Image */
+$handler->display->display_options['fields']['field_product_image']['id'] = 'field_product_image';
+$handler->display->display_options['fields']['field_product_image']['table'] = 'field_data_field_product_image';
+$handler->display->display_options['fields']['field_product_image']['field'] = 'field_product_image';
+$handler->display->display_options['fields']['field_product_image']['relationship'] = 'field_related_products_target_id';
+$handler->display->display_options['fields']['field_product_image']['label'] = '';
+$handler->display->display_options['fields']['field_product_image']['element_label_colon'] = FALSE;
 /* Field: Content: Title */
 $handler->display->display_options['fields']['title']['id'] = 'title';
 $handler->display->display_options['fields']['title']['table'] = 'node';
 $handler->display->display_options['fields']['title']['field'] = 'title';
-$handler->display->display_options['fields']['title']['relationship'] = 'field_products_target_id';
+$handler->display->display_options['fields']['title']['relationship'] = 'field_related_products_target_id';
+$handler->display->display_options['fields']['title']['label'] = '';
 $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
 $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
-$handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
-/* Field: Content: Related Product Image */
-$handler->display->display_options['fields']['field_prod_related_img']['id'] = 'field_prod_related_img';
-$handler->display->display_options['fields']['field_prod_related_img']['table'] = 'field_data_field_prod_related_img';
-$handler->display->display_options['fields']['field_prod_related_img']['field'] = 'field_prod_related_img';
-$handler->display->display_options['fields']['field_prod_related_img']['relationship'] = 'field_products_target_id';
-$handler->display->display_options['fields']['field_prod_related_img']['click_sort_column'] = 'fid';
-$handler->display->display_options['fields']['field_prod_related_img']['settings'] = array(
-  'image_style' => '',
-  'image_link' => 'content',
-);
-/* Field: Content: Nid */
-$handler->display->display_options['fields']['nid']['id'] = 'nid';
-$handler->display->display_options['fields']['nid']['table'] = 'node';
-$handler->display->display_options['fields']['nid']['field'] = 'nid';
-$handler->display->display_options['fields']['nid']['relationship'] = 'field_products_target_id';
+$handler->display->display_options['fields']['title']['element_label_colon'] = FALSE;
 $handler->display->display_options['defaults']['sorts'] = FALSE;
 /* Sort criterion: Content: Post date */
 $handler->display->display_options['sorts']['created']['id'] = 'created';

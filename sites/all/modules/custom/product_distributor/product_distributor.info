@@ -8,6 +8,15 @@ version = "7.x-1.2"
 dependencies[] = locale
 dependencies[] = addressfield
 dependencies[] = views
+dependencies[] = entityreference
+dependencies[] = features
+dependencies[] = multiselect
+
+features[features_api][] = api:2
+features[field_instance][] = node-product_distributor-field_related_products
+features[node][] = product_distributor
+features_exclude[field_base][body] = body
+features_exclude[field_base][field_related_products] = field_related_products
 
 stylesheets[all][] = css/admin_toolbar_top_position_fix.css
 stylesheets[all][] = css/distributor_form.css
@@ -26,5 +35,3 @@ scripts[] = js/wtb_countries_form.js
 files[] = product_distributor.admin.inc
 
 configure = admin/fnet/wtb
-
-

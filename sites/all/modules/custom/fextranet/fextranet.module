@@ -1,14 +1,12 @@
 <?php
+
 /**
  * @file
- * Module for Fluke Extranet / Sales Insider
+ * Module for Fluke Extranet / Sales Insider.
  */
-
 
 /**
  * Implements hook_views_api().
- *
- * @return array
  */
 function fextranet_views_api() {
   return array(
@@ -19,8 +17,6 @@ function fextranet_views_api() {
 
 /**
  * Implements hook_permission().
- *
- * @return array
  */
 function fextranet_permission() {
   return array(
@@ -37,8 +33,6 @@ function fextranet_permission() {
 
 /**
  * Implements hook_theme().
- *
- * @return array
  */
 function fextranet_theme() {
   $base = array(
@@ -46,30 +40,27 @@ function fextranet_theme() {
   );
   return array(
     'product_assets' => $base + array(
-        'template' => 'product_assets',
-        'variables' => array('elements' => NULL),
-      ),
+      'template' => 'product_assets',
+      'variables' => array('elements' => NULL),
+    ),
     'fextranet_default_page_menu_item' => $base + array(
-        'template' => 'fextranet_default_page_menu_item',
-        'variables' => array('items' => NULL),
-      ),
+      'template' => 'fextranet_default_page_menu_item',
+      'variables' => array('items' => NULL),
+    ),
     'fextranet_request_thanks_message' => $base + array(
-        'template' => 'fextranet_request_thanks_message',
-        'variables' => array(),
-      ),
+      'template' => 'fextranet_request_thanks_message',
+      'variables' => array(),
+    ),
   );
 }
 
 /**
  * Implements hook_menu().
- *
- * @return array
  */
 function fextranet_menu() {
   $items = array();
 
-  // Public facing paths start with 'extranet'
-
+  // Public facing paths start with 'extranet'.
   $items['extranet'] = array(
     'menu_name' => 'extranet',
     'title' => t('Sales Insider'),
@@ -86,7 +77,7 @@ function fextranet_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['extranet-access-denied'] = array (
+  $items['extranet-access-denied'] = array(
     'title' => t('Access Denied'),
     'description' => t('Access Denied page'),
     'page callback' => '_fextranet_access_denied',
@@ -112,8 +103,8 @@ function fextranet_menu() {
     'menu_name' => 'extranet',
   );
 
-  // box item download.  get box, then item url
-  // send back as redirect location
+  // Box item download.  get box, then item url
+  // send back as redirect location.
   $items['extranet/download/%/%'] = array(
     'menu_name' => 'extranet',
     'title' => 'Photo Download',
@@ -123,7 +114,7 @@ function fextranet_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  // Deal Registration form
+  // Deal Registration form.
   $items['extranet/deal'] = array(
     'menu_name' => 'extranet',
     'page callback' => '_fextranet_deal_reg',
@@ -132,7 +123,7 @@ function fextranet_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  // Deal Registration form
+  // Deal Registration form.
   $items['extranet/tools/products/%'] = array(
     'menu_name' => 'extranet',
     'page arguments' => array(3),
@@ -156,7 +147,7 @@ function fextranet_menu() {
   $items['productname/autocomplete'] = array(
     'page callback' => '_fex_products_autocomplete',
     'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   );
 
   $admin_groups = _fex_get_extranet_groups();
@@ -189,7 +180,7 @@ function fextranet_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('fextranet_admin_instructions_form'),
     'access arguments' => array('administer extranet'),
-    'file' => 'fextranet.admin.inc'
+    'file' => 'fextranet.admin.inc',
   );
 
   $items['admin/fnet/extranet/notifications'] = array(
@@ -199,7 +190,7 @@ function fextranet_menu() {
     'page arguments' => array('fextranet_admin_notifications_form'),
     'access arguments' => array('administer extranet'),
     'type' => MENU_NORMAL_ITEM,
-    'file' => 'fextranet.admin.inc'
+    'file' => 'fextranet.admin.inc',
   );
 
   if ($admin_groups) {
@@ -227,7 +218,7 @@ function fextranet_menu() {
       );
       $plid = _fex_get_mlid('admin/fnet/extranet/region/' . $gid);
 
-      // Deals
+      // Deals.
       $items['admin/fnet/extranet/region/' . $gid . '/deals'] = array(
         'title' => $title . ' ' . t('Deals'),
         'type' => MENU_LOCAL_TASK,
@@ -239,7 +230,7 @@ function fextranet_menu() {
         $items['admin/fnet/extranet/region/' . $gid . '/deals']['plid'] = $plid;
       }
 
-      // Content
+      // Content.
       $items['admin/fnet/extranet/region/' . $gid . '/content'] = array(
         'title' => $title . ' ' . t('Content'),
         'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -251,7 +242,7 @@ function fextranet_menu() {
         $items['admin/fnet/extranet/region/' . $gid . '/content']['plid'] = $plid;
       }
 
-      // Members
+      // Members.
       $items['admin/fnet/extranet/region/' . $gid . '/members'] = array(
         'title' => $title . ' ' . t('Members'),
         'page callback' => 'fex_group_member_overview_form',
@@ -295,11 +286,8 @@ function fextranet_menu() {
   return $items;
 }
 
-
 /**
  * Implements hook_node_info().
- *
- * @return array
  */
 function fextranet_node_info() {
   $types = array(
@@ -334,8 +322,8 @@ function fextranet_node_info() {
 
 /**
  * Webservice to listen to Salesforce.
- * TODO: Add admin config for uploading the Salesforce Public Key file.
  *
+ * TODO: Add admin config for uploading the Salesforce Public Key file.
  */
 function _fextranet_insider_processing() {
   // Get the Salesforce Public Key.
@@ -343,7 +331,7 @@ function _fextranet_insider_processing() {
   $public_key_file = variable_get('salesforce_public_key', '');
 
   // Validate the request is a post and return proper response code on failure.
-  if ($_SERVER['REQUEST_METHOD'] != 'POST'){
+  if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     header('HTTP/1.1 405 Not Post');
   }
   /* Authenticate the key and return proper response code on failure. */
@@ -351,23 +339,20 @@ function _fextranet_insider_processing() {
     header('HTTP/1.1 401 Not Authorized');
   }
 
-/* When data type and field validation fails return a 204.
+  /* When data type and field validation fails return a 204.
   elseif ($validation == FALSE) {
-    header('HTTP/1.1 204 Incorrect Data');
+  header('HTTP/1.1 204 Incorrect Data');
   } */
 
   // Set header to indicate the item was saved.
   else {
     header('HTTP/1.1 201 Created');
-    // print "FNORD";
   }
 
 }
 
 /**
  * Implements hook_variable_group_info().
- *
- * @return array
  */
 function fextranet_variable_group_info() {
   $groups = array();
@@ -382,9 +367,6 @@ function fextranet_variable_group_info() {
 
 /**
  * Implements hook_variable_info().
- *
- * @param $options
- * @return array
  */
 function fextranet_variable_info($options) {
   $variable = array();
@@ -432,10 +414,10 @@ function fextranet_variable_info($options) {
   return $variable;
 }
 
-
 /**
- * wrappers to Group functions
+ * Wrappers to Group functions.
  */
+
 /**
  * @param $gid
  * @return bool
@@ -474,12 +456,12 @@ function fex_gnode_add_node_access($gid, $node_type) {
   return FALSE;
 }
 
-
 /**
- * wrappers to Group function
+ * Wrappers to Group function.
  *
  * TODO: This is currently garbage. WTF?.
  */
+
 /**
  * @param int $gid
  * @param int $option
@@ -490,21 +472,19 @@ function fextranet_admin_access($gid = 0, $option = 0) {
   module_load_include('inc', 'fextranet', 'fextranet.admin');
   // $view_info = _gnode_node_access_info($user, 'view');
   // $edit_info = _gnode_node_access_info($user, 'edit');
-  $roles = get_admin_groups($user->uid);  // This function is in the fextranet.admin.inc
+  // This function is in the fextranet.admin.inc.
+  $roles = get_admin_groups($user->uid);
   if ($roles && in_array($gid, array_keys($roles))) {
     return TRUE;
   }
   return FALSE;
 }
 
-
-
-
 /**
- * Menu callback
+ * Menu callback.
  *
  * Gets Box asset URL, sends Header to redirect user
- * Dev wasn't honoring HTTPS directive in drupal_goto, so couldn't use
+ * Dev wasn't honoring HTTPS directive in drupal_goto, so couldn't use.
  *
  * @param $file_id
  * @param string $filename
@@ -512,7 +492,8 @@ function fextranet_admin_access($gid = 0, $option = 0) {
  */
 function fextranet_download_gallery_asset($file_id, $filename = 'not used') {
 
-  // Filename is only appended to URL so the URL ends with the extension of the file (jpg png etcc)
+  // Filename is only appended to URL so the URL ends with the extension
+  // of the file (jpg png etc).
   module_load_include('module', 'box_connect', 'box_connect');
   $box = get_box();
 
@@ -528,10 +509,10 @@ function fextranet_download_gallery_asset($file_id, $filename = 'not used') {
     if (($response->code == 200) && ($response->redirect_code == 302)) {
       $redirect_url = $response->redirect_url;
       watchdog('extranet', 'Redirect URL from Box:  ' . $redirect_url);
-      // valid for a while.  Cache?
+      // Valid for a while.  Cache?
       header('Location: ' . $redirect_url);
       drupal_exit();
-      //		    	drupal_goto($redirect_url);
+      // drupal_goto($redirect_url);
     }
 
   }
@@ -543,11 +524,10 @@ function fextranet_download_gallery_asset($file_id, $filename = 'not used') {
 
 }
 
-
-
 /**
- * Helper function to autocomplete product names, to use with Deal Registration fields.
- * Returns JSON
+ * Helper function to autocomplete product names.
+ *
+ * Used with Deal Registration fields. Returns JSON.
  *
  * @param $term
  */
@@ -559,7 +539,7 @@ function _fex_products_autocomplete($term) {
   if (strlen($term) > 3) {
 
     $query = db_select('node', 'n');
-    $types = array('product',);
+    $types = array('product');
     $titles_return = $query
       ->fields('n', array('title'))
       ->condition('n.status', 1)
@@ -576,19 +556,18 @@ function _fex_products_autocomplete($term) {
   drupal_json_output($return);
 }
 
-
-/*
-*   Menu callbacks, accepting int NID or obj NODE
-*/
+/**
+ * Menu callbacks, accepting int NID or obj NODE.
+ */
 function _fextranet_node_page($arg = NULL) {
-  // arg may be passed by node obj or nid
+  // Arg may be passed by node obj or nid.
   $node = NULL;
   if (!is_object($arg)) {
     if (is_numeric($arg)) {
       $node = node_load($arg);
     }
     else {
-      // find node from path ?
+      // Find node from path ?
       // needed?
       $path = current_path();
     }
@@ -600,7 +579,7 @@ function _fextranet_node_page($arg = NULL) {
   }
   if ($node) {
     $node_page = node_page_view($node);
-    // other stuff?
+    // Other stuff?
     return $node_page;
   }
   return '';
@@ -613,14 +592,14 @@ function _fextranet_node_page($arg = NULL) {
  * @return string
  */
 function _fextranet_node_title($arg = NULL) {
-  // arg may be passed by node obj or nid
+  // Arg may be passed by node obj or nid.
   $node = NULL;
   if (!is_object($arg)) {
     if (is_numeric($arg)) {
       $node = node_load($arg);
     }
     else {
-      // find node from path ?
+      // Find node from path ?
       // needed?
       $path = current_path();
     }
@@ -637,10 +616,10 @@ function _fextranet_node_title($arg = NULL) {
   return '';
 }
 
-
 /**
- * Menu callback, produces Product info page
- * Digital Assets, & other items with this $nid in their 'related product' field
+ * Menu callback, produces Product info page.
+ *
+ * Digital Assets & other items with this $nid in their 'related product' field.
  *
  * @param $nid
  * @return string
@@ -660,18 +639,17 @@ function _fextranet_product_asset_page($nid) {
   }
 
   $title = $product->title;
-  $nodes = array(); // DA
+  $nodes = array();
   $fex_nodes = array();
   $boxes = array();
 
   // TODO: queries don't necessarily restrict access to these items. Check/add.
-
-  // get list of DA nodes
+  // Get list of DA nodes.
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'node');
   $query->propertyCondition('type', 'digital_asset');
   $query->propertyCondition('status', NODE_PUBLISHED);
-//	->fieldCondition('field_dam_asset_type', 'value', $asset_type , '=')
+  // ->fieldCondition('field_dam_asset_type', 'value', $asset_type , '=').
   $query->fieldCondition('field_dam_related_product', 'nid', $nid, '=');
   $query->fieldCondition('field_dam_language', 'value', $languages, 'IN');
   $query->fieldOrderBy('field_dam_asset_type', 'value', 'ASC');
@@ -709,10 +687,11 @@ function _fextranet_product_asset_page($nid) {
     'box_gallery',
     'extranet_news',
     'extranet_promotion',
-    'media_gallery'
+    'media_gallery',
   );
 
-  // Get Extranet node content.  EFQ limited to 1 entity_type, so box_gallery separate
+  // Get Extranet node content.
+  // EFQ limited to 1 entity_type, so box_gallery separate.
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'node');
   $query->entityCondition('bundle', $bundles, 'IN');
@@ -784,77 +763,77 @@ function _fextranet_services_page() {
 }
 
 /**
- * Gets the menu items in the hierarchy below and returns them in a themed manner.
+ * Gets the menu items in the hierarchy below and returns them themed.
  *
  * @param $path
  * @return array
  */
 function _fextranet_submenu_page_items($path) {
-  //Stop and return an empty array if node path is empty
-  if(empty($path)) {
+  // Stop and return an empty array if node path is empty.
+  if (empty($path)) {
     return array();
   }
 
-  //Init empty array to hold the results
+  // Init empty array to hold the results.
   $pages = array();
 
-  //Init parent keys. Check 'foreach' loop on parent keys for more info.
-  $parent_keys = array('plid', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9');
+  // Init parent keys. Check 'foreach' loop on parent keys for more info.
+  $parent_keys = ['plid', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9'];
 
-  //Collect menu item corresponding to this path to begin updates.
-  //Reference: http://stackoverflow.com/a/11615338/136696
-  //Note: we couldn't find a way to get the sub-tree starting from this item
-  //only and hence we had to get the whole menu tree built and then loop on
-  //the current item part only. Not so bad considering that Drupal will
-  //most probably have the whole menu cached anyway.
+  // Collect menu item corresponding to this path to begin updates.
+  // Reference: http://stackoverflow.com/a/11615338/136696
+  // Note: we couldn't find a way to get the sub-tree starting from this item
+  // only and hence we had to get the whole menu tree built and then loop on
+  // the current item part only. Not so bad considering that Drupal will
+  // most probably have the whole menu cached anyway.
   $parent_menu_item = menu_link_get_preferred($path);
 
-  //Stop and return empty array if a proper current menu item couldn't be found
+  // Stop and return empty array if proper current menu item couldn't be found.
   if(empty($parent_menu_item['menu_name']) || empty($parent_menu_item['mlid'])) {
     return array();
   }
 
-  //Init parent item mlid for easier usage since now we know it's not empty
+  // Init parent item mlid for easier usage since now we know it's not empty.
   $parent_menu_item_mlid = $parent_menu_item['mlid'];
 
-  //Build whole menu based on the preferred menu_name gotten from this item
+  // Build whole menu based on the preferred menu_name gotten from this item.
   $menu = menu_build_tree($parent_menu_item['menu_name']);
 
-  //Reset menu cache since 'menu_build_tree' will cause trouble later on after
-  //you call pathauto to update paths as it can only be called once.
-  //Check: https://www.drupal.org/node/1697570
+  // Reset menu cache since 'menu_build_tree' will cause trouble later on after
+  // you call pathauto to update paths as it can only be called once.
+  // Check: https://www.drupal.org/node/1697570
   menu_reset_static_cache();
 
-  //Init processing array. This will hold menu items as we process them.
+  // Init processing array. This will hold menu items as we process them.
   $menu_items_to_process = array();
 
-  //First run to fill up the processing array with the top level items
+  // First run to fill up the processing array with the top level items.
   foreach($menu as $top_level_menu_item) {
     $menu_items_to_process[] = $top_level_menu_item;
   }
 
-  //While the processing array is not empty, keep looping into lower
-  //menu items levels until all are processed.
-  while(count($menu_items_to_process) > 0) {
-    //Pop the top item from the processing array
+  // While the processing array is not empty, keep looping into lower
+  // menu items levels until all are processed.
+  while (count($menu_items_to_process) > 0) {
+    // Pop the top item from the processing array.
     $mi = array_pop($menu_items_to_process);
 
-    //Get its node id and add it to $nids if it's a current item child
-    //Note that $parent_keys contains all keys that drupal uses to
-    //set a menu item inside a tree up to 9 levels.
-    foreach($parent_keys as $parent_key) {
-      //First, ensure the current parent key is set and also mlid is set
-      if(!empty($mi['link']['mlid']) && !empty($mi['link'][$parent_key])) {
-        //If the link we're at is the parent one, don't add it to $nids
-        //We need this check cause Drupal sets p1 to p9 in a way you
-        //can easily use to generate breadcrumbs which means we will
-        //also match the current parent, but here we only want children
-        if($mi['link']['mlid'] != $parent_menu_item_mlid) {
-          //Try to match the link to the parent menu item
-          if($mi['link'][$parent_key] == $parent_menu_item_mlid) {
-            //It's a child, add it to $pages and stop foreach loop.
-            //Link_path has the path to the node. Example: node/63.
-            if(!empty($mi['link']['link_path'])) {
+    // Get its node id and add it to $nids if it's a current item child
+    // Note that $parent_keys contains all keys that drupal uses to
+    // set a menu item inside a tree up to 9 levels.
+    foreach ($parent_keys as $parent_key) {
+      // First, ensure the current parent key is set and also mlid is set.
+      if (!empty($mi['link']['mlid']) && !empty($mi['link'][$parent_key])) {
+        // If the link we're at is the parent one, don't add it to $nids
+        // We need this check cause Drupal sets p1 to p9 in a way you
+        // can easily use to generate breadcrumbs which means we will
+        // also match the current parent, but here we only want children.
+        if ($mi['link']['mlid'] != $parent_menu_item_mlid) {
+          // Try to match the link to the parent menu item.
+          if ($mi['link'][$parent_key] == $parent_menu_item_mlid) {
+            // It's a child, add it to $pages and stop foreach loop.
+            // Link_path has the path to the node. Example: node/63.
+            if (!empty($mi['link']['link_path'])) {
               $pages[] = array(
                 'path' => $mi['link']['link_path'],
                 'title' => $mi['link']['link_title'],
@@ -867,47 +846,39 @@ function _fextranet_submenu_page_items($path) {
       }
     }
 
-    //Add its child items, if any, to the processing array
+    // Add its child items, if any, to the processing array.
 
-    if(!empty($mi['below']) && is_array($mi['below'])) {
-      foreach($mi['below'] as $child_menu_item) {
-        //Add child item at the beginning of the array so that when
-        //we get the list of node ids it's sorted by level with
-        //the top level elements first; which is easy to attain
-        //and also useful for some applications; why not do it.
+    if (!empty($mi['below']) && is_array($mi['below'])) {
+      foreach ($mi['below'] as $child_menu_item) {
+        // Add child item at the beginning of the array so that when
+        // we get the list of node ids it's sorted by level with
+        // the top level elements first; which is easy to attain
+        // and also useful for some applications; why not do it.
         array_unshift($menu_items_to_process, $child_menu_item);
       }
     }
 
   }
-/*
-  if (module_exists('devel')) {
-    dpm($pages);
-  } */
+
   return $pages;
-  // return theme(
 }
 
 /**
  * Implements hook_form_alter().
- *
- * @param $form
- * @param $form_state
- * @param $form_id
  */
 function fextranet_form_alter(&$form, &$form_state, $form_id) {
-  dsm($form);
-  switch($form_id) {
+  switch ($form_id) {
     case 'fnet_profile_profile_edit_form':
       $form['#submit'][] = 'fextranet_form_fnet_profile_profile_edit_form_submit';
       break;
+
     default:
       break;
   }
 
-  // edit group form
+  // Edit group form.
   if (substr($form_id, 0, 11) == 'group_edit_') {
-    // remove Delete
+    // Remove Delete.
     if (isset($form['actions']['delete'])) {
       unset($form['actions']['delete']);
     }
@@ -924,7 +895,7 @@ function fextranet_form_alter(&$form, &$form_state, $form_id) {
 
 
 /**
- * Copies the value from user profile 'preferred language' to user->language
+ * Copies the value from user profile 'preferred language' to user->language.
  *
  * @param $form
  * @param $form_state
@@ -933,14 +904,14 @@ function fextranet_form_fnet_profile_profile_edit_form_submit(&$form, &$form_sta
 
   $user = $form_state['#user'];
 
-  // sometimes $user has uid 1, because ... ?
-  // workaround to make sure we get correct uid
+  // Sometimes $user has uid 1, because ... ?
+  // workaround to make sure we get correct uid.
   $mail = $user->mail;
   $user = user_load_by_mail($mail);
   $lang = $form_state['values']['preferred_language'];
 
   if ($user) {
-    $edit = array('language' => $lang,);
+    $edit = array('language' => $lang);
     user_save($user, $edit);
   }
 
@@ -952,7 +923,7 @@ function _fextranet_get_nid_groups($nid = 0) {
 
   $query = db_select('group_entity', 'ge');
   $query->condition('entity_id', $nid, '=');
-  $query->fields('ge', array('gid',));
+  $query->fields('ge', array('gid'));
   $results = $query->execute();
   if ($results) {
     $groups = $results->fetchCol();
@@ -968,7 +939,7 @@ function fextranet_get_content_roles($field = FALSE, $instance = FALSE, $type = 
     $group_ids = $entity->group;
   }
 
-  // find group IDs that have this node
+  // Find group IDs that have this node.
   if (empty($group_ids) && ($type == 'node')) {
     if (!isset($entity->nid)) {
       return array();
@@ -980,8 +951,8 @@ function fextranet_get_content_roles($field = FALSE, $instance = FALSE, $type = 
     $group_ids = $results;
   }
 
-  $content_roles = array(1 => 'Member',);
-  if(!empty($group_ids)) {
+  $content_roles = array(1 => 'Member');
+  if (!empty($group_ids)) {
     $roles = db_query("SELECT gr.rid, gr.label
 FROM {group_role} gr
 JOIN {groups} g ON g.type = gr.type
@@ -993,9 +964,8 @@ WHERE g.gid IN (:group_ids);", array(':group_ids' => $group_ids));
   return $content_roles;
 }
 
-
 /**
- * Implements hook_entity_view($entity, $type, $view_mode, $langcode)
+ * Implements hook_entity_view().
  */
 function fextranet_entity_view($entity, $type, $view_mode, $langcode) {
 
@@ -1020,18 +990,14 @@ function fextranet_entity_view($entity, $type, $view_mode, $langcode) {
 
 }
 
-
-
-
-
-/*
-*   Before Group, was going to manage access with something like this.
-*   
-*   It was meant to do an initial check of user rights which could be accessed at any point during page generate process
-*   Also potentially stored and re-used on other requests.
-*   Went through many, many revisions as requirements defined.  Lots of room for streamlining
+/**
+ * Before Group, was going to manage access with something like this.
  *
-*/
+ * It was meant to do an initial check of user rights which could be accessed
+ * at any point during  page generate process. Also potentially stored and
+ * re-used on other requests. Went through many, many revisions as
+ * requirements defined.  Lots of room for streamlining.
+ */
 function fextranet_session() {
   global $user;
 
@@ -1052,43 +1018,35 @@ function fextranet_session() {
       return $session;
     }
     // Set the Session object variables.
-    $session->user_role = user_access('access extranet'); // TRUE/FALSE
-    $session->admin_role = user_access('administer extranet'); // TRUE/FALSE
+    $session->user_role = user_access('access extranet');
+    $session->admin_role = user_access('administer extranet');
     // Get the User's country. This is so we can set the default region group.
     $country = fnet_common_get_field_value('user', $user, 'field_user_country');
     // Base on their self-identified country, note what group that is.
     $group = _fextranet_get_users_country_group($country);
-    /* Debugging for Group ID
-    if (module_exists('devel')) {
-      dpm('Country: ' . $country);
-      dpm($group);
-    }
-    */
 
     if ($group) {
-      $session->region_group = $group->gid;  // Int
-      $session->region_group_title = $group->title; // String
+      // Int.
+      $session->region_group = $group->gid;
+      // String.
+      $session->region_group_title = $group->title;
     }
   }
   else {
     return $session;
   }
 
-  // Now, check to see if
-
-
-/*
-SELECT gm.mid, gm.gid, gm.status, gmr.role, g.title
+  /*
+  SELECT gm.mid, gm.gid, gm.status, gmr.role, g.title
   FROM groupmembership gm
   LEFT JOIN groups g ON g.gid = gm.gid
-    LEFT JOIN group_membership_role gmr ON gmr.mid = gm.mid
-    LEFT JOIN group_role gr ON gr.name = gmr.role
-    WHERE gm.uid = 194829
-    AND gmr.role IS NOT NULL
+  LEFT JOIN group_membership_role gmr ON gmr.mid = gm.mid
+  LEFT JOIN group_role gr ON gr.name = gmr.role
+  WHERE gm.uid = 194829
+  AND gmr.role IS NOT NULL
   AND gmr.role != 'user'
   AND gm.status NOT IN ('blocked', 'requested');
-*/
-
+  */
 
   $query = db_select('group_membership', 'gm');
   $query->leftJoin('groups', 'g', 'g.gid = gm.gid');
@@ -1105,18 +1063,19 @@ SELECT gm.mid, gm.gid, gm.status, gmr.role, g.title
   $query->condition('gm.status', array('blocked', 'requested'), 'NOT IN');
   $results = $query->execute()->fetchAllAssoc('gid');
 
-  if ($results) {  // Empty Set means no access yet.
+  // Empty Set means no access yet.
+  if ($results) {
     $session->access_extranet = TRUE;
     $session->admin_groups = $results;
 
   }
   else {
- /*
+    /*
     SELECT gm.mid, gm.gid, gm.status, g.status
     FROM group_membership gm
     LEFT JOIN groups g ON g.gid = gm.gid
-      WHERE gm.uid = 194829
-      */
+    WHERE gm.uid = 194829
+    */
     $query = db_select('group_membership', 'gm');
     $query->leftJoin('groups', 'g', 'g.gid = gm.gid');
 
@@ -1138,20 +1097,22 @@ SELECT gm.mid, gm.gid, gm.status, gmr.role, g.title
     }
   }
 
-  $user->extranet = $session; // This doesn't do anything.
+  // This doesn't do anything.
+  $user->extranet = $session;
 
   return $session;
 }
 
-
 /*
-*
-*    Not sure what final 'home' page  (/extranet)   will look like with content. 
-*    When that's established, can create page template which handles things better than this.
-*
-*/
-// Placeholder.  Will be updated.
+ *
+ * Not sure what final 'home' page  (/extranet)   will look like with content.
+ * When that's established, can create page template which handles things
+ * better than this.
+ */
+
 /**
+ * Placeholder.  Will be updated.
+ *
  * @return array|mixed
  * @throws \Exception
  */
@@ -1159,58 +1120,64 @@ function fextranet_initial_content() {
   $localized_message = '';
   // Is the User logged in?
   if (user_is_logged_in()) {
-    global $user;  // Get the current user.
+    // Get the current user.
+    global $user;
 
-    // get the user's group membership
+    // Get the user's group membership.
     // The big thing we want is the user's region.
-    $session = fextranet_session(); // So far, this is returning FALSE.
+    // So far, this is returning FALSE.
+    $session = fextranet_session();
 
-    if (!$session->access_extranet) {  // If the user doesn't have access to the Extranet...
-
-      // ...because their request is pending
-      if (count($session->pending_groups) > 0) { // They have a pending access request
+    // If the user doesn't have access to the Extranet...
+    if (!$session->access_extranet) {
+      // ...because their request is pending.
+      if (count($session->pending_groups) > 0) {
+        // They have a pending access request.
         $access_requests = db_query("SELECT requested_on, blocked_on, status, added_on FROM group_membership WHERE uid = :uid", array(':uid' => $user->uid))->fetchAssoc();
-        // If the status is empty
+        // If the status is empty.
         if ($access_requests) {
           if (module_exists('devel')) {
             dpm($access_requests);
           }
 
-          $requested_on = !empty($access_requests['requested_on']) ? format_date($access_requests['requested_on'], 'medium', ''): NULL;
-          $blocked_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['blocked_on'], 'medium', ''): NULL;
-          $added_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['added_on'], 'medium', ''): NULL;
+          $requested_on = !empty($access_requests['requested_on']) ? format_date($access_requests['requested_on'], 'medium', '') : NULL;
+          $blocked_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['blocked_on'], 'medium', '') : NULL;
+          $added_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['added_on'], 'medium', '') : NULL;
           $status = $access_requests['status'];
           // TODO: Move this to an admin field using tokens. Also, language.
-          // Display the 'You requested access on X, but it
+          // Display the 'You requested access on X, but it.
           if (!empty($requested_on)) {
             $message = 'You requested access to Sales Insider on @request_date';
-            if ($status == 'blocked') { // has been denied.
-              // Re-request Access/Resend Request option
+            if ($status == 'blocked') {
+              // Has been denied.
+              // Re-request Access/Resend Request option.
               $message .= t(' but unfortunately your request was denied by an administrator on @blocked_date.');
             }
             else {
-              // has not yet been approved.'
+              // Has not yet been approved.
               $message .= ' but your request has not yet been approved.';
             }
             $localized_message = t($message, array(
               '@request_date' => $requested_on,
-              '@blocked_date' => $blocked_on
+              '@blocked_date' => $blocked_on,
             ));
           }
           elseif (!empty($added_on)) {
-            // if there is nothing in the requested_on field, the user was added manually.
+            // If there is nothing in the requested_on field,
+            // the user was added manually.
             $message = 'You were granted access to Sales Insider on @added_date';
-            if ($status == 'blocked') { // has been denied.
-              // Re-request Access/Resend Request option
+            if ($status == 'blocked') {
+              // Has been denied.
+              // Re-request Access/Resend Request option.
               $message .= t(' but unfortunately your access was blocked by an administrator on @blocked_date.');
             }
             else {
-              // has not yet been approved.'
+              // Has not yet been approved.
               $message .= ' but something has gone wrong.';
             }
             $localized_message = t($message, array(
               '@added_date' => $added_on,
-              '@blocked_date' => $blocked_on
+              '@blocked_date' => $blocked_on,
             ));
           }
 
@@ -1223,15 +1190,16 @@ function fextranet_initial_content() {
       }
       // ...or they just haven't requested access yet.
       else {
-        // Load the Request Access Form
+        // Load the Request Access Form.
         module_load_include('inc', 'fextranet', 'forms/access_request.form');
         $group_id = $session->region_group;
         $apply_form = drupal_get_form('fextranet_custom_request_form', $group_id);
-        // $apply_form['#submit'] = 'fextranet_custom_request_form_submit';  // Redundant?
+        // $apply_form['#submit'] = 'fextranet_custom_request_form_submit';
         return $apply_form;
       }
     }
-    else {  // They have access!
+    else {
+      // They have access!
       $content = variable_get('extranet_instructions_main', '');
       return $content;
     }
@@ -1241,22 +1209,19 @@ function fextranet_initial_content() {
     $url = urldecode($login_form['#action']);
     // If there is an existing query string, extract those values.
     $query_string_values = array();
-    parse_str( parse_url($url, PHP_URL_QUERY), $query_string_values );
+    parse_str(parse_url($url, PHP_URL_QUERY), $query_string_values);
     $query_string_values['destination'] = 'extranet';
     // Trim the query off the URL to be able to rebuild.
     $url = preg_replace('/\?.*/', '', $url);
     // This puts in the '?destination=extranet'.
     $action = url($url, array('query' => $query_string_values));
-    $login_form['#action'] = $action; // URL Decoding to clean up some weirdness.
+    // URL Decoding to clean up some weirdness.
+    $login_form['#action'] = $action;
 
     $login_form['#redirect'] = 'extranet';
     // $login_form['#submit'] = array('user_login_submit', 'fex_goto_extranet'); // This doesn't fucking work.
     $login_form['#after_build'] = array();
-    /* TESTING
-    if (module_exists('devel')) {
-      dpm($login_form);
-    }
-    */
+
     return $login_form;
   }
 }
@@ -1264,7 +1229,7 @@ function fextranet_initial_content() {
 /**
  * Implements hook_form_alter().
  *
- * Redirect
+ * Redirect.
  */
 function fextranet_form_user_login_alter($form, $form_state) {
 
@@ -1277,15 +1242,16 @@ function fextranet_form_user_login_alter($form, $form_state) {
 
 }
 
-function fex_goto_extranet() {  // Odd. This is not ready working.
+function fex_goto_extranet() {
+  // Odd. This is not ready working.
   drupal_goto('extranet');
 }
 
 
 /**
- * Implements hook_node_view($node, $view_mode, $langcode)
+ * Implements hook_node_view().
  *
- * Adds Group id (gid) to node
+ * Adds Group id (gid) to node.
  */
 function fextranet_node_view($node, $view_mode, $langcode) {
 
@@ -1299,8 +1265,7 @@ function fextranet_node_view($node, $view_mode, $langcode) {
 }
 
 /**
- *
- *    Accepts node id (nid), returns the group id (gid) of Group/Region to which it belongs.
+ * Accepts node id, returns the group id of Group/Region to which it belongs.
  */
 function fextranet_get_nodes_extranet_gid($nid) {
 
@@ -1318,13 +1283,12 @@ function fextranet_get_nodes_extranet_gid($nid) {
 
 }
 
-
 /**
- * Implements hook_preprocess_page(&$vars)
- *
+ * Implements hook_preprocess_page().
  */
 function fextranet_preprocess_page(&$vars) {
-  global $user;  // Get the current user.
+  // Get the current user.
+  global $user;
   if (in_array('page__extranet', $vars['theme_hook_suggestions'])) {
 
     $subhead = 'Marketing Tools and Information';
@@ -1344,7 +1308,7 @@ function fextranet_preprocess_page(&$vars) {
 
       $user = user_load($user->uid);
 
-      // fix
+      // Fix.
       if (0 && isset($vars['user']->extranet)) {
         $session = $vars['user']->extranet;
       }
@@ -1390,32 +1354,34 @@ function _fextranet_get_region_admins($gid = NULL) {
 function _fextranet_get_users_country_group($country) {
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'group')
-    ->fieldCondition('field_extranet_group_countries', 'value', $country , '=');
+    ->fieldCondition('field_extranet_group_countries', 'value', $country, '=');
   $query->propertyOrderBy('gid', 'DESC');
-  $query->range(0,1);
+  $query->range(0, 1);
   $entity_array = $query->execute();
 
   if ($entity_array) {
-    $group_num = key( $entity_array['group']);
+    $group_num = key($entity_array['group']);
     $group = group_load($group_num);
     return $group;
-  } else {
+  }
+  else {
     return FALSE;
   }
 }
 
-
-/*
-*  Rules function. Takes a new Group Membership, and emails the region admin owner.
-*  user->country => find the gid/Group for that user
-*  Look in Group roles for 'Region Owner' role(s).  Find admins for 
-*  submitting user's Group.  
-*/
+/**
+ * Rules function.
+ *
+ * Takes a new Group Membership, and emails the region admin owner.
+ * user->country => find the gid/Group for that user
+ * Look in Group roles for 'Region Owner' role(s).  Find admins for
+ * submitting user's Group.
+ */
 function _fex_gm_to_email($gm) {
 
   $owner_role = array('region_owner');
 
-  // user applid to group gid
+  // User applid to group gid.
   $gid = $gm->gid;
 
   $emails = array();
@@ -1423,7 +1389,7 @@ function _fex_gm_to_email($gm) {
   $query = db_select('group_membership_role', 'gmr');
   $query->join('group_membership', 'gm', 'gmr.mid = gm.mid');
   $query->fields('gmr', array('mid', 'role'));
-  $query->fields('gm', array('uid', 'gid',));
+  $query->fields('gm', array('uid', 'gid'));
   $query->condition('role', $owner_role, '=');
   $query->condition('gid', $gid, '=');
   $results = $query->execute()->fetchAllAssoc('uid');
@@ -1439,15 +1405,12 @@ function _fex_gm_to_email($gm) {
 
   }
 
-
   return '';
-
 }
 
-
 /**
-*  Menu access callback. Returns true only for group nodes, and correct role
-*
+ * Menu access callback. Returns true only for group nodes, and correct role.
+ *
  * @param $nid
  * @param $permission
  * @return bool
@@ -1463,16 +1426,15 @@ function fextranet_audit_access($nid, $permission) {
   return FALSE;
 }
 
-
 /**
-*  Menu access callback. Can record access failures in Watchdog or return message
-*
+ * Menu access callback. Records access failures in Watchdog or return message.
+ *
  * @param bool $nid
  * @return bool
  */
 function _fextranet_node_access($nid = FALSE) {
 
-  // Shouldn't happen
+  // Shouldn't happen.
   if (!$nid) {
     watchdog('extranet', 'No access to Extranet, no NID ');
     return FALSE;
@@ -1495,9 +1457,8 @@ function _fextranet_node_access($nid = FALSE) {
   return TRUE;
 }
 
-
 /**
- *  Same as _fextranet_node_access(), without watchdog msgs
+ * Same as _fextranet_node_access(), without watchdog msgs.
  *
  * @param $nid
  * @return bool
@@ -1507,30 +1468,32 @@ function fex_view_user_nid_access($nid) {
   return _fextranet_user_node_access($user->uid, $nid);
 }
 
-
-/*
-*  Broken out so UID can be passed in from another function
-*  IE, node audit can loop over all group users to return report
-*/
+/**
+ * Broken out so UID can be passed in from another function.
+ *
+ * IE, node audit can loop over all group users to return report.
+ */
 function _fextranet_user_node_access($uid, $nid, $gid = FALSE) {
-  global $user; // Get the current user.
-  $node_groups = _fextranet_get_nid_groups($nid); // Groups containing this nid
-  $user_groups = array(); // Groups/Group memberships for this user
+  // Get the current user.
+  global $user;
+  // Groups containing this nid.
+  $node_groups = _fextranet_get_nid_groups($nid);
+  // Groups/Group memberships for this user.
+  $user_groups = array();
 
-  // scott: get group gid/gids
+  // Scott: get group gid/gids.
   $session = fextranet_session($uid);
 
-  // stop processing if not member
+  // Stop processing if not member.
   if (!$session->user_role) {
     return FALSE;
   }
-
 
   $node = node_load($nid);
 
   $node_countries = fnet_common_get_field_values('node', $node, 'field_extranet_group_countries');
 
-  // Country access check
+  // Country access check.
   if ($node_countries) {
     $user = user_load($user->uid);
 
@@ -1548,10 +1511,10 @@ function _fextranet_user_node_access($uid, $nid, $gid = FALSE) {
 
   $node_permissions = fnet_common_get_field_values('node', $node, 'field_extranet_permissions');
 
-  // Role access check
+  // Role access check.
   if ($node_permissions) {
 
-    // Groups containing this nid
+    // Groups containing this nid.
     $node_groups = group_get_entities_group_ids('node', array(0 => $nid));
 
     if (!isset($node_groups[$nid])) {
@@ -1601,16 +1564,15 @@ function _fextranet_user_node_access($uid, $nid, $gid = FALSE) {
   */
 
   return TRUE;
-
 }
 
-
-/*
-*	Check to see if user is in a country allowed to access a node
-*	Allowed countries are in a field attached to node   
-*   If no field value, it will pass.
-*   Will fail if field value set, and user is not in that country
-*/
+/**
+ * Check to see if user is in a country allowed to access a node.
+ *
+ * Allowed countries are in a field attached to node
+ * If no field value, it will pass.
+ * Will fail if field value set, and user is not in that country.
+ */
 function _fextranet_check_countries($user, $node, $group) {
 
   $node_countries = fnet_common_get_field_values('node', $node, 'field_extranet_group_countries');
@@ -1634,13 +1596,13 @@ function _fextranet_check_countries($user, $node, $group) {
 
 }
 
-
-/*
-*	Check to see if user has a role
-*	Role would be in a field attached to node   
-*   If no field value, it will pass.
-*   Will fail if field value set, and user does not have that role
-*/
+/**
+ * Check to see if user has a role.
+ *
+ * Role would be in a field attached to node
+ * If no field value, it will pass.
+ * Will fail if field value set, and user does not have that role.
+ */
 function _fextranet_check_roles($user, $node, $group) {
 
   $nid = $node->nid;
@@ -1667,20 +1629,20 @@ function _fextranet_check_roles($user, $node, $group) {
   }
 
   return FALSE;
-
 }
 
-
-/*
-*	Check to see if user is part of a distributor group
-*	Association would be on user's group profile, field value   
-*   Distributor restriction would be in node field value
-*   If no field value, it will pass.
-*   Will fail if field value set, and user does not have that distributor  in their profile field
-*/
+/**
+ * Check to see if user is part of a distributor group.
+ *
+ * Association would be on user's group profile, field value
+ * Distributor restriction would be in node field value
+ * If no field value, it will pass.
+ * Will fail if field value set, and user does not have that distributor
+ * in their profile field.
+ */
 function _fextranet_check_distributor($user, $node, $group) {
 
-  //phase 2
+  // Phase 2.
   return TRUE;
 
   $restricted_product_nid = fnet_common_get_field_value('node', $node, 'field_extranet_product_link', 'nid');
@@ -1700,7 +1662,7 @@ function _fextranet_check_distributor($user, $node, $group) {
   $dist = node_load($dist_nid);
 
   $prod_nids = array();
-  $prod_nid_array = fnet_common_get_field_values('node', $dist, 'field_products', 'nid');
+  $prod_nid_array = fnet_common_get_field_values('node', $dist, 'field_related_products', 'nid');
 
   foreach ($prod_nid_array as $prod_nid) {
     if ($prod_nid['nid'] == $restricted_product_nid) {
@@ -1710,17 +1672,14 @@ function _fextranet_check_distributor($user, $node, $group) {
   }
 
   return FALSE;
-
-
 }
-
 
 function fex_group_member_overview_form($gid) {
 
   $group = group_load($gid);
 
   $form_state = array(
-    'args' => array(3 => $group)
+    'args' => array(3 => $group),
   );
 
   module_load_include('inc', 'group', 'admin/group_membership');
@@ -1728,7 +1687,6 @@ function fex_group_member_overview_form($gid) {
   return drupal_get_form('group_member_overview_form', $group);
 
 }
-
 
 function _fex_node_types() {
 
@@ -1742,8 +1700,6 @@ function _fex_node_types() {
 
 /**
  * Implements hook_entity_info().
- *
- * @return array
  */
 function fextranet_entity_info() {
 
@@ -1777,7 +1733,7 @@ function fextranet_entity_info() {
       'entity class' => 'Entity',
       'label callback' => 'entity_class_label',
       'module' => 'fextranet',
-      'admin ui' => array('path' => 'extranet/deal_registration',),
+      'admin ui' => array('path' => 'extranet/deal_registration'),
       'default path' => 'admin/content/deal_registration/%',
       'controller class' => 'EntityAPIController',
       'views controller class' => 'EntityDefaultViewsController',
@@ -1790,19 +1746,13 @@ function fextranet_entity_info() {
         ),
       ),
     ),
-
-
   );
 
   return $return;
-
 }
-
 
 /**
  * Implements hook_entity_property_info().
- *
- * @return array
  */
 function fextranet_entity_property_info() {
 
@@ -1850,7 +1800,6 @@ function fextranet_entity_property_info() {
       'description' => 'User who approved Deal',
     ),
 
-
     'gid' => array(
       'label' => 'Extranet Region',
       'help' => '',
@@ -1862,15 +1811,14 @@ function fextranet_entity_property_info() {
   );
 
   return $info;
-
-
 }
 
-/*
-*  Deal Registration page/form callbacks, submit handling
-*/
+/**
+ * Deal Registration page/form callbacks, submit handling.
+ */
 function _fextranet_deal_reg() {
-  global $user; // Get the current user.
+  // Get the current user.
+  global $user;
 
   $gid = 0;
   $info = NULL;
@@ -1929,7 +1877,7 @@ function _fextranet_deal_reg() {
 function register_deal_form($form, &$form_state) {
 
   $entity = $form_state['build_info']['args'][0];
-//	$uid = $entity->uid;
+  // $uid = $entity->uid;
   $gid = $entity->gid;
 
   $lang = NULL;
@@ -1945,7 +1893,7 @@ function register_deal_form($form, &$form_state) {
       '#collapsed' => FALSE,
     );
 
-    $input_options = array('Denied', 'Pending', 'Approved',);
+    $input_options = array('Denied', 'Pending', 'Approved');
 
     $form['admin']['status'] = array(
       '#type' => 'radios',
@@ -1980,15 +1928,7 @@ function register_deal_form($form, &$form_state) {
     '#weight' => 100,
   );
 
-  /*
-      $form['notes'] = array(
-          '#type'	=>	'textfield',
-          '#title' =>  'Comments/Notes:',
-          '#size' =>  '50',
-          );	*/
-
   return $form;
-
 }
 
 function register_deal_form_submit($form, $form_state) {
@@ -2014,8 +1954,6 @@ function register_deal_form_submit($form, $form_state) {
 
   $register_deal->save();
 
-  return;
-
 }
 
 function fextranet_group_content_page($gid) {
@@ -2033,13 +1971,13 @@ function _fex_get_extranet_groups() {
     'extranet_north_america',
     'extranet_europe',
     'extranet_asia',
-    'extranet_latam'
+    'extranet_latam',
   );
   $names = array(
     'extranet_north_america',
     'extranet_europe',
     'extranet_asia',
-    'extranet_latam'
+    'extranet_latam',
   );
 
   foreach ($names as $name) {
@@ -2069,12 +2007,12 @@ function _fex_get_mlid($path) {
 
   foreach ($results as $key => $value) {
     return $results[$key]->mlid;
-    //$mlids[] = $results[$key]->mlid;
+    // $mlids[] = $results[$key]->mlid;
   }
 
   return FALSE;
 
-//  return $mlids;
+  // return $mlids;
 }
 
 function _fextranet_access_request_received() {
@@ -2086,9 +2024,6 @@ function _fextranet_access_request_received() {
  * Implements hook_form_FORM_ID_alter().
  *
  * Alter views exposed forms for collapsible filters.
- *
- * @param $form
- * @param $form_state
  */
 function fextranet_form_views_exposed_form_alter(&$form, &$form_state) {
   if (empty($form_state['view']) || !in_array($form_state['view']->name, array('sales_insider_products', 'product_page'))) {
@@ -2150,10 +2085,6 @@ function fextranet_form_views_exposed_form_alter(&$form, &$form_state) {
 
 /**
  * Implements hook_views_pre_view().
- *
- * @param $view
- * @param $display_id
- * @param $args
  */
 function fextranet_views_pre_view(&$view, &$display_id, &$args) {
   if (!in_array($view->name, array('sales_insider_products', 'product_page'))) {
@@ -2167,5 +2098,3 @@ function fextranet_views_pre_view(&$view, &$display_id, &$args) {
     }
   }
 }
-
-

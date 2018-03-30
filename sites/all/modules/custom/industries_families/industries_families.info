@@ -5,6 +5,4 @@ description = Handles all of the data gathering, including language overrides, f
 version = 7.x.1.1-20170920
 core = 7.x
 
-dependencies = views
-
-
+dependencies[] = views

@@ -1,5 +1,11 @@
 <?php
-// $Id$
+
+/**
+ * @file
+ * digital_asset.module
+ */
+
+include_once 'digital_asset.features.inc';
 
 define('DA_CCS_ADD', 'Add - New Asset');
 define('DA_CCS_UPDATE', 'Update - Asset Attributes');
@@ -8,8 +14,6 @@ define('DA_CCS_REMOVE', 'Remove - Existing Asset');
 
 /**
  * Implements hook_menu().
- *
- * @return array
  */
 function digital_asset_menu() {
   $items = [];
@@ -42,7 +46,7 @@ function digital_asset_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   ];
-  // TODO: move to drupal_goto
+  // TODO: move to drupal_goto.
   $items['digital_asset/%node/edit'] = [
     'title' => 'Edit',
     'page callback' => 'digital_asset_edit',
@@ -200,8 +204,6 @@ function digital_asset_menu() {
 
 /**
  * Implements hook_permission().
- *
- * @return array
  */
 function digital_asset_permission() {
   $perms = [
@@ -219,9 +221,6 @@ function digital_asset_permission() {
 
 /**
  * Implements hook_form_FORM_ID_alter().
- *
- * @param $form
- * @param $form_state
  */
 function digital_asset_form_digital_asset_node_form_alter(&$form, &$form_state) {
   global $user;
@@ -299,11 +298,7 @@ function digital_asset_form_digital_asset_node_form_alter(&$form, &$form_state) 
 }
 
 /**
- *  Node form hook_form_after_build
- *
- * @param $form
- * @param $form_state
- * @return mixed
+ * Implements hook_node_form_after_build().
  */
 function digital_asset_node_form_after_build($form, &$form_state) {
   unset($form['group_dam_ccs_printing']['field_dam_cdn_status_pod']);
@@ -311,9 +306,7 @@ function digital_asset_node_form_after_build($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_theme().
- *
- * @return array
+ * Implements hook_theme().
  */
 function digital_asset_theme() {
   $hooks = [];
@@ -323,48 +316,41 @@ function digital_asset_theme() {
   $hooks['digital_asset_node_form'] = $base + [
     'template' => 'digital_asset_node_form',
     'render element' => 'form',
-    ];
+  ];
   $hooks['digital_asset_child_node_form'] = $base + [
     'template' => 'digital_asset_child_node_form',
     'render element' => 'form',
-    ];
+  ];
   $hooks['digital_asset_main_menu'] = $base + [
     'template' => 'digital_asset_main_menu',
     'variables' => [
       'menu_items' => NULL,
     ],
-    ];
+  ];
   $hooks['digital_asset'] = $base + [
     'template' => 'digital_asset',
     'variables' => [
       'node' => NULL,
     ],
-    ];
+  ];
   $hooks['digital_asset_page_view_form'] = $base + [
     'template' => 'digital_asset_page_view_form',
     'render element' => 'form',
-    ];
+  ];
   $hooks['digital_asset_asset_query_form'] = $base + [
     'template' => 'theme/digital_asset_asset_query_form',
     'render element' => 'form',
-    ];
+  ];
   $hooks['digital_asset_query_by_product_form'] = $base + [
     'template' => 'digital_asset_query_by_product_form',
     'render element' => 'form',
-    ];
+  ];
   return $hooks;
 }
 
 /**
- * Node entry form
- *
- * @param $form
- * @param $form_state
- * @param $node
- * @param bool $is_child
- * @return form array
+ * Implements hook_node_form().
  */
-/* Turning off to test things. Should this be in a form_alter function? */
 function digital_asset_node_form($form, &$form_state, $node, $is_child = FALSE) {
   form_load_include($form_state, 'inc', 'node', 'node.pages');
   $form = node_form($form, $form_state, $node);
@@ -386,6 +372,7 @@ function digital_asset_node_form($form, &$form_state, $node, $is_child = FALSE) 
 
   return $form;
 }
+
 /*
 if (fnet_common_get_field_value('digital_asset', $node, 'field_dam_parent', 'nid')) {
     $form['#theme'] = array('digital_asset_child_node_form');
@@ -402,10 +389,7 @@ if (fnet_common_get_field_value('digital_asset', $node, 'field_dam_parent', 'nid
  */
 
 /**
- * Node form validation
- *
- * @param $form
- * @param $form_state
+ * Implements hook_node_form_validate().
  */
 function digital_asset_node_form_validate($form, &$form_state) {
   $values = &$form_state['values'];
@@ -435,7 +419,7 @@ function digital_asset_node_form_validate($form, &$form_state) {
     }
   }
   else {
-    // if the document id field is empty assign a number.
+    // If the document id field is empty assign a number.
     if (empty($values['field_dam_document_id'][LANGUAGE_NONE][0]['value'])) {
       $values['field_dam_document_id'][LANGUAGE_NONE][0]['value'] = variable_get('digital_asset_next_document_id', 7000000);
       variable_set('digital_asset_next_document_id', $values['field_dam_document_id'][LANGUAGE_NONE][0]['value'] + 1);
@@ -506,7 +490,8 @@ function digital_asset_node_form_validate($form, &$form_state) {
   $end_date = $values['field_dam_availability_date'][LANGUAGE_NONE][0]['value2'];
   if (($end_date == $start_date) || empty($end_date)) {
     $start = strtotime($start_date);
-    $end = $start + (20 * 365.25 * 24 * 60 * 60); // twenty years
+    // Twenty years.
+    $end = $start + (20 * 365.25 * 24 * 60 * 60);
     $values['field_dam_availability_date'][LANGUAGE_NONE][0]['value2'] = date('Y-m-d\TH:i:s', $end);
   }
   if (strtolower($values['field_dam_asset_type'][LANGUAGE_NONE][0]['value']) == 'product software') {
@@ -518,17 +503,13 @@ function digital_asset_node_form_validate($form, &$form_state) {
 }
 
 /**
- * Node form submit
- *
- * @param $form
- * @param $form_state
- * @throws \Exception
+ * Implements hook_node_form_submit().
  */
 function digital_asset_node_form_submit($form, &$form_state) {
 
   $node = (object) $form_state['values'];
 
-  // These need INT values, will error on empty strings (''), so removing
+  // These need INT values, will error on empty strings (''), so removing.
   if (fnet_common_get_field_value('node', $node, 'field_dam_order_quantity_max') == '') {
     unset($node->field_dam_order_quantity_max);
   }
@@ -572,11 +553,11 @@ function digital_asset_node_form_submit($form, &$form_state) {
     // rebuilt and node form redisplayed the same way as in preview.
     drupal_set_message(t('The asset could not be saved.'), 'error');
   }
-  // change ccs spreadsheet records as necessary
+  // Change ccs spreadsheet records as necessary.
   $node_before = $form['#node'];
   digital_asset_ccs_spreadsheet_update($node_before, $node);
 
-  // queue for upload to cdn
+  // Queue for upload to cdn.
   if (!empty($node->field_dam_asset_file[LANGUAGE_NONE][0]['fid'])) {
     digital_asset_queue_for_ftp($node);
   }
@@ -587,7 +568,6 @@ function digital_asset_node_form_submit($form, &$form_state) {
 
 /**
  * Implements hook_node_delete().
- * @param $node
  */
 function digital_asset_node_delete($node) {
   if ($node->type == 'digital_asset') {
@@ -601,10 +581,10 @@ function digital_asset_node_delete($node) {
 }
 
 /**
- * Implementation of hook_preprocess_page
- * @param $variables
+ * Implements hook_preprocess_page().
+ *
+ * TODO: this is a hack because we are not using any node access restrictions.
  */
-// TODO: this is a hack because we are not using any node access restrictions
 function digital_asset_preprocess_page(&$variables) {
   if (isset($variables['node']) && $variables['node']->type == 'digital_asset') {
     if (!user_access('access digital asset system')) {
@@ -614,14 +594,14 @@ function digital_asset_preprocess_page(&$variables) {
 }
 
 /**
- * Implementation of hook_init
+ * Implements hook_init().
  */
 function digital_asset_init() {
   drupal_add_css(drupal_get_path('module', 'digital_asset') . '/digital_asset.css');
 }
 
 /**
- * Node delete confirm form
+ * Node delete confirm form.
  *
  * @param $form
  * @param $form_state
@@ -633,13 +613,12 @@ function digital_asset_delete_confirm($form, &$form_state, $node) {
     '#type' => 'value',
     '#value' => $node->nid,
   ];
-  $text = t('Are you sure you want to delete %title? ', ['%title' => $node->title]);
+  $text = t('Are you sure you want to delete %title?', ['%title' => $node->title]);
   return confirm_form($form, $text, isset($_GET['destination']) ? $_GET['destination'] : 'digital_asset/' . $node->nid, t('This action cannot be undone. Deleting the asset removes it completely and deletes it from the CDN.  Consider changing the Document Status to Archive instead.'), t('Delete'), t('Cancel'));
 }
 
 /**
- * @param $form
- * @param $form_state
+ * Implements hook_node_form_delete_submit().
  */
 function digital_asset_node_form_delete_submit($form, &$form_state) {
   $destination = '';
@@ -649,12 +628,12 @@ function digital_asset_node_form_delete_submit($form, &$form_state) {
   }
   $node = $form['#node'];
   $form_state['redirect'] = [
-    'digital_asset/' . $node->nid . '/delete'
+    'digital_asset/' . $node->nid . '/delete',
   ];
 }
 
 /**
- * Node delete submit
+ * Node delete submit.
  *
  * @param $form
  * @param $form_state
@@ -667,7 +646,7 @@ function digital_asset_delete_confirm_submit($form, &$form_state) {
 }
 
 /**
- * Construct page title string
+ * Construct page title string.
  *
  * @param $node
  * @return string
@@ -677,7 +656,7 @@ function digital_asset_page_title($node) {
 }
 
 /**
- * Queue file for ftp to CDN
+ * Queue file for ftp to CDN.
  *
  * @param $node
  * @param string $operation
@@ -700,7 +679,7 @@ function digital_asset_queue_for_ftp($node, $operation = 'put', $pod = FALSE) {
       $query = db_select('file_managed', 'f')
         ->fields('f', [
           'uri',
-          'filesize'
+          'filesize',
         ])
         ->condition('fid', fnet_common_get_field_value('node', $node, 'field_dam_asset_file_pod', 'fid'));
       $result = $query->execute();
@@ -717,7 +696,7 @@ function digital_asset_queue_for_ftp($node, $operation = 'put', $pod = FALSE) {
       $query = db_select('file_managed', 'f')
         ->fields('f', [
           'uri',
-          'filesize'
+          'filesize',
         ])
         ->condition('fid', fnet_common_get_field_value('node', $node, 'field_dam_asset_file', 'fid'));
       $result = $query->execute();
@@ -752,15 +731,15 @@ function digital_asset_queue_for_ftp($node, $operation = 'put', $pod = FALSE) {
   $result = drupal_write_record('digital_asset_ftp', $record, $update);
   if (($result != SAVED_NEW) && ($result != SAVED_UPDATED)) {
     watchdog('digital_asset', 'Error writing digital_asset_ftp %operation record for %file', [
-        '%operation' => $operation,
-        '%file' => $record->local_file_path,
+      '%operation' => $operation,
+      '%file' => $record->local_file_path,
     ], WATCHDOG_ERROR);
   }
   return $result;
 }
 
 /**
- * Delete local file after ftp to CDN
+ * Delete local file after ftp to CDN.
  *
  * @param $nid
  * @param bool $pod
@@ -788,7 +767,7 @@ function digital_asset_delete_local_file($nid, $pod = FALSE) {
 }
 
 /**
- * Process operations on FTP queue
+ * Process operations on FTP queue.
  *
  * @return bool|int
  * @throws \Exception
@@ -799,7 +778,7 @@ function digital_asset_ftp_upload() {
   $connection = FALSE;
   $result = db_query('SELECT * FROM {digital_asset_ftp} WHERE operation_status = :operation_status AND retries < :retries ORDER BY created', [
     ':operation_status' => 0,
-    ':retries' => variable_get('digital_asset_cdn_ftp_retries', 3)
+    ':retries' => variable_get('digital_asset_cdn_ftp_retries', 3),
   ]);
   if ($result) {
     if (!($connection = digital_asset_ftp_connect())) {
@@ -832,6 +811,7 @@ function digital_asset_ftp_upload() {
           $record->retries++;
         }
         break;
+
       case 'delete':
         $record->operation_status = digital_asset_ftp_delete($connection, $record->remote_file_name);
         if ($record->operation_status) {
@@ -852,19 +832,19 @@ function digital_asset_ftp_upload() {
 }
 
 /**
- * Helper function for FTP processing
+ * Helper function for FTP processing.
  *
  * @return bool|resource
  */
 function digital_asset_ftp_connect() {
   $ftp_server = variable_get('digital_asset_cdn_upload_server', '');
   $connection = ftp_connect($ftp_server);
-  // login with username and password
+  // Login with username and password.
   $ftp_user_name = variable_get('digital_asset_cdn_username', '');
   $ftp_user_pass = variable_get('digital_asset_cdn_password', '');
   $login_result = ftp_login($connection, $ftp_user_name, $ftp_user_pass);
   ftp_pasv($connection, TRUE);
-  // check connection
+  // Check connection.
   if ((!$connection) || (!$login_result)) {
     watchdog('digital_asset', 'FTP connection failed.', [], WATCHDOG_ERROR);
     ftp_close($connection);
@@ -874,7 +854,7 @@ function digital_asset_ftp_connect() {
 }
 
 /**
- * Helper function for FTP processing
+ * Helper function for FTP processing.
  *
  * @param $connection
  * @param $file_path
@@ -900,7 +880,7 @@ function digital_asset_ftp_put($connection, $file_path, $remote_filename) {
 }
 
 /**
- * Helper function for FTP processing
+ * Helper function for FTP processing.
  *
  * @param $connection
  * @param $filename
@@ -925,7 +905,7 @@ function digital_asset_ftp_delete($connection, $filename) {
 }
 
 /**
- * Build CCS record from node
+ * Build CCS record from node.
  *
  * @param $node
  * @param $action_code
@@ -954,7 +934,7 @@ function digital_asset_ccs_record($node, $action_code) {
 }
 
 /**
- * Write CCS record
+ * Write CCS record.
  *
  * @param $record
  * @return bool|int
@@ -979,13 +959,13 @@ function digital_asset_ccs_record_write(&$record) {
 }
 
 /**
- * Update the digital_asset_css table based on node insert or update
+ * Update the digital_asset_css table based on node insert or update.
  *
  * @param $node_before
  * @param $node
  */
 function digital_asset_ccs_spreadsheet_update($node_before, $node) {
-  // update ccs attribute
+  // Update ccs attribute.
   if ((fnet_common_get_field_value('node', $node_before, 'field_dam_bulk_fulfillment', 'value')) && (fnet_common_get_field_value('node', $node, 'field_dam_bulk_fulfillment', 'value'))) {
     if (fnet_common_get_field_value('node', $node_before, 'field_dam_revision', 'value') != fnet_common_get_field_value('node', $node, 'field_dam_revision', 'value')) {
       digital_asset_ccs_change($node_before, $node, 'replace');
@@ -1030,11 +1010,11 @@ function digital_asset_ccs_spreadsheet_update($node_before, $node) {
       digital_asset_ccs_change($node_before, $node, 'update catalog');
     }
   }
-  // add to ccs spreadsheet
+  // Add to ccs spreadsheet.
   elseif (((empty($node_before->field_dam_bulk_fulfillment[LANGUAGE_NONE][0]['value'])) || (!fnet_common_get_field_value('node', $node_before, 'field_dam_bulk_fulfillment', 'value'))) && (fnet_common_get_field_value('node', $node, 'field_dam_bulk_fulfillment', 'value'))) {
     digital_asset_ccs_change($node_before, $node, 'add');
   }
-  // remove from ccs spreadsheet
+  // Remove from ccs spreadsheet.
   elseif ((fnet_common_get_field_value('node', $node_before, 'field_dam_bulk_fulfillment', 'value')) && (fnet_common_get_field_value('node', $node, 'field_dam_bulk_fulfillment', 'value') == FALSE)) {
     digital_asset_ccs_change($node_before, $node, 'remove');
   }
@@ -1042,7 +1022,7 @@ function digital_asset_ccs_spreadsheet_update($node_before, $node) {
 }
 
 /**
- * Get product related to a document
+ * Get product related to a document.
  *
  * @param $document_nid
  * @return array
@@ -1067,7 +1047,7 @@ function digital_asset_get_related_products($document_nid) {
 }
 
 /**
- * Return a document id for a nid
+ * Return a document id for a nid.
  *
  * @param $document_nid
  * @return mixed
@@ -1081,7 +1061,7 @@ function digital_asset_get_document_id($document_nid) {
 }
 
 /**
- * Helper function for CCS spreadsheet processing
+ * Helper function for CCS spreadsheet processing.
  *
  * @param $node_before
  * @param $node_after
@@ -1093,47 +1073,63 @@ function digital_asset_ccs_change($node_before, $node_after, $operation) {
       $record = digital_asset_ccs_record($node_before, DA_CCS_REMOVE);
       $result = digital_asset_ccs_record_write($record);
       if (!$result) {
-        watchdog('digital_asset', 'Error writing CCS record for asset %asset', ['%asset' => fnet_common_get_field_value('node', $node_before, 'field_dam_document_id', 'value')], WATCHDOG_ERROR);
+        watchdog('digital_asset', 'Error writing CCS record for asset %asset', [
+          '%asset' => fnet_common_get_field_value('node', $node_before, 'field_dam_document_id', 'value'),
+        ], WATCHDOG_ERROR);
       }
       $record = digital_asset_ccs_record($node_after, DA_CCS_ADD);
       $result = digital_asset_ccs_record_write($record);
       if (!$result) {
-        watchdog('digital_asset', 'Error writing CCS record for asset %asset', ['%asset' => fnet_common_get_field_value('node', $node_before, 'field_dam_document_id', 'value')], WATCHDOG_ERROR);
+        watchdog('digital_asset', 'Error writing CCS record for asset %asset', [
+          '%asset' => fnet_common_get_field_value('node', $node_before, 'field_dam_document_id', 'value'),
+        ], WATCHDOG_ERROR);
       }
       break;
+
     case 'add':
       $record = digital_asset_ccs_record($node_after, DA_CCS_ADD);
       $result = digital_asset_ccs_record_write($record);
       if (!$result) {
-        watchdog('digital_asset', 'Error writing CCS record for asset %asset', ['%asset' => fnet_common_get_field_value('node', $node_before, 'field_dam_document_id', 'value')], WATCHDOG_ERROR);
+        watchdog('digital_asset', 'Error writing CCS record for asset %asset', [
+          '%asset' => fnet_common_get_field_value('node', $node_before, 'field_dam_document_id', 'value'),
+        ], WATCHDOG_ERROR);
       }
       break;
+
     case 'update':
       $record = digital_asset_ccs_record($node_after, DA_CCS_UPDATE);
       $result = digital_asset_ccs_record_write($record);
       if (!$result) {
-        watchdog('digital_asset', 'Error writing CCS record for asset %asset', ['%asset' => fnet_common_get_field_value('node', $node_before, 'field_dam_document_id', 'value')], WATCHDOG_ERROR);
+        watchdog('digital_asset', 'Error writing CCS record for asset %asset', [
+          '%asset' => fnet_common_get_field_value('node', $node_before, 'field_dam_document_id', 'value'),
+        ], WATCHDOG_ERROR);
       }
       break;
+
     case 'update catalog':
       $record = digital_asset_ccs_record($node_after, DA_CCS_UPDATE_CATALOG);
       $result = digital_asset_ccs_record_write($record);
       if (!$result) {
-        watchdog('digital_asset', 'Error writing CCS record for asset %asset', ['%asset' => fnet_common_get_field_value('node', $node_before, 'field_dam_document_id', 'value')], WATCHDOG_ERROR);
+        watchdog('digital_asset', 'Error writing CCS record for asset %asset', [
+          '%asset' => fnet_common_get_field_value('node', $node_before, 'field_dam_document_id', 'value'),
+        ], WATCHDOG_ERROR);
       }
       break;
+
     case 'remove':
       $record = digital_asset_ccs_record($node_before, DA_CCS_REMOVE);
       $result = digital_asset_ccs_record_write($record);
       if (!$result) {
-        watchdog('digital_asset', 'Error writing CCS record for asset %asset', ['%asset' => fnet_common_get_field_value('node', $node_before, 'field_dam_document_id', 'value')], WATCHDOG_ERROR);
+        watchdog('digital_asset', 'Error writing CCS record for asset %asset', [
+          '%asset' => fnet_common_get_field_value('node', $node_before, 'field_dam_document_id', 'value'),
+        ], WATCHDOG_ERROR);
       }
       break;
   }
 }
 
 /**
- * Implementation of hook_cron
+ * Implements hook_cron().
  */
 function digital_asset_cron() {
   if (strtolower(variable_get('digital_asset_cdn_enable_cron', 'no')) == 'yes') {
@@ -1157,7 +1153,7 @@ function digital_asset_cron() {
 }
 
 /**
- * Check to see if a document id would be a duplicate
+ * Check to see if a document id would be a duplicate.
  *
  * @param $document_id
  * @return bool
@@ -1172,7 +1168,7 @@ function digital_asset_is_duplicate_document_id($document_id) {
 }
 
 /**
- * Return nid for a document id
+ * Return nid for a document id.
  *
  * @param $document_id
  * @return mixed
@@ -1185,7 +1181,7 @@ function digital_asset_get_document_nid($document_id) {
 }
 
 /**
- * Return array of asset types suitable for form select element options
+ * Return array of asset types suitable for form select element options.
  *
  * @return array
  */
@@ -1199,7 +1195,7 @@ function digital_asset_asset_types() {
 }
 
 /**
- * Mimic legacy function for support pages
+ * Mimic legacy function for support pages.
  *
  * @param $type
  * @param string $language
@@ -1218,7 +1214,7 @@ function digital_asset_list_assets_by_type($type, $language = 'en', $industry = 
     'data sheets' => 128,
     'webcasts' => 4194304,
   ];
-  // TODO: OMG this sucks. It doesn't even hook into the Digital Asset content type.
+  // TODO: OMG this sucks. It doesn't even hook into the Digital Asset CT.
   $industries = [
     -1 => '',
     1 => 'Cabling Certification',
@@ -1276,8 +1272,7 @@ function digital_asset_list_assets_by_type($type, $language = 'en', $industry = 
 }
 
 /**
- * Return array of products keyed by pcat id that have related products that
- * have assets.
+ * Return products keyed by pcat id that have related products with assets.
  *
  * @param $type
  * @return array
@@ -1292,14 +1287,14 @@ WHERE
 	n.nid IN
 (
   SELECT DISTINCT
-				fp.field_products_target_id
+				fp.field_related_products_target_id
 			FROM
 				field_data_field_asset_type a
 			INNER JOIN node AS n ON a.revision_id = n.vid
-			INNER JOIN field_data_field_products AS fp ON fp.revision_id = n.vid
+			INNER JOIN field_data_field_related_products AS fp ON fp.revision_id = n.vid
 			WHERE a.field_asset_type_value IN ('manual')
 			ORDER BY
-				fp.field_products_target_id ASC
+				fp.field_related_products_target_id ASC
 		)
   AND p.field_pcatid_value IS NOT NULL
 AND n.status = 1
@@ -1318,27 +1313,27 @@ WHERE
 	n.nid IN
 		(
 			SELECT DISTINCT
-				fp.field_products_target_id
+				fp.field_related_products_target_id
 			FROM
 				field_data_field_asset_type a
 			INNER JOIN node AS n ON a.revision_id = n.vid
-			INNER JOIN field_data_field_products AS fp ON fp.revision_id = n.vid
+			INNER JOIN field_data_field_related_products AS fp ON fp.revision_id = n.vid
 			WHERE a.field_asset_type_value IN (:type)
 			ORDER BY
-				fp.field_products_target_id ASC
+				fp.field_related_products_target_id ASC
 		)
   AND p.field_pcatid_value IS NOT NULL
 	AND n.status = 1
 ORDER BY n.title";
   $result = db_query($sql, [':type' => $type]);
-  foreach($result as $row) {
+  foreach ($result as $row) {
     $result_set[$row->field_pcatid_value] = $row->title;
   }
   return $result_set;
 }
 
 /**
- * Digital asset list by PCAT id
+ * Digital asset list by PCAT id.
  *
  * @param $pcat_id
  * @param string $language
@@ -1351,8 +1346,8 @@ function digital_asset_list_by_product($pcat_id, $language = 'en', $asset_type =
     $asset_type = [$asset_type];
   }
 
-  $gold_number = check_plain(trim( fnet_common_get_field_value('user', $user, 'field_user_gold_number') ));
-  $gold_pin = check_plain( trim(  fnet_common_get_field_value('user', $user, 'field_user_gold_pin')   ));
+  $gold_number = check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_gold_number')));
+  $gold_pin = check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_gold_pin')));
   $is_covered = fnet_sfdc_category_has_gold_coverage($gold_number, $gold_pin, $pcat_id);
   $result_set = [];
   $sql = "SELECT p.entity_id FROM field_data_field_pcatid AS p ";
@@ -1367,7 +1362,7 @@ function digital_asset_list_by_product($pcat_id, $language = 'en', $asset_type =
     $query->fields('doc_id', ['field_dam_document_id_value']);
     $query->addJoin('INNER', 'node_revision', 'r', 'n.vid = r.vid');
     $query->fields('r', ['title']);
-    $query->addJoin('INNER', 'field_data_field_products', 'rp', 'n.vid = rp.revision_id');
+    $query->addJoin('INNER', 'field_data_field_related_products', 'rp', 'n.vid = rp.revision_id');
     $query->addJoin('INNER', 'field_data_field_asset_type', 'type', 'n.nid = type.entity_id');
     $query->fields('type', ['field_asset_type_value']);
     $query->addJoin('INNER', 'field_data_field_dam_language', 'lang', 'n.nid = lang.entity_id');
@@ -1379,7 +1374,7 @@ function digital_asset_list_by_product($pcat_id, $language = 'en', $asset_type =
     $query->addJoin('INNER', 'field_data_field_dam_document_status', 'status', 'n.nid = status.entity_id');
     $query->fields('status', ['field_dam_document_status_value']);
     $query->addJoin('LEFT OUTER', 'weight_weights', 'weight', 'n.nid = weight.entity_id');
-    $query->condition('field_products_target_id', $product_nid);
+    $query->condition('field_related_products_target_id', $product_nid);
     $query->condition('field_dam_language_value', $language);
     $query->condition('field_dam_document_status_value', 'live');
     $query->condition('field_dam_entitlement_level_value', 'do_not_display', '<>');
@@ -1409,7 +1404,8 @@ function digital_asset_list_by_product($pcat_id, $language = 'en', $asset_type =
 }
 
 /**
- * Get a full name for an asset owner
+ * Get a full name for an asset owner.
+ *
  * @param $uid
  * @return string
  */
@@ -1421,7 +1417,8 @@ function digital_asset_get_document_owner($uid) {
 }
 
 /**
- * Return an array of document owners suitable for form select element options
+ * Return an array of document owners suitable for form select element options.
+ *
  * @return array
  */
 function digital_asset_get_document_owners() {
@@ -1437,6 +1434,8 @@ function digital_asset_get_document_owners() {
 }
 
 /**
+ * Rebuild the owners table in the database.
+ *
  * @return bool
  * @throws \Exception
  */
@@ -1453,7 +1452,7 @@ function digital_asset_rebuild_owners_table() {
         'uid',
         'first_name',
         'last_name',
-        'full_name'
+        'full_name',
       ])
       ->values([$row->uid, $first_name, $last_name, $full_name])
       ->execute();
@@ -1462,7 +1461,7 @@ function digital_asset_rebuild_owners_table() {
 }
 
 /**
- * output CCS printing spreadsheet file from table digital_asset_ccs
+ * Output CCS printing spreadsheet file from table digital_asset_ccs.
  *
  * @param null $date
  * @return string
@@ -1554,7 +1553,7 @@ function digital_asset_send_print_vendor_mail() {
   $headers = [
     'From' => $message['from'],
     'MIME-Version' => '1.0',
-    'Content-Type' => 'text/html;charset=utf-8'
+    'Content-Type' => 'text/html;charset=utf-8',
   ];
   $cc = variable_get('digital_asset_ccs_email_cc', '');
   if (!empty($cc)) {
@@ -1584,6 +1583,7 @@ function digital_asset_purge_ftp_queue() {
 
 /**
  * TODO: This is hard-coded crap.
+ *
  * @return array
  */
 function digital_asset_languages() {
@@ -1623,8 +1623,6 @@ function digital_asset_languages() {
 
 /**
  * Implements hook_views_api().
- *
- * @return array
  */
 function digital_asset_views_api() {
   return [
