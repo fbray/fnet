@@ -7,5 +7,31 @@ core = 7.x
 
 dependencies[] = digital_asset
 dependencies[] = views
+dependencies[] = entityreference
+dependencies[] = features
+dependencies[] = image
+dependencies[] = options
+dependencies[] = text
+
+features[features_api][] = api:2
+features[field_base][] = field_expertise_image
+features[field_base][] = field_expertise_related_content
+features[field_base][] = field_expertise_types
+features[field_base][] = field_industry
+features[field_base][] = field_language_override_exp
+features[field_instance][] = node-expertise-body
+features[field_instance][] = node-expertise-field_expertise_image
+features[field_instance][] = node-expertise-field_expertise_related_content
+features[field_instance][] = node-expertise-field_expertise_types
+features[field_instance][] = node-expertise-field_industry
+features[field_instance][] = node-expertise-field_intro
+features[field_instance][] = node-expertise-field_language_override_exp
+features[field_instance][] = node-expertise-field_product_category
+features[field_instance][] = node-expertise-field_related_products
+features[node][] = expertise
+features_exclude[field_base][body] = body
+features_exclude[field_base][field_related_products] = field_related_products
+features_exclude[field_base][field_intro] = field_intro
+features_exclude[field_base][field_product_category] = field_product_category
 
 stylesheets[all][] = product_assets.css
