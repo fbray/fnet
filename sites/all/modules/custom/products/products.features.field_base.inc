@@ -55,6 +55,41 @@ function products_field_default_field_bases() {
     'type' => 'text_long',
   );
 
+  // Exported field_base: 'field_available_support_options'.
+  $field_bases['field_available_support_options'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_available_support_options',
+    'indexes' => array(
+      'target_id' => array(
+        0 => 'target_id',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'entityreference',
+    'settings' => array(
+      'entity_translation_sync' => FALSE,
+      'handler' => 'views',
+      'handler_settings' => array(
+        'behaviors' => array(
+          'views-select-list' => array(
+            'status' => 0,
+          ),
+        ),
+        'view' => array(
+          'args' => array(),
+          'display_name' => 'gold_support_contracts',
+          'view_name' => 'product_content',
+        ),
+      ),
+      'target_type' => 'node',
+    ),
+    'translatable' => 0,
+    'type' => 'entityreference',
+  );
+
   // Exported field_base: 'field_conversion_code'.
   $field_bases['field_conversion_code'] = array(
     'active' => 1,
@@ -121,6 +156,31 @@ function products_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_image'.
+  $field_bases['field_image'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_image',
+    'indexes' => array(
+      'fid' => array(
+        0 => 'fid',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'image',
+    'settings' => array(
+      'default_image' => 0,
+      'entity_translation_sync' => array(
+        0 => 'fid',
+      ),
+      'uri_scheme' => 'public',
+    ),
+    'translatable' => 0,
+    'type' => 'image',
+  );
+
   // Exported field_base: 'field_include_price_spider_code'.
   $field_bases['field_include_price_spider_code'] = array(
     'active' => 1,
@@ -146,6 +206,49 @@ function products_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_boolean',
+  );
+
+  // Exported field_base: 'field_language_region'.
+  $field_bases['field_language_region'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_language_region',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'en-us' => 'en-us (English/United States)',
+        'en-au' => 'en-au (English/Australia)',
+        'en-ca' => 'en-ca (English/Canada)',
+        'en-eu' => 'en-eu (English/Europe)',
+        'en-in' => 'en-in (English/India)',
+        'en-ln' => 'en-ln (English/Latin America)',
+        'en-su' => 'en-su (English/Southeast Asia)',
+        'fr-eu' => 'fr-eu (French/Europe)',
+        'fr-ca' => 'fr-ca (French/Canada)',
+        'de-eu' => 'de-eu (German/Europe)',
+        'es-eu' => 'es-eu (Spanish/Europe)',
+        'es-ln' => 'es-ln (Spanish/Latin America)',
+        'pt-eu' => 'pt-eu (Portuguese/Europe)',
+        'pt-br' => 'pt-br (Portuguese/Brazil)',
+        'cn-zh' => 'cn-zh (Chinese/China)',
+        'jp-ja' => 'jp-ja (Japanese/Japan)',
+        'ko-kr' => 'ko-kr (Korean/Korea)',
+        'ru-ru' => 'ru-ru (Russian/Russia)',
+      ),
+      'allowed_values_function' => '',
+      'allowed_values_php' => '',
+      'entity_translation_sync' => FALSE,
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_pcatid'.
@@ -1690,31 +1793,6 @@ function products_field_default_field_bases() {
     'type' => 'list_boolean',
   );
 
-  // Exported field_base: 'field_product_image'.
-  $field_bases['field_product_image'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_product_image',
-    'indexes' => array(
-      'fid' => array(
-        0 => 'fid',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'image',
-    'settings' => array(
-      'default_image' => 0,
-      'entity_translation_sync' => array(
-        0 => 'fid',
-      ),
-      'uri_scheme' => 'public',
-    ),
-    'translatable' => 0,
-    'type' => 'image',
-  );
-
   // Exported field_base: 'field_prod_sol_desc_1'.
   $field_bases['field_prod_sol_desc_1'] = array(
     'active' => 1,
@@ -2108,6 +2186,60 @@ function products_field_default_field_bases() {
     'type' => 'link_field',
   );
 
+  // Exported field_base: 'field_prodlang_btnact_disable'.
+  $field_bases['field_prodlang_btnact_disable'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_prodlang_btnact_disable',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'Yes' => 'Yes',
+        'No' => 'No',
+      ),
+      'allowed_values_function' => '',
+      'allowed_values_php' => '',
+      'entity_translation_sync' => FALSE,
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_prodlang_sol_disable'.
+  $field_bases['field_prodlang_sol_disable'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_prodlang_sol_disable',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'Yes' => 'Yes',
+        'No' => 'No',
+      ),
+      'allowed_values_function' => '',
+      'allowed_values_php' => '',
+      'entity_translation_sync' => FALSE,
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_product_attributes'.
   $field_bases['field_product_attributes'] = array(
     'active' => 1,
@@ -2197,6 +2329,31 @@ function products_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'entityreference',
+  );
+
+  // Exported field_base: 'field_product_image'.
+  $field_bases['field_product_image'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_product_image',
+    'indexes' => array(
+      'fid' => array(
+        0 => 'fid',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'image',
+    'settings' => array(
+      'default_image' => 0,
+      'entity_translation_sync' => array(
+        0 => 'fid',
+      ),
+      'uri_scheme' => 'public',
+    ),
+    'translatable' => 0,
+    'type' => 'image',
   );
 
   // Exported field_base: 'field_product_language_override'.
@@ -2291,10 +2448,82 @@ function products_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
+  // Exported field_base: 'field_product_sub_types'.
+  $field_bases['field_product_sub_types'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_product_sub_types',
+    'indexes' => array(
+      'target_id' => array(
+        0 => 'target_id',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'entityreference',
+    'settings' => array(
+      'entity_translation_sync' => FALSE,
+      'handler' => 'base',
+      'handler_settings' => array(
+        'behaviors' => array(
+          'views-select-list' => array(
+            'status' => 0,
+          ),
+        ),
+        'sort' => array(
+          'type' => 'none',
+        ),
+        'target_bundles' => array(
+          'product_sub_types' => 'product_sub_types',
+        ),
+      ),
+      'target_type' => 'taxonomy_term',
+    ),
+    'translatable' => 0,
+    'type' => 'entityreference',
+  );
+
+  // Exported field_base: 'field_source_product'.
+  $field_bases['field_source_product'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_source_product',
+    'indexes' => array(
+      'target_id' => array(
+        0 => 'target_id',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'entityreference',
+    'settings' => array(
+      'entity_translation_sync' => FALSE,
+      'handler' => 'base',
+      'handler_settings' => array(
+        'behaviors' => array(
+          'views-select-list' => array(
+            'status' => 1,
+          ),
+        ),
+        'sort' => array(
+          'type' => 'none',
+        ),
+        'target_bundles' => array(
+          'product_display' => 'product_display',
+        ),
+      ),
+      'target_type' => 'node',
+    ),
+    'translatable' => 0,
+    'type' => 'entityreference',
+  );
+
   // Exported field_base: 'field_related_products'.
   $field_bases['field_related_products'] = array(
     'active' => 1,
-    'cardinality' => 6,
+    'cardinality' => 0,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_related_products',

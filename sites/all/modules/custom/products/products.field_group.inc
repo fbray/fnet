@@ -320,6 +320,202 @@ function products_field_group_info() {
   );
   $field_groups['group_related_products|node|product_display|form'] = $field_group;
 
+  $field_group = new stdClass();
+  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+  $field_group->api_version = 1;
+  $field_group->identifier = 'group_prod_caroimages|node|product_language|form';
+  $field_group->group_name = 'group_prod_caroimages';
+  $field_group->entity_type = 'node';
+  $field_group->bundle = 'product_language';
+  $field_group->mode = 'form';
+  $field_group->parent_name = '';
+  $field_group->data = array(
+    'label' => 'Carousel Images',
+    'weight' => '13',
+    'children' => array(
+      0 => 'field_prod_carousel_img_lg_1',
+      1 => 'field_prod_carousel_img_lg_10',
+      2 => 'field_prod_carousel_img_lg_2',
+      3 => 'field_prod_carousel_img_lg_3',
+      4 => 'field_prod_carousel_img_lg_4',
+      5 => 'field_prod_carousel_img_lg_5',
+      6 => 'field_prod_carousel_img_lg_6',
+      7 => 'field_prod_carousel_img_lg_7',
+      8 => 'field_prod_carousel_img_lg_8',
+      9 => 'field_prod_carousel_img_lg_9',
+      10 => 'field_prod_carousel_img_srt_10',
+      11 => 'field_prod_carousel_img_srt_1',
+      12 => 'field_prod_carousel_img_srt_3',
+      13 => 'field_prod_carousel_img_srt_2',
+      14 => 'field_prod_carousel_img_srt_4',
+      15 => 'field_prod_carousel_img_srt_5',
+      16 => 'field_prod_carousel_img_srt_6',
+      17 => 'field_prod_carousel_img_srt_7',
+      18 => 'field_prod_carousel_img_srt_8',
+      19 => 'field_prod_carousel_img_srt_9',
+      20 => 'field_prod_carousel_img_t_10',
+      21 => 'field_prod_carousel_img_t_1',
+      22 => 'field_prod_carousel_img_t_2',
+      23 => 'field_prod_carousel_img_t_3',
+      24 => 'field_prod_carousel_img_t_4',
+      25 => 'field_prod_carousel_img_t_5',
+      26 => 'field_prod_carousel_img_t_6',
+      27 => 'field_prod_carousel_img_t_7',
+      28 => 'field_prod_carousel_img_t_9',
+      29 => 'field_prod_carousel_img_t_8',
+    ),
+    'format_type' => 'fieldset',
+    'format_settings' => array(
+      'formatter' => 'collapsible',
+      'instance_settings' => array(
+        'description' => '',
+        'classes' => 'group-prod-caroimages field-group-fieldset',
+        'required_fields' => 1,
+        'id' => '',
+      ),
+    ),
+  );
+  $field_groups['group_prod_caroimages|node|product_language|form'] = $field_group;
+
+  $field_group = new stdClass();
+  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+  $field_group->api_version = 1;
+  $field_group->identifier = 'group_prod_video|node|product_language|form';
+  $field_group->group_name = 'group_prod_video';
+  $field_group->entity_type = 'node';
+  $field_group->bundle = 'product_language';
+  $field_group->mode = 'form';
+  $field_group->parent_name = '';
+  $field_group->data = array(
+    'label' => 'Product Video',
+    'weight' => '12',
+    'children' => array(
+      0 => 'field_prod_video_img_t_1',
+      1 => 'field_prod_video_youtube_url',
+      2 => 'field_prod_video_lg_1',
+    ),
+    'format_type' => 'fieldset',
+    'format_settings' => array(
+      'formatter' => 'collapsible',
+      'instance_settings' => array(
+        'description' => '',
+        'classes' => 'group-prod-video field-group-fieldset',
+        'required_fields' => 1,
+        'id' => '',
+      ),
+    ),
+  );
+  $field_groups['group_prod_video|node|product_language|form'] = $field_group;
+
+  $field_group = new stdClass();
+  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+  $field_group->api_version = 1;
+  $field_group->identifier = 'group_prodlang_grp_calltoaction|node|product_language|form';
+  $field_group->group_name = 'group_prodlang_grp_calltoaction';
+  $field_group->entity_type = 'node';
+  $field_group->bundle = 'product_language';
+  $field_group->mode = 'form';
+  $field_group->parent_name = '';
+  $field_group->data = array(
+    'label' => 'Button Call to Action',
+    'weight' => '8',
+    'children' => array(
+      0 => 'field_prod_btn_calltoaction',
+      1 => 'field_prod_btn_cta_size',
+      2 => 'field_prodlang_btnact_disable',
+    ),
+    'format_type' => 'fieldset',
+    'format_settings' => array(
+      'formatter' => 'collapsible',
+      'instance_settings' => array(
+        'description' => '',
+        'classes' => 'group-prodlang-grp-calltoaction field-group-fieldset',
+        'required_fields' => 1,
+        'id' => '',
+      ),
+    ),
+  );
+  $field_groups['group_prodlang_grp_calltoaction|node|product_language|form'] = $field_group;
+
+  $field_group = new stdClass();
+  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+  $field_group->api_version = 1;
+  $field_group->identifier = 'group_prodlang_prod_tabs|node|product_language|form';
+  $field_group->group_name = 'group_prodlang_prod_tabs';
+  $field_group->entity_type = 'node';
+  $field_group->bundle = 'product_language';
+  $field_group->mode = 'form';
+  $field_group->parent_name = '';
+  $field_group->data = array(
+    'label' => 'Custom Tabs',
+    'weight' => '11',
+    'children' => array(
+      0 => 'field_prod_ctab_link_1',
+      1 => 'field_prod_ctab_link_2',
+      2 => 'field_prod_ctab_link_3',
+      3 => 'field_prod_ctab_data_1',
+      4 => 'field_prod_ctab_name_1',
+      5 => 'field_prod_ctab_name_2',
+      6 => 'field_prod_ctab_name_3',
+      7 => 'field_prod_ctab_name_4',
+      8 => 'field_prod_ctab_name_5',
+      9 => 'field_prod_ctab_link_4',
+      10 => 'field_prod_ctab_link_5',
+      11 => 'field_prod_ctab_data_2',
+      12 => 'field_prod_ctab_data_3',
+      13 => 'field_prod_ctab_data_4',
+      14 => 'field_prod_ctab_data_5',
+    ),
+    'format_type' => 'fieldset',
+    'format_settings' => array(
+      'formatter' => 'collapsible',
+      'instance_settings' => array(
+        'description' => '',
+        'classes' => 'group-prodlang-prod-tabs field-group-fieldset',
+        'required_fields' => 1,
+        'id' => '',
+      ),
+    ),
+  );
+  $field_groups['group_prodlang_prod_tabs|node|product_language|form'] = $field_group;
+
+  $field_group = new stdClass();
+  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+  $field_group->api_version = 1;
+  $field_group->identifier = 'group_prodlang_solutions|node|product_language|form';
+  $field_group->group_name = 'group_prodlang_solutions';
+  $field_group->entity_type = 'node';
+  $field_group->bundle = 'product_language';
+  $field_group->mode = 'form';
+  $field_group->parent_name = '';
+  $field_group->data = array(
+    'label' => 'Solutions',
+    'weight' => '14',
+    'children' => array(
+      0 => 'field_prod_sol_desc_1',
+      1 => 'field_prod_sol_desc_2',
+      2 => 'field_prod_sol_desc_3',
+      3 => 'field_prod_sol_desc_4',
+      4 => 'field_prod_sol_title',
+      5 => 'field_prod_sol_link_1',
+      6 => 'field_prod_sol_link_2',
+      7 => 'field_prod_sol_link_3',
+      8 => 'field_prod_sol_link_4',
+      9 => 'field_prodlang_sol_disable',
+    ),
+    'format_type' => 'fieldset',
+    'format_settings' => array(
+      'formatter' => 'collapsible',
+      'instance_settings' => array(
+        'description' => '',
+        'classes' => 'group-prodlang-solutions field-group-fieldset',
+        'required_fields' => 1,
+        'id' => '',
+      ),
+    ),
+  );
+  $field_groups['group_prodlang_solutions|node|product_language|form'] = $field_group;
+
   // Translatables
   // Included for use with string extractors like potx.
   t('3D (360) Image');
@@ -330,6 +526,7 @@ function products_field_group_info() {
   t('Product Solutions');
   t('Product Video');
   t('Related Products');
+  t('Solutions');
   t('Where To Buy');
 
   return $field_groups;

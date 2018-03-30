@@ -27,6 +27,30 @@ function products_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'product_feature' => array(
+      'name' => t('Product Feature'),
+      'base' => 'node_content',
+      'description' => t('Product Feature'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'product_language' => array(
+      'name' => t('Product Language'),
+      'base' => 'node_content',
+      'description' => t('The product languages content in parallel with the product pages. This is a old hack that will be replaced by proper Entity Translation.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'product_sub_type' => array(
+      'name' => t('Product Sub Type'),
+      'base' => 'node_content',
+      'description' => t('Add models, accessories, options, etc.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
   );
   drupal_alter('node_info', $items);
   return $items;
