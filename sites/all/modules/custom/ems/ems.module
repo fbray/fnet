@@ -1129,7 +1129,7 @@ function ems_register_from_waitlist($event_occurrence) {
  * Implements hook_node_load().
  */
 function ems_node_load($nodes, $types) {
-  $our_types = array();
+  $our_types = [];
   foreach ($types as $type) {
     if ($type == 'event_occurrence') {
       $our_types[] = $type;
@@ -1146,8 +1146,9 @@ function ems_node_load($nodes, $types) {
       ':registration_status1' => 'registered',
       ':registration_status2' => 'waitlist-registered',
     ])->fetchField();
-    $capacity = $node->field_event_occ_capacity[LANGUAGE_NONE][0]['value'];
-    $waitlist = $node->field_event_occ_waitlist[LANGUAGE_NONE][0]['value'];
+
+    $capacity = isset($node->field_event_occ_capacity[LANGUAGE_NONE][0]['value']) ? $node->field_event_occ_capacity[LANGUAGE_NONE][0]['value'] : 0;
+    $waitlist = isset($node->field_event_occ_waitlist[LANGUAGE_NONE][0]['value']) ? $node->field_event_occ_waitlist[LANGUAGE_NONE][0]['value'] : FALSE;
     if (($registered >= $capacity) && (!$waitlist)) {
       $node->event_full = TRUE;
     }
