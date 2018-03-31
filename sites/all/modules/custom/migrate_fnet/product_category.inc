@@ -14,6 +14,12 @@ class FNETProductCategoryMigration extends DrupalNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Path Alias
+    $this->addFieldMapping('path', 'path');
+
+    // Disable Pathauto for now.
+    $this->addFieldMapping('pathauto')->defaultValue(0);
+
     // Redirects
     $this->addFieldMapping('migrate_redirects', 'path');
 
@@ -256,6 +262,12 @@ class FNETProductCategoryMigration extends DrupalNode7Migration {
 
   }
 
+  /**
+   * Implementation of prepareRow()
+   *
+   * @param $row
+   * @return bool
+   */
   public function prepareRow($row) {
     // Always include this snippet, in case our parent class decides to ignore the row
     if (parent::prepareRow($row) === FALSE) {
@@ -292,11 +304,21 @@ class FNETProductCategoryMigration extends DrupalNode7Migration {
     $row->field_industry_trial_1 = $this->stripDomain($row->field_industry_trial_1);
     $row->field_industry_trial_2 = $this->stripDomain($row->field_industry_trial_2);
     $row->field_industry_trial_3 = $this->stripDomain($row->field_industry_trial_3);
+
+    $row->body = $this->stripDomain($row->body);
+    $row->body = str_ireplace('/flukenetworks.com/files', '/default/files', $row->body);
+    $row->body = str_ireplace('/flukenetworks.com/theme', '/all/theme', $row->body);
   }
 
+  /**
+   * Remove the hard-coded Fluke Networks domain from a field.
+   *
+   * @param $string
+   * @return mixed
+   */
   protected function stripDomain($string) {
-    $stripped = str_replace('https://www.flukenetworks.com/', '/', $string);
-    $stripped = str_replace('http://www.flukenetworks.com/', '/', $string);
+    $domains = ['http://www.flukenetworks.com/', 'https://www.flukenetworks.com/', 'http://flukenetworks.com/', 'https://flukenetworks.com/'];
+    $stripped = str_ireplace($domains, '/', $string);
     return $stripped;
   }
 }

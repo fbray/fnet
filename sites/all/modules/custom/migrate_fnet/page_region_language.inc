@@ -14,6 +14,12 @@ class FNETPageRegionLanguageMigration extends FNETNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Path Alias
+    $this->addFieldMapping('path', 'path');
+
+    // Disable Pathauto for now.
+    $this->addFieldMapping('pathauto')->defaultValue(0);
+    
     // Redirects
     $this->addFieldMapping('migrate_redirects', 'path');
 
@@ -43,8 +49,19 @@ class FNETPageRegionLanguageMigration extends FNETNode7Migration {
     if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
+
+    $row->body = $this->stripDomain($row->body);
+    $row->body = str_ireplace('/flukenetworks.com/files', '/default/files', $row->body);
+    $row->body = str_ireplace('/flukenetworks.com/theme', '/all/theme', $row->body);
+
     // The language/region thing seems to be problematic with the allowed values.
     // Let's trim it down to just the first five characters.
     $row->field_page_reg_lang_lng[0] = substr($row->field_page_reg_lang_lng[0], 0, 5);
+  }
+
+  protected function stripDomain($string) {
+    $domains = ['http://www.flukenetworks.com/', 'https://www.flukenetworks.com/', 'http://flukenetworks.com/', 'https://flukenetworks.com/'];
+    $stripped = str_ireplace($domains, '/', $string);
+    return $stripped;
   }
 }

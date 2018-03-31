@@ -3,12 +3,12 @@
  *  Implementation of hook_migrate_api()
  */
 function migrate_fnet_migrate_api() {
-  $api = array(
+  $api = [
     'api' => 2,
-    'field handlers' => array(
+    'field handlers' => [
       'DateMigrateFieldHandler',
-    ),
-  );
+    ],
+  ];
   return $api;
 }
 
@@ -17,19 +17,19 @@ function migrate_fnet_flush_caches() {
 }
 
 function migrate_fnet_register_migrations() {
-  $common_arguments = array(
+  $common_arguments = [
     'source_connection' => 'legacy',
     'source_version' => 7,
     'group_name' => 'Pantheon',
-  );
+  ];
   
   /*
    * User Roles
    */
-  $www_role_arguments = $common_arguments + array(
+  $www_role_arguments = $common_arguments + [
     'machine_name' => 'Roles',
     'description' => t('Import Drupal 7 roles'),
-    'role_mappings' => array(
+    'role_mappings' => [
       'administrator' => 'administrator',
       'airmagnet license author' => 'airmagnet license author',
       'anonymous user' => 'anonymous user',
@@ -53,31 +53,31 @@ function migrate_fnet_register_migrations() {
       'software notifications author' => 'software notificiations author',
       'support agent' => 'support agent',
       'wtb author' => 'wtb author',
-    ),
-  );
+    ],
+    ];
   Migration::registerMigration('FNETRolesMigration', $www_role_arguments['machine_name'], $www_role_arguments);
   
   /*
   *  User Pictures
   */
-  $picture_arguments = $common_arguments + array(
+  $picture_arguments = $common_arguments + [
     'machine_name' => 'UserPicture',
     'description' => t('User pictures from WWW to be imported to Drupal 7'),
     'default_uid' => 1, // The default owner id if owner is not present
     'source_dir' =>  '/webdev/file-import/profiles/pictures/',
     'destination_dir' => 'public://',
-  );
+    ];
   Migration::registerMigration('DrupalPicture7Migration', $picture_arguments['machine_name'], $picture_arguments);
   
   /*
    * Users
    */
-  $arguments = $common_arguments + array(
+  $arguments = $common_arguments + [
     'description' => t('Migration of users from Drupal 7 to D7 Pantheon'),
     'machine_name' => 'FNETUser',
     'role_migration' => 'Roles',
     'picture_migration' => 'UserPicture', // TODO: Check if required.
-  );
+    ];
   
   // Use the d2d D7 migration module class.
   Migration::registerMigration('FNETUserMigration', $arguments['machine_name'], $arguments);
@@ -89,7 +89,7 @@ function migrate_fnet_register_migrations() {
   // Node migrations - each has its own class derived from the migrate_d2d class,
   // specifying its particular field mappings and transformations. source_type
   // and destination_type are required arguments.
-  $group_arguments = array(
+  $group_arguments = [
 
     // Group Membership
     /* TODO: Throws a bunch of errors within the Migrate module.
@@ -98,14 +98,14 @@ Illegal offset type migrate.module:383                                          
 Illegal offset type in isset or empty migrate.module:384                                                                                      [warning]
 Illegal offset type migrate.module:390
 */
-    array(
+    [
       'class_name' => 'DrupalGroupMembership7Migration',
       'description' => t('Migration of Group Membership'),
       'machine_name' => 'GroupMembership',
-    ),
-  );
+    ],
+  ];
 
-  $common_group_arguments = $common_arguments + array('user_migration' => 'FNETUser');
+  $common_group_arguments = $common_arguments + ['user_migration' => 'FNETUser'];
   foreach ($group_arguments as $arguments) {
     $arguments = array_merge_recursive($arguments, $common_group_arguments);
     Migration::registerMigration($arguments['class_name'], $arguments['machine_name'], $arguments);
@@ -118,32 +118,32 @@ Illegal offset type migrate.module:390
   // required arguments. Note that in Drupal 6 vocabularies did not have machine
   // names, so we use the vocabulary ID to uniquely identify them.
 
-  $vocabulary_arguments = array(
+  $vocabulary_arguments = [
     // eDoc Type
-    array(
+    [
       'description' => t('Migration of eDoc Type terms from Drupal'),
       'machine_name' => 'eDocTypes',
       'source_vocabulary' => 'vocabulary_13',  // D7 Vocabulary ID
       'destination_vocabulary' => 'edoc_type',
-    ),
+    ],
 
     // Brand - Deprecated. Only Fluke Networks brand is used now.
 
     // Asset Tags
-    array(
+    [
       'description' => t('Migration of Asset Tags terms from Drupal'),
       'machine_name' => 'AssetTags',
       'source_vocabulary' => 'vocabulary_19',  // D7 Vocabulary ID
       'destination_vocabulary' => 'asset_tags',
-    ),
+    ],
 
     // Blog Categories
-    array(
+    [
       'description' => t('Migration of Blog Category terms from Drupal'),
       'machine_name' => 'BlogCategories',
       'source_vocabulary' => 'vocabulary_16',  // D7 Vocabulary ID
       'destination_vocabulary' => 'blog_categories',
-    ),
+    ],
 
     // Business Entity - DEPRECATED
 
@@ -152,118 +152,118 @@ Illegal offset type migrate.module:390
     // Distributor Type - DEPRECATED
 
     // Event Types
-    array(
+    [
       'description' => t('Migration of Event Type terms from Drupal'),
       'machine_name' => 'EventTypes',
       'source_vocabulary' => 'vocabulary_10',  // D7 Vocabulary ID
       'destination_vocabulary' => 'event_types',
-    ),
+    ],
 
     // Expertise Types
-    array(
+    [
       'description' => t('Migration of Expertise Type terms from Drupal'),
       'machine_name' => 'ExpertiseTypes',
       'source_vocabulary' => 'vocabulary_8',  // D7 Vocabulary ID
       'destination_vocabulary' => 'expertise_types',
-    ),
+    ],
 
     // Image Galleries
-    array(
+    [
       'description' => t('Migration of Image Gallery terms from Drupal'),
       'machine_name' => 'ImageGalleries',
       'source_vocabulary' => 'vocabulary_7',  // D7 Vocabulary ID
       'destination_vocabulary' => 'image_galleries',
-    ),
+    ],
 
     // Knowledge Base
-    array(
+    [
       'description' => t('Migration of Knowledge Base terms from Drupal'),
       'machine_name' => 'KnowledgeBase',
       'source_vocabulary' => 'knowledge_base',  // D7 Vocabulary ID
       'destination_vocabulary' => 'knowledge_base',
-    ),
+    ],
 
     // Media Folders
-    array(
+    [
       'description' => t('Migration of Media Folder terms from Drupal'),
       'machine_name' => 'MediaFolders',
       'source_vocabulary' => 'media_folders',  // D7 Vocabulary ID
       'destination_vocabulary' => 'media_folders',
-    ),
+    ],
 
     // Microsites
-    array(
+    [
       'description' => t('Migration of Microsite terms from Drupal'),
       'machine_name' => 'Microsites',
       'source_vocabulary' => 'vocabulary_18',  // D7 Vocabulary ID
       'destination_vocabulary' => 'microsites',
-    ),
+    ],
 
     // Product Attributes
-    array(
+    [
       'description' => t('Migration of Product Attribute terms from Drupal'),
       'machine_name' => 'ProductAttributes',
       'source_vocabulary' => 'vocabulary_6',  // D7 Vocabulary ID
       'destination_vocabulary' => 'product_attributes',
-    ),
+    ],
 
     // Product Status
-    array(
+    [
       'description' => t('Migration of Product Status terms from Drupal'),
       'machine_name' => 'ProductStatus',
       'source_vocabulary' => 'vocabulary_1',  // D7 Vocabulary ID
       'destination_vocabulary' => 'product_status',
-    ),
+    ],
 
     // Product Sub Types
-    array(
+    [
       'description' => t('Migration of Product Sub Type terms from Drupal'),
       'machine_name' => 'ProductSubtypes',
       'source_vocabulary' => 'vocabulary_2',  // D7 Vocabulary ID
       'destination_vocabulary' => 'product_sub_types',
-    ),
+    ],
 
     // Promotion product category
-    array(
+    [
       'description' => t('Migration of Promotion Product Category terms from Drupal'),
       'machine_name' => 'PromotionProductCategory',
       'source_vocabulary' => 'vocabulary_11',  // D7 Vocabulary ID
       'destination_vocabulary' => 'promotion_product_category',
-    ),
+    ],
 
     // Promotion Type
-    array(
+    [
       'description' => t('Migration of Promotion Type terms from Drupal'),
       'machine_name' => 'PromotionType',
       'source_vocabulary' => 'vocabulary_5',  // D7 Vocabulary ID
       'destination_vocabulary' => 'promotion_type',
-    ),
+    ],
 
     // Blog Tags
-    array(
+    [
       'description' => t('Migration of Blog Tag terms from Drupal'),
       'machine_name' => 'BlogTags',
       'source_vocabulary' => 'vocabulary_17',  // D7 Vocabulary ID
       'destination_vocabulary' => 'blog_tags',
-    ),
+    ],
 
     // Industries
-    array(
+    [
       'description' => t('Migration of Industry terms from Drupal'),
       'machine_name' => 'Industries',
       'source_vocabulary' => 'vocabulary_15',  // D7 Vocabulary ID
       'destination_vocabulary' => 'industries',
-    ),
-  );
+    ],
+  ];
 
   // Again, we're using the migrate_d2d class directly.
   // The soft dependency says that while we don't have to run the user migration
   // first, we want to make sure it's listed first so the vocubularies are
   // listed right ahead of the node migrations.
-  $common_vocabulary_arguments = $common_arguments + array(
+  $common_vocabulary_arguments = $common_arguments + [
     'class_name' => 'DrupalTerm7Migration',
-    'soft_dependencies' => array('FNETUser'),
-  );
+    'soft_dependencies' => ['FNETUser'],
+    ];
   foreach ($vocabulary_arguments as $arguments) {
     $arguments += $common_vocabulary_arguments;
     Migration::registerMigration($arguments['class_name'], $arguments['machine_name'],
@@ -273,24 +273,24 @@ Illegal offset type migrate.module:390
   // Node migrations - each has its own class derived from the migrate_d2d class,
   // specifying its particular field mappings and transformations. source_type
   // and destination_type are required arguments.
-  $node_arguments = array(
-    array(
+  $node_arguments = [
+    [
       'class_name' => 'FNETAssetGatewayMigration',
       'description' => t('Migration of Asset Gateway nodes from Drupal.'),
       'machine_name' => 'AssetGateway',
       'source_type' => 'asset_gateway',
       'destination_type' => 'asset_gateway',
-    ),
+    ],
 
     // Blog Articles
-    array(
+    [
       'class_name' => 'FNETBlogArticleMigration',
       'description' => t('Migration of Blog Article nodes from Drupal'),
       'machine_name' => 'BlogArticle',
       'source_type' => 'blog_article',
       'destination_type' => 'blog_article',
-      'dependencies' => array('BlogCategories', 'BlogTags'),
-    ),
+      'dependencies' => ['BlogCategories', 'BlogTags'],
+    ],
 
     /* CIO Briefs are DEPRECATED.
     array(
@@ -304,339 +304,339 @@ Illegal offset type migrate.module:390
     */
 
     // Awards
-    array(
+    [
       'class_name' => 'FNETAwardMigration',
       'description' => t('Migration of Award nodes from Drupal.'),
       'machine_name' => 'Award',
       'source_type' => 'award',
       'destination_type' => 'award',
 
-    ),
+    ],
 
     // Digital Assets
-    array(
+    [
       'class_name' => 'FNETDigitalAssetMigration',
       'description' => t('Migration of Digital Asset nodes from Drupal.'),
       'machine_name' => 'DigitalAsset',
       'source_type' => 'digital_asset',
       'destination_type' => 'digital_asset',
-      'dependencies' => array('Files', 'ProductCategory', 'AssetTags', 'ProductDisplay'),
-    ),
+      'dependencies' => ['Files', 'ProductCategory', 'AssetTags', 'ProductDisplay'],
+    ],
 
      // Distributors
-    array(
+    [
       'class_name' => 'FNETProductDistributorMigration',
       'description' => t('Migration of Distributor nodes from Drupal. Formerly called Distributor.'),
       'machine_name' => 'ProductDistributor', // Changed from 'Distributor'.
       'source_type' => 'product_distributor_group',
       'destination_type' => 'product_distributor',
-      'dependencies' => array('ProductDisplay'),
-    ),
+      'dependencies' => ['ProductDisplay'],
+    ],
 
     // eDocs
-    array(
+    [
       'class_name' => 'FNETeDocMigration',
       'description' => t('Migration of eDoc nodes from Drupal.'),
       'machine_name' => 'eDoc',
       'source_type' => 'edoc',
       'destination_type' => 'edoc',
-      'dependencies' => array('eDocTypes', 'ProductDisplay'),
-    ),
+      'dependencies' => ['eDocTypes', 'ProductDisplay'],
+    ],
 
     // eDoc Language
-    array(
+    [
        'class_name' => 'FNETeDocLanguageMigration',
        'description' => t('Migration of eDoc Language nodes from Drupal.'),
        'machine_name' => 'eDocLanguage',
        'source_type' => 'edoclanguage',
        'destination_type' => 'edoc_language',
-       'dependencies' => array('eDoc'),
-    ),
+       'dependencies' => ['eDoc'],
+    ],
 
     // Events
-    array(
+    [
       'class_name' => 'FNETEventMigration',
       'description' =>  t('Migration of Event nodes from Drupal.'),
       'machine_name' => 'Event',
       'source_type' => 'event',
       'destination_type' => 'event',
-      'dependencies' => array('EventTypes', 'ProductDisplay', 'ProductCategory'),
-    ),
+      'dependencies' => ['EventTypes', 'ProductDisplay', 'ProductCategory'],
+    ],
 
     // Event Occurence
-    array(
+    [
       'class_name' => 'FNETEventOccurrenceMigration',
       'description' =>  t('Migration of Event Occurrence nodes from Drupal.'),
       'machine_name' => 'EventOccurrence',
       'source_type' => 'event_occurrence',
       'destination_type' => 'event_occurrence',
-      'dependencies' => array('Event'),
-    ),
+      'dependencies' => ['Event'],
+    ],
 
     // Expertise
-    array(
+    [
       'class_name' => 'FNETExpertiseMigration',
       'description' =>  t('Migration of Expertise nodes from Drupal.'),
       'machine_name' => 'Expertise',
       'source_type' => 'expertise',
       'destination_type' => 'expertise',
-      'dependencies' => array('ExpertiseTypes', 'ProductDisplay', 'Industries', 'Files', 'ProductCategory'),
-    ),
+      'dependencies' => ['ExpertiseTypes', 'ProductDisplay', 'Industries', 'Files', 'ProductCategory'],
+    ],
 
     // Expertise Role
-    array(
+    [
       'class_name' => 'FNETExpertiseRoleMigration',
       'description' =>  t('Migration of Expertise Role nodes from Drupal.'),
       'machine_name' => 'ExpertiseRole',
       'source_type' => 'exp_rle',
       'destination_type' => 'expertise_role',  // more verbose naming improvement
-    ),
+    ],
 
     // Expertise Role Language
-    array(
+    [
       'class_name' => 'FNETExpertiseRoleLanguageMigration',
       'description' =>  t('Migration of Expertise Role Language nodes from Drupal.'),
       'machine_name' => 'ExpertiseRoleLanguage',
       'source_type' => 'exp_rle_lng',
       'destination_type' => 'expertise_role_language',  // more verbose naming improvement
-      'dependencies' => array('ExpertiseRole'),
-    ),
+      'dependencies' => ['ExpertiseRole'],
+    ],
 
     // Extranet News
-    array(
+    [
       'class_name' => 'FNETExtranetNewsMigration',
       'description' =>  t('Migration of Extranet News nodes from Drupal.'),
       'machine_name' => 'ExtranetNews',
       'source_type' => 'extranet_news',
       'destination_type' => 'extranet_news',
-    ),
+    ],
 
     // Extranet Page
-    array(
+    [
       'class_name' => 'FNETExtranetPageMigration',
       'description' =>  t('Migration of Extranet Page nodes from Drupal.'),
       'machine_name' => 'ExtranetPage',
       'source_type' => 'extranet_page',
       'destination_type' => 'extranet_page',
-    ),
+    ],
 
     // Extranet Promotion
-    array(
+    [
       'class_name' => 'FNETExtranetPromotionMigration',
       'description' =>  t('Migration of Extranet Promotion nodes from Drupal.'),
       'machine_name' => 'ExtranetPromotion',
       'source_type' => 'extranet_promotion',
       'destination_type' => 'extranet_promotion',
-    ),
+    ],
 
     // Family
-    array(
+    [
       'class_name' => 'FNETProductFamilyMigration',
       'description' =>  t('Migration of Family nodes from Drupal.'),
       'machine_name' => 'ProductFamily',
       'source_type' => 'family',
       'destination_type' => 'product_family', // changed to be more accurate
-      'dependencies' => array('ProductCategory', 'Files'),
-    ),
+      'dependencies' => ['ProductCategory', 'Files'],
+    ],
 
     // Feature (Change to Product Feature)
-    array(
+    [
       'class_name' => 'FNETProductFeatureMigration',
       'description' =>  t('Migration of Product Feature nodes from Drupal.'),
       'machine_name' => 'ProductFeature',
       'source_type' => 'feature',
       'destination_type' => 'product_feature', // changed to be more accurate
-      'dependencies' => array('ProductDisplay'),
-    ),
+      'dependencies' => ['ProductDisplay'],
+    ],
 
     // Homepage 2013
-    array(
+    [
       'class_name' => 'FNETHomepage2013Migration',
       'description' =>  t('Migration of the Homepage 2013 nodes from Drupal.'),
       'machine_name' => 'Homepage2013',
       'source_type' => 'homepage2013',
       'destination_type' => 'homepage2013',
-    ),
+    ],
 
     // Homepage 2013 Language
-    array(
+    [
       'class_name' => 'FNETHomepage2013LanguageMigration',
       'description' =>  t('Migration of the Homepage 2013 Language nodes from Drupal.'),
       'machine_name' => 'Homepage2013Language',
       'source_type' => 'homepage2013language',
       'destination_type' => 'homepage2013_language',
-      'dependencies' => array('Homepage2013'),
-    ),
+      'dependencies' => ['Homepage2013'],
+    ],
 
     // Industry (Change to Product Category)
-    array(
+    [
       'class_name' => 'FNETProductCategoryMigration',
       'description' =>  t('Migration of the Industry nodes from Drupal.'),
       'machine_name' => 'ProductCategory',
       'source_type' => 'industry',
       'destination_type' => 'product_category',
-      'dependencies' => array('ProductAttributes'),
-    ),
+      'dependencies' => ['ProductAttributes'],
+    ],
 
     // Industry Language (Change to Product Category Language)
-    array(
+    [
       'class_name' => 'FNETProductCategoryLanguageMigration',
       'description' =>  t('Migration of the Industry Language nodes from Drupal.'),
       'machine_name' => 'ProductCategoryLanguage',
       'source_type' => 'industrylanguage',
       'destination_type' => 'product_category_language',
-      'dependencies' => array('ProductCategory')
-    ),
+      'dependencies' => ['ProductCategory']
+    ],
 
 
     // Knowledge Base Article
-    array(
+    [
       'class_name' => 'FNETKnowledgeBaseArticleMigration',
       'description' =>  t('Migration of the Knowledge Base Article nodes from Drupal.'),
       'machine_name' => 'KnowledgeBaseArticle',
       'source_type' => 'knowledge_base_article',
       'destination_type' => 'knowledge_base_article',
-      'dependencies' => array('KnowledgeBase'),
-    ),
+      'dependencies' => ['KnowledgeBase'],
+    ],
 
     // Localized Email - DEPRECATED
 
     // Location (Change to Distributor Location)
-    array(
+    [
       'class_name' => 'FNETDistributorLocationMigration',
       'description' =>  t('Migration of the Location nodes from Drupal.'),
       'machine_name' => 'DistributorLocation',
       'source_type' => 'distributor',
       'destination_type' => 'distributor_location',
-      'dependencies' => array('ProductDistributor'),
-    ),
+      'dependencies' => ['ProductDistributor'],
+    ],
 
     // New FNET Marketo Form
-    array(
+    [
       'class_name' => 'FNETNewMarketoFormMigration',
       'description' => t('Migration of the New FNET Marketo Form nodes. You know, Marketo 2.0.'),
       'machine_name' => 'FNETMarketoForm',
       'source_type' => 'fnet_marketo_form',
       'destination_type' => 'fnet_marketo_form',
-    ),
+    ],
 
     // Marketo Form
-    array(
+    [
       'class_name' => 'FNETMarketoFormMigration',
       'description' =>  t('Migration of the Marketo Form nodes from Drupal.'),
       'machine_name' => 'MarketoForm',
       'source_type' => 'marketo_form',
       'destination_type' => 'marketo_form',
-    ),
+    ],
 
     // Microsite Page
-    array(
+    [
       'class_name' => 'FNETMicrositePageMigration',
       'description' =>  t('Migration of the Microsite Page nodes from Drupal.'),
       'machine_name' => 'MicrositePage',
       'source_type' => 'microsite_page',
       'destination_type' => 'microsite_page',
-      'dependencies' => array('Microsites'),
-    ),
+      'dependencies' => ['Microsites'],
+    ],
 
     // Microsite Story
-    array(
+    [
       'class_name' => 'FNETMicrositeStoryMigration',
       'description' =>  t('Migration of the Microsite Story nodes from Drupal.'),
       'machine_name' => 'MicrositeStory',
       'source_type' => 'microsite_story',
       'destination_type' => 'microsite_story',
-      'dependencies' => array('Microsites'),
-    ),
+      'dependencies' => ['Microsites'],
+    ],
 
     // Page
-    array(
+    [
       'class_name' => 'FNETPageMigration',
       'description' => t('Migration of Page nodes from Drupal.'),
       'machine_name' => 'Page',
       'source_type' => 'page',
       'destination_type' => 'page',
       // 'dependencies' => array('Products', 'BlogCategories', 'BlogTags'),
-    ),
+    ],
 
     // Page Region
-    array(
+    [
       'class_name' => 'FNETPageRegionMigration',
       'description' =>  t('Migration of the Page Region nodes from Drupal.'),
       'machine_name' => 'PageRegion',
       'source_type' => 'page_reg',
       'destination_type' => 'page_region',
-    ),
+    ],
 
     // Page Region Language
-    array(
+    [
       'class_name' => 'FNETPageRegionLanguageMigration',
       'description' =>  t('Migration of the Page Region nodes from Drupal.'),
       'machine_name' => 'PageRegionLanguage',
       'source_type' => 'page_reg_lang',
       'destination_type' => 'page_region_language',
-      'dependencies' => array('PageRegion'),
-    ),
+      'dependencies' => ['PageRegion'],
+    ],
 
     // Press Releases
-    array(
+    [
       'class_name' => 'FNETPressReleaseMigration',
       'description' =>  t('Migration of the Press Release nodes from Drupal.'),
       'machine_name' => 'PressRelease',
       'source_type' => 'pressrelease',
       'destination_type' => 'press_release',
-    ),
+    ],
 
     // Product
     // This one is going to be weird, since Drupal Commerce adds a Product Content Type.
-    array(
+    [
       'class_name' => 'FNETProductDisplayMigration',
       'description' =>  t('Migration of the Product nodes from Drupal.'),
       'machine_name' => 'ProductDisplay',
       'source_type' => 'product',
       'destination_type' => 'product_display',
-      'dependencies' => array('ProductFamily', 'ProductStatus', 'ProductAttributes', 'Files' ),
-    ),
+      'dependencies' => ['ProductFamily', 'ProductStatus', 'ProductAttributes', 'Files'],
+    ],
 
     // Product Language
-    array(
+    [
       'class_name' => 'FNETProductLanguageMigration',
       'description' =>  t('Migration of the Product Language nodes from Drupal.'),
       'machine_name' => 'ProductLanguage',
       'source_type' => 'productlanguage',
       'destination_type' => 'product_language',
-      'dependencies' => array('ProductDisplay'),
-    ),
+      'dependencies' => ['ProductDisplay'],
+    ],
 
     // Product Sub Type
-    array(
+    [
       'class_name' => 'FNETProductSubTypeMigration',
       'description' =>  t('Migration of the Product Sub Type Language nodes from Drupal.'),
       'machine_name' => 'ProductSubType',
       'source_type' => 'productsubtype',
       'destination_type' => 'product_sub_type',
-      'dependencies' => array('ProductDisplay', 'ProductSubtypes')
-    ),
+      'dependencies' => ['ProductDisplay', 'ProductSubtypes']
+    ],
 
     // Profile - DEPRECATED.
 
     // Promotion
-    array(
+    [
       'class_name' => 'FNETPromotionMigration',
       'description' =>  t('Migration of the Promotion nodes from Drupal.'),
       'machine_name' => 'Promotion',
       'source_type' => 'promotion',
       'destination_type' => 'promotion',
-      'dependencies' => array('PromotionType', 'PromotionProductCategory'),
-    ),
+      'dependencies' => ['PromotionType', 'PromotionProductCategory'],
+    ],
 
 
-  );
+  ];
   // Tell the node migrations where the users are coming from, so they can
   // set up the dependency and resolve D6->D7 uids.
-  $common_node_arguments = $common_arguments + array(
+  $common_node_arguments = $common_arguments + [
     'user_migration' => 'FNETUser',
-  );
+    ];
   foreach ($node_arguments as $arguments) {
     $arguments = array_merge_recursive($arguments, $common_node_arguments);
     Migration::registerMigration($arguments['class_name'], $arguments['machine_name'], $arguments);
@@ -645,7 +645,7 @@ Illegal offset type migrate.module:390
     /*
    *  File Migration
    */
-   $file_arguments = $common_arguments + array(
+   $file_arguments = $common_arguments + [
     'machine_name' => 'Files',
     'description' => t('Import Drupal files'),
     'user_migration' => 'FNETUser',
@@ -654,14 +654,14 @@ Illegal offset type migrate.module:390
     'source_dir' => '/webdev/flukenetworks/flukenetworks/sites/flukenetworks.com/files/',
     'file_replace' => FILE_EXISTS_REPLACE,
 
-  );
+     ];
   Migration::registerMigration('FNETFileMigration', $file_arguments['machine_name'], $file_arguments);
 
   /*
    * Event Registrations and Registrants
    */
   Migration::registerMigration('EventRegistrantMigration', 'EventRegistrants', $common_arguments);
-  $registration_arguments = $common_arguments + array('dependencies' => array('EventRegistrants', 'EventOccurrence'));
+  $registration_arguments = $common_arguments + ['dependencies' => ['EventRegistrants', 'EventOccurrence']];
   Migration::registerMigration('EventRegistrationMigration', 'EventRegistrations', $registration_arguments);
 
 }

@@ -14,6 +14,12 @@ class FNETProductDistributorMigration extends DrupalNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Path Alias
+    $this->addFieldMapping('path', 'path');
+
+    // Disable Pathauto for now.
+    $this->addFieldMapping('pathauto')->defaultValue(0);
+
     // Redirects
     $this->addFieldMapping('migrate_redirects', 'path');
 
@@ -25,7 +31,7 @@ class FNETProductDistributorMigration extends DrupalNode7Migration {
       ->issueGroup(t('DNM'));
 
     // Entity References
-    $this->addFieldMapping('field_products', 'field_products')
+    $this->addFieldMapping('field_related_products', 'field_products')
       ->sourceMigration('ProductDisplay');
 
   }
