@@ -342,7 +342,7 @@ function get_news_nids($regLang, $range=NULL) {
 
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'node')
-    ->propertyCondition('type', 'pressrelease')
+    ->propertyCondition('type', 'press_release')
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_language_region', 'value', $regLang, '=')
     ->fieldOrderBy('field_release_date', 'value', 'DESC');
@@ -355,7 +355,7 @@ function get_news_nids($regLang, $range=NULL) {
     return array_keys($entities['node']);
   }
   else {
-    return array();
+    return [];
   }
 }
 
