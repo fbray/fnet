@@ -2,13 +2,14 @@
 /**
  * Created by PhpStorm.
  * User: rositis
- * Date: 5/16/17
- * Time: 4:36 PM
+ * Date: 4/2/18
+ * Time: 10:45 AM
  */
+
 /*
- *  Blog Article Migration Class
+ *  Expertise Migration Class
 */
-class FNETBlogArticleMigration extends FNETNode7Migration {
+class FNETExpertiseLanguageMigration extends FNETNode7Migration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
 
@@ -21,24 +22,37 @@ class FNETBlogArticleMigration extends FNETNode7Migration {
     // Redirects
     $this->addFieldMapping('migrate_redirects', 'path');
 
-    // Individual fields
+    // Deprecated Fields
+    $this->addFieldMapping(NULL, 'field_business_entity')
+      ->description(t('No longer necessary as NetScout split is complete.'))
+      ->issueGroup(t('DNM'));
+
+    // Individual Fields
     $this->addFieldMapping('body:language', 'body:language');
-    $this->addFieldMapping('body:format')
+    $this->addFieldMapping('field_expertise_related_content', 'field_related_content');
+    $this->addFieldMapping('field_expertise_related_content:language', 'field_related_content:language');
+    $this->addFieldMapping('field_expertise_related_content:format')
       ->defaultValue('full_html');
+    $this->addFieldMapping('field_language_region_exp', 'field_language_region_exp');
 
     // Entity References
-    $this->addFieldMapping('field_blog_categories', 'taxonomy_vocabulary_16')
-      ->sourceMigration('BlogCategories');
-    $this->addFieldMapping('field_blog_tags', 'taxonomy_vocabulary_17')
-      ->sourceMigration('BlogTags');
+    $this->addFieldMapping('field_expertise', 'field_expertise')
+    ->sourceMigration('Expertise');
   }
 
+  /**
+   * Implementation of prepareRow().
+   *
+   * @param $row
+   * @return bool
+   */
   public function prepareRow($row) {
     // Always include this snippet, in case our parent class decides to ignore the row
     if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
 
+    // Check the various fields. Remove the hard URLs.
     $row->body = $this->stripDomain($row->body);
     $row->body = str_ireplace('/flukenetworks.com/files', '/default/files', $row->body);
     $row->body = str_ireplace('/flukenetworks.com/theme', '/all/theme', $row->body);
@@ -49,5 +63,4 @@ class FNETBlogArticleMigration extends FNETNode7Migration {
     $stripped = str_ireplace($domains, '/', $string);
     return $stripped;
   }
-
 }

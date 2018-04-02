@@ -58,7 +58,7 @@ class FNETExpertiseMigration extends FNETNode7Migration {
     ->sourceMigration('ExpertiseTypes');
     $this->addFieldMapping('field_industry', 'field_expertise_industry')  // Taxonomy term
       ->sourceMigration('Industries');
-    $this->addFieldMapping('field_related_products', 'field_expertise_product') // Node
+    $this->addFieldMapping('field_products', 'field_expertise_product') // Node
       ->sourceMigration('ProductDisplay');
     $this->addFieldMapping('field_product_category', 'field_expertise_industry') // Node
     ->sourceMigration('ProductCategory');

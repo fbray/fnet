@@ -469,7 +469,7 @@ class FNETProductDisplayMigration extends DrupalNode7Migration {
   }
 
   /**
-   * Implementation of prepareRow()
+   * Implementation of prepareRow().
    *
    * @param $row
    * @return bool

@@ -383,6 +383,16 @@ Illegal offset type migrate.module:390
       'dependencies' => ['ExpertiseTypes', 'ProductDisplay', 'Industries', 'Files', 'ProductCategory'],
     ],
 
+    // Expertise Language
+    [
+      'class_name' => 'FNETExpertiseLanguageMigration',
+      'description' =>  t('Migration of Expertise Language nodes from Drupal.'),
+      'machine_name' => 'ExpertiseLanguage',
+      'source_type' => 'expertise_language',
+      'destination_type' => 'expertise_language',
+      'dependencies' => ['Expertise'],
+    ],
+
     // Expertise Role
     [
       'class_name' => 'FNETExpertiseRoleMigration',
