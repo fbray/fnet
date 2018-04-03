@@ -39,7 +39,7 @@
 		<div id="article-body"><?php echo $node->body[LANGUAGE_NONE][0]['value']; ?></div>
 
 		<div id="article-author">
-			<p class="info"><strong>Author: </strong><?php echo isset($node->field_article_author[LANGUAGE_NONE][0]["value"]) ? $node->field_article_author[LANGUAGE_NONE][0]["value"] : user_load($node->uid)->realname; ?></p>
+			<p class="info"><strong>Author: </strong><?php echo isset($node->field_article_author[LANGUAGE_NONE][0]["value"]) ? $node->field_article_author[LANGUAGE_NONE][0]["value"] : $author; ?></p>
 			<p class="info"><strong>Creation
 					Date: </strong><?php echo date('Y-m-d',$node->created); ?></p>
 			<p class="info"><strong>Last
