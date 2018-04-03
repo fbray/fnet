@@ -234,38 +234,38 @@ drupal_add_js(drupal_get_path('theme','adaptivetheme_subtheme_fnet').'/scripts/k
 									<div id="knowledge-base">
 										<!-- START: Search Form -->
 										<?php
-											$block = block_load('views', '-exp-knowledge_base_search-page'); 
+											$block = block_load('views', '-exp-knowledge_base_search-page');
 											$temp = _block_get_renderable_array(_block_render_blocks(array($block)));
 											$output = render($temp);
-											print $output; 
+											print $output;
 										?>
 										<!-- END: Search Form -->
 
 										<!-- START: Breadcrumbs -->
-										<div id="kb-breadcrumbs">										
+										<div id="kb-breadcrumbs">
 											<?php
-													$breadcrumbs = module_invoke('views', 'block_view', 'knowledge_base_search-block'); 
-													print render($breadcrumbs['content']); 
-											?>	
+													$breadcrumbs = module_invoke('views', 'block_view', 'knowledge_base_search-block');
+													print render($breadcrumbs['content']);
+											?>
 										</div>
 										<!-- END: Breadcrumbs -->
-										
+
 										<!-- START: "Back to List" link -->
-										<div id="back-button">												
+										<div id="back-button">
 											<a href="/knowledge-base">
 												<strong><span style="font-size:16px;">&laquo;</span>&nbsp;Back to List</strong>
 											</a>
 										</div>
 										<!-- END: "Back to List" link -->
-															
+
 										<!-- START: Taxonomy Menu -->
 										<div id="taxonomy-menu">
 											<?php
-												$bl = module_invoke('views', 'block_view', 'kb_accordion_view-block'); 
+												$bl = module_invoke('views', 'block_view', 'knowledge_base_accordion-block');
 											?>
 											<h3> <?php print render($bl['subject']); ?> </h3>
 											<div id = "kb-cat-list">
-												<?php print render($bl['content']); ?>	
+												<?php print render($bl['content']); ?>
 											</div>
 										</div>
 										<!-- END: Taxonomy Menu -->
@@ -273,15 +273,15 @@ drupal_add_js(drupal_get_path('theme','adaptivetheme_subtheme_fnet').'/scripts/k
 										<!-- START: Article List View -->
 										<div id="kb-article-list">
 											<?php
-												$bl = module_invoke('views', 'block_view', 'knowledge_base_search-block_1');  ?>
+												$bl = module_invoke('views', 'block_view', 'knowledge_base_search-block_1'); ?>
 											<h3><?php print render($bl['subject']); ?>	</h3>
-											<?php print render($bl['content']); ?>	
+											<?php print render($bl['content']); ?>
 										</div>
 										<!-- END: Article List View -->
 									<div style="clear:both;">&nbsp;</div>
 								</div>
                 <?php endif; ?>
-               
+
                 <?php print render($title_suffix); // Prints page level contextual links ?>
 
               </<?php print $tag; ?>>
