@@ -5,17 +5,15 @@
  * The page to bulk generate url alias for KB terms.
  */
 
-$export = array();
-
 $view = new view();
-$view->name = 'kb_term_alias_update_and_generate';
+$view->name = 'knowledge_base_term_alias_update';
 $view->description = '';
-$view->tag = 'default';
+$view->tag = 'fnet';
 $view->base_table = 'taxonomy_term_data';
-$view->human_name = 'KB term Alias update and generate';
+$view->human_name = 'Knowledge Base Term Alias Update';
 $view->core = 7;
 $view->api_version = '3.0';
-$view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+$view->disabled = TRUE; /* Edit this to true to make a default view disabled initially */
 
 /* Display: Master */
 $handler = $view->new_display('default', 'Master', 'default');
@@ -74,7 +72,3 @@ $handler->display->display_options['filters']['machine_name']['value'] = array(
 /* Display: Page */
 $handler = $view->new_display('page', 'Page', 'page');
 $handler->display->display_options['path'] = 'admin/fnet/kb-term-alias-update-and-generate';
-
-$export['kb_term_alias_update_and_generate'] = $view;
-
-return $export;
