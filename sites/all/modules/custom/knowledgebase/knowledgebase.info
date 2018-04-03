@@ -1,14 +1,18 @@
 name = Knowledge Base
 description = Contains the content type, taxonomy, role, view, etc. necessary for the Knowledge Base section of website.
+version = 7.x-1.0
 core = 7.x
 package = Fluke Networks
 
+dependencies[] = better_exposed_filters
 dependencies[] = ctools
 dependencies[] = views
-dependencies[] = better_exposed_filters
 dependencies[] = views_expost
 dependencies[] = views_accordion
 features[ctools][] = views:views_default:3.0
 features[features_api][] = api:2
+features[views_view][] = knowledge_base_accordion
 features[views_view][] = knowledge_base_articles
+features[views_view][] = knowledge_base_node_alias_update
 features[views_view][] = knowledge_base_search
+features[views_view][] = knowledge_base_term_alias_update
