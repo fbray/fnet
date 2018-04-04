@@ -224,10 +224,11 @@ function digital_asset_permission() {
  */
 function digital_asset_form_digital_asset_node_form_alter(&$form, &$form_state) {
   global $user;
+  /* For testing
   if (module_exists('devel')) {
     dpm($form);
   }
-
+  */
   $form['#after_build'][] = 'digital_asset_node_form_after_build';
   $form['#cache'] = TRUE;
 
@@ -338,7 +339,7 @@ function digital_asset_theme() {
     'render element' => 'form',
   ];
   $hooks['digital_asset_asset_query_form'] = $base + [
-    'template' => 'theme/digital_asset_asset_query_form',
+    'template' => 'digital_asset_asset_query_form',
     'render element' => 'form',
   ];
   $hooks['digital_asset_query_by_product_form'] = $base + [
@@ -354,10 +355,11 @@ function digital_asset_theme() {
 function digital_asset_node_form($form, &$form_state, $node, $is_child = FALSE) {
   form_load_include($form_state, 'inc', 'node', 'node.pages');
   $form = node_form($form, $form_state, $node);
+  /* For Testing
   if (module_exists('devel')) {
     dpm($form);
   }
-
+  */
   if (!empty($form['#submit']) && is_array($form['#submit'])) {
     if (!in_array('digital_asset_node_form_submit', $form['#submit'])) {
       $form['#submit'][] = 'digital_asset_node_form_submit';
@@ -524,7 +526,13 @@ function digital_asset_node_form_submit($form, &$form_state) {
   $form_state['node'] = $node;
   $form_state['rebuild'] = TRUE;
   $insert = empty($node->nid);
-  node_save($node);
+  try {
+    node_save($node);
+  }
+  catch (Exception $e) {
+    watchdog('Digital Asset', $e->getMessage());
+  }
+
   $node_link = l(t('view'), 'digital_asset/' . $node->nid);
   $watchdog_args = [
     '@type' => $node->type,
@@ -1186,12 +1194,9 @@ function digital_asset_get_document_nid($document_id) {
  * @return array
  */
 function digital_asset_asset_types() {
-  $list = explode("\r\n", trim(variable_get('digital_asset_asset_types', '')));
-  $options = [];
-  foreach ($list as $value) {
-    $options[strtolower($value)] = ucwords($value);
-  }
-  return $options;
+  $asset_type = field_info_field('field_asset_type');
+  $allowed_values = list_allowed_values($asset_type);
+  return $allowed_values;
 }
 
 /**
