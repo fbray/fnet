@@ -34,8 +34,9 @@ if (isset($node->taxonomy) && is_array($node->taxonomy)) {
 			$dateCreated = date("Y-m-d", $created);
 
 			// Get user's 'realname' for displaying.
-			$user = user_load($node->uid);
-			$author_name = $user ? $user->realname : '';
+			$account = user_load($node->uid);
+			$user_address = field_get_items('user', $account, 'field_address');
+			$author_name = isset($account->realname) ? $account->realname : $user_address[0]['first_name'] . ' ' . $user_address[0]['last_name'];
 
 			?>
 
