@@ -81,7 +81,7 @@ function digital_asset_add($parent = NULL) {
       // DEPRECATED.
       // 'field_dam_asset_groups' => $parent->field_dam_access_groups,
       'field_dam_industry' => $parent->field_dam_industry,
-      'field_dam_related_product' => $parent->field_dam_related_product,
+      'field_related_products' => $parent->field_related_products,
     ];
     $node = array_merge($node, $node_extra);
     $is_child = TRUE;
@@ -674,7 +674,7 @@ function digital_asset_query_by_product_form($form, &$form_state) {
     ->orderBy('title');
   $query->addJoin('INNER', 'field_data_field_pcatid', 'p', 'n.nid = p.entity_id');
   $query->fields('p', ['field_pcatid_value']);
-  $query->addJoin('INNER', 'field_data_field_dam_related_product', 'rp', 'n.nid = rp.field_dam_related_product_nid');
+  $query->addJoin('INNER', 'field_data_field_related_products', 'rp', 'n.nid = rp.field_related_products_target_id');
   $query->isNotNull('field_pcatid_value');
   $result = $query->execute();
   $product_options = [];
@@ -683,19 +683,20 @@ function digital_asset_query_by_product_form($form, &$form_state) {
       $product_options[$row->nid] = $row->title;
     }
   }
+
   $form['product'] = [
     '#type' => 'select',
     '#title' => 'Product',
     '#options' => $product_options,
     '#required' => FALSE,
-    '#default_value' => $form_state['values']['product'] ? $form_state['values']['product'] : (isset($_REQUEST['product'])) ? $_REQUEST['product'] : '',
+    '#default_value' => isset($form_state['values']['product']) ? $form_state['values']['product'] : (isset($_REQUEST['product'])) ? $_REQUEST['product'] : '',
   ];
   $form['language'] = [
     '#type' => 'select',
     '#title' => t('Language'),
     '#options' => ['any' => 'any'] + digital_asset_languages(),
     '#required' => FALSE,
-    '#default_value' => $form_state['values']['language'] ? $form_state['values']['language'] : (isset($_REQUEST['language'])) ? $_REQUEST['language'] : '',
+    '#default_value' => isset($form_state['values']['language']) ? $form_state['values']['language'] : (isset($_REQUEST['language'])) ? $_REQUEST['language'] : '',
   ];
   $type_options = ['any' => 'any'] + digital_asset_asset_types();
   $form['asset_type'] = [
@@ -703,7 +704,7 @@ function digital_asset_query_by_product_form($form, &$form_state) {
     '#title' => t('Asset type'),
     '#options' => $type_options,
     '#required' => FALSE,
-    '#default_value' => $form_state['values']['asset_type'] ? $form_state['values']['asset_type'] : (isset($_REQUEST['asset_type'])) ? $_REQUEST['asset_type'] : '',
+    '#default_value' => isset($form_state['values']['asset_type']) ? $form_state['values']['asset_type'] : (isset($_REQUEST['asset_type'])) ? $_REQUEST['asset_type'] : '',
   ];
   $form['submit'] = [
     '#type' => 'submit',
@@ -718,6 +719,7 @@ function digital_asset_query_by_product_form($form, &$form_state) {
     try {
       $table = digital_asset_query_by_product($parameters);
     } catch (Exception $e) {
+      watchdog('Digital Asset', $e->getMessage());
     }
   }
   else {
@@ -751,11 +753,16 @@ function digital_asset_query_by_product_form_submit($form, &$form_state) {
   try {
     $form_state['digital_asset']['table'] = digital_asset_query_by_product($parameters);
   } catch (Exception $e) {
+    watchdog('Digital Asset', $e->getMessage());
   }
   $form_state['rebuild'] = TRUE;
 }
 
 /**
+ * Returns a table of documents based on Product
+ *
+ * TODO: This should really just be a view. Replace.
+ *
  * @param $parameters
  * @return string
  * @throws \Exception
@@ -775,14 +782,15 @@ function digital_asset_query_by_product($parameters) {
   $query->fields('type', ['field_asset_type_value']);
   $query->addJoin('LEFT', 'field_data_field_dam_document_status', 'status', 'n.nid = status.entity_id');
   $query->fields('status', ['field_dam_document_status_value']);
-  $query->addJoin('INNER', 'field_data_field_dam_related_product', 'rp', 'n.nid = rp.entity_id');
-  $query->condition('field_dam_related_product_nid', $product);
+  $query->addJoin('INNER', 'field_data_field_related_products', 'rp', 'n.nid = rp.entity_id');
+  $query->condition('field_related_products_target_id', $product);
   if (!empty($language) && ($language != 'any')) {
     $query->condition('field_dam_language_value', $language);
   }
   if (!empty($asset_type) && ($asset_type != 'any')) {
     $query->condition('field_asset_type_value', $asset_type);
   }
+
   $header = [
     [
       'data' => 'Document ID',
@@ -812,12 +820,15 @@ function digital_asset_query_by_product($parameters) {
     ->orderByHeader($header)
     ->execute();
   $data = [];
+  // Get the array of possible asset types. We need this to display the proper label.
+  $asset_type_values = field_info_field('field_asset_type');
+  $asset_types = list_allowed_values($asset_type_values);
   foreach ($result as $row) {
     $data[] = [
       l($row->field_dam_document_id_value, 'digital_asset/' . $row->nid),
       fnet_helper_iso_language_to_english($row->field_dam_language_value),
       $row->title,
-      ucwords($row->field_asset_type_value),
+      $asset_types[$row->field_asset_type_value],
       $row->field_dam_document_status_value,
     ];
   }
