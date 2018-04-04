@@ -61,7 +61,6 @@ features[variable][] = pathauto_node_article_pattern
 features[variable][] = pathauto_node_asset_gateway_pattern
 features[variable][] = pathauto_node_award_pattern
 features[variable][] = pathauto_node_blog_article_pattern
-features[variable][] = pathauto_node_cio_brief_pattern
 features[variable][] = pathauto_node_digital_asset_ar_pattern
 features[variable][] = pathauto_node_digital_asset_de_pattern
 features[variable][] = pathauto_node_digital_asset_en-au_pattern
