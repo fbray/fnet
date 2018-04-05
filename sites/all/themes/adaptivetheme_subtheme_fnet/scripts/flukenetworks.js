@@ -219,7 +219,7 @@ function setRegion() {
     }
     setCookie("regLang", regLang, 365, "/", finalDomain);
 
-    $('#selectRegionBox').slideUp(400);
+    jQuery('#selectRegionBox').slideUp(400);
     grayOut(false);
 
     var sHostname = regLang.split("-");
