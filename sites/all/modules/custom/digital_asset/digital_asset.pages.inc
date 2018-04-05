@@ -714,7 +714,8 @@ function digital_asset_query_by_product_form($form, &$form_state) {
     $parameters = $_REQUEST;
     unset($parameters['page']);
     if (empty($parameters['product'])) {
-      $parameters['product'] = array_shift(array_keys($product_options));
+      $option_keys = array_keys($product_options);
+      $parameters['product'] = array_shift($option_keys);
     }
     try {
       $table = digital_asset_query_by_product($parameters);
