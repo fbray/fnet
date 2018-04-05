@@ -25,6 +25,7 @@ class FNETPressReleaseMigration extends DrupalNode7Migration {
 
     // Individual Fields
     $this->addFieldMapping('field_language_region', 'field_news_langreg');
+    $this->addFieldMapping('body:language', 'body:language');
 
     // Date fields
     $this->addFieldMapping('field_release_date', 'field_news_date');
