@@ -199,7 +199,7 @@ function sales_insider_preprocess_page(&$vars) {
     $regional_groups = [];
     $vars['page']['#access_extranet'] = FALSE;
     $vars['page']['#node_edit_link'] = FALSE;
-    if (user_access('access_extranet')) {
+    if (user_access('access extranet')) {
       $vars['page']['#access_extranet'] = TRUE;
       $groups = group_membership_load_by_user($user->uid);
 
@@ -245,7 +245,7 @@ function _sales_insider_initial_content() {
    */
   if (user_is_logged_in()) {
     // Yes? Excellent. Let the user in.
-    if (user_access('access_extranet')) {
+    if (user_access('access extranet')) {
       // If the user has access to the Extranet...
       $content = variable_get('extranet_instructions_main', '');
       return $content;
@@ -322,7 +322,7 @@ function _sales_insider_initial_content() {
 
         // TODO: Modify the Request Form to deal with multiple groups,
         // if only as a failover.
-        $request_form = drupal_get_form('sales_insider_request_form', $group);
+        $request_form = drupal_get_form('sales_insider_custom_request_form', $group);
         return $request_form;
       }
     }
@@ -661,7 +661,7 @@ function sales_insider_form_views_exposed_form_alter(&$form, &$form_state) {
     // is not the expected view.
     return;
   }
-  if (isset($form['field_dam_asset_type_value'])) {
+  if (isset($form['field_asset_type_value'])) {
     // Add option to select all items (equals to resetting the filter).
     $options = [
       'All' => variable_get('views_exposed_filter_any_label', 'new_any') == 'old_any' ? t('<Any>') : t('- Any -'),
