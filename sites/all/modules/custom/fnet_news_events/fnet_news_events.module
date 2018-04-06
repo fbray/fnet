@@ -86,7 +86,7 @@ function news_events() {
 function fnet_news_events_entity_view($entity, $type, $view_mode, $langcode) {
   if ($view_mode == 'teaser') {
     if (($type == 'node') && (in_array($entity->type, array(
-      'pressrelease',
+      'press_release',
       'award',
     )))) {
 
@@ -289,6 +289,12 @@ function fnet_news_events_views_api() {
  * Callback for /news-list page.
  *
  * TODO: Replace this with a View.
+ *
+ * @param int $range
+ *   The number of items to show.
+ *
+ * @return string
+ *   The rendered node objects for display.
  */
 function get_news_html($range = NULL) {
   $siteReg = module_invoke('fnet_helper', 'site_region');
@@ -346,6 +352,12 @@ function get_news_nids($regLang, $range = NULL) {
  * Callback for /awards-list page.
  *
  * TODO: Replace this with a View.
+ *
+ * @param int $range
+ *   The number of items to show.
+ *
+ * @return string
+ *   The rendered node objects for display.
  */
 function get_awards_html($range = NULL) {
   $siteReg = module_invoke('fnet_helper', 'site_region');
@@ -404,6 +416,12 @@ function get_awards_nids($regLang, $range = NULL) {
  * Callback for /news-events/* pages/blocks.
  *
  * TODO: Replace this with a View.
+ *
+ * @param int $range
+ *   The number of items to show.
+ *
+ * @return string
+ *   The rendered node objects for display.
  */
 function get_event_html($type, $range = NULL) {
 
