@@ -11,198 +11,6 @@
 function fnet_news_events_field_default_field_instances() {
   $field_instances = array();
 
-  /* For Press Release Content Type */
-  // Exported field_instance: 'node-press_release-body'.
-  $field_instances['node-press_release-body'] = array(
-    'bundle' => 'press_release',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'module' => 'text',
-        'settings' => array(),
-        'type' => 'text_default',
-        'weight' => 0,
-      ),
-      'teaser' => array(
-        'label' => 'hidden',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 1,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'body',
-    'label' => 'Body',
-    'required' => FALSE,
-    'settings' => array(
-      'display_summary' => TRUE,
-      'entity_translation_sync' => FALSE,
-      'text_processing' => 1,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'module' => 'text',
-      'settings' => array(
-        'rows' => 20,
-        'summary_rows' => 5,
-      ),
-      'type' => 'text_textarea_with_summary',
-      'weight' => 41,
-    ),
-  );
-
-  // Exported field_instance: 'node-press_release-field_language_region'.
-  $field_instances['node-press_release-field_language_region'] = array(
-    'bundle' => 'press_release',
-    'default_value' => NULL,
-    'default_value_function' => '',
-    'default_value_php' => '',
-    'deleted' => 0,
-    'description' => '<ul>
-<li>en-us (<strong>English/United States</strong>)</li>
-<li>en-au (<strong>English/Australia</strong>)</li>
-<li>en-ca (<strong>English/Canada</strong>)</li>
-<li>en-eu (<strong>English/Europe</strong>)</li>
-<li>en-in (<strong>English/India</strong>)</li>
-<li>en-ln (<strong>English/Latin America</strong>)</li>
-<li>en-su (<strong>English/Southeast Asia</strong>)</li>
-<li>fr-eu (<strong>French/Europe</strong>)</li>
-<li>fr-ca (<strong>French/Canada</strong>)</li>
-<li>de-eu (<strong>German/Europe</strong>)</li>
-<li>es-eu (<strong>Spanish/Europe</strong>)</li>
-<li>es-ln (<strong>Spanish/Latin America</strong>)</li>
-<li>pt-eu (<strong>Portuguese/Europe</strong>)</li>
-<li>pt-br (<strong>Portuguese/Brazil</strong>)</li>
-<li>cn-zh (<strong>Chinese/China</strong>)</li>
-<li>jp-ja (<strong>Japanese/Japan</strong>)</li>
-<li>ko-kr (<strong>Korean/Korea</strong>)</li>
-<li>ru-ru (<strong>Russian/Russia</strong>)</li>
-</ul>',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 2,
-      ),
-      'teaser' => array(
-        'label' => 'hidden',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 2,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_language_region',
-    'label' => 'Language/Region',
-    'required' => 0,
-    'settings' => array(
-      'entity_translation_sync' => FALSE,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_buttons',
-      'weight' => 44,
-    ),
-  );
-
-  // Exported field_instance: 'node-press_release-field_release_date'.
-  $field_instances['node-press_release-field_release_date'] = array(
-    'bundle' => 'press_release',
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'module' => 'date',
-        'settings' => array(
-          'format_type' => 'default',
-          'fromto' => 'both',
-          'multiple_from' => '',
-          'multiple_number' => '',
-          'multiple_to' => '',
-          'show_remaining_days' => 0,
-        ),
-        'type' => 'date_default',
-        'weight' => 1,
-      ),
-      'teaser' => array(
-        'label' => 'hidden',
-        'module' => 'date',
-        'settings' => array(
-          'format_type' => 'default',
-          'fromto' => 'both',
-          'multiple_from' => '',
-          'multiple_number' => '',
-          'multiple_to' => '',
-          'show_remaining_days' => 0,
-        ),
-        'type' => 'date_default',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_release_date',
-    'label' => 'Release Date',
-    'required' => 1,
-    'settings' => array(
-      'default_value' => 'now',
-      'default_value2' => 'same',
-      'default_value_code' => '',
-      'default_value_code2' => '',
-      'entity_translation_sync' => FALSE,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'date',
-      'settings' => array(
-        'increment' => 15,
-        'input_format' => 'm/d/Y - H:i:s',
-        'input_format_custom' => '',
-        'label_position' => 'above',
-        'no_fieldset' => 0,
-        'text_parts' => array(),
-        'year_range' => '-3:+3',
-      ),
-      'type' => 'date_popup',
-      'weight' => 42,
-    ),
-  );
-
-  // Translatables
-  // Included for use with string extractors like potx.
-  t('<ul>
-<li>en-us (<strong>English/United States</strong>)</li>
-<li>en-au (<strong>English/Australia</strong>)</li>
-<li>en-ca (<strong>English/Canada</strong>)</li>
-<li>en-eu (<strong>English/Europe</strong>)</li>
-<li>en-in (<strong>English/India</strong>)</li>
-<li>en-ln (<strong>English/Latin America</strong>)</li>
-<li>en-su (<strong>English/Southeast Asia</strong>)</li>
-<li>fr-eu (<strong>French/Europe</strong>)</li>
-<li>fr-ca (<strong>French/Canada</strong>)</li>
-<li>de-eu (<strong>German/Europe</strong>)</li>
-<li>es-eu (<strong>Spanish/Europe</strong>)</li>
-<li>es-ln (<strong>Spanish/Latin America</strong>)</li>
-<li>pt-eu (<strong>Portuguese/Europe</strong>)</li>
-<li>pt-br (<strong>Portuguese/Brazil</strong>)</li>
-<li>cn-zh (<strong>Chinese/China</strong>)</li>
-<li>jp-ja (<strong>Japanese/Japan</strong>)</li>
-<li>ko-kr (<strong>Korean/Korea</strong>)</li>
-<li>ru-ru (<strong>Russian/Russia</strong>)</li>
-</ul>');
-  t('Body');
-  t('Language/Region');
-  t('Release Date');
-
-  /* For Award Content Type */
   // Exported field_instance: 'node-award-body'.
   $field_instances['node-award-body'] = array(
     'bundle' => 'award',
@@ -466,6 +274,170 @@ function fnet_news_events_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-press_release-body'.
+  $field_instances['node-press_release-body'] = array(
+    'bundle' => 'press_release',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'hidden',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 1,
+      ),
+      'teaser' => array(
+        'label' => 'hidden',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 1,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'body',
+    'label' => 'Body',
+    'required' => FALSE,
+    'settings' => array(
+      'display_summary' => TRUE,
+      'entity_translation_sync' => FALSE,
+      'text_processing' => 1,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'module' => 'text',
+      'settings' => array(
+        'rows' => 20,
+        'summary_rows' => 5,
+      ),
+      'type' => 'text_textarea_with_summary',
+      'weight' => 41,
+    ),
+  );
+
+  // Exported field_instance: 'node-press_release-field_language_region'.
+  $field_instances['node-press_release-field_language_region'] = array(
+    'bundle' => 'press_release',
+    'default_value' => NULL,
+    'default_value_function' => '',
+    'default_value_php' => '',
+    'deleted' => 0,
+    'description' => '<ul>
+<li>en-us (<strong>English/United States</strong>)</li>
+<li>en-au (<strong>English/Australia</strong>)</li>
+<li>en-ca (<strong>English/Canada</strong>)</li>
+<li>en-eu (<strong>English/Europe</strong>)</li>
+<li>en-in (<strong>English/India</strong>)</li>
+<li>en-ln (<strong>English/Latin America</strong>)</li>
+<li>en-su (<strong>English/Southeast Asia</strong>)</li>
+<li>fr-eu (<strong>French/Europe</strong>)</li>
+<li>fr-ca (<strong>French/Canada</strong>)</li>
+<li>de-eu (<strong>German/Europe</strong>)</li>
+<li>es-eu (<strong>Spanish/Europe</strong>)</li>
+<li>es-ln (<strong>Spanish/Latin America</strong>)</li>
+<li>pt-eu (<strong>Portuguese/Europe</strong>)</li>
+<li>pt-br (<strong>Portuguese/Brazil</strong>)</li>
+<li>cn-zh (<strong>Chinese/China</strong>)</li>
+<li>jp-ja (<strong>Japanese/Japan</strong>)</li>
+<li>ko-kr (<strong>Korean/Korea</strong>)</li>
+<li>ru-ru (<strong>Russian/Russia</strong>)</li>
+</ul>',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'label' => 'hidden',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 2,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_language_region',
+    'label' => 'Language/Region',
+    'required' => 0,
+    'settings' => array(
+      'entity_translation_sync' => FALSE,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 44,
+    ),
+  );
+
+  // Exported field_instance: 'node-press_release-field_release_date'.
+  $field_instances['node-press_release-field_release_date'] = array(
+    'bundle' => 'press_release',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'hidden',
+        'module' => 'date',
+        'settings' => array(
+          'format_type' => 'default',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => 0,
+        ),
+        'type' => 'date_default',
+        'weight' => 0,
+      ),
+      'teaser' => array(
+        'label' => 'hidden',
+        'module' => 'date',
+        'settings' => array(
+          'format_type' => 'default',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => 0,
+        ),
+        'type' => 'date_default',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_release_date',
+    'label' => 'Release Date',
+    'required' => 1,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'entity_translation_sync' => FALSE,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_popup',
+      'weight' => 42,
+    ),
+  );
+
   // Translatables
   // Included for use with string extractors like potx.
   t('<ul>
@@ -495,6 +467,7 @@ function fnet_news_events_field_default_field_instances() {
   t('Intro');
   t('Language/Region');
   t('Optional external URL for linking to another site.');
+  t('Release Date');
 
   return $field_instances;
 }

@@ -19,14 +19,6 @@ function fnet_news_events_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function fnet_news_events_node_info() {
   $items = array(
-    'press_release' => array(
-      'name' => t('Press Release'),
-      'base' => 'node_content',
-      'description' => t('Press Releases to display on News page.'),
-      'has_title' => '1',
-      'title_label' => t('Title'),
-      'help' => '',
-    ),
     'award' => array(
       'name' => t('Award'),
       'base' => 'node_content',
@@ -35,8 +27,15 @@ function fnet_news_events_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'press_release' => array(
+      'name' => t('Press Release'),
+      'base' => 'node_content',
+      'description' => t('Press Releases to display on News page.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
   );
-
   drupal_alter('node_info', $items);
   return $items;
 }
