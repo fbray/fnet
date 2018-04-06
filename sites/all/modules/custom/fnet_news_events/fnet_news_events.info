@@ -1,7 +1,33 @@
 name = FNET News, Events, & Awards
 package = Fluke Networks
 description = "News, Events, and Award pages on the Fluke Networks site."
-version = 7.x.1.0-20180117
+version = 7.x.1.0-20180406
 core = 7.x
 
+dependencies[] = ctools
+dependencies[] = date
+dependencies[] = features
+dependencies[] = options
+dependencies[] = path_patterns
+dependencies[] = products
+dependencies[] = strongarm
+dependencies[] = text
 dependencies[] = views
+
+features[ctools][] = strongarm:strongarm:1
+features[features_api][] = api:2
+features[field_base][] = field_release_date
+features[field_instance][] = node-press_release-body
+features[field_instance][] = node-press_release-field_language_region
+features[field_instance][] = node-press_release-field_release_date
+features[node][] = press_release
+features[variable][] = diff_enable_revisions_page_node_press_release
+features[variable][] = diff_show_preview_changes_node_press_release
+features[variable][] = diff_view_mode_preview_node_press_release
+features[variable][] = field_bundle_settings_node__press_release
+features[variable][] = language_content_type_press_release
+features[variable][] = menu_options_press_release
+features[variable][] = menu_parent_press_release
+features[variable][] = node_options_press_release
+features[variable][] = node_preview_press_release
+features[variable][] = node_submitted_press_release
