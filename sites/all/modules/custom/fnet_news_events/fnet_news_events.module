@@ -447,11 +447,9 @@ function get_event_html($type, $range = NULL) {
   else {
 
     $event_tid = 0;
-    $tids = taxonomy_get_term_by_name($type);
+    $tids = taxonomy_get_term_by_name($type, 'event_types');
     foreach ($tids as $term) {
-      if ($term->vocabulary_machine_name = 'event_type') {
-        $event_tid = $term->tid;
-      }
+      $event_tid = $term->tid;
     }
 
     $nodes = node_load_multiple(get_event_nids($type, $event_tid, $regLang, $range));
