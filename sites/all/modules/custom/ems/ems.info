@@ -1,21 +1,22 @@
 name = Event Management System (EMS)
-package = Fluke Networks
 description = The EMS module allows registration for an (event_occurrence) node, and interfaces with Marketo.
-version = "7.x-1.1"
 core = 7.x
-
+package = Fluke Networks
+version = 7.x-1.1
 dependencies[] = addressfield
-dependencies[] = marketo_api
-dependencies[] = locale
-dependencies[] = views
 dependencies[] = date
 dependencies[] = entityreference
 dependencies[] = features
 dependencies[] = link
 dependencies[] = list
+dependencies[] = locale
+dependencies[] = marketo_api
 dependencies[] = options
+dependencies[] = path_patterns
+dependencies[] = products
 dependencies[] = text
-
+dependencies[] = views
+features[ctools][] = strongarm:strongarm:1
 features[features_api][] = api:2
 features[field_base][] = field_event_date
 features[field_base][] = field_event_types
@@ -32,6 +33,15 @@ features[field_instance][] = node-event-field_related_products
 features[field_instance][] = node-event-field_tracking_code
 features[field_instance][] = node-event-field_workshop_reglink
 features[node][] = event
-
+features[variable][] = diff_enable_revisions_page_node_event
+features[variable][] = diff_show_preview_changes_node_event
+features[variable][] = diff_view_mode_preview_node_event
+features[variable][] = field_bundle_settings_node__event
+features[variable][] = language_content_type_event
+features[variable][] = menu_options_event
+features[variable][] = menu_parent_event
+features[variable][] = node_options_event
+features[variable][] = node_preview_event
+features[variable][] = node_submitted_event
 files[] = library/base62.php
 files[] = ems_registration.class.php
