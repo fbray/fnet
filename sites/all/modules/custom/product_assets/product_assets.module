@@ -360,7 +360,8 @@ function product_assets_manuals_results_page($product_id = NULL) {
   $product_id = (int) check_plain(urldecode($product_id));
   $digital_asset_type = ['manual', 'product_software_release_notes'];
   $download_link_base = '/findit/';
-  $output = drupal_render(drupal_get_form('product_assets_manuals_form', $product_id));
+  $form = drupal_get_form('product_assets_manuals_form', $product_id);
+  $output = drupal_render($form);
 
   if (function_exists('digital_asset_list_by_product')) {
     $assets = digital_asset_list_by_product($product_id, $language, $digital_asset_type);
