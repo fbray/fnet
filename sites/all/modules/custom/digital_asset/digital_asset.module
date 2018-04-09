@@ -1350,6 +1350,7 @@ function digital_asset_list_by_product($pcat_id, $language = 'en', $asset_type =
   if (!empty($asset_type) && !is_array($asset_type)) {
     $asset_type = [$asset_type];
   }
+  // TODO: Clean this up and test for results.
 
   $gold_number = check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_gold_number')));
   $gold_pin = check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_gold_pin')));
@@ -1384,12 +1385,13 @@ function digital_asset_list_by_product($pcat_id, $language = 'en', $asset_type =
     $query->condition('field_dam_document_status_value', 'live');
     $query->condition('field_dam_entitlement_level_value', 'do_not_display', '<>');
     if (!empty($asset_type)) {
-      $query->condition('field_asset_type_target_id', $asset_type, 'IN');
+      $query->condition('field_asset_type_value', $asset_type, 'IN');
     }
     $query->orderBy('weight.weight', 'ASC');
     $query->orderBy('field_asset_type_value');
     $query->orderBy('r.title');
     $result = $query->distinct()->execute();
+
     foreach ($result as $row) {
       $output = new stdClass();
       $output->AssetID = $row->field_dam_document_id_value;

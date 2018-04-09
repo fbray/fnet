@@ -220,7 +220,6 @@ function product_assets_get_valid_products($type = NULL) {
  */
 function product_assets_form_generator($product_id = 0, $asset_type = NULL, $title = NULL) {
   drupal_add_css(drupal_get_path('module', 'product_assets') . '/css/product_assets.css');
-
   $form = [];
   if (!empty($title)) {
     $form['title'] = [
@@ -259,8 +258,8 @@ function _product_assets_trademark_decode($element, $children) {
  */
 function product_assets_download_form($form, $form_state, $product_id = NULL) {
   $form = product_assets_form_generator($product_id, [
-    'product software',
-    'product software release notes',
+    'product_software',
+    'product_software_release_notes',
   ], 'Downloads');
   return $form;
 }
@@ -292,8 +291,8 @@ function product_assets_download_results_page($product_id = NULL) {
   $language = $siteReg["lang"];
   $product_id = (int) check_plain(urldecode($product_id));
   $digital_asset_type = [
-    'product software',
-    'product software release notes',
+    'product_software',
+    'product_software_release_notes',
   ];
   $download_link_base = '/findit/';
   $download_form = drupal_get_form('product_assets_download_form', $product_id);
@@ -330,7 +329,7 @@ function product_assets_download_results_page($product_id = NULL) {
  * @return array
  */
 function product_assets_manuals_form($form, $form_state, $product_id = NULL) {
-  $form = product_assets_form_generator($product_id, 'manuals', 'Manuals');
+  $form = product_assets_form_generator($product_id, 'manual', 'Manuals');
   return $form;
 }
 
@@ -359,7 +358,7 @@ function product_assets_manuals_results_page($product_id = NULL) {
   $siteReg = module_invoke('fnet_helper', 'site_region');
   $language = $siteReg["lang"];
   $product_id = (int) check_plain(urldecode($product_id));
-  $digital_asset_type = ['manuals', 'product software release notes'];
+  $digital_asset_type = ['manual', 'product_software_release_notes'];
   $download_link_base = '/findit/';
   $output = drupal_render(drupal_get_form('product_assets_manuals_form', $product_id));
 
@@ -392,7 +391,7 @@ function product_assets_manuals_results_page($product_id = NULL) {
  * @return array
  */
 function product_assets_training_form($form, $form_state, $product_id = NULL) {
-  $form = product_assets_form_generator($product_id, 'gold training');
+  $form = product_assets_form_generator($product_id, 'gold_training');
   return $form;
 }
 
@@ -420,7 +419,7 @@ function product_assets_training_results_page($product_id = NULL) {
   $siteReg = module_invoke('fnet_helper', 'site_region');
   $language = $siteReg["lang"];
   $product_id = (int) check_plain(urldecode($product_id));
-  $digital_asset_type = 'gold training';
+  $digital_asset_type = 'gold_training';
   $download_link_base = '/findit/';
   $form = drupal_get_form('product_assets_training_form', $product_id);
   $output = drupal_render($form);
@@ -507,19 +506,19 @@ function product_assets_technical_docs_page($op, $industry = -1) {
   $language = $siteReg["lang"];
   switch ($op) {
     case 'whitepapers':
-      $digital_asset_type = 'white papers';
+      $digital_asset_type = 'white_paper';
       break;
 
     case 'application-notes':
-      $digital_asset_type = 'application notes';
+      $digital_asset_type = 'application_notes';
       break;
 
     case 'datasheets':
-      $digital_asset_type = 'data sheets';
+      $digital_asset_type = 'data_sheet';
       break;
 
     case 'webcasts':
-      $digital_asset_type = 'webcasts';
+      $digital_asset_type = 'webcast';
       break;
 
     default:
