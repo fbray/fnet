@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Code for  news events.
+ * Code for news events.
  */
 
+include_once 'fnet_news_events.features.inc';
+
 /**
- * Implementation of hook_menu().
- *
- * @return array
+ * Implements hook_menu().
  */
 function fnet_news_events_menu() {
 
@@ -16,27 +16,27 @@ function fnet_news_events_menu() {
 
   $items['news-events'] = array(
     'type' => MENU_NORMAL_ITEM,
-    'title' => t('News and Events'),
+    'title' => 'News and Events',
     'access arguments' => array('access content'),
     'page callback' => 'news_events',
   );
   $items['news-list'] = array(
     'type' => MENU_NORMAL_ITEM,
-    'title' => t('News'),
+    'title' => 'News',
     'access arguments' => array('access content'),
     'page callback' => 'get_news_html',
   );
 
   $items['awards-list'] = array(
     'type' => MENU_NORMAL_ITEM,
-    'title' => t('Awards'),
+    'title' => 'Awards',
     'access arguments' => array('access content'),
     'page callback' => 'get_awards_html',
   );
 
   $items['news-events/training'] = array(
     'type' => MENU_NORMAL_ITEM,
-    'title' => t('Training'),
+    'title' => 'Training',
     'access arguments' => array('access content'),
     'page callback' => 'get_event_html',
     'page arguments' => array('Training'),
@@ -44,28 +44,28 @@ function fnet_news_events_menu() {
 
   $items['news-events/tradeshows'] = array(
     'type' => MENU_NORMAL_ITEM,
-    'title' => t('Trade Shows'),
+    'title' => 'Trade Shows',
     'access arguments' => array('access content'),
     'page callback' => 'get_event_html',
     'page arguments' => array('Trade Shows'),
   );
   $items['news-events/webcasts'] = array(
     'type' => MENU_NORMAL_ITEM,
-    'title' => t('Webcasts'),
+    'title' => 'Webcasts',
     'access arguments' => array('access content'),
     'page callback' => 'get_event_html',
     'page arguments' => array('Webcasts'),
   );
   $items['news-events/workshops'] = array(
     'type' => MENU_NORMAL_ITEM,
-    'title' => t('Workshops'),
+    'title' => 'Workshops',
     'access arguments' => array('access content'),
     'page callback' => 'get_event_html',
     'page arguments' => array('Workshops'),
   );
   $items['news-events/seminars'] = array(
     'type' => MENU_NORMAL_ITEM,
-    'title' => t('Seminars'),
+    'title' => 'Seminars',
     'access arguments' => array('access content'),
     'page callback' => 'get_event_html',
     'page arguments' => array('Seminars'),
@@ -74,28 +74,24 @@ function fnet_news_events_menu() {
   return $items;
 }
 
+/**
+ * Callback for /news-events page.
+ */
 function news_events() {
-
-  drupal_set_title( t('News and Events') );
+  drupal_set_title(t('News and Events'));
   return '';
-
 }
 
 /**
  * Implements hook_entity_view().
- *
- * @param $entity
- * @param $type
- * @param $view_mode
- * @param $langcode
  */
 function fnet_news_events_entity_view($entity, $type, $view_mode, $langcode) {
   if ($view_mode == 'teaser') {
     if (($type == 'node') && (in_array($entity->type, array(
-        'pressrelease',
-        'award'
-      )))) {
-      //        $entity->content['body'] = array();
+      'press_release',
+      'award',
+    )))) {
+
       $entity->content['links'] = array();
       $entity->content['title'] = array(
         '#theme' => 'link',
@@ -123,7 +119,6 @@ function fnet_news_events_entity_view($entity, $type, $view_mode, $langcode) {
 
     if (($type == 'node') && ($entity->type == 'event')) {
 
-      //        $entity->content['body'] = array();
       $entity->field_workshop_reglink = array();
       $entity->location = array();
       $entity->locations = array();
@@ -149,15 +144,13 @@ function fnet_news_events_entity_view($entity, $type, $view_mode, $langcode) {
 }
 
 /**
- * Implements hook_block_info()
- *
- * @return array
+ * Implements hook_block_info().
  */
 function fnet_news_events_block_info() {
 
   $blocks = array();
   $blocks['news_block'] = array(
-    'info' => t('News-Events: Press Release (News) '),
+    'info' => t('News-Events: Press Release (News)'),
     'cache' => DRUPAL_CACHE_CUSTOM,
     'region' => 'content_column_one',
     'status' => 1,
@@ -167,7 +160,7 @@ function fnet_news_events_block_info() {
   );
 
   $blocks['awards_block'] = array(
-    'info' => t('News-Events: Awards '),
+    'info' => t('News-Events: Awards'),
     'cache' => DRUPAL_CACHE_CUSTOM,
     'region' => 'content_column_one',
     'status' => 1,
@@ -230,12 +223,8 @@ function fnet_news_events_block_info() {
 
 }
 
-
 /**
  * Implements hook_block_view().
- *
- * @param string $delta
- * @return array
  */
 function fnet_news_events_block_view($delta = '') {
   $block = array();
@@ -290,8 +279,6 @@ function fnet_news_events_block_view($delta = '') {
 
 /**
  * Implements hook_views_api().
- *
- * @return array
  */
 function fnet_news_events_views_api() {
   return [
@@ -301,11 +288,17 @@ function fnet_news_events_views_api() {
 }
 
 /**
+ * Callback for /news-list page.
+ *
  * TODO: Replace this with a View.
- * @param null $range
+ *
+ * @param int $range
+ *   The number of items to show.
+ *
  * @return string
+ *   The rendered node objects for display.
  */
-function get_news_html($range=NULL) {
+function get_news_html($range = NULL) {
   $siteReg = module_invoke('fnet_helper', 'site_region');
   $regLang = $siteReg["regLang"];
 
@@ -323,7 +316,7 @@ function get_news_html($range=NULL) {
   }
   else {
     $nodes = node_load_multiple(get_news_nids($regLang, $range));
-    $rendered = ''; // "no results" ?
+    $rendered = '';
     if (count($nodes) > 0) {
       $nodes_to_render = node_view_multiple($nodes, 'teaser');
       $rendered = render($nodes_to_render);
@@ -334,11 +327,9 @@ function get_news_html($range=NULL) {
 }
 
 /**
- * @param $regLang
- * @param null $range
- * @return array
+ * Helper function to retrieve the appropriate node ids.
  */
-function get_news_nids($regLang, $range=NULL) {
+function get_news_nids($regLang, $range = NULL) {
 
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'node')
@@ -360,11 +351,17 @@ function get_news_nids($regLang, $range=NULL) {
 }
 
 /**
+ * Callback for /awards-list page.
+ *
  * TODO: Replace this with a View.
- * @param null $range
+ *
+ * @param int $range
+ *   The number of items to show.
+ *
  * @return string
+ *   The rendered node objects for display.
  */
-function get_awards_html($range=NULL) {
+function get_awards_html($range = NULL) {
   $siteReg = module_invoke('fnet_helper', 'site_region');
   $regLang = $siteReg["regLang"];
 
@@ -393,13 +390,11 @@ function get_awards_html($range=NULL) {
 }
 
 /**
- * TODO: Replace this with a View.
+ * Helper function to get the appropriate node ids.
  *
- * @param $regLang
- * @param null $range
- * @return array
+ * TODO: Replace this with a View.
  */
-function get_awards_nids($regLang, $range=NULL) {
+function get_awards_nids($regLang, $range = NULL) {
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'award')
@@ -420,13 +415,19 @@ function get_awards_nids($regLang, $range=NULL) {
 }
 
 /**
+ * Callback for /news-events/* pages/blocks.
+ *
  * TODO: Replace this with a View.
  *
- * @param $type
- * @param null $range
+ * @param string $type
+ *   The type of event nodes to display.
+ * @param int $range
+ *   The number of items to show.
+ *
  * @return string
+ *   The rendered node objects for display.
  */
-function get_event_html($type, $range=NULL) {
+function get_event_html($type, $range = NULL) {
 
   $siteReg = module_invoke('fnet_helper', 'site_region');
   $regLang = $siteReg["regLang"];
@@ -446,11 +447,9 @@ function get_event_html($type, $range=NULL) {
   else {
 
     $event_tid = 0;
-    $tids = taxonomy_get_term_by_name($type);
+    $tids = taxonomy_get_term_by_name($type, 'event_types');
     foreach ($tids as $term) {
-      if ($term->vocabulary_machine_name = 'event_type') {
-        $event_tid = $term->tid;
-      }
+      $event_tid = $term->tid;
     }
 
     $nodes = node_load_multiple(get_event_nids($type, $event_tid, $regLang, $range));
@@ -467,22 +466,18 @@ function get_event_html($type, $range=NULL) {
 }
 
 /**
+ * Helper function to retrieve the appropriate node ids.
+ *
  * TODO: Replace this with a View.
- * @param $type
- * @param $tid
- * @param $regLang
- * @param int $range
- * @return array
  */
-function get_event_nids($type, $tid, $regLang, $range=50) {
+function get_event_nids($type, $tid, $regLang, $range = 50) {
 
   $today = date('Y-m-d 00:00:00');
   $today = str_replace(' ', 'T', $today);
   $expired_nids = array();
 
   // Needs future date, or no date:
-  // Webcasts, Training, Trade Shows, Seminars, Workshops
-
+  // Webcasts, Training, Trade Shows, Seminars, Workshops.
   $query = new EntityFieldQuery();
   $expired_nodes = $query->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'event')
@@ -494,13 +489,11 @@ function get_event_nids($type, $tid, $regLang, $range=50) {
     $expired_nids = array_keys($expired_nodes['node']);
   }
 
-
   // We want items with either a future date, or no date set
   // Queries lack a good 'OR' so as workaround:
   // * Get all NIDs for items with a date in the past
   // * Do another query for all items
-  // * Remove the items in the first query from the second query
-
+  // * Remove the items in the first query from the second query.
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'event')
