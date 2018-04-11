@@ -4,7 +4,6 @@
  * @file
  * Collection of Blog Articles.
  */
-
 $view = new view();
 $view->name = 'blog_articles';
 $view->description = 'Aggregates Blog Article content types which can be filtered by category.';
@@ -103,15 +102,6 @@ $handler->display->display_options['fields']['created']['element_label_colon'] =
 $handler->display->display_options['fields']['created']['date_format'] = 'custom';
 $handler->display->display_options['fields']['created']['custom_date_format'] = 'Y-m-d';
 $handler->display->display_options['fields']['created']['second_date_format'] = 'long';
-/* Field: Realname: Real name */
-$handler->display->display_options['fields']['realname']['id'] = 'realname';
-$handler->display->display_options['fields']['realname']['table'] = 'realname';
-$handler->display->display_options['fields']['realname']['field'] = 'realname';
-$handler->display->display_options['fields']['realname']['relationship'] = 'uid';
-$handler->display->display_options['fields']['realname']['label'] = '';
-$handler->display->display_options['fields']['realname']['exclude'] = TRUE;
-$handler->display->display_options['fields']['realname']['element_label_colon'] = FALSE;
-$handler->display->display_options['fields']['realname']['link_to_user'] = FALSE;
 /* Field: Content: Title */
 $handler->display->display_options['fields']['title']['id'] = 'title';
 $handler->display->display_options['fields']['title']['table'] = 'node';
@@ -241,26 +231,8 @@ $handler->display->display_options['defaults']['pager'] = FALSE;
 $handler->display->display_options['pager']['type'] = 'some';
 $handler->display->display_options['pager']['options']['items_per_page'] = '3';
 $handler->display->display_options['pager']['options']['offset'] = '0';
+$handler->display->display_options['exposed_block'] = TRUE;
 $handler->display->display_options['defaults']['header'] = FALSE;
-/* Header: Global: Text area */
-$handler->display->display_options['header']['area']['id'] = 'area';
-$handler->display->display_options['header']['area']['table'] = 'views';
-$handler->display->display_options['header']['area']['field'] = 'area';
-$handler->display->display_options['header']['area']['content'] = '<div id="blog-header-all">
-    <h1 class="blog-title"><span>Fluke Networks Blog</span></h1>
-    <ul class="blog-list columns-2">
-        <li class="first">
-            <a href="/blog/cabling-chronicles"><h2>Cabling Chronicles</h2></a>
-            <div class="copy">
-                <p>Copper and Fiber cabling industry news, standard changes/updates, customer insights and shared learnings.</p>
-            </div>
-            <div class="btn_100p">
-                <a href="/blog/cabling-chronicles">Read More</a>
-            </div>
-        </li>
-    </ul>
-</div>';
-$handler->display->display_options['header']['area']['format'] = 'full_html';
 $handler->display->display_options['path'] = 'blog';
 
 /* Display: Cabling Chronicles */
@@ -268,6 +240,8 @@ $handler = $view->new_display('page', 'Cabling Chronicles', 'cabling_chronicles'
 $handler->display->display_options['defaults']['title'] = FALSE;
 $handler->display->display_options['title'] = 'Blog: Cabling Chronicles';
 $handler->display->display_options['display_description'] = 'Cabling Chronicles blog';
+$handler->display->display_options['defaults']['access'] = FALSE;
+$handler->display->display_options['access']['type'] = 'perm';
 $handler->display->display_options['exposed_block'] = TRUE;
 $handler->display->display_options['defaults']['header'] = FALSE;
 /* Header: Global: Text area */
@@ -277,3 +251,4 @@ $handler->display->display_options['header']['area']['field'] = 'area';
 $handler->display->display_options['header']['area']['content'] = '<h1 class="blog-title"><span>Cabling Chronicles</span></h1>';
 $handler->display->display_options['header']['area']['format'] = 'full_html';
 $handler->display->display_options['path'] = 'blog/cabling-chronicles';
+
