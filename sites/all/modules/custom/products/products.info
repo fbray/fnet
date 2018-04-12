@@ -291,3 +291,4 @@ features[node][] = product_display
 features[node][] = product_feature
 features[node][] = product_language
 features[node][] = product_sub_type
+features[views_view][] = product_content
