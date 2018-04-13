@@ -2,7 +2,7 @@
 
 /**
  * @file
- * product_category.view
+ * product_category.view.inc
  */
 
 $view = new view();

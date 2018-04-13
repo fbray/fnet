@@ -1,10 +1,10 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 9/20/17
- * Time: 4:21 PM
+ * @file
+ * product_family.view.inc
  */
+
 $view = new view();
 $view->name = 'product_family';
 $view->description = '';
@@ -432,4 +432,3 @@ $handler->display->display_options['filters']['type']['field'] = 'type';
 $handler->display->display_options['filters']['type']['value'] = array(
   'product_display' => 'product_display',
 );
-
