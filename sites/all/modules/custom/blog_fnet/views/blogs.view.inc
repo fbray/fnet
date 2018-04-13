@@ -4,6 +4,7 @@
  * @file
  * Collection of Blog Articles.
  */
+
 $view = new view();
 $view->name = 'blog_articles';
 $view->description = 'Aggregates Blog Article content types which can be filtered by category.';
@@ -226,6 +227,7 @@ $handler->display->display_options['filters']['field_blog_categories_target_id']
 
 /* Display: All */
 $handler = $view->new_display('page', 'All', 'page');
+$handler->display->display_options['enabled'] = FALSE;
 $handler->display->display_options['display_description'] = 'All blogs';
 $handler->display->display_options['defaults']['pager'] = FALSE;
 $handler->display->display_options['pager']['type'] = 'some';
@@ -251,4 +253,3 @@ $handler->display->display_options['header']['area']['field'] = 'area';
 $handler->display->display_options['header']['area']['content'] = '<h1 class="blog-title"><span>Cabling Chronicles</span></h1>';
 $handler->display->display_options['header']['area']['format'] = 'full_html';
 $handler->display->display_options['path'] = 'blog/cabling-chronicles';
-
