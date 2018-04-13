@@ -27,13 +27,6 @@ function fnet_news_events_menu() {
     'page callback' => 'get_news_html',
   );
 
-  $items['awards-list'] = array(
-    'type' => MENU_NORMAL_ITEM,
-    'title' => 'Awards',
-    'access arguments' => array('access content'),
-    'page callback' => 'get_awards_html',
-  );
-
   $items['news-events/training'] = array(
     'type' => MENU_NORMAL_ITEM,
     'title' => 'Training',
