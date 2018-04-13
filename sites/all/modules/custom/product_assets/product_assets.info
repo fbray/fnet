@@ -13,6 +13,7 @@ dependencies[] = image
 dependencies[] = options
 dependencies[] = text
 
+features[ctools][] = views:views_default:3.0
 features[features_api][] = api:2
 features[field_base][] = field_expertise_image
 features[field_base][] = field_expertise_related_content
@@ -29,6 +30,7 @@ features[field_instance][] = node-expertise-field_language_override_exp
 features[field_instance][] = node-expertise-field_product_category
 features[field_instance][] = node-expertise-field_related_products
 features[node][] = expertise
+features[views_view][] = support
 features_exclude[field_base][body] = body
 features_exclude[field_base][field_related_products] = field_related_products
 features_exclude[field_base][field_intro] = field_intro
