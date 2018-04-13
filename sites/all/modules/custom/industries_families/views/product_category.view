@@ -1,10 +1,10 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 9/21/17
- * Time: 1:35 PM
+ * @file
+ * product_category.view
  */
+
 $view = new view();
 $view->name = 'product_category';
 $view->description = '';
@@ -65,12 +65,15 @@ $handler->display->display_options['arguments']['field_dam_language_value']['tab
 $handler->display->display_options['arguments']['field_dam_language_value']['field'] = 'field_dam_language_value';
 $handler->display->display_options['arguments']['field_dam_language_value']['default_argument_type'] = 'fixed';
 $handler->display->display_options['arguments']['field_dam_language_value']['summary']['format'] = 'default_summary';
-/* Contextual filter: Content: Product Category (field_product_category) */
-$handler->display->display_options['arguments']['field_product_category_target_id']['id'] = 'field_product_category_target_id';
-$handler->display->display_options['arguments']['field_product_category_target_id']['table'] = 'field_data_field_product_category';
-$handler->display->display_options['arguments']['field_product_category_target_id']['field'] = 'field_product_category_target_id';
-$handler->display->display_options['arguments']['field_product_category_target_id']['default_argument_type'] = 'fixed';
-$handler->display->display_options['arguments']['field_product_category_target_id']['summary']['format'] = 'default_summary';
+/* Contextual filter: Content: Industry (field_dam_industry) */
+$handler->display->display_options['arguments']['field_dam_industry_value']['id'] = 'field_dam_industry_value';
+$handler->display->display_options['arguments']['field_dam_industry_value']['table'] = 'field_data_field_dam_industry';
+$handler->display->display_options['arguments']['field_dam_industry_value']['field'] = 'field_dam_industry_value';
+$handler->display->display_options['arguments']['field_dam_industry_value']['default_argument_type'] = 'fixed';
+$handler->display->display_options['arguments']['field_dam_industry_value']['summary']['number_of_records'] = '0';
+$handler->display->display_options['arguments']['field_dam_industry_value']['summary']['format'] = 'default_summary';
+$handler->display->display_options['arguments']['field_dam_industry_value']['summary_options']['items_per_page'] = '25';
+$handler->display->display_options['arguments']['field_dam_industry_value']['limit'] = '0';
 /* Filter criterion: Content: Published */
 $handler->display->display_options['filters']['status']['id'] = 'status';
 $handler->display->display_options['filters']['status']['table'] = 'node';
@@ -134,14 +137,38 @@ $handler->display->display_options['filters']['field_dam_entitlement_level_value
 $handler->display->display_options['filters']['field_dam_entitlement_level_value']['value'] = array(
   'do_not_display' => 'do_not_display',
 );
-/* Filter criterion: Content: Asset Type (field_dam_asset_type) */
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['id'] = 'field_dam_asset_type_target_id';
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['table'] = 'field_data_field_dam_asset_type';
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['field'] = 'field_dam_asset_type_target_id';
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['value']['value'] = 'White Paper';
+/* Filter criterion: Content: Asset Type (field_asset_type) */
+$handler->display->display_options['filters']['field_asset_type_value']['id'] = 'field_asset_type_value';
+$handler->display->display_options['filters']['field_asset_type_value']['table'] = 'field_data_field_asset_type';
+$handler->display->display_options['filters']['field_asset_type_value']['field'] = 'field_asset_type_value';
+$handler->display->display_options['filters']['field_asset_type_value']['value'] = array(
+  'white_paper' => 'white_paper',
+);
 
 /* Display: Webcasts */
 $handler = $view->new_display('embed', 'Webcasts', 'webcasts');
+$handler->display->display_options['defaults']['fields'] = FALSE;
+/* Field: Content: Title */
+$handler->display->display_options['fields']['title']['id'] = 'title';
+$handler->display->display_options['fields']['title']['table'] = 'node';
+$handler->display->display_options['fields']['title']['field'] = 'title';
+$handler->display->display_options['fields']['title']['label'] = '';
+$handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
+$handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
+/* Field: Content: Document ID */
+$handler->display->display_options['fields']['field_dam_document_id']['id'] = 'field_dam_document_id';
+$handler->display->display_options['fields']['field_dam_document_id']['table'] = 'field_data_field_dam_document_id';
+$handler->display->display_options['fields']['field_dam_document_id']['field'] = 'field_dam_document_id';
+$handler->display->display_options['fields']['field_dam_document_id']['label'] = 'Webcast';
+$handler->display->display_options['fields']['field_dam_document_id']['alter']['alter_text'] = TRUE;
+$handler->display->display_options['fields']['field_dam_document_id']['alter']['text'] = 'View Webcast';
+$handler->display->display_options['fields']['field_dam_document_id']['alter']['make_link'] = TRUE;
+$handler->display->display_options['fields']['field_dam_document_id']['alter']['path'] = 'findit/[field_dam_document_id]';
+$handler->display->display_options['fields']['field_dam_document_id']['element_label_colon'] = FALSE;
+$handler->display->display_options['fields']['field_dam_document_id']['settings'] = array(
+  'thousand_separator' => '',
+  'prefix_suffix' => 0,
+);
 $handler->display->display_options['defaults']['filter_groups'] = FALSE;
 $handler->display->display_options['defaults']['filters'] = FALSE;
 /* Filter criterion: Content: Published */
@@ -173,11 +200,13 @@ $handler->display->display_options['filters']['field_dam_entitlement_level_value
 $handler->display->display_options['filters']['field_dam_entitlement_level_value']['value'] = array(
   'do_not_display' => 'do_not_display',
 );
-/* Filter criterion: Content: Asset Type (field_dam_asset_type) */
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['id'] = 'field_dam_asset_type_target_id';
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['table'] = 'field_data_field_dam_asset_type';
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['field'] = 'field_dam_asset_type_target_id';
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['value']['value'] = 'Webcast';
+/* Filter criterion: Content: Asset Type (field_asset_type) */
+$handler->display->display_options['filters']['field_asset_type_value']['id'] = 'field_asset_type_value';
+$handler->display->display_options['filters']['field_asset_type_value']['table'] = 'field_data_field_asset_type';
+$handler->display->display_options['filters']['field_asset_type_value']['field'] = 'field_asset_type_value';
+$handler->display->display_options['filters']['field_asset_type_value']['value'] = array(
+  'webcast' => 'webcast',
+);
 
 /* Display: Case Studies */
 $handler = $view->new_display('embed', 'Case Studies', 'case_studies');
@@ -194,13 +223,6 @@ $handler->display->display_options['defaults']['row_plugin'] = FALSE;
 $handler->display->display_options['row_plugin'] = 'fields';
 $handler->display->display_options['defaults']['row_options'] = FALSE;
 $handler->display->display_options['defaults']['fields'] = FALSE;
-/* Field: Content: Title */
-$handler->display->display_options['fields']['title']['id'] = 'title';
-$handler->display->display_options['fields']['title']['table'] = 'node';
-$handler->display->display_options['fields']['title']['field'] = 'title';
-$handler->display->display_options['fields']['title']['label'] = '';
-$handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
-$handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
 /* Field: Content: Body */
 $handler->display->display_options['fields']['body']['id'] = 'body';
 $handler->display->display_options['fields']['body']['table'] = 'field_data_body';
@@ -216,7 +238,9 @@ $handler->display->display_options['arguments']['field_product_category_target_i
 $handler->display->display_options['arguments']['field_product_category_target_id']['table'] = 'field_data_field_product_category';
 $handler->display->display_options['arguments']['field_product_category_target_id']['field'] = 'field_product_category_target_id';
 $handler->display->display_options['arguments']['field_product_category_target_id']['default_argument_type'] = 'fixed';
+$handler->display->display_options['arguments']['field_product_category_target_id']['summary']['number_of_records'] = '0';
 $handler->display->display_options['arguments']['field_product_category_target_id']['summary']['format'] = 'default_summary';
+$handler->display->display_options['arguments']['field_product_category_target_id']['summary_options']['items_per_page'] = '25';
 $handler->display->display_options['defaults']['filter_groups'] = FALSE;
 $handler->display->display_options['defaults']['filters'] = FALSE;
 /* Filter criterion: Content: Published */
@@ -237,4 +261,6 @@ $handler->display->display_options['filters']['type']['value'] = array(
 $handler->display->display_options['filters']['field_expertise_types_target_id']['id'] = 'field_expertise_types_target_id';
 $handler->display->display_options['filters']['field_expertise_types_target_id']['table'] = 'field_data_field_expertise_types';
 $handler->display->display_options['filters']['field_expertise_types_target_id']['field'] = 'field_expertise_types_target_id';
-$handler->display->display_options['filters']['field_expertise_types_target_id']['value']['value'] = 'Case Study';
+$handler->display->display_options['filters']['field_expertise_types_target_id']['value'] = array(
+  575 => '575',
+);
