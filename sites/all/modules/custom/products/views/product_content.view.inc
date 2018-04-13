@@ -270,14 +270,20 @@ $handler->display->display_options['defaults']['relationships'] = FALSE;
 $handler->display->display_options['relationships']['field_related_products_target_id']['id'] = 'field_related_products_target_id';
 $handler->display->display_options['relationships']['field_related_products_target_id']['table'] = 'field_data_field_related_products';
 $handler->display->display_options['relationships']['field_related_products_target_id']['field'] = 'field_related_products_target_id';
+$handler->display->display_options['relationships']['field_related_products_target_id']['label'] = 'field_related_products';
 $handler->display->display_options['defaults']['fields'] = FALSE;
-/* Field: Content: Related Product Image */
+/* Field: Content: Product Image */
 $handler->display->display_options['fields']['field_product_image']['id'] = 'field_product_image';
 $handler->display->display_options['fields']['field_product_image']['table'] = 'field_data_field_product_image';
 $handler->display->display_options['fields']['field_product_image']['field'] = 'field_product_image';
 $handler->display->display_options['fields']['field_product_image']['relationship'] = 'field_related_products_target_id';
 $handler->display->display_options['fields']['field_product_image']['label'] = '';
 $handler->display->display_options['fields']['field_product_image']['element_label_colon'] = FALSE;
+$handler->display->display_options['fields']['field_product_image']['click_sort_column'] = 'fid';
+$handler->display->display_options['fields']['field_product_image']['settings'] = array(
+  'image_style' => '',
+  'image_link' => 'file',
+);
 /* Field: Content: Title */
 $handler->display->display_options['fields']['title']['id'] = 'title';
 $handler->display->display_options['fields']['title']['table'] = 'node';

@@ -108,26 +108,14 @@ print t('More training is available on our <a href="@training-page">Training pag
         <div id="fscnu-wrapper" class="subsection first">
           <h4 class="subsection-title"><?php print t('Service Contact Information'); ?></h4>
           <ul>
-<?php
-/* Local dev
-print '<li>' . l(t('North America'), 'node/2050') . '</li>';
-print '<li>' . l(t('South America'), 'node/2051') . '</li>';
-print '<li>' . l(t('Europe'),        'node/2052') . '</li>';
-print '<li>' . l(t('Asia'),          'node/2053') . '</li>';
-print '<li>' . l(t('Africa'),        'node/2054') . '</li>';
-print '<li>' . l(t('Middle East'),   'node/2055') . '</li>';
-print '<li>' . l(t('Pacific Rim'),   'node/2056') . '</li>';
-print '<li>' . l(t('Russia/CIS'),    'node/2057') . '</li>';
-*/
-print '<li>' . l(t('North America'), 'node/3477') . '</li>';
-print '<li>' . l(t('South America'), 'node/3478') . '</li>';
-print '<li>' . l(t('Europe'),        'node/3479') . '</li>';
-print '<li>' . l(t('Asia'),          'node/3480') . '</li>';
-print '<li>' . l(t('Africa'),        'node/3481') . '</li>';
-print '<li>' . l(t('Middle East'),   'node/3482') . '</li>';
-print '<li>' . l(t('Pacific Rim'),   'node/3483') . '</li>';
-print '<li>' . l(t('Russia/CIS'),    'node/3484') . '</li>';
-?>
+              <li><?php print l(t('North America'), '/content/north-america-contact-information'); ?></li>
+              <li><?php print l(t('South America'), '/content/south-america-contact-information'); ?></li>
+              <li><?php print l(t('Europe'),        '/content/europe-contact-information'); ?></li>
+              <li><?php print l(t('Asia'),          '/content/asia-contact-information'); ?></li>
+              <li><?php print l(t('Africa'),        '/content/africa-contact-information'); ?></li>
+              <li><?php print l(t('Middle East'),   '/content/middle-east-contact-information'); ?></li>
+              <li><?php print l(t('Pacific Rim'),   '/content/pacific-rim-contact-information'); ?></li>
+              <li><?php print l(t('Russia/CIS'),    '/content/russiacis-contact-information'); ?></li>
           </ul>
         </div>
         <!-- End: Find the service center newares you: -->
@@ -141,8 +129,8 @@ print '<li>' . l(t('Russia/CIS'),    'node/3484') . '</li>';
           ?>
           </span>
           <ul>
-            <li><?php print l(t('Get Calibration'), 'node/3485'); ?></li>
-            <li><?php print l(t('How To Schedule Repair'), 'node/3486'); ?></li>
+            <li><?php print l(t('Get Calibration'), '/content/calibration-services'); ?></li>
+            <li><?php print l(t('How To Schedule Repair'), '/content/repair-services'); ?></li>
           </ul>
         </div>
         <!-- End: Calibration & Repair -->
@@ -156,7 +144,7 @@ print '<li>' . l(t('Russia/CIS'),    'node/3484') . '</li>';
           ?>
           </span>
           <ul>
-            <li><?php print l(t('Find out More'), 'node/3487'); ?></li>
+            <li><?php print l(t('Find out More'), '/content/online-rma'); ?></li>
             <li><?php print l(t('Online Services RMA'), 'http://www.fluke.com/ServiceRMA'); ?></li>
           </ul>
         </div>
@@ -174,7 +162,7 @@ print '<li>' . l(t('Russia/CIS'),    'node/3484') . '</li>';
           <h4 class="subsection-title"><?php print t('Phone'); ?></h4>
           <div id="phone-no">1-800-283-5853</div>
           <span class="subsection-desc"><?php print t('North America'); ?></span>
-          <?php print l(t('See more support numbers'), 'node/3488'); ?>
+          <?php print l(t('See more support numbers'), 'contact-support'); ?>
         </div>
         <!-- End: Phone -->
 
@@ -206,7 +194,7 @@ print '<li>' . l(t('Russia/CIS'),    'node/3484') . '</li>';
         ?>
         </span>
         <div class="btn_143w">
-          <a href="<?php print url('node/3489') . '">' . t('Get Gold Support'); ?></a>
+          <?php print l(t('Get Gold Support'),'gold-product-support'); ?>
         </div>
       </div>
       <!-- End: Gold Support -->
@@ -225,8 +213,7 @@ print '<li>' . l(t('Russia/CIS'),    'node/3484') . '</li>';
         </span>
 
         <div class="btn_143w">
-          <a href="/myaccount/register-products-step-one">
-          <?php print t('Fluke Networks Products'); ?></a>
+          <?php print l(t('Fluke Networks Products'), '/myaccount/register-products-step-one'); ?>
         </div>
       </div>
       <!-- End: Register your Product -->

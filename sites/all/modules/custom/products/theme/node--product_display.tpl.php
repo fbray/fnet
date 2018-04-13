@@ -857,7 +857,7 @@ $product_case_studies = $content['product_case_studies'];
           $file = $rProd->field_field_product_image[0]['rendered']['#path']['path'];
           $title = $rProd->node_field_data_field_related_products_title;
 
-          if ($file && $nid && $title) {
+          if ($file && $title) {
             $has_related_products = TRUE;
             break;
           }
