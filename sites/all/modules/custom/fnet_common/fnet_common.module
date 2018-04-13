@@ -2,20 +2,22 @@
 
 /**
  * @file
+ * fnet_common.module
+ *
  * A module that collects utility code and definitions that don't really belong
  * anywhere else, or rise to the level of having their own module.
  */
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  *
- * Just create FNET top-level menu
+ * Just create FNET top-level menu.
  */
 function fnet_common_menu() {
 
   $items['admin/fnet'] = array(
-    'title' => t('FNET'),
-    'description' => t('Adminstrative functions for managing the Extranet'),
+    'title' => 'FNET',
+    'description' => 'Adminstrative functions for managing the Extranet',
     'access arguments' => array('access administration menu'),
     'page callback' => 'system_admin_menu_block_page',
     'file' => 'system.admin.inc',
@@ -26,10 +28,12 @@ function fnet_common_menu() {
 
 }
 
-/*
- * TODO: This is all over the products/theme/node--products.tpl.php file. It still sucks.
-*   returns $some_field_name[0]['value'] type variables, prevents undefined index errors
-*
+/**
+ * TODO: This is all over the products/theme/node--products.tpl.php file.
+ *
+ * It still sucks. returns $some_field_name[0]['value'] type variables,
+ * prevents undefined index errors.
+ *
  * @param $field
  * @param int $delta
  * @param string $column
@@ -37,9 +41,10 @@ function fnet_common_menu() {
  */
 function fnet_common_safe_get($field, $delta = 0, $column = 'value') {
 
-  if ( isset($field[$delta]) && isset($field[$delta][$column]) ) {
+  if (isset($field[$delta]) && isset($field[$delta][$column])) {
     return $field[$delta][$column];
-  }else if ( isset($field[LANGUAGE_NONE][$delta]) && isset($field[LANGUAGE_NONE][$delta][$column]) ) {
+  }
+  elseif (isset($field[LANGUAGE_NONE][$delta]) && isset($field[LANGUAGE_NONE][$delta][$column])) {
     return $field[LANGUAGE_NONE][$delta][$column];
   }
 
@@ -47,10 +52,10 @@ function fnet_common_safe_get($field, $delta = 0, $column = 'value') {
 
 }
 
-
 /**
- * TODO: This is used all over. It still sucks, so come up with an alternative.
  * Get a raw value for a field from an entity.
+ *
+ * TODO: This is used all over. It still sucks, so come up with an alternative.
  *
  * @param string $entity_type
  *   The type of entity.
@@ -60,20 +65,20 @@ function fnet_common_safe_get($field, $delta = 0, $column = 'value') {
  *   A field name with an image.
  * @param array/string $column
  *   Name of the field value column, e.g. 'value'.
- * @param integer $delta
+ * @param int $delta
  *   The item delta if there are multiple items.
  *
  * @return array
  *   A renderable array.
  */
 function fnet_common_get_field_value($entity_type, $entity, $field_name, $column = 'value', $delta = 0) {
-    $values = fnet_common_get_field_values($entity_type, $entity, $field_name);
-    if (is_string($column) && isset($values[$delta][$column])) {
-        return $values[$delta][$column];
-    }
-    else {
-        return NULL;
-    }
+  $values = fnet_common_get_field_values($entity_type, $entity, $field_name);
+  if (is_string($column) && isset($values[$delta][$column])) {
+    return $values[$delta][$column];
+  }
+  else {
+    return NULL;
+  }
 }
 
 /**
@@ -92,32 +97,33 @@ function fnet_common_get_field_value($entity_type, $entity, $field_name, $column
  *   An indexed array of field values.
  */
 function fnet_common_get_field_values($entity_type, $entity, $field_name) {
-    if (isset($entity->{$field_name})) {
-        $langcode = _fnet_common_get_field_langcode($entity_type, $entity, $field_name);
-        if (isset($entity->{$field_name}[$langcode]) && is_array($entity->{$field_name}[$langcode])) {
-            return $entity->{$field_name}[$langcode];
-        }
+  if (isset($entity->{$field_name})) {
+    $langcode = _fnet_common_get_field_langcode($entity_type, $entity, $field_name);
+    if (isset($entity->{$field_name}[$langcode]) && is_array($entity->{$field_name}[$langcode])) {
+      return $entity->{$field_name}[$langcode];
     }
-    return array();
+  }
+  return array();
 }
 
-
 /**
+ * Returns the form field language.
+ *
  * TODO: Deprecated!
- * Returns the form field language
  *
  * @return string
  *   String of the form field language;
- *   Always returns 'und' as we're not currently using field level language settings
+ *   Always returns 'und' as we're not currently using field level language
+ *   settings.
  */
 function fnet_common_form_field_language($form) {
   return 'und';
 }
 
-
 /**
- * TODO: Oh, crap. THIS IS A HACK!!
  * Helper function to centralize obtaining the language code for a field.
+ *
+ * TODO: Oh, crap. THIS IS A HACK!!
  *
  * @param string $entity_type
  *   The type of entity.
@@ -130,14 +136,14 @@ function fnet_common_form_field_language($form) {
  *   A language code.
  */
 function _fnet_common_get_field_langcode($entity_type, $entity, $field_name) {
-  /* TODO: We should be calling field_language() here if doing it properly, but it is
-   * unnecessary under the current rules, where all fields are LANGUAGE_NONE.
+  /* TODO: We should be calling field_language() here if doing it properly,
+   * but it is unnecessary under the current rules, where all fields are
+   * LANGUAGE_NONE.
    *
    * Note that this has caused problems in practice: there are circumstances
    * under which field_language() will intermittently fail to return the right
    * value.
    */
-  // $langcode = field_language($entity_type, $entity, $field_name);
   $langcode = LANGUAGE_NONE;
   return $langcode;
 }
@@ -157,14 +163,13 @@ function _fnet_common_get_field_langcode($entity_type, $entity, $field_name) {
  *   A field name with an image.
  * @param array/string $column
  *   Name of the field value column, e.g. 'value'.
- * @param integer $delta
+ * @param int $delta
  *   The item delta if there are multiple items.
  */
 function fnet_common_set_field_value($value, $entity_type, $entity, $field_name, $column = 'value', $delta = 0) {
   $langcode = _fnet_common_get_field_langcode($entity_type, $entity, $field_name);
   $entity->{$field_name}[$langcode][$delta][$column] = $value;
 }
-
 
 /**
  * Set the entire array of values for a field.
@@ -178,10 +183,17 @@ function fnet_common_set_field_value($value, $entity_type, $entity, $field_name,
  * @param string $field_name
  *   A field name with an image.
  */
-function fnet_common_set_field_values($values, $entity_type, $entity, $field_name) {
+function fnet_common_set_field_values(array $values, $entity_type, $entity, $field_name) {
   $langcode = _fnet_common_get_field_langcode($entity_type, $entity, $field_name);
   $entity->{$field_name}[$langcode] = $values;
 }
 
-
-
+/**
+ * Implements hook_views_api().
+ */
+function fnet_common_views_api() {
+  return array(
+    'api' => 3.0,
+    'path' => drupal_get_path('module', 'fnet_common') . '/views',
+  );
+}
