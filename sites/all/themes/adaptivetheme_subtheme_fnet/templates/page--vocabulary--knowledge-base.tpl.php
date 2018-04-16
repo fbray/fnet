@@ -261,11 +261,7 @@ drupal_add_js(drupal_get_path('theme','adaptivetheme_subtheme_fnet').'/scripts/k
 										<!-- START: Taxonomy Menu -->
 										<div id="taxonomy-menu">
 											<?php
-<<<<<<< HEAD
 												$bl = module_invoke('views', 'block_view', 'taxonomy_tree-block'); 
-=======
-												$bl = module_invoke('views', 'block_view', 'knowledge_base_accordion-block');
->>>>>>> b81aff46f41b23d1bd0c9ea33699254879aa15bd
 											?>
 											<h3> <?php print render($bl['subject']); ?> </h3>
 											<div id = "kb-cat-list">
@@ -277,11 +273,7 @@ drupal_add_js(drupal_get_path('theme','adaptivetheme_subtheme_fnet').'/scripts/k
 										<!-- START: Article List View -->
 										<div id="kb-article-list">
 											<?php
-<<<<<<< HEAD
 												$bl = module_invoke('views', 'block_view', 'kb_article_termwise-block');  ?>
-=======
-												$bl = module_invoke('views', 'block_view', 'knowledge_base_search-block_1'); ?>
->>>>>>> b81aff46f41b23d1bd0c9ea33699254879aa15bd
 											<h3><?php print render($bl['subject']); ?>	</h3>
 											<?php print render($bl['content']); ?>
 										</div>
