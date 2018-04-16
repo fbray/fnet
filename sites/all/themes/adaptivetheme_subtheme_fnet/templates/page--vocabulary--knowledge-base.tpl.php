@@ -100,8 +100,6 @@
  * @see adaptivetheme_preprocess_page()
  * @see adaptivetheme_process_page()
  */
-drupal_add_js(drupal_get_path('theme','adaptivetheme_subtheme_fnet').'/scripts/knowledgebase.js');
-
 ?>
 <div id="page-wrapper">
   <a name="topanchor" style="font-size:0; height:0;"></a>
@@ -261,7 +259,7 @@ drupal_add_js(drupal_get_path('theme','adaptivetheme_subtheme_fnet').'/scripts/k
 										<!-- START: Taxonomy Menu -->
 										<div id="taxonomy-menu">
 											<?php
-												$bl = module_invoke('views', 'block_view', 'kb_accordion_view-block'); 
+												$bl = module_invoke('views', 'block_view', 'knowledge_base_accordion-block');
 											?>
 											<h3> <?php print render($bl['subject']); ?> </h3>
 											<div id = "kb-cat-list">
