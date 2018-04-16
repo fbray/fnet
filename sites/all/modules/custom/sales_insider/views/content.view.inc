@@ -1,9 +1,8 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 1/16/18
- * Time: 12:46 PM
+ * @file
+ * content.view.inc
  */
 
 $view = new view();
@@ -427,4 +426,3 @@ $handler->display->display_options['filters']['promote']['field'] = 'promote';
 $handler->display->display_options['filters']['promote']['relationship'] = 'group_entity_node';
 $handler->display->display_options['filters']['promote']['value'] = '1';
 $handler->display->display_options['block_description'] = 'Sales Insider Featured Block';
-
