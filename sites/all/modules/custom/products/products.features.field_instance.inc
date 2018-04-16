@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * products.features.field_instance.inc
@@ -8218,26 +8217,6 @@ function products_field_default_field_instances() {
   t('<strong>Note:</strong> If any Online Store is present for the region, then the Contact Sales button will not display even if it is checked.');
   t('<strong>Note:</strong> If any Online Store is present for the region, then the Where to Buy button will not display even if it is checked. Instead, this will be included as a link titled "See more online resellers or buy locally".');
   t('<strong>Preview <a href=\'/products/product_features/[current-page:url:args:value:1]\' target=\'_new\'>All Product Features</a></strong>');
-  t('<ul>
-<li>en-us (<strong>English/United States</strong>)</li>
-<li>en-au (<strong>English/Australia</strong>)</li>
-<li>en-ca (<strong>English/Canada</strong>)</li>
-<li>en-eu (<strong>English/Europe</strong>)</li>
-<li>en-in (<strong>English/India</strong>)</li>
-<li>en-ln (<strong>English/Latin America</strong>)</li>
-<li>en-su (<strong>English/Southeast Asia</strong>)</li>
-<li>fr-eu (<strong>French/Europe</strong>)</li>
-<li>fr-ca (<strong>French/Canada</strong>)</li>
-<li>de-eu (<strong>German/Europe</strong>)</li>
-<li>es-eu (<strong>Spanish/Europe</strong>)</li>
-<li>es-ln (<strong>Spanish/Latin America</strong>)</li>
-<li>pt-eu (<strong>Portuguese/Europe</strong>)</li>
-<li>pt-br (<strong>Portuguese/Brazil</strong>)</li>
-<li>cn-zh (<strong>Chinese/China</strong>)</li>
-<li>jp-ja (<strong>Japanese/Japan</strong>)</li>
-<li>ko-kr (<strong>Korean/Korea</strong>)</li>
-<li>ru-ru (<strong>Russian/Russia</strong>)</li>
-</ul>');
   t('<ul>
 <li>en-us (<strong>English/United States</strong>)</li>
 <li>en-au (<strong>English/Australia</strong>)</li>

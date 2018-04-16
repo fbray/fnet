@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * products.features.field_base.inc
@@ -2484,13 +2483,13 @@ function products_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
-  // Exported field_base: 'field_source_product'.
-  $field_bases['field_source_product'] = array(
+  // Exported field_base: 'field_related_products'.
+  $field_bases['field_related_products'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_source_product',
+    'field_name' => 'field_related_products',
     'indexes' => array(
       'target_id' => array(
         0 => 'target_id',
@@ -2520,13 +2519,13 @@ function products_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
-  // Exported field_base: 'field_related_products'.
-  $field_bases['field_related_products'] = array(
+  // Exported field_base: 'field_source_product'.
+  $field_bases['field_source_product'] = array(
     'active' => 1,
-    'cardinality' => -1,
+    'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_related_products',
+    'field_name' => 'field_source_product',
     'indexes' => array(
       'target_id' => array(
         0 => 'target_id',

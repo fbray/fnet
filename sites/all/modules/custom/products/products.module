@@ -10,16 +10,6 @@
 include_once 'products.features.inc';
 
 /**
- * Implements hook_views_api().
- */
-function products_views_api() {
-  return array(
-    'api' => 3.0,
-    'path' => drupal_get_path('module', 'products') . '/views',
-  );
-}
-
-/**
  * Implements hook_theme().
  */
 function products_theme($existing, $type, $theme, $path) {
