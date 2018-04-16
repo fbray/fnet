@@ -1,10 +1,10 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 2/9/18
- * Time: 11:34 AM
+ * @file
+ * linkwarelive.view.inc
  */
+
 $view = new view();
 $view->name = 'microsites';
 $view->description = '';
@@ -73,7 +73,7 @@ $handler->display->display_options['filters']['tid']['id'] = 'tid';
 $handler->display->display_options['filters']['tid']['table'] = 'taxonomy_index';
 $handler->display->display_options['filters']['tid']['field'] = 'tid';
 $handler->display->display_options['filters']['tid']['value'] = array(
-  11 => '11',
+  694 => '694',
 );
 $handler->display->display_options['filters']['tid']['type'] = 'select';
 $handler->display->display_options['filters']['tid']['vocabulary'] = 'microsites';
