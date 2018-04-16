@@ -1,20 +1,21 @@
-(function($) {
-    // Initialize the nested "accordion" menus.
-    $(".accordion").accordion({
-        active: false, // Collapse all menus by default.
-        collapsible: true,
-        heightStyle: "content" // Let the height of each menu expand automatically.
-    });
-
-    // If necessary, expand the appropriate top-level accordion menu based on the current selection.
-    var elem = $("#h4-active-panel"); // Fetch "active" menu heading element to be used in the "index" function.
-    positionH4 = elem.closest(".accordion").find("h4").index(elem); // Determine the index position of the "active" menu element within the containing element.
-    elem.closest(".accordion").accordion("option", "active", positionH4); // Activate (or open) the menu within which is contained the active link selection.
-
-    $("#taxonomy-menu").fadeIn(200); // Since the accordion functionality of the menu is initialized/styled on the client side, display it only once this process completes.
-
-    $('#kb-article-list .views-field a[href]').each(function () {
-        var href = $(this).attr('href'); // Get the current href value of view links.
-        $(this).attr('href', href);
-    });
+(function($){
+	$(document).ready(function(){
+		var kbwidget = $(".ui-widget-content a.active");
+		if($(".ui-widget-content a").hasClass("active")){
+			var headerindex = kbwidget.closest("div.ui-accordion-content").prev("h3.ui-accordion-header").index();
+			switch(headerindex){
+				case 0:
+					headerindex = headerindex;
+					break;
+				case 2:
+					headerindex = headerindex -1;
+					break;
+				case 4:
+					headerindex = headerindex -2;
+					break;
+			}
+	    $(".ui-accordion").accordion('option', 'active' , headerindex); 
+			kbwidget.closest("span.field-content").closest("div.views-field").css("background-color","#F5F5F5");
+		}
+	});
 })(jQuery);

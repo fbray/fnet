@@ -85,6 +85,7 @@ function knowledgebase_views_api() {
  */
 function knowledgebase_views_pre_render(&$view) {
   if ($view->name == 'knowledge_base_search') {
+    drupal_add_js(drupal_get_path('module','knowledgebase').'/knowledgebase.js');
     if (isset($view->exposed_data['title']) || isset($view->exposed_data['field_knowledge_base_target_id'])) {
       $title = ($view->exposed_data['title'] == "") ? "All" : $view->exposed_data['title'];
 
@@ -98,4 +99,5 @@ function knowledgebase_views_pre_render(&$view) {
       $view->field['title']->options['label'] = $label;
     }
   }
+
 }
