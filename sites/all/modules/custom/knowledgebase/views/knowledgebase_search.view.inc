@@ -2,15 +2,15 @@
 
 /**
  * @file
+ * knowledgebase_search.view.inc
+ *
  * The page and block display for the Knowledge Base Article Search.
  */
-
-$export = array();
 
 $view = new view();
 $view->name = 'knowledge_base_search';
 $view->description = 'Knowledge base article listing with search box using exposed filters.';
-$view->tag = 'default';
+$view->tag = 'fnet';
 $view->base_table = 'node';
 $view->human_name = 'Knowledge Base Search';
 $view->core = 7;
@@ -78,7 +78,6 @@ $handler->display->display_options['exposed_form']['options']['bef'] = array(
     ),
   ),
 );
-$handler->display->display_options['exposed_form']['options']['form_method'] = 'post';
 $handler->display->display_options['pager']['type'] = 'full';
 $handler->display->display_options['pager']['options']['items_per_page'] = '50';
 $handler->display->display_options['style_plugin'] = 'default';
@@ -110,11 +109,13 @@ $handler->display->display_options['filters']['type']['value'] = array(
   'knowledge_base_article' => 'knowledge_base_article',
 );
 
-/* Display: Page :: Knowledge Base Search */
-$handler = $view->new_display('page', 'Page :: Knowledge Base Search', 'page');
+/* Display: Landing Page */
+$handler = $view->new_display('page', 'Landing Page', 'page');
 $handler->display->display_options['defaults']['css_class'] = FALSE;
 $handler->display->display_options['css_class'] = 'kb-article-list';
-$handler->display->display_options['display_description'] = 'Landing page for KB articles search and list';
+$handler->display->display_options['display_description'] = 'Knowledge Base Landing Page';
+$handler->display->display_options['defaults']['use_ajax'] = FALSE;
+$handler->display->display_options['use_ajax'] = TRUE;
 $handler->display->display_options['defaults']['style_plugin'] = FALSE;
 $handler->display->display_options['style_plugin'] = 'table';
 $handler->display->display_options['style_options']['columns'] = array(
@@ -142,7 +143,6 @@ $handler->display->display_options['empty']['area']['field'] = 'area';
 $handler->display->display_options['empty']['area']['empty'] = TRUE;
 $handler->display->display_options['empty']['area']['content'] = 'No Knowledge Base Articles found.';
 $handler->display->display_options['empty']['area']['format'] = 'plain_text';
-$handler->display->display_options['defaults']['relationships'] = FALSE;
 $handler->display->display_options['defaults']['filter_groups'] = FALSE;
 $handler->display->display_options['defaults']['filters'] = FALSE;
 /* Filter criterion: Content: Published */
@@ -228,9 +228,9 @@ $handler->display->display_options['filters']['field_knowledge_base_target_id'][
 );
 $handler->display->display_options['path'] = 'knowledge-base';
 
-/* Display: Block :: KB breadcrumb */
-$handler = $view->new_display('block', 'Block :: KB breadcrumb', 'block');
-$handler->display->display_options['display_description'] = 'Breadcrumb for KB article node page and term page';
+/* Display: Breadcrumbs */
+$handler = $view->new_display('block', 'Breadcrumbs', 'block');
+$handler->display->display_options['display_description'] = 'Displays breadcrumbs.';
 $handler->display->display_options['defaults']['pager'] = FALSE;
 $handler->display->display_options['pager']['type'] = 'some';
 $handler->display->display_options['pager']['options']['items_per_page'] = '1';
@@ -278,12 +278,10 @@ $handler->display->display_options['arguments']['tid']['summary']['number_of_rec
 $handler->display->display_options['arguments']['tid']['summary']['format'] = 'default_summary';
 $handler->display->display_options['arguments']['tid']['summary_options']['items_per_page'] = '25';
 
-/* Display: Block :: KB articles by term */
-$handler = $view->new_display('block', 'Block :: KB articles by term', 'block_1');
+/* Display: Articles by Term */
+$handler = $view->new_display('block', 'Articles by Term', 'block_1');
 $handler->display->display_options['defaults']['title'] = FALSE;
-$handler->display->display_options['display_description'] = 'Lists KB articles based on the term page';
-$handler->display->display_options['defaults']['exposed_form'] = FALSE;
-$handler->display->display_options['exposed_form']['type'] = 'basic';
+$handler->display->display_options['display_description'] = 'Knowledge Base articles listing by term';
 $handler->display->display_options['defaults']['style_plugin'] = FALSE;
 $handler->display->display_options['style_plugin'] = 'table';
 $handler->display->display_options['style_options']['grouping'] = array(
@@ -349,8 +347,3 @@ $handler->display->display_options['arguments']['tid']['default_argument_type'] 
 $handler->display->display_options['arguments']['tid']['summary']['number_of_records'] = '0';
 $handler->display->display_options['arguments']['tid']['summary']['format'] = 'default_summary';
 $handler->display->display_options['arguments']['tid']['summary_options']['items_per_page'] = '25';
-
-
-$export['knowledge_base_search'] = $view;
-
-return $export;

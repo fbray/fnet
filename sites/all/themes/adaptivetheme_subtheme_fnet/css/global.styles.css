@@ -4355,7 +4355,7 @@ body.page-knowledge-base header#main-content-header {
 	color: #FFF;
 	font-size: 16px;
 }
-#block-views-kb-accordion-view-block .ui-corner-all,#block-views-kb-accordion-view-block .ui-corner-top {
+#block-views-knowledge-base-accordion-block .ui-corner-all,#block-views-knowledge-base-accordion-block .ui-corner-top {
 	border-radius: 3px;
 }
 #block-system-main div.kb-article-list{

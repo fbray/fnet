@@ -99,4 +99,64 @@ function knowledgebase_views_pre_render(&$view) {
       $view->field['title']->options['label'] = $label;
     }
   }
+
+}
+
+/**
+ * Implements hook_menu().
+ */
+function knowledgebase_menu() {
+  $items = array();
+  $items['admin/kb/update_pathauto'] = array(
+    'title' => 'Knowledge Base - Update path auto flag',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('kb_pathauto_form'),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Page callback for Updating Path Auto.
+ */
+function kb_pathauto_form() {
+  $node_types = '';
+  $node_types = node_type_get_names();
+
+  $form = array();
+  $form['kb_node_types'] = array(
+    '#title' => t('Node Types'),
+    '#type' => 'checkboxes',
+    '#options' => $node_types,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update pathauto flag'),
+  );
+  return $form;
+}
+
+/**
+ * Implements hook_form_submit().
+ *
+ * Submit handler for pathauto_form.
+ */
+function kb_pathauto_form_submit($form, &$form_state) {
+  if (isset($form_state['values']['kb_node_types']['knowledge_base_article'])) {
+    $subquery = db_select('node');
+    $subquery->addField('node', 'nid');
+    $subquery->condition('node.type', 'knowledge_base_article', '=');
+    $update_query = db_update('pathauto_state')
+      ->fields(array(
+        'pathauto' => 1,
+      ))
+      ->condition('entity_id', $subquery, 'IN')
+      ->execute();
+
+    drupal_set_message('Done Successfully!');
+  }
+  else {
+    drupal_set_message("Knowledge Base not selected");
+  }
 }
