@@ -261,7 +261,7 @@ drupal_add_js(drupal_get_path('theme','adaptivetheme_subtheme_fnet').'/scripts/k
 										<!-- START: Taxonomy Menu -->
 										<div id="taxonomy-menu">
 											<?php
-												$bl = module_invoke('views', 'block_view', 'taxonomy_tree-block'); 
+												$bl = module_invoke('views', 'block_view', 'kb_accordion_view-block'); 
 											?>
 											<h3> <?php print render($bl['subject']); ?> </h3>
 											<div id = "kb-cat-list">
