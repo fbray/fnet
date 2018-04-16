@@ -1233,8 +1233,8 @@ function digital_asset_list_assets_by_type($type, $language = 'en', $industry = 
   $query->fields('doc_id', ['field_dam_document_id_value']);
   $query->addJoin('INNER', 'node_revision', 'r', 'n.vid = r.vid');
   $query->fields('r', ['title']);
-  $query->addJoin('INNER', 'field_data_field_dam_asset_type', 'type', 'n.nid = type.entity_id');
-  $query->fields('type', ['field_dam_asset_type_value']);
+  $query->addJoin('INNER', 'field_data_field_asset_type', 'type', 'n.nid = type.entity_id');
+  $query->fields('type', ['field_asset_type_value']);
   $query->addJoin('INNER', 'field_data_field_dam_language', 'lang', 'n.nid = lang.entity_id');
   $query->fields('lang', ['field_dam_language_value']);
   $query->addJoin('LEFT', 'field_data_field_dam_file_size', 'size', 'n.nid = size.entity_id');
@@ -1249,7 +1249,7 @@ function digital_asset_list_assets_by_type($type, $language = 'en', $industry = 
   else {
     $query->orderBy('r.title');
   }
-  $query->condition('field_dam_asset_type_value', $type);
+  $query->condition('field_asset_type_value', $type);
   $query->condition('field_dam_language_value', $language);
   $query->condition('field_dam_document_status_value', 'live');
   $query->condition('field_dam_entitlement_level_value', 'do_not_display', '<>');
@@ -1261,11 +1261,11 @@ function digital_asset_list_assets_by_type($type, $language = 'en', $industry = 
   foreach ($result as $row) {
     $output = new stdClass();
     $output->Locked = ($row->field_dam_entitlement_level_value == 'gold') && (!$is_gold_user) ? 'True' : 'Unlocked';
-    $output->AssetTypeID = (array_key_exists($row->field_dam_asset_type_value, $asset_type_id)) ? $asset_type_id[$row->field_dam_asset_type_value] : 0;
+    $output->AssetTypeID = (array_key_exists($row->field_asset_type_value, $asset_type_id)) ? $asset_type_id[$row->field_asset_type_value] : 0;
     $output->AssetID = $row->field_dam_document_id_value;
     $output->AssetTitle = $row->title;
     $output->AssetDescription = $row->body_value;
-    $output->asset_type = $row->field_dam_asset_type_value;
+    $output->asset_type = $row->field_asset_type_value;
     $output->language = $row->field_dam_language_value;
     $output->FileSize = $row->field_dam_file_size_value;
     $output->AssetSecurityLevel = $row->field_dam_entitlement_level_value;

@@ -503,6 +503,7 @@ function product_assets_technical_documents_form_submit($form, &$form_state) {
  * @throws \Exception
  */
 function product_assets_technical_docs_page($op, $industry = -1) {
+  drupal_add_css(drupal_get_path('module', 'product_assets') . '/css/product_assets.css');
   $siteReg = module_invoke('fnet_helper', 'site_region');
   $language = $siteReg["lang"];
   switch ($op) {
@@ -572,7 +573,7 @@ function _product_assets_get_asset_list($xmlObj, $download_link_base, $list_type
         if (preg_match('/.*(?:@flukenetworks|@fluke)\.com/i', $user->mail)) {
           // TODO: Seriously? A hard-coded URL for the server?
           // BAD DOG. Change that.
-          $asset_list[$i]['file_link'] = l($link_text, 'http://www.flukenetworks.com' . $download_link_base . $asset->AssetID);
+          $asset_list[$i]['file_link'] = l($link_text,  $download_link_base . $asset->AssetID);
         }
         else {
           $asset_list[$i]['file_link'] = 'Valid Gold Contract Required';
@@ -582,7 +583,7 @@ function _product_assets_get_asset_list($xmlObj, $download_link_base, $list_type
         break;
 
       case 'unlocked':
-        $asset_list[$i]['file_link'] = l($link_text, 'http://www.flukenetworks.com' . $download_link_base . $asset->AssetID);
+        $asset_list[$i]['file_link'] = l($link_text,$download_link_base . $asset->AssetID);
         $asset_list[$i]['file_size'] = ($asset->FileSize) ? format_size($asset->FileSize) : '';
         $asset_list[$i]['lock_status'] = $unlocked_image;
         break;
