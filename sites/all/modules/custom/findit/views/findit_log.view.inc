@@ -1,10 +1,10 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 10/9/17
- * Time: 3:03 PM
+ * @file
+ * findit_log.view.inc
  */
+
 $view = new view();
 $view->name = 'findit_log';
 $view->description = '';
@@ -27,7 +27,11 @@ $handler->display->display_options['access']['role'] = array(
   8 => '8',
   10 => '10',
 );
-$handler->display->display_options['cache']['type'] = 'none';
+$handler->display->display_options['cache']['type'] = 'time';
+$handler->display->display_options['cache']['results_lifespan'] = '3600';
+$handler->display->display_options['cache']['results_lifespan_custom'] = '0';
+$handler->display->display_options['cache']['output_lifespan'] = '3600';
+$handler->display->display_options['cache']['output_lifespan_custom'] = '0';
 $handler->display->display_options['query']['type'] = 'views_query';
 $handler->display->display_options['exposed_form']['type'] = 'basic';
 $handler->display->display_options['pager']['type'] = 'full';
