@@ -16,6 +16,7 @@ dependencies[] = smart_trim
 dependencies[] = text
 
 features[ctools][] = field_group:field_group:1
+features[ctools][] = views:views_default:3.0
 features[features_api][] = api:2
 features[field_base][] = field_brand
 features[field_base][] = field_edoc_language_override
@@ -47,3 +48,4 @@ features[field_instance][] = node-edoc-field_literature_id_ru
 features[field_instance][] = node-edoc-field_related_products
 features[field_instance][] = node-edoc-field_subtitle
 features[node][] = edoc
+features[views_view][] = edocs
