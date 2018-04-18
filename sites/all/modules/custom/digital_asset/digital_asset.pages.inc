@@ -309,20 +309,7 @@ function digital_asset_page_view_form($form, &$form_state, $node) {
       '#markup' => fnet_common_get_field_value('digital_asset', $node, 'field_dam_form_url', 'url'),
     ];
   }
-  if (count($node->field_dam_access_groups) > 0) {
-    $value = '<ul>';
-    foreach ($node->field_dam_access_groups as $item) {
-      if (!empty($item['value'])) {
-        $value .= '<li>' . $item['value'] . '</li>';
-      }
-    }
-    $value .= '</ul>';
-    $form['access_groups'] = [
-      '#type' => 'item',
-      '#title' => t('Access Groups'),
-      '#markup' => $value,
-    ];
-  }
+
   $value = '<ul>';
   $products = digital_asset_get_related_products($node->nid);
   foreach ($products as $product) {

@@ -1037,16 +1037,15 @@ function digital_asset_ccs_spreadsheet_update($node_before, $node) {
  */
 function digital_asset_get_related_products($document_nid) {
   $products = [];
-  $query = db_select('node', 'n')->condition('n.nid', $document_nid);
-  $query->addJoin('INNER', 'field_data_field_dam_related_product', 'p', 'n.nid = p.entity_id');
-  $query->addJoin('INNER', 'node', 'pn', 'p.field_dam_related_product_nid = pn.nid');
-  $query->fields('p', ['field_dam_related_product_nid']);
-  $query->fields('pn', ['title']);
-  $result = $query->execute();
+  $query = "SELECT p.field_related_products_target_id AS nid, n.title AS title
+    FROM field_data_field_related_products p
+    JOIN node n ON n.nid = p.entity_id
+    WHERE p.entity_id = :document_nid";
+  $result = db_query($query, [':document_nid' => $document_nid]);
   if ($result) {
     foreach ($result as $row) {
       $products[] = [
-        'nid' => $row->field_dam_related_product_nid,
+        'nid' => $row->nid,
         'title' => $row->title,
       ];
     }
