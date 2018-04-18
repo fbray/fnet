@@ -1,12 +1,12 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 1/17/18
- * Time: 11:16 AM
+ * @file
+ * fnet_news_events.views_default.inc
  */
+
 /**
- * Implementation of hook_views_default_views()
+ * Implements hook_views_default_views().
  */
 function fnet_news_events_views_default_views() {
   $views = array();
