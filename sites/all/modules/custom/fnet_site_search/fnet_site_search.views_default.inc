@@ -1,18 +1,17 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 10/3/17
- * Time: 1:34 PM
+ * @file
+ * fnet_site_search.views_default.inc
  */
+
 /**
- * Implementation of hook_views_default_views()
+ * Implements hook_views_default_views().
  */
 function fnet_site_search_views_default_views() {
   $views = array();
 
-  // Exported view
-
+  // Exported view.
   $view = new view();
   $view->name = 'main_site_search';
   $view->description = '';
@@ -28,7 +27,11 @@ function fnet_site_search_views_default_views() {
   $handler->display->display_options['title'] = 'Search Results';
   $handler->display->display_options['use_more_always'] = FALSE;
   $handler->display->display_options['access']['type'] = 'none';
-  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['cache']['type'] = 'time';
+  $handler->display->display_options['cache']['results_lifespan'] = '3600';
+  $handler->display->display_options['cache']['results_lifespan_custom'] = '0';
+  $handler->display->display_options['cache']['output_lifespan'] = '3600';
+  $handler->display->display_options['cache']['output_lifespan_custom'] = '0';
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['exposed_form']['type'] = 'basic';
   $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Search';
