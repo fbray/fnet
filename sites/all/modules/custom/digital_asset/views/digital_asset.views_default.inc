@@ -1,17 +1,16 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 1/5/18
- * Time: 10:05 AM
+ * @file
+ * digital_asset.views_default.inc
  */
 
 /**
- * Implementation of hook_views_default_views()
+ * Implements hook_views_default_views().
  */
 function digital_asset_views_default_views() {
   $views = array();
-  $files = file_scan_directory(drupal_get_path('module', 'digital_asset') . '/views', '/.*\.view$/');
+  $files = file_scan_directory(drupal_get_path('module', 'digital_asset') . '/views', '/.*\.view.inc$/');
   foreach ($files as $filepath => $file) {
     require $filepath;
     if (isset($view)) {
@@ -20,4 +19,3 @@ function digital_asset_views_default_views() {
   }
   return $views;
 }
-?>

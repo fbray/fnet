@@ -21,6 +21,7 @@ dependencies[] = smart_trim
 dependencies[] = text
 
 features[ctools][] = field_group:field_group:1
+features[ctools][] = views:views_default:3.0
 features[features_api][] = api:2
 features[field_base][] = field_asset_file
 features[field_base][] = field_asset_tags
@@ -99,6 +100,7 @@ features[field_instance][] = node-digital_asset-field_dam_unit_of_measure
 features[field_instance][] = node-digital_asset-field_dam_uom_quantity
 features[field_instance][] = node-digital_asset-field_related_products
 features[node][] = digital_asset
+features[views_view][] = digital_assets
 features_exclude[dependencies][ctools] = ctools
 features_exclude[field_base][body] = body
 features_exclude[field_base][field_related_products] = field_related_products

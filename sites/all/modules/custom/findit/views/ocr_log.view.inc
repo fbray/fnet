@@ -1,9 +1,8 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 1/19/18
- * Time: 2:35 PM
+ * @file
+ * ocr_log.view.inc
  */
 
 $view = new view();
@@ -25,7 +24,11 @@ $handler->display->display_options['access']['role'] = array(
   3 => '3',
   22 => '22',
 );
-$handler->display->display_options['cache']['type'] = 'none';
+$handler->display->display_options['cache']['type'] = 'time';
+$handler->display->display_options['cache']['results_lifespan'] = '3600';
+$handler->display->display_options['cache']['results_lifespan_custom'] = '0';
+$handler->display->display_options['cache']['output_lifespan'] = '3600';
+$handler->display->display_options['cache']['output_lifespan_custom'] = '0';
 $handler->display->display_options['query']['type'] = 'views_query';
 $handler->display->display_options['exposed_form']['type'] = 'basic';
 $handler->display->display_options['pager']['type'] = 'full';

@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @file
+ * events.view.inc
+ */
+
 $view = new view();
 $view->name = 'events';
 $view->description = 'Views of Events and Event Occurrances';
@@ -13,7 +19,11 @@ $view->disabled = FALSE; /* Edit this to true to make a default view disabled in
 $handler = $view->new_display('default', 'Master', 'default');
 $handler->display->display_options['use_more_always'] = FALSE;
 $handler->display->display_options['access']['type'] = 'perm';
-$handler->display->display_options['cache']['type'] = 'none';
+$handler->display->display_options['cache']['type'] = 'time';
+$handler->display->display_options['cache']['results_lifespan'] = '3600';
+$handler->display->display_options['cache']['results_lifespan_custom'] = '0';
+$handler->display->display_options['cache']['output_lifespan'] = '3600';
+$handler->display->display_options['cache']['output_lifespan_custom'] = '0';
 $handler->display->display_options['query']['type'] = 'views_query';
 $handler->display->display_options['exposed_form']['type'] = 'basic';
 $handler->display->display_options['pager']['type'] = 'full';
@@ -423,4 +433,3 @@ $handler->display->display_options['arguments']['field_event_parent_target_id'][
 $handler->display->display_options['arguments']['field_event_parent_target_id']['summary']['number_of_records'] = '0';
 $handler->display->display_options['arguments']['field_event_parent_target_id']['summary']['format'] = 'default_summary';
 $handler->display->display_options['arguments']['field_event_parent_target_id']['summary_options']['items_per_page'] = '25';
-

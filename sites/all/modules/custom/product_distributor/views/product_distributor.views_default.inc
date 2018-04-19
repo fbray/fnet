@@ -1,11 +1,14 @@
 <?php
+
 /**
  * @file
+ * product_distributor.views_default.inc
+ *
  * Views module related extension functions of the product_distributor module.
  */
 
 /**
- * Implementation of hook_views_default_views()
+ * Implements hook_views_default_views().
  */
 function product_distributor_views_default_views() {
   $views = [];

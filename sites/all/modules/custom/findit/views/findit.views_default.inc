@@ -1,12 +1,12 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 10/9/17
- * Time: 3:01 PM
+ * @file
+ * findit.views_default.inc
  */
+
 /**
- * Implementation of hook_views_default_views()
+ * Implements hook_views_default_views().
  */
 function findit_views_default_views() {
   $views = array();

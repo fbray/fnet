@@ -1,17 +1,16 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 10/20/17
- * Time: 2:29 PM
+ * @file
+ * promotions.views_default.inc
  */
 
 /**
- * Implementation of hook_views_default_views()
+ * Implements hook_views_default_views().
  */
 function promotions_views_default_views() {
   $views = array();
-  $files = file_scan_directory(drupal_get_path('module', 'promotions') . '/views', '/.*\.view$/');
+  $files = file_scan_directory(drupal_get_path('module', 'promotions') . '/views', '/.*\.view.inc$/');
   foreach ($files as $filepath => $file) {
     require $filepath;
     if (isset($view)) {
@@ -20,5 +19,3 @@ function promotions_views_default_views() {
   }
   return $views;
 }
-
-?>

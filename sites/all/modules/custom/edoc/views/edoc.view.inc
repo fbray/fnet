@@ -1,9 +1,8 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 1/19/18
- * Time: 11:32 AM
+ * @file
+ * edoc.view.inc
  */
 
 $view = new view();
@@ -22,7 +21,11 @@ $handler->display->display_options['title'] = 'eDoc Search';
 $handler->display->display_options['use_ajax'] = TRUE;
 $handler->display->display_options['use_more_always'] = FALSE;
 $handler->display->display_options['access']['type'] = 'perm';
-$handler->display->display_options['cache']['type'] = 'none';
+$handler->display->display_options['cache']['type'] = 'time';
+$handler->display->display_options['cache']['results_lifespan'] = '3600';
+$handler->display->display_options['cache']['results_lifespan_custom'] = '0';
+$handler->display->display_options['cache']['output_lifespan'] = '3600';
+$handler->display->display_options['cache']['output_lifespan_custom'] = '0';
 $handler->display->display_options['query']['type'] = 'views_query';
 $handler->display->display_options['exposed_form']['type'] = 'basic';
 $handler->display->display_options['pager']['type'] = 'full';

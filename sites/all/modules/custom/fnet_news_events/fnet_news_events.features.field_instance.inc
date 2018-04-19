@@ -154,6 +154,7 @@ function fnet_news_events_field_default_field_instances() {
       'display' => array(
         'url_cutoff' => 80,
       ),
+      'enable_tokens' => 1,
       'entity_translation_sync' => FALSE,
       'rel_remove' => 'default',
       'title' => 'none',
