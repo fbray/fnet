@@ -1,0 +1,25 @@
+<?php
+
+/**
+ * @file
+ * versiv_configurator.module
+ */
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function versiv_configurator_preprocess_node(&$variables) {
+  // The node types used for Versiv Kit Configurator pages.
+  $types = [
+    'page_region',
+    'page_region_language',
+  ];
+
+  // Current node.
+  $node = $variables['node'];
+
+  // Determine if current node is used for Versiv Kit Configurator.
+  if (in_array($node->type, $types) && (stripos($node->title, "Versiv Kit Configurator") !== FALSE)) {
+    drupal_add_js(drupal_get_path('module', 'versiv_configurator') . '/js/versiv_configurator.js');
+  }
+}
