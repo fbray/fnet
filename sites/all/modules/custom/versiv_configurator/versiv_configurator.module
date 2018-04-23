@@ -20,6 +20,12 @@ function versiv_configurator_preprocess_node(&$variables) {
 
   // Determine if current node is used for Versiv Kit Configurator.
   if (in_array($node->type, $types) && (stripos($node->title, "Versiv Kit Configurator") !== FALSE)) {
-    drupal_add_js(drupal_get_path('module', 'versiv_configurator') . '/js/versiv_configurator.js');
+    $options = ['scope' => 'footer'];
+    drupal_add_js(drupal_get_path('module', 'versiv_configurator') . '/js/versiv_configurator.js', $options);
+    drupal_add_css(drupal_get_path('module', 'versiv_configurator') . '/css/versiv_reset.min.css');
+    drupal_add_css(drupal_get_path('module', 'versiv_configurator') . '/css/versiv_configurator.css', ['media' => 'screen']);
+    drupal_add_css(drupal_get_path('module', 'versiv_configurator') . '/css/versiv_configurator.print.css', ['media' => 'print']);
+    drupal_add_css(drupal_get_path('module', 'versiv_configurator') . '/css/versiv_configurator.email.css', ['media' => 'screen']);
   }
+
 }
