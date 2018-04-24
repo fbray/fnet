@@ -22,6 +22,7 @@ files[] = ems_registration.inc
 files[] = event.inc
 files[] = event_occurrence.inc
 files[] = expertise.inc
+files[] = expertise_language.inc
 files[] = expertise_role.inc
 files[] = expertise_role_language.inc
 files[] = extranet_news.inc

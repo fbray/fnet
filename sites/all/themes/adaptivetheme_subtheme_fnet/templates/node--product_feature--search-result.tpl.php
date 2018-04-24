@@ -3,8 +3,8 @@
  * $content contains the relevant fields
  * use dpm($content) to see what's in there!
  */
-$parent_product = $content['field_products'][0];
-unset($content['field_products']);
+$parent_product = $content['field_related_products'][0];
+unset($content['field_related_products']);
 // Turn on for testing
 /*
 if (module_exists('devel')) {

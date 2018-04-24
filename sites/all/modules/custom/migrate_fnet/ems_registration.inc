@@ -28,8 +28,10 @@ class EventRegistrationMigration extends Migration {
     // parent_name mapping below will find that the parent exists.
     $query = $query = Database::getConnection('default', $arguments['source_connection'])
       ->select('ems_registration', 'r')
-      ->fields('r', array('nid', 'rid', 'gold_number', 'payment_status', 'region', 'language',
-        'registration_status', 'registration_sequence', 'cancellation_token'));
+      ->fields('r', [
+        'nid', 'rid', 'gold_number', 'payment_status', 'region', 'language',
+        'registration_status', 'registration_sequence', 'cancellation_token'
+      ]);
 
     // Create a MigrateSource object, which manages retrieving the input data.
     $this->source = new MigrateSourceSQL($query);
@@ -44,20 +46,20 @@ class EventRegistrationMigration extends Migration {
     // destination - we need to be explicit for our source, but the destination
     // class knows its schema already.
     $this->map = new MigrateSQLMap($this->machineName,
-      array(
-        'nid' => array(
+      [
+        'nid' => [
           'description' => 'node id of event_occurrence',
           'type' => 'int',
           'unsigned' => TRUE,
           'not null' => TRUE,
-        ),
-        'rid' => array(
+        ],
+        'rid' => [
           'description' => 'registrant id',
           'type' => 'int',
           'unsigned' => TRUE,
           'not null' => TRUE,
-        ),
-      ),
+        ],
+      ],
       MigrateDestinationTable::getKeySchema($table_name)
     );
     $this->destination =
@@ -68,7 +70,7 @@ class EventRegistrationMigration extends Migration {
     //  drush migrate-fields-destination BeerTerm
     //  drush migrate-fields-source BeerTerm
     // or review the detail pages in the UI.
-    $this->addSimpleMappings(array('gold_number', 'payment_status', 'region', 'language', 'registration_status', 'registration_sequence', 'cancellation_token'));
+    $this->addSimpleMappings(['gold_number', 'payment_status', 'region', 'language', 'registration_status', 'registration_sequence', 'cancellation_token']);
     if (isset($registrant_migration)) {
       $this->addFieldMapping('rid', 'rid')
         ->sourceMigration('EventRegistrants');

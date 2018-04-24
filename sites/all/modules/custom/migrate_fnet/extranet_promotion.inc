@@ -14,6 +14,12 @@ class FNETExtranetPromotionMigration extends DrupalNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Path Alias
+    $this->addFieldMapping('path', 'path');
+
+    // Disable Pathauto for now.
+    $this->addFieldMapping('pathauto')->defaultValue(0);
+
     // Redirects
     $this->addFieldMapping('migrate_redirects', 'path');
 
@@ -54,7 +60,22 @@ class FNETExtranetPromotionMigration extends DrupalNode7Migration {
     if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
-    // TODO: Regex file and image URLs from /sites/flukenetworks.com/files... to /sites/default/files...
+
+    $row->body = $this->stripDomain($row->body);
+    $row->body = str_ireplace('/flukenetworks.com/files', '/default/files', $row->body);
+    $row->body = str_ireplace('/flukenetworks.com/theme', '/all/theme', $row->body);
+  }
+
+  /**
+   * Remove the hard-coded Fluke Networks domain from a field.
+   *
+   * @param $string
+   * @return mixed
+   */
+  protected function stripDomain($string) {
+    $domains = ['http://www.flukenetworks.com/', 'https://www.flukenetworks.com/', 'http://flukenetworks.com/', 'https://flukenetworks.com/'];
+    $stripped = str_ireplace($domains, '/', $string);
+    return $stripped;
   }
 
 

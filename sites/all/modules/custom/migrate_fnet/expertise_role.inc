@@ -14,6 +14,15 @@ class FNETExpertiseRoleMigration extends FNETNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Path Alias
+    $this->addFieldMapping('path', 'path');
+
+    // Disable Pathauto for now.
+    $this->addFieldMapping('pathauto')->defaultValue(0);
+
+    // Redirects
+    $this->addFieldMapping('migrate_redirects', 'path');
+
     // Deprecated Fields
     $this->addFieldMapping(NULL, 'field_business_entity')
       ->description(t('No longer necessary as NetScout split is complete.'))
@@ -48,6 +57,8 @@ class FNETExpertiseRoleMigration extends FNETNode7Migration {
       ->sourceMigration('Files');
     $this->addFieldMapping('field_exp_rle_thumbnail:file_class')
       ->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_exp_rle_thumbnail:preserve_files')
+      ->defaultValue(TRUE);
     $this->addFieldMapping('field_exp_rle_thumbnail:alt', 'field_exp_rle_thumbnail:alt');
     $this->addFieldMapping('field_exp_rle_thumbnail:title', 'field_exp_rle_thumbnail:title');
 
@@ -55,15 +66,41 @@ class FNETExpertiseRoleMigration extends FNETNode7Migration {
       ->sourceMigration('Files');
     $this->addFieldMapping('field_exp_rle_banner_image:file_class')
       ->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_exp_rle_banner_image:preserve_files')
+      ->defaultValue(TRUE);
     $this->addFieldMapping('field_exp_rle_banner_image:alt', 'field_exp_rle_banner_image');
     $this->addFieldMapping('field_exp_rle_banner_image:title', 'field_exp_rle_banner_image');
 
     // Metatags
   }
 
-  // TODO: File paths in body and other fields.
-  public function complete($node, stdClass $row) {
-    // Generate URL Redirects.
-    parent::generateNodeRedirect($node, $row);
+  /**
+   * Implementation of prepareRow()
+   *
+   * @param $row
+   * @return bool
+   */
+  public function prepareRow($row) {
+    // Always include this snippet, in case our parent class decides to ignore the row
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+
+    $row->body = $this->stripDomain($row->body);
+    $row->body = str_ireplace('/flukenetworks.com/files', '/default/files', $row->body);
+    $row->body = str_ireplace('/flukenetworks.com/theme', '/all/theme', $row->body);
   }
+
+  /**
+   * Remove the hard-coded Fluke Networks domain from a field.
+   *
+   * @param $string
+   * @return mixed
+   */
+  protected function stripDomain($string) {
+    $domains = ['http://www.flukenetworks.com/', 'https://www.flukenetworks.com/', 'http://flukenetworks.com/', 'https://flukenetworks.com/'];
+    $stripped = str_ireplace($domains, '/', $string);
+    return $stripped;
+  }
+
 }

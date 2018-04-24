@@ -1,5 +1,4 @@
 <?php
-
 /*
  * The Page Story and Page Article content types should be here. They really should be
  * structured differently, so if you are reading this, please understand
@@ -10,9 +9,12 @@
  * I've also had a hell of a month, being sick almost every day. I hope I can
  * hang on.
  *
- * Let's add a menu for Linkware Live and hook_blocx for some various other stuff.
+ * Let's add a menu for Linkware Live and hook_block for some various other stuff.
  * Maybe we'll add a short template for giggles.
  *
+ * Thanks for understanding.
+ *
+ * Ryan Ositis
  */
 
 
@@ -22,12 +24,12 @@
  * @return mixed
  */
 function microsites_block_info() {
-  $block['linkwarelive_footer'] = array(
+  $block['linkwarelive_footer'] = [
     'info' => t('Linkware Live Footer'),
     'region' => 'footer',
     'visibility' => BLOCK_VISIBILITY_LISTED,
-    'pages' => 'linkwarelive\nmlinkwarelive/*',
-  );
+    'pages' => 'linkwarelive\nlinkwarelive/*',
+  ];
   return $block;
 }
 
@@ -38,10 +40,10 @@ function microsites_block_info() {
  * @return array
  */
 function microsites_block_view($delta) {
-  $block = array();
+  $block = [];
   switch ($delta) {
     case 'linkwarelive_footer':
-      $block['subject'] = t('LinkwareLive Footer');
+      $block['subject'] = NULL;
       try{
         $block['content'] = theme('linkwarelive_footer');
       }
@@ -59,15 +61,15 @@ function microsites_block_view($delta) {
  * @return array
  */
 function microsites_theme() {
-  $base = array(
+  $base = [
     'path' => drupal_get_path('module', 'microsites') . '/theme',
-  );
-  return array(
-    'linkwarelive_footer' => $base + array(
+  ];
+  return [
+    'linkwarelive_footer' => $base + [
         'template' => 'linkwarelive_footer',
-        'variables' => array(),
-      ),
-  );
+        'variables' => [],
+      ],
+  ];
 }
 
 /**

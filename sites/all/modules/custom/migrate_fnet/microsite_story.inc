@@ -14,6 +14,12 @@ class FNETMicrositeStoryMigration extends FNETNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Path Alias
+    $this->addFieldMapping('path', 'path');
+
+    // Disable Pathauto for now.
+    $this->addFieldMapping('pathauto')->defaultValue(0);
+
     // Redirects
     $this->addFieldMapping('migrate_redirects', 'path');
 
@@ -56,12 +62,12 @@ class FNETMicrositeStoryMigration extends FNETNode7Migration {
 
     // Check the various fields. Remove the hard URLs.
     $row->body = $this->stripDomain($row->body);
-    $row->body = str_replace('/flukenetworks.com/files', '/default/files', $row->body);
-    $row->body = str_replace('/flukenetworks.com/theme', '/all/theme', $row->body);
+    $row->body = str_ireplace('/flukenetworks.com/files', '/default/files', $row->body);
+    $row->body = str_ireplace('/flukenetworks.com/theme', '/all/theme', $row->body);
   }
 
   protected function stripDomain($string) {
-    $stripped = str_replace(array('https://www.flukenetworks.com/', 'http://www.flukenetworks.com/'), '/', $string);
+    $stripped = str_ireplace(['https://www.flukenetworks.com/', 'http://www.flukenetworks.com/'], '/', $string);
     return $stripped;
   }
 }

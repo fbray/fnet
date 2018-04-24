@@ -1,21 +1,12 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ryanositis
- * Date: 1/4/18
- * Time: 1:13 PM
- */
 
 /**
  * @file
- * Provides a protected extranet to the Fluke Networks website
- * called 'Sales Insider'.
+ * Provides a protected extranet to FNet website called 'Sales Insider'.
  */
 
 /**
  * Implements hook_permission().
- *
- * @return array
  */
 function sales_insider_permission() {
   return [
@@ -32,13 +23,11 @@ function sales_insider_permission() {
 
 /**
  * Implements hook_menu().
- *
- * @return array
  */
 function sales_insider_menu() {
   $items = [];
 
-  // Public facing paths start with 'extranet'
+  // Public facing paths start with 'extranet'.
   $items['extranet'] = [
     'menu_name' => 'extranet',
     'title' => t('Sales Insider'),
@@ -81,8 +70,8 @@ function sales_insider_menu() {
     'menu_name' => 'extranet',
   ];
 
-  // box item download.  get box, then item url
-  // send back as redirect location
+  // Box item download.  get box, then item url
+  // send back as redirect location.
   $items['extranet/download/%/%'] = [
     'menu_name' => 'extranet',
     'title' => 'Photo Download',
@@ -92,14 +81,14 @@ function sales_insider_menu() {
     'type' => MENU_CALLBACK,
   ];
 
-  // Autocomplete callback
+  // Autocomplete callback.
   $items['productname/autocomplete'] = [
     'page callback' => '_sales_insider_products_autocomplete',
     'access arguments' => ['access content'],
-    'type' => MENU_CALLBACK
+    'type' => MENU_CALLBACK,
   ];
 
-  // Extranet Administrative Pages
+  // Extranet Administrative Pages.
   $items['admin/fnet/extranet'] = [
     'title' => t('Extranet'),
     'description' => t('Adminstrative functions for managing the Extranet'),
@@ -115,7 +104,7 @@ function sales_insider_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => ['sales_insider_admin_instructions_form'],
     'access arguments' => ['administer extranet'],
-    'file' => 'sales_insider.admin.inc'
+    'file' => 'sales_insider.admin.inc',
   ];
 
   /* Web service config page */
@@ -141,8 +130,6 @@ function sales_insider_menu() {
 
 /**
  * Implements hook_theme().
- *
- * @return array
  */
 function sales_insider_theme() {
   $base = [
@@ -150,26 +137,24 @@ function sales_insider_theme() {
   ];
   return [
     'product_assets' => $base + [
-        'template' => 'product_assets',
-        'variables' => [
-          'elements' => NULL
-        ],
+      'template' => 'product_assets',
+      'variables' => [
+        'elements' => NULL,
       ],
+    ],
     'sales_insider_default_page_menu_item' => $base + [
-        'template' => 'sales_insider_default_page_menu_item',
-        'variables' => ['items' => NULL],
-      ],
+      'template' => 'sales_insider_default_page_menu_item',
+      'variables' => ['items' => NULL],
+    ],
     'sales_insider_request_thanks_message' => $base + [
-        'template' => 'sales_insider_request_thanks_message',
-        'variables' => [],
-      ],
+      'template' => 'sales_insider_request_thanks_message',
+      'variables' => [],
+    ],
   ];
 }
 
 /**
  * Implements hook_node_info().
- *
- * @return array
  */
 function sales_insider_node_info() {
   $types = [
@@ -202,11 +187,11 @@ function sales_insider_node_info() {
 }
 
 /**
- * Implements hook_preprocess_page(&$vars)
- * @param $vars
+ * Implements hook_preprocess_page().
  */
 function sales_insider_preprocess_page(&$vars) {
-  global $user;  // Get the current user.
+  // Get the current user.
+  global $user;
 
   // Don't do anything unless the page__extranet theme suggestion exists.
   if (in_array('page__extranet', $vars['theme_hook_suggestions'])) {
@@ -214,7 +199,7 @@ function sales_insider_preprocess_page(&$vars) {
     $regional_groups = [];
     $vars['page']['#access_extranet'] = FALSE;
     $vars['page']['#node_edit_link'] = FALSE;
-    if (user_access('access_extranet')) {
+    if (user_access('access extranet')) {
       $vars['page']['#access_extranet'] = TRUE;
       $groups = group_membership_load_by_user($user->uid);
 
@@ -240,7 +225,7 @@ function sales_insider_preprocess_page(&$vars) {
 }
 
 /**
- * ---------- PAGE CALLBACKS ---------------
+ * A---------- PAGE CALLBACKS ---------------.
  */
 
 /**
@@ -250,16 +235,18 @@ function sales_insider_preprocess_page(&$vars) {
  * @throws \Exception
  */
 function _sales_insider_initial_content() {
-  global $user;  // Get the current user.
+  // Get the current user.
+  global $user;
   $account = user_load($user->uid);
 
   /*
-   * Here we go with the logic needed to provide a response based on that status of the user.
-   * First off, s the User logged in?
+   * Start of logic needed to provide a response based on status of the user.
+   * First off, is the User logged in?
    */
   if (user_is_logged_in()) {
     // Yes? Excellent. Let the user in.
-    if (user_access('access_extranet')) {  // If the user has access to the Extranet...
+    if (user_access('access extranet')) {
+      // If the user has access to the Extranet...
       $content = variable_get('extranet_instructions_main', '');
       return $content;
     }
@@ -277,40 +264,43 @@ function _sales_insider_initial_content() {
         $added_on = !empty($access_requests['blocked_on']) ? format_date($access_requests['added_on'], 'medium', '') : NULL;
         $status = $access_requests['status'];
 
-        // Display the 'You requested access on X, but it
+        // Display the 'You requested access on X, but it...
         if (!empty($requested_on)) {
           $message = 'You requested access to Sales Insider on @request_date ';
-          if ($status == 'blocked') { // has been denied.
-            // Re-request Access/Resend Request option
+          if ($status == 'blocked') {
+            // Has been denied.
+            // Re-request Access/Resend Request option.
             $message .= 'but unfortunately your request was denied by an administrator on @blocked_date.';
           }
           else {
-            // has not yet been approved.'
+            // Has not yet been approved.
             $message .= 'but your request has not yet been approved.';
           }
           $localized_message = t($message, [
             '@request_date' => $requested_on,
-            '@blocked_date' => $blocked_on
+            '@blocked_date' => $blocked_on,
           ]);
         }
         elseif (!empty($added_on)) {
-          // if there is nothing in the requested_on field, the user was added manually.
+          // If there is nothing in the requested_on field,
+          // the user was added manually.
           $message = 'You were granted access to Sales Insider on @added_date ';
-          if ($status == 'blocked') { // has been denied.
-            // Re-request Access/Resend Request option
+          if ($status == 'blocked') {
+            // Has been denied.
+            // Re-request Access/Resend Request option.
             $message .= 'but unfortunately your access was blocked by an administrator on @blocked_date.';
           }
           else {
-            // has not yet been approved.'
+            // Has not yet been approved.
             $message .= 'but something has gone wrong.';
           }
           $localized_message = t($message, [
             '@added_date' => $added_on,
-            '@blocked_date' => $blocked_on
+            '@blocked_date' => $blocked_on,
           ]);
         }
 
-        // Give a default message,
+        // Give a default message.
         else {
           // TODO: Language?
           $localized_message = theme('sales_insider_request_thanks_message');
@@ -320,19 +310,19 @@ function _sales_insider_initial_content() {
 
       // ...or they just haven't requested access yet.
       else {
-        // Load the Request Access Form
+        // Load the Request Access Form.
         module_load_include('inc', 'sales_insider', 'includes/access_request.form');
         // Get the region by looking for the country in the user address field.
         $address = field_get_items('user', $account, 'field_address', LANGUAGE_NONE);
-        dpm($address);
         $country = $address[0]['country'];
 
-        // Get the Groud ID of the Sales Insider Region group that has this country.
+        // Get the Group ID of the Sales Insider Region group
+        // that has this country.
         $group = _sales_insider_get_group_by_country($country);
 
-        // TODO: Modify the Request Form to deal with multiple groups, if only as a failover.
-
-        $request_form = drupal_get_form('sales_insider_request_form', $group);
+        // TODO: Modify the Request Form to deal with multiple groups,
+        // if only as a failover.
+        $request_form = drupal_get_form('sales_insider_custom_request_form', $group);
         return $request_form;
       }
     }
@@ -349,7 +339,8 @@ function _sales_insider_initial_content() {
     $url = preg_replace('/\?.*/', '', $url);
     // This puts in the '?destination=extranet'.
     $action = url($url, ['query' => $query_string_values]);
-    $login_form['#action'] = $action; // URL Decoding to clean up some weirdness.
+    // URL Decoding to clean up some weirdness.
+    $login_form['#action'] = $action;
     $login_form['#redirect'] = 'extranet';
     $login_form['#after_build'] = [];
     return $login_form;
@@ -367,7 +358,8 @@ function _sales_insider_sales_tool_page() {
   $items = ['items' => _sales_insider_submenu_page_items('extranet/tools')];
   try {
     $content .= theme('sales_insider_default_page_menu_item', $items);
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     watchdog('Sales Insider', $e->getMessage());
   }
   return $content;
@@ -384,29 +376,32 @@ function _sales_insider_contacts_page() {
   $items = ['items' => _sales_insider_submenu_page_items('extranet/contacts')];
   try {
     $content .= theme('sales_insider_default_page_menu_item', $items);
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     watchdog('Sales Insider', $e->getMessage());
   }
   return $content;
 }
 
 /**
- * Gets the menu items in the hierarchy below and returns them in a themed manner.
+ * Gets the menu items in the hierarchy below and returns them themed.
+ *
  * TODO: Scott Melton wrote this hack.
  *
  * @param $path
+ *
  * @return array
  */
 function _sales_insider_submenu_page_items($path) {
-  //Stop and return an empty array if node path is empty
+  // Stop and return an empty array if node path is empty.
   if (empty($path)) {
     return [];
   }
 
-  //Init empty array to hold the results
+  // Init empty array to hold the results.
   $pages = [];
 
-  //Init parent keys. Check 'foreach' loop on parent keys for more info.
+  // Init parent keys. Check 'foreach' loop on parent keys for more info.
   $parent_keys = [
     'plid',
     'p1',
@@ -417,62 +412,62 @@ function _sales_insider_submenu_page_items($path) {
     'p6',
     'p7',
     'p8',
-    'p9'
+    'p9',
   ];
 
-  //Collect menu item corresponding to this path to begin updates.
-  //Reference: http://stackoverflow.com/a/11615338/136696
-  //Note: we couldn't find a way to get the sub-tree starting from this item
-  //only and hence we had to get the whole menu tree built and then loop on
-  //the current item part only. Not so bad considering that Drupal will
-  //most probably have the whole menu cached anyway.
+  // Collect menu item corresponding to this path to begin updates.
+  // Reference: http://stackoverflow.com/a/11615338/136696
+  // Note: we couldn't find a way to get the sub-tree starting from this item
+  // only and hence we had to get the whole menu tree built and then loop on
+  // the current item part only. Not so bad considering that Drupal will
+  // most probably have the whole menu cached anyway.
   $parent_menu_item = menu_link_get_preferred($path);
 
-  //Stop and return empty array if a proper current menu item couldn't be found
+  // Stop and return empty array if proper current menu item couldn't be found.
   if (empty($parent_menu_item['menu_name']) || empty($parent_menu_item['mlid'])) {
     return [];
   }
 
-  //Init parent item mlid for easier usage since now we know it's not empty
+  // Init parent item mlid for easier usage since now we know it's not empty.
   $parent_menu_item_mlid = $parent_menu_item['mlid'];
 
-  //Build whole menu based on the preferred menu_name gotten from this item
+  // Build whole menu based on the preferred menu_name gotten from this item.
   $menu = menu_build_tree($parent_menu_item['menu_name']);
 
-  //Reset menu cache since 'menu_build_tree' will cause trouble later on after
-  //you call pathauto to update paths as it can only be called once.
-  //Check: https://www.drupal.org/node/1697570
+  // Reset menu cache since 'menu_build_tree' will cause trouble later on after
+  // you call pathauto to update paths as it can only be called once.
+  // Check: https://www.drupal.org/node/1697570
   menu_reset_static_cache();
 
-  //Init processing array. This will hold menu items as we process them.
+  // Init processing array. This will hold menu items as we process them.
   $menu_items_to_process = [];
 
-  //First run to fill up the processing array with the top level items
+  // First run to fill up the processing array with the top level items.
   foreach ($menu as $top_level_menu_item) {
     $menu_items_to_process[] = $top_level_menu_item;
   }
 
-  //While the processing array is not empty, keep looping into lower
-  //menu items levels until all are processed.
+  // While the processing array is not empty, keep looping into lower
+  // menu items levels until all are processed.
   while (count($menu_items_to_process) > 0) {
-    //Pop the top item from the processing array
+    // Pop the top item from the processing array.
     $mi = array_pop($menu_items_to_process);
 
-    //Get its node id and add it to $nids if it's a current item child
-    //Note that $parent_keys contains all keys that drupal uses to
-    //set a menu item inside a tree up to 9 levels.
+    // Get its node id and add it to $nids if it's a current item child
+    // Note that $parent_keys contains all keys that drupal uses to
+    // set a menu item inside a tree up to 9 levels.
     foreach ($parent_keys as $parent_key) {
-      //First, ensure the current parent key is set and also mlid is set
+      // First, ensure the current parent key is set and also mlid is set.
       if (!empty($mi['link']['mlid']) && !empty($mi['link'][$parent_key])) {
-        //If the link we're at is the parent one, don't add it to $nids
-        //We need this check cause Drupal sets p1 to p9 in a way you
-        //can easily use to generate breadcrumbs which means we will
-        //also match the current parent, but here we only want children
+        // If the link we're at is the parent one, don't add it to $nids
+        // We need this check cause Drupal sets p1 to p9 in a way you
+        // can easily use to generate breadcrumbs which means we will
+        // also match the current parent, but here we only want children.
         if ($mi['link']['mlid'] != $parent_menu_item_mlid) {
-          //Try to match the link to the parent menu item
+          // Try to match the link to the parent menu item.
           if ($mi['link'][$parent_key] == $parent_menu_item_mlid) {
-            //It's a child, add it to $pages and stop foreach loop.
-            //Link_path has the path to the node. Example: node/63.
+            // It's a child, add it to $pages and stop foreach loop.
+            // Link_path has the path to the node. Example: node/63.
             if (!empty($mi['link']['link_path'])) {
               $pages[] = [
                 'path' => $mi['link']['link_path'],
@@ -486,14 +481,13 @@ function _sales_insider_submenu_page_items($path) {
       }
     }
 
-    //Add its child items, if any, to the processing array
-
+    // Add its child items, if any, to the processing array.
     if (!empty($mi['below']) && is_array($mi['below'])) {
       foreach ($mi['below'] as $child_menu_item) {
-        //Add child item at the beginning of the array so that when
-        //we get the list of node ids it's sorted by level with
-        //the top level elements first; which is easy to attain
-        //and also useful for some applications; why not do it.
+        // Add child item at the beginning of the array so that when
+        // we get the list of node ids it's sorted by level with
+        // the top level elements first; which is easy to attain
+        // and also useful for some applications; why not do it.
         array_unshift($menu_items_to_process, $child_menu_item);
       }
     }
@@ -501,11 +495,8 @@ function _sales_insider_submenu_page_items($path) {
   return $pages;
 }
 
-
 /**
  * Implements hook_views_api().
- *
- * @return array
  */
 function sales_insider_views_api() {
   return [
@@ -515,8 +506,9 @@ function sales_insider_views_api() {
 }
 
 /**
- * wrappers to Group functions
+ * Wrappers to Group functions.
  */
+
 /**
  * Group Access wrapper.
  *
@@ -532,6 +524,8 @@ function _sales_insider_group_access($gid) {
 }
 
 /**
+ * Helper function.
+ *
  * @param $gid
  * @param $node_type
  * @return array|bool
@@ -545,6 +539,8 @@ function _sales_insider_gnode_node_add($gid, $node_type) {
 }
 
 /**
+ * Helper Function.
+ *
  * @param $gid
  * @param $node_type
  * @return bool
@@ -558,10 +554,12 @@ function _sales_insider_gnode_add_node_access($gid, $node_type) {
 }
 
 /**
- * Helper function to find which Sales Insider Region group is assigned what country.
+ * Helper function: Find which Sales Insider Region group is assigned.
+ *
  * Assumes a country is only in 1 group.
  *
- * TODO: Returns the newest/highest gid if multiple. This can cause issues. Needs fixing.
+ * TODO: Returns the newest/highest gid if multiple. This can cause issues.
+ * Needs fixing.
  *
  * @param $country
  * @return bool|\Group
@@ -586,9 +584,8 @@ function _sales_insider_get_group_by_country($country) {
 
 /**
  * Implements hook_variable_group_info().
- * Defines the variable group.
  *
- * @return array
+ * Defines the variable group.
  */
 function sales_insider_variable_group_info() {
   $groups = [];
@@ -603,9 +600,6 @@ function sales_insider_variable_group_info() {
 
 /**
  * Implements hook_variable_info().
- *
- * @param $options
- * @return array
  */
 function sales_insider_variable_info($options) {
   $variable = [];
@@ -653,25 +647,21 @@ function sales_insider_variable_info($options) {
   return $variable;
 }
 
-
 /**
  * Implements hook_form_FORM_ID_alter().
  *
  * Alter views exposed forms for collapsible filters.
- *
- * @param $form
- * @param $form_state
  */
 function sales_insider_form_views_exposed_form_alter(&$form, &$form_state) {
   if (empty($form_state['view']) || !in_array($form_state['view']->name, [
-      'sales_insider_products',
-      'product_page'
-    ])) {
-    // We alter the exposed form of a single views display, so return if this is
-    // not the expected view.
+    'sales_insider_products',
+    'product_page',
+  ])) {
+    // We alter the exposed form of a single views display, so return if this
+    // is not the expected view.
     return;
   }
-  if (isset($form['field_dam_asset_type_value'])) {
+  if (isset($form['field_asset_type_value'])) {
     // Add option to select all items (equals to resetting the filter).
     $options = [
       'All' => variable_get('views_exposed_filter_any_label', 'new_any') == 'old_any' ? t('<Any>') : t('- Any -'),
@@ -680,7 +670,7 @@ function sales_insider_form_views_exposed_form_alter(&$form, &$form_state) {
     // Change size of field based on number of options (max: 5 items).
     $form['field_dam_asset_type_value']['#size'] = min([
       count($options),
-      5
+      5,
     ]);
     if (count($options) <= 2) {
       // Hide filter if there is only one option available (additional
@@ -728,8 +718,6 @@ function sales_insider_form_views_exposed_form_alter(&$form, &$form_state) {
 
 /**
  * Implements hook_default_search_api_index().
- *
- * @return array
  */
 function sales_insider_default_search_api_index() {
   $items = [];
@@ -762,7 +750,7 @@ function sales_insider_default_search_api_index() {
         "field_digital_assets" : { "type" : "list\\u003Cinteger\\u003E", "entity_type" : "node" },
         "field_edoc_subtitle" : { "type" : "text" },
         "field_media_gallery" : { "type" : "list\\u003Cinteger\\u003E", "entity_type" : "node" },
-        "field_products" : { "type" : "list\\u003Cinteger\\u003E", "entity_type" : "node" },
+        "field_related_products" : { "type" : "list\\u003Cinteger\\u003E", "entity_type" : "node" },
         "group" : { "type" : "list\\u003Cinteger\\u003E", "entity_type" : "group" },
         "search_api_access_node" : { "type" : "list\\u003Cstring\\u003E" },
         "search_api_language" : { "type" : "string" },

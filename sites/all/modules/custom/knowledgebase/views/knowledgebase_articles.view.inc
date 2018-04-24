@@ -2,19 +2,15 @@
 
 /**
  * @file
- * Created by PhpStorm.
+ * knowledgebase_articles.view.inc
  *
- * User: mositis
- * Date: 7/26/2017
- * Time: 10:32 AM.
+ * Admin listing of all Knowledge Base Article content.
  */
-
-$export = array();
 
 $view = new view();
 $view->name = 'knowledge_base_articles';
 $view->description = 'Admin listing of knowledge base articles.';
-$view->tag = '';
+$view->tag = 'fnet';
 $view->base_table = 'node';
 $view->human_name = 'Knowledge Base Administration';
 $view->core = 0;
@@ -25,7 +21,11 @@ $view->disabled = FALSE; /* Edit this to true to make a default view disabled in
 $handler = $view->new_display('default', 'Defaults', 'default');
 $handler->display->display_options['use_more_always'] = FALSE;
 $handler->display->display_options['access']['type'] = 'none';
-$handler->display->display_options['cache']['type'] = 'none';
+$handler->display->display_options['cache']['type'] = 'time';
+$handler->display->display_options['cache']['results_lifespan'] = '3600';
+$handler->display->display_options['cache']['results_lifespan_custom'] = '0';
+$handler->display->display_options['cache']['output_lifespan'] = '3600';
+$handler->display->display_options['cache']['output_lifespan_custom'] = '0';
 $handler->display->display_options['query']['type'] = 'views_query';
 $handler->display->display_options['exposed_form']['type'] = 'basic';
 $handler->display->display_options['pager']['type'] = 'full';
@@ -324,7 +324,3 @@ $handler->display->display_options['path'] = 'admin/content/knowledge-base';
 $handler->display->display_options['menu']['type'] = 'normal';
 $handler->display->display_options['menu']['title'] = 'Knowledge Base Articles List';
 $handler->display->display_options['menu']['weight'] = '0';
-
-$export['knowledge_base_articles'] = $view;
-
-return $export;

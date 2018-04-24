@@ -1,14 +1,12 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 2/9/18
- * Time: 11:32 AM
+ * @file
+ * microsites.views_default.inc
  */
 
-
 /**
- * Implementation of hook_views_default_views()
+ * Implements hook_views_default_views().
  */
 function microsites_views_default_views() {
   $views = array();

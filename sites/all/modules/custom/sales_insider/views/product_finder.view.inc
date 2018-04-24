@@ -1,10 +1,10 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 1/16/18
- * Time: 12:44 PM
+ * @file
+ * product_finder.view.inc
  */
+
 $view = new view();
 $view->name = 'sales_insider_products';
 $view->description = '';
@@ -25,7 +25,11 @@ $handler->display->display_options['access']['role'] = array(
   5 => '5',
   4 => '4',
 );
-$handler->display->display_options['cache']['type'] = 'none';
+$handler->display->display_options['cache']['type'] = 'time';
+$handler->display->display_options['cache']['results_lifespan'] = '3600';
+$handler->display->display_options['cache']['results_lifespan_custom'] = '0';
+$handler->display->display_options['cache']['output_lifespan'] = '3600';
+$handler->display->display_options['cache']['output_lifespan_custom'] = '0';
 $handler->display->display_options['query']['type'] = 'views_query';
 $handler->display->display_options['exposed_form']['type'] = 'input_required';
 $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Search';
@@ -149,16 +153,16 @@ $handler->display->display_options['filters']['field_dam_document_status_value']
 $handler->display->display_options['filters']['field_dam_document_status_value']['value'] = array(
   'live' => 'live',
 );
-/* Filter criterion: Content: Products (field_products) */
-$handler->display->display_options['filters']['field_products_target_id']['id'] = 'field_products_target_id';
-$handler->display->display_options['filters']['field_products_target_id']['table'] = 'field_data_field_products';
-$handler->display->display_options['filters']['field_products_target_id']['field'] = 'field_products_target_id';
-$handler->display->display_options['filters']['field_products_target_id']['exposed'] = TRUE;
-$handler->display->display_options['filters']['field_products_target_id']['expose']['operator_id'] = 'field_products_target_id_op';
-$handler->display->display_options['filters']['field_products_target_id']['expose']['label'] = 'Products';
-$handler->display->display_options['filters']['field_products_target_id']['expose']['operator'] = 'field_products_target_id_op';
-$handler->display->display_options['filters']['field_products_target_id']['expose']['identifier'] = 'field_products_target_id';
-$handler->display->display_options['filters']['field_products_target_id']['expose']['remember_roles'] = array(
+/* Filter criterion: Content: Products (field_related_products) */
+$handler->display->display_options['filters']['field_related_products_target_id']['id'] = 'field_related_products_target_id';
+$handler->display->display_options['filters']['field_related_products_target_id']['table'] = 'field_data_field_related_products';
+$handler->display->display_options['filters']['field_related_products_target_id']['field'] = 'field_related_products_target_id';
+$handler->display->display_options['filters']['field_related_products_target_id']['exposed'] = TRUE;
+$handler->display->display_options['filters']['field_related_products_target_id']['expose']['operator_id'] = 'field_related_products_target_id_op';
+$handler->display->display_options['filters']['field_related_products_target_id']['expose']['label'] = 'Products';
+$handler->display->display_options['filters']['field_related_products_target_id']['expose']['operator'] = 'field_related_products_target_id_op';
+$handler->display->display_options['filters']['field_related_products_target_id']['expose']['identifier'] = 'field_related_products_target_id';
+$handler->display->display_options['filters']['field_related_products_target_id']['expose']['remember_roles'] = array(
   2 => '2',
   3 => 0,
   7 => 0,

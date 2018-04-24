@@ -1,10 +1,10 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 2/9/18
- * Time: 11:34 AM
+ * @file
+ * linkwarelive.view.inc
  */
+
 $view = new view();
 $view->name = 'microsites';
 $view->description = '';
@@ -20,7 +20,11 @@ $handler = $view->new_display('default', 'Master', 'default');
 $handler->display->display_options['title'] = 'LinkwareLive';
 $handler->display->display_options['use_more_always'] = FALSE;
 $handler->display->display_options['access']['type'] = 'perm';
-$handler->display->display_options['cache']['type'] = 'none';
+$handler->display->display_options['cache']['type'] = 'time';
+$handler->display->display_options['cache']['results_lifespan'] = '3600';
+$handler->display->display_options['cache']['results_lifespan_custom'] = '0';
+$handler->display->display_options['cache']['output_lifespan'] = '3600';
+$handler->display->display_options['cache']['output_lifespan_custom'] = '0';
 $handler->display->display_options['query']['type'] = 'views_query';
 $handler->display->display_options['exposed_form']['type'] = 'basic';
 $handler->display->display_options['pager']['type'] = 'none';
@@ -73,7 +77,7 @@ $handler->display->display_options['filters']['tid']['id'] = 'tid';
 $handler->display->display_options['filters']['tid']['table'] = 'taxonomy_index';
 $handler->display->display_options['filters']['tid']['field'] = 'tid';
 $handler->display->display_options['filters']['tid']['value'] = array(
-  11 => '11',
+  694 => '694',
 );
 $handler->display->display_options['filters']['tid']['type'] = 'select';
 $handler->display->display_options['filters']['tid']['vocabulary'] = 'microsites';

@@ -13,6 +13,11 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Path Alias
+    $this->addFieldMapping('path', 'path');
+
+    // Disable Pathauto for now.
+    $this->addFieldMapping('pathauto')->defaultValue(0);
 
     // Redirects
     $this->addFieldMapping('migrate_redirects', 'path');
@@ -84,7 +89,7 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
     $this->addFieldMapping('field_dam_availability_dates:to', 'field_dam_availability_date:value2');
 
     // Entity References
-    $this->addFieldMapping('field_products', 'field_dam_related_product')
+    $this->addFieldMapping('field_related_products', 'field_dam_related_product')
       ->sourceMigration('ProductDisplay');
 
     $this->addFieldMapping('field_dam_parent', 'field_dam_parent')
@@ -122,7 +127,6 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
    * @param $row
    * @return bool
    *
-   * TODO: This is throwing an error.
    */
   public function prepareRow($row) {
     // Always include this snippet, in case our parent class decides to ignore the row
@@ -149,7 +153,8 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
     $row->body = $this->stripDomain($row->body);
     $row->field_dam_form_url = $this->stripDomain($row->field_dam_form_url);
     $row->field_dam_edoc_url = $this->stripDomain($row->field_dam_edoc_url);
-    $row->body = str_replace('/flukenetworks.com/', '/default/', $row->body);
+    $row->body = str_ireplace('/flukenetworks.com/files', '/default/files', $row->body);
+    $row->body = str_ireplace('/flukenetworks.com/theme', '/all/theme', $row->body);
 
 
 
@@ -198,7 +203,7 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
     $old_groups = [];
     $query = Database::getConnection('legacy', $this->sourceConnection)
       ->select('groups', 'g')
-      ->fields('g', array('Title' => 'title'));
+      ->fields('g', ['Title' => 'title']);
     $query->join('group_entity', 'ge', 'ge.gid = g.gid');
     $query->condition('ge.entity_id', $row->nid, '=');
     $results = $query->execute();
@@ -209,7 +214,7 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
     // Match the names of the groups to get the new gid.
     $gid_query = Database::getConnection('default', $this->sourceConnection)
       ->select('groups', 'g')
-      ->fields('g', array('gid' => 'gid'))
+      ->fields('g', ['gid' => 'gid'])
       ->condition('title', $old_groups, 'IN');
     $gid_results = $gid_query->execute();
     // $gid_results = db_query('SELECT gid FROM {groups} WHERE title IN :title', array(':title' => $old_groups));
@@ -218,12 +223,12 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
     foreach($gid_results as $gid_result) {
       try {
         db_insert('group_entity')
-          ->fields(array(
+          ->fields([
             'gid' => $gid_result->gid,
             'entity_id' => $node->nid,
             'entity_type' => 'node',
             'bundle' => 'digital_asset'
-          ))->execute();
+          ])->execute();
       }
       catch (Exception $e) {
         watchdog('migrate_fnet', $e->getMessage());
@@ -248,8 +253,8 @@ class FNETDigitalAssetMigration extends FNETNode7Migration {
 
 
   protected function stripDomain($string) {
-    $stripped = str_replace('https://www.flukenetworks.com/', '/', $string);
-    $stripped = str_replace('http://www.flukenetworks.com/', '/', $string);
+    $domains = ['http://www.flukenetworks.com/', 'https://www.flukenetworks.com/', 'http://flukenetworks.com/', 'https://flukenetworks.com/'];
+    $stripped = str_ireplace($domains, '/', $string);
     return $stripped;
   }
 }

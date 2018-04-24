@@ -1,0 +1,109 @@
+body {
+    font-size:10pt;
+    font-family:helvetica, arial, sans-serif;
+    margin:0;
+}
+#family, #configure, #addon, #bom > footer, #summary > header, #summary table caption, #summary-send {
+    display:none !important;
+}
+
+#configurator > header {
+    margin:0 0 2em;
+}
+
+#configurator > header h1 {
+    font-size:1.5em;
+}
+#configurator > header h1 img {
+    width:6em;
+    margin-right:1em;
+    vertical-align: middle;
+}
+
+#bom {
+    margin:0 !important;
+}
+
+#summary table {
+    font-size:10pt;
+    width:100%;
+    margin-bottom:2em;
+}
+#summary th, #summary td {
+    padding:1em;
+    font-size:10pt;
+    text-align:left;
+    vertical-align: top;
+}
+#summary thead th, #summary th[colspan] {
+    color:#252525;
+    font-weight:bold;
+}
+#summary thead th:first-child {
+    width:3em;
+}
+
+#summary tbody td, #summary tbody th {
+    border-top:solid 1px #e3e4e6;
+}
+#summary tbody th[scope='row'] {
+    border-left:solid 1px #e3e4e6;
+    border-right:solid 1px #e3e4e6;
+}
+#summary tbody strong,
+#summary tbody h1 {
+    font-weight:bold;
+}
+#summary td:first-child {
+    text-align:center;
+
+    vertical-align: middle;
+}
+
+#summary .images {
+    margin:0 0 0.5em;
+    white-space:nowrap;
+}
+#summary .images > * {
+    display:inline;
+    vertical-align:bottom;
+    margin:0 0 0 0.5em;
+}
+#summary .images > *:first-child {
+    margin:0;
+}
+#summary .contents {
+    padding:0 1em 1em 3em;;
+    list-style:circle;
+    line-height:150%;
+}
+#summary img[src*='/vmf'],
+#summary img[src*='/vrm'] {
+    width:37px;
+}
+#summary img[src*='/olts'],
+#summary img[src*='/cu'] {
+    width:43px;
+}
+#summary img[src*='/otdr'],
+#summary img[src*='/ot'] {
+    width:34px;
+}
+#summary img[src*='/gld'] {
+    width:50px;
+}
+
+/* where to buy */
+#summary > h1 {
+    font-size:1.5em;
+    text-transform:uppercase;
+    padding:0.5em 0;
+    border-top:solid 0.2em #000;
+}
+#summary > p {
+    margin-bottom:0.5em;
+}
+#summary > h2 {
+    font-weight:bold;
+}
+

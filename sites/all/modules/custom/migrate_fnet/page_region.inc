@@ -14,6 +14,12 @@ class FNETPageRegionMigration extends FNETNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Path Alias
+    $this->addFieldMapping('path', 'path');
+
+    // Disable Pathauto for now.
+    $this->addFieldMapping('pathauto')->defaultValue(0);
+
     // Redirects
     $this->addFieldMapping('migrate_redirects', 'path');
 
@@ -30,4 +36,32 @@ class FNETPageRegionMigration extends FNETNode7Migration {
 
   }
 
+  /**
+   * Implementation of prepareRow()
+   *
+   * @param $row
+   * @return bool
+   */
+  public function prepareRow($row) {
+    // Always include this snippet, in case our parent class decides to ignore the row
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+
+    $row->body = $this->stripDomain($row->body);
+    $row->body = str_ireplace('/flukenetworks.com/files', '/default/files', $row->body);
+    $row->body = str_ireplace('/flukenetworks.com/theme', '/all/theme', $row->body);
+  }
+
+  /**
+   * Remove the hard-coded Fluke Networks domain from a field.
+   *
+   * @param $string
+   * @return mixed
+   */
+  protected function stripDomain($string) {
+    $domains = ['http://www.flukenetworks.com/', 'https://www.flukenetworks.com/', 'http://flukenetworks.com/', 'https://flukenetworks.com/'];
+    $stripped = str_ireplace($domains, '/', $string);
+    return $stripped;
+  }
 }

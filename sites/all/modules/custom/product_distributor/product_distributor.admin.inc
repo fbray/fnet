@@ -326,9 +326,9 @@ function export_distributor_records() {
                         GROUP_CONCAT(DISTINCT gn.title SEPARATOR '||') AS ProductNames
                         FROM {node} node
                         LEFT JOIN {content_type_product_distributor_group} node_data_field_not_available ON node.vid = node_data_field_not_available.vid
-                        LEFT JOIN {content_field_products} node_data_field_products ON node.vid = node_data_field_products.vid
-                        LEFT JOIN {node} gn ON node_data_field_products.field_products_nid = gn.nid
-                        LEFT JOIN {content_type_product} ctp ON node_data_field_products.field_products_nid = ctp.nid
+                        LEFT JOIN {content_field_related_products} node_data_field_related_products ON node.vid = node_data_field_related_products.vid
+                        LEFT JOIN {node} gn ON node_data_field_related_products.field_related_products_nid = gn.nid
+                        LEFT JOIN {content_type_product} ctp ON node_data_field_related_products.field_related_products_nid = ctp.nid
                         WHERE node.type in ('product_distributor_group')
                         GROUP BY node.title
                         ORDER BY node.title ASC", array()); */
@@ -337,8 +337,8 @@ function export_distributor_records() {
                       GROUP_CONCAT(DISTINCT gn.nid SEPARATOR ', ') AS ProductNids,
                       GROUP_CONCAT(DISTINCT gn.title SEPARATOR '||') AS ProductNames
                       FROM {node} node
-                      LEFT JOIN {field_data_field_products} node_data_field_products ON node.vid = node_data_field_products.revision_id
-                      LEFT JOIN {node} gn ON node_data_field_products.field_products_nid = gn.nid
+                      LEFT JOIN {field_data_field_related_products} node_data_field_related_products ON node.vid = node_data_field_related_products.revision_id
+                      LEFT JOIN {node} gn ON node_data_field_related_products.field_related_products_nid = gn.nid
                       WHERE node.type in ('product_distributor_group')
                       GROUP BY node.title
                       ORDER BY node.title ASC", []);  // CONFUSE ???

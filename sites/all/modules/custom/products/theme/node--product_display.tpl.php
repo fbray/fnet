@@ -729,26 +729,25 @@ $product_case_studies = $content['product_case_studies'];
       <?php endif ?><!-- Specifications -->
 
       <!-- Documents -->
-      <?php if (count($myDoc) > 0) { ?>
+      <?php if (count($myDoc) > 0): ?>
 
         <div class="product-page-section column-grid">
-
           <a class="toc-anchor" name="documents">&nbsp;</a>
-
           <div class="section-container documents-section">
             <h3 class="product-page-section-title"><span>Documents</span></h3>
 
-            <?php foreach (array(
-                             'brochures',
-                             'data sheets',
-                             'catalogs',
-                             'application notes',
-                             'white papers',
-                             'flyers',
-                           ) as $type) {
-              if (isset($myDoc[$type])) { ?>
+            <?php foreach ([
+                    'brochure',
+                    'data_sheet',
+                    'catalog',
+                    'application_notes',
+                    'white_paper',
+                    'flyer',
+                    'manual',
+                  ] as $type): ?>
+              <?php if (isset($myDoc[$type])): ?>
                 <div class="clear_15px;">&nbsp;</div>
-                <h4><?php echo ucwords($type); ?></h4>
+                <h4><?php echo ucwords(str_replace('_', ' ', $type)); ?></h4>
                 <table width="100%" cellpadding="5">
                   <thead>
                     <tr>
@@ -762,15 +761,12 @@ $product_case_studies = $content['product_case_studies'];
                   </tbody>
                 </table>
                 <div style="clear:both;"></div>
-
-              <?php }
-            } ?>
-
+              <?php endif; ?>
+            <?php endforeach; ?>
           </div>
-
         </div>
 
-      <?php } ?><!-- Documents -->
+      <?php endif; ?><!-- Documents -->
 
       <!-- Demos -->
       <?php
@@ -851,17 +847,17 @@ $product_case_studies = $content['product_case_studies'];
             </div>
           </div>
         <?php endif; ?>
-      <?php endfor; ?>
+      <?php endfor; ?><!-- Custom Tabs -->
 
+      <!-- Related Products -->
       <?php
       $has_related_products = FALSE;
       foreach ($content['related_products'] as $rProd) {
-        if (isset($rProd->field_field_prod_related_img[0]['rendered']['#path']['path'])) {
-          $related_product_file = $rProd->field_field_prod_related_img[0]['rendered']['#path']['path'];
-          $related_product_nid = $rProd->node_field_data_field_products_nid;
-          $related_product_title = $rProd->node_field_data_field_products_title;
+        if (isset($rProd->field_field_product_image[0]['rendered']['#path']['path'])) {
+          $file = $rProd->field_field_product_image[0]['rendered']['#path']['path'];
+          $title = $rProd->node_field_data_field_related_products_title;
 
-          if ($related_product_file && $related_product_nid && $related_product_title) {
+          if ($file && $title) {
             $has_related_products = TRUE;
             break;
           }
@@ -869,27 +865,15 @@ $product_case_studies = $content['product_case_studies'];
       }
       ?>
       <?php if ($has_related_products): ?>
-
         <div class="product-page-section column-grid">
-
           <a class="toc-anchor" name="related-products">&nbsp;</a>
           <div class="section-container">
             <h3 class="product-page-section-title"><span>Related Products</span></h3>
-
             <div id="product-page-related-products">
-              <ul>
-                <?php foreach ($content['related_products'] as $rProd): ?>
-                  <?php if (isset($rProd->field_field_prod_related_img[0]['rendered']['#path']['path'])): ?>
-                    <li><?php print render($rProd->field_field_prod_related_img); ?><p><?php print $rProd->node_field_data_field_products_title; ?></p></li>
-                  <?php endif; ?>
-                <?php endforeach; ?>
-              </ul>
-
+              <?php print views_embed_view('product_content', 'related_products_embed'); ?>
             </div>
           </div>
-
         </div>
-
       <?php endif; ?><!-- Related Products -->
 
     </div>

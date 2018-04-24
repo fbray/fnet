@@ -4,4 +4,4 @@ package = Fluke Networks
 version = "7.x-1.1"
 core = 7.x
 
-dependencies = views
+dependencies[] = views

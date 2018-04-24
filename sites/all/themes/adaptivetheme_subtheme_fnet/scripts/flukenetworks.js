@@ -189,7 +189,7 @@ function getCookie(c_name) {
 
 function selectRegion() {
     grayOut(true);
-    $('#selectRegionBox').slideDown(400);
+    jQuery('#selectRegionBox').slideDown(400);
     populateCountry();
 }
 
@@ -219,7 +219,7 @@ function setRegion() {
     }
     setCookie("regLang", regLang, 365, "/", finalDomain);
 
-    $('#selectRegionBox').slideUp(400);
+    jQuery('#selectRegionBox').slideUp(400);
     grayOut(false);
 
     var sHostname = regLang.split("-");
@@ -395,7 +395,8 @@ if (typeof selectedLanguage == 'undefined') {
 }
 
 (function ($) {
-    $(document).ready(function () {
+    $(function () {
+
         selectedCountry = getCookie("regCountry");
         if (typeof selectedCountry == 'undefined') {
             console.log('Selected Country is undefined here.');

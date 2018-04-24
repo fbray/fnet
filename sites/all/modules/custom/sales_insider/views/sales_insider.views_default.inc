@@ -1,13 +1,12 @@
 <?php
 
 /**
- * Created by PhpStorm.
- * User: ryanositis
- * Date: 12/24/17
- * Time: 10:48 AM
+ * @file
+ * sales_insider.views_default.inc
  */
+
 /**
- * Implementation of hook_views_default_views()
+ * Implements hook_views_default_views().
  */
 function sales_insider_views_default_views() {
   $views = array();

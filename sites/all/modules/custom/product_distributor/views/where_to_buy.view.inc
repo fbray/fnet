@@ -1,9 +1,8 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 2/9/18
- * Time: 2:17 PM
+ * @file
+ * where_to_buy.view.inc
  */
 
 $view = new view();
@@ -22,7 +21,11 @@ $handler->display->display_options['title'] = 'Distributor';
 $handler->display->display_options['use_more_always'] = FALSE;
 $handler->display->display_options['access']['type'] = 'perm';
 $handler->display->display_options['access']['perm'] = 'access administration menu';
-$handler->display->display_options['cache']['type'] = 'none';
+$handler->display->display_options['cache']['type'] = 'time';
+$handler->display->display_options['cache']['results_lifespan'] = '3600';
+$handler->display->display_options['cache']['results_lifespan_custom'] = '0';
+$handler->display->display_options['cache']['output_lifespan'] = '3600';
+$handler->display->display_options['cache']['output_lifespan_custom'] = '0';
 $handler->display->display_options['query']['type'] = 'views_query';
 $handler->display->display_options['exposed_form']['type'] = 'basic';
 $handler->display->display_options['pager']['type'] = 'full';
@@ -31,27 +34,49 @@ $handler->display->display_options['pager']['options']['offset'] = '0';
 $handler->display->display_options['pager']['options']['id'] = '0';
 $handler->display->display_options['pager']['options']['quantity'] = '9';
 $handler->display->display_options['style_plugin'] = 'table';
-$handler->display->display_options['style_options']['columns'] = [
-  'title' => 'title',
-];
+$handler->display->display_options['style_options']['columns'] = array(
+  'field_product_distributor_groups' => 'field_product_distributor_groups',
+  'field_address_country' => 'field_address_country',
+  'field_address_administrative_area' => 'field_address_administrative_area',
+  'field_address_locality' => 'field_address_locality',
+);
 $handler->display->display_options['style_options']['default'] = '-1';
-$handler->display->display_options['style_options']['info'] = [
-  'title' => [
+$handler->display->display_options['style_options']['info'] = array(
+  'field_product_distributor_groups' => array(
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+  'field_address_country' => array(
+    'sortable' => 1,
+    'default_sort_order' => 'asc',
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+  'field_address_administrative_area' => array(
     'sortable' => 0,
     'default_sort_order' => 'asc',
     'align' => '',
     'separator' => '',
     'empty_column' => 0,
-  ],
-];
+  ),
+  'field_address_locality' => array(
+    'sortable' => 0,
+    'default_sort_order' => 'asc',
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+);
 /* Field: Content: Product Distributor Groups */
 $handler->display->display_options['fields']['field_product_distributor_groups']['id'] = 'field_product_distributor_groups';
 $handler->display->display_options['fields']['field_product_distributor_groups']['table'] = 'field_data_field_product_distributor_groups';
 $handler->display->display_options['fields']['field_product_distributor_groups']['field'] = 'field_product_distributor_groups';
-$handler->display->display_options['fields']['field_product_distributor_groups']['settings'] = [
+$handler->display->display_options['fields']['field_product_distributor_groups']['settings'] = array(
   'bypass_access' => 0,
-  'link' => 0,
-];
+  'link' => 1,
+);
 $handler->display->display_options['fields']['field_product_distributor_groups']['delta_offset'] = '0';
 /* Field: Field: Address - Country */
 $handler->display->display_options['fields']['field_address_country']['id'] = 'field_address_country';
@@ -70,11 +95,10 @@ $handler->display->display_options['fields']['field_address_locality']['id'] = '
 $handler->display->display_options['fields']['field_address_locality']['table'] = 'field_data_field_address';
 $handler->display->display_options['fields']['field_address_locality']['field'] = 'field_address_locality';
 $handler->display->display_options['fields']['field_address_locality']['label'] = 'City';
-/* Sort criterion: Content: Post date */
-$handler->display->display_options['sorts']['created']['id'] = 'created';
-$handler->display->display_options['sorts']['created']['table'] = 'node';
-$handler->display->display_options['sorts']['created']['field'] = 'created';
-$handler->display->display_options['sorts']['created']['order'] = 'DESC';
+/* Sort criterion: Content: Title */
+$handler->display->display_options['sorts']['title']['id'] = 'title';
+$handler->display->display_options['sorts']['title']['table'] = 'node';
+$handler->display->display_options['sorts']['title']['field'] = 'title';
 /* Filter criterion: Content: Published */
 $handler->display->display_options['filters']['status']['id'] = 'status';
 $handler->display->display_options['filters']['status']['table'] = 'node';
@@ -86,9 +110,9 @@ $handler->display->display_options['filters']['status']['expose']['operator'] = 
 $handler->display->display_options['filters']['type']['id'] = 'type';
 $handler->display->display_options['filters']['type']['table'] = 'node';
 $handler->display->display_options['filters']['type']['field'] = 'type';
-$handler->display->display_options['filters']['type']['value'] = [
+$handler->display->display_options['filters']['type']['value'] = array(
   'distributor_location' => 'distributor_location',
-];
+);
 $handler->display->display_options['filters']['type']['group'] = 1;
 /* Filter criterion: Content: Title */
 $handler->display->display_options['filters']['title']['id'] = 'title';
@@ -100,7 +124,7 @@ $handler->display->display_options['filters']['title']['expose']['operator_id'] 
 $handler->display->display_options['filters']['title']['expose']['label'] = 'Location Name';
 $handler->display->display_options['filters']['title']['expose']['operator'] = 'title_op';
 $handler->display->display_options['filters']['title']['expose']['identifier'] = 'title';
-$handler->display->display_options['filters']['title']['expose']['remember_roles'] = [
+$handler->display->display_options['filters']['title']['expose']['remember_roles'] = array(
   2 => '2',
   3 => 0,
   7 => 0,
@@ -124,7 +148,7 @@ $handler->display->display_options['filters']['title']['expose']['remember_roles
   4 => 0,
   5 => 0,
   13 => 0,
-];
+);
 /* Filter criterion: Content: Product Distributor Groups (field_product_distributor_groups) */
 $handler->display->display_options['filters']['field_product_distributor_groups_target_id']['id'] = 'field_product_distributor_groups_target_id';
 $handler->display->display_options['filters']['field_product_distributor_groups_target_id']['table'] = 'field_data_field_product_distributor_groups';
@@ -135,7 +159,7 @@ $handler->display->display_options['filters']['field_product_distributor_groups_
 $handler->display->display_options['filters']['field_product_distributor_groups_target_id']['expose']['label'] = 'Distributor Name';
 $handler->display->display_options['filters']['field_product_distributor_groups_target_id']['expose']['operator'] = 'field_product_distributor_groups_target_id_op';
 $handler->display->display_options['filters']['field_product_distributor_groups_target_id']['expose']['identifier'] = 'field_product_distributor_groups_target_id';
-$handler->display->display_options['filters']['field_product_distributor_groups_target_id']['expose']['remember_roles'] = [
+$handler->display->display_options['filters']['field_product_distributor_groups_target_id']['expose']['remember_roles'] = array(
   2 => '2',
   3 => 0,
   7 => 0,
@@ -159,7 +183,7 @@ $handler->display->display_options['filters']['field_product_distributor_groups_
   4 => 0,
   5 => 0,
   13 => 0,
-];
+);
 /* Filter criterion: Field: Address - Country */
 $handler->display->display_options['filters']['field_address_country']['id'] = 'field_address_country';
 $handler->display->display_options['filters']['field_address_country']['table'] = 'field_data_field_address';
@@ -170,7 +194,7 @@ $handler->display->display_options['filters']['field_address_country']['expose']
 $handler->display->display_options['filters']['field_address_country']['expose']['label'] = 'Country';
 $handler->display->display_options['filters']['field_address_country']['expose']['operator'] = 'field_address_country_op';
 $handler->display->display_options['filters']['field_address_country']['expose']['identifier'] = 'field_address_country';
-$handler->display->display_options['filters']['field_address_country']['expose']['remember_roles'] = [
+$handler->display->display_options['filters']['field_address_country']['expose']['remember_roles'] = array(
   2 => '2',
   3 => 0,
   7 => 0,
@@ -194,7 +218,7 @@ $handler->display->display_options['filters']['field_address_country']['expose']
   4 => 0,
   5 => 0,
   13 => 0,
-];
+);
 
 /* Display: Distributor Locations */
 $handler = $view->new_display('page', 'Distributor Locations', 'page');
@@ -203,6 +227,30 @@ $handler->display->display_options['path'] = 'admin/content/wtb-distributor-loca
 
 /* Display: Do Not Distribute */
 $handler = $view->new_display('page', 'Do Not Distribute', 'page_1');
+$handler->display->display_options['defaults']['style_plugin'] = FALSE;
+$handler->display->display_options['style_plugin'] = 'table';
+$handler->display->display_options['style_options']['columns'] = array(
+  'title' => 'title',
+  'field_do_not_distribute' => 'field_do_not_distribute',
+);
+$handler->display->display_options['style_options']['default'] = '-1';
+$handler->display->display_options['style_options']['info'] = array(
+  'title' => array(
+    'sortable' => 0,
+    'default_sort_order' => 'asc',
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+  'field_do_not_distribute' => array(
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+);
+$handler->display->display_options['defaults']['style_options'] = FALSE;
+$handler->display->display_options['defaults']['row_plugin'] = FALSE;
+$handler->display->display_options['defaults']['row_options'] = FALSE;
 $handler->display->display_options['defaults']['fields'] = FALSE;
 /* Field: Content: Title */
 $handler->display->display_options['fields']['title']['id'] = 'title';
@@ -214,20 +262,15 @@ $handler->display->display_options['fields']['field_do_not_distribute']['id'] = 
 $handler->display->display_options['fields']['field_do_not_distribute']['table'] = 'field_data_field_do_not_distribute';
 $handler->display->display_options['fields']['field_do_not_distribute']['field'] = 'field_do_not_distribute';
 $handler->display->display_options['fields']['field_do_not_distribute']['delta_offset'] = '0';
-$handler->display->display_options['defaults']['sorts'] = FALSE;
-/* Sort criterion: Content: Title */
-$handler->display->display_options['sorts']['title']['id'] = 'title';
-$handler->display->display_options['sorts']['title']['table'] = 'node';
-$handler->display->display_options['sorts']['title']['field'] = 'title';
 $handler->display->display_options['defaults']['filter_groups'] = FALSE;
 $handler->display->display_options['defaults']['filters'] = FALSE;
 /* Filter criterion: Content: Type */
 $handler->display->display_options['filters']['type']['id'] = 'type';
 $handler->display->display_options['filters']['type']['table'] = 'node';
 $handler->display->display_options['filters']['type']['field'] = 'type';
-$handler->display->display_options['filters']['type']['value'] = [
+$handler->display->display_options['filters']['type']['value'] = array(
   'product_display' => 'product_display',
-];
+);
 /* Filter criterion: Content: Do not distribute (field_do_not_distribute) */
 $handler->display->display_options['filters']['field_do_not_distribute_value']['id'] = 'field_do_not_distribute_value';
 $handler->display->display_options['filters']['field_do_not_distribute_value']['table'] = 'field_data_field_do_not_distribute';

@@ -4317,6 +4317,9 @@ body.page-knowledge-base header#main-content-header {
     padding-bottom:15px;
     border-bottom:1px solid #999;
 }
+.ui-widget-content a.active {
+    font-weight: bold;
+}
 #views-exposed-form-knowledge-base-search-page h2 {
 	font-size: 28px;
 	font-weight: normal;
@@ -4330,6 +4333,7 @@ body.page-knowledge-base header#main-content-header {
 	border: 1px solid #ccc;
 	border-radius: 3px;
 }
+
 #edit-submit-knowledge-base-search,
 #edit-submit-blog-articles,
 #edit-reset {
@@ -4351,7 +4355,7 @@ body.page-knowledge-base header#main-content-header {
 	color: #FFF;
 	font-size: 16px;
 }
-#block-views-taxonomy-tree-block .ui-corner-all,#block-views-taxonomy-tree-block .ui-corner-top {
+#block-views-knowledge-base-accordion-block .ui-corner-all,#block-views-knowledge-base-accordion-block .ui-corner-top {
 	border-radius: 3px;
 }
 #block-system-main div.kb-article-list{

@@ -1,9 +1,8 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 1/16/18
- * Time: 12:46 PM
+ * @file
+ * content.view.inc
  */
 
 $view = new view();
@@ -26,7 +25,11 @@ $handler->display->display_options['access']['role'] = array(
   5 => '5',
   4 => '4',
 );
-$handler->display->display_options['cache']['type'] = 'none';
+$handler->display->display_options['cache']['type'] = 'time';
+$handler->display->display_options['cache']['results_lifespan'] = '3600';
+$handler->display->display_options['cache']['results_lifespan_custom'] = '0';
+$handler->display->display_options['cache']['output_lifespan'] = '3600';
+$handler->display->display_options['cache']['output_lifespan_custom'] = '0';
 $handler->display->display_options['query']['type'] = 'views_query';
 $handler->display->display_options['exposed_form']['type'] = 'basic';
 $handler->display->display_options['pager']['type'] = 'mini';
@@ -427,4 +430,3 @@ $handler->display->display_options['filters']['promote']['field'] = 'promote';
 $handler->display->display_options['filters']['promote']['relationship'] = 'group_entity_node';
 $handler->display->display_options['filters']['promote']['value'] = '1';
 $handler->display->display_options['block_description'] = 'Sales Insider Featured Block';
-

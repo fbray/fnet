@@ -35,8 +35,8 @@ class EventRegistrantMigration extends Migration {
     // parent_name mapping below will find that the parent exists.
     $query = Database::getConnection('default', $arguments['source_connection'])
       ->select('ems_registrant', 'emsr')
-      ->fields('emsr', array('rid', 'first_name', 'last_name', 'email', 'job_title',
-        'job_role', 'company', 'address', 'phone', 'city', 'state', 'postal_code', 'country'));
+      ->fields('emsr', ['rid', 'first_name', 'last_name', 'email', 'job_title',
+        'job_role', 'company', 'address', 'phone', 'city', 'state', 'postal_code', 'country']);
 
     // Create a MigrateSource object, which manages retrieving the input data.
     $this->source = new MigrateSourceSQL($query);
@@ -51,14 +51,14 @@ class EventRegistrantMigration extends Migration {
     // destination - we need to be explicit for our source, but the destination
     // class knows its schema already.
     $this->map = new MigrateSQLMap($this->machineName,
-      array(
-        'rid' => array(
+      [
+        'rid' => [
           'description' => 'Registrant ID',
           'type' => 'serial',
           'unsigned' => TRUE,
           'not null' => TRUE,
-        ),
-      ),
+        ],
+      ],
       MigrateDestinationTable::getKeySchema($table_name)
     );
     $this->destination =
@@ -69,7 +69,7 @@ class EventRegistrantMigration extends Migration {
     //  drush migrate-fields-destination BeerTerm
     //  drush migrate-fields-source BeerTerm
     // or review the detail pages in the UI.
-    $this->addSimpleMappings(array(
+    $this->addSimpleMappings([
       'first_name',
       'last_name',
       'email',
@@ -81,6 +81,6 @@ class EventRegistrantMigration extends Migration {
       'city',
       'state',
       'postal_code',
-      'country'));
+      'country']);
   }
 }

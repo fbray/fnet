@@ -1,8 +1,5 @@
 .support-options {
     display: none;
-    /*    padding: 1em;
-        border: 1px solid #ddd;
-        background-color: #eee; */
 }
 
 .gold-support-plans {
@@ -45,28 +42,11 @@
     color:#FFFFFF;
 }
 
-/*
-#product-models tr:nth-child(2n+2) {
-background-color: #ffffff;
-}
-*/
 a.support-link {
     cursor: pointer;
     text-decoration: none;
 }
-/*
-#product-models tr.even {
-    background-color: #EFEFEF;
-}
 
-#product-models tr.odd {
-    background-color: #ffffff;
-}
-
-#product-models tr {
-    line-height: 1em;
-}
-*/
 #At_A_Glance_Wrapper {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 12px;
@@ -181,4 +161,14 @@ tr.trAlternate {
 
 tr.trRegular {
     background-color: #EFEFEF;
+}
+
+#product-page-related-products {
+  text-align: center;
+  margin: 1em 0;
+}
+
+#product-page-related-products .views-row {
+  display: inline-block;
+  padding: 1em;
 }

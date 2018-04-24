@@ -15,6 +15,12 @@ class FNETProductCategoryLanguageMigration extends DrupalNode7Migration {
     parent::__construct($arguments);
 
     // Put mapping logic here for fields.
+    // Path Alias
+    $this->addFieldMapping('path', 'path');
+
+    // Disable Pathauto for now.
+    $this->addFieldMapping('pathauto')->defaultValue(0);
+
     // Redirects
     $this->addFieldMapping('migrate_redirects', 'path');
 
@@ -253,5 +259,21 @@ class FNETProductCategoryLanguageMigration extends DrupalNode7Migration {
     // The language/region thing seems to be problematic with the allowed values.
     // Let's trim it down to just the first five characters.
     $row->field_indlang_language[0] = substr($row->field_indlang_language[0], 0, 5);
+
+    $row->body = $this->stripDomain($row->body);
+    $row->body = str_ireplace('/flukenetworks.com/files', '/default/files', $row->body);
+    $row->body = str_ireplace('/flukenetworks.com/theme', '/all/theme', $row->body);
+  }
+
+  /**
+   * Remove the hard-coded Fluke Networks domain from a field.
+   *
+   * @param $string
+   * @return mixed
+   */
+  protected function stripDomain($string) {
+    $domains = ['http://www.flukenetworks.com/', 'https://www.flukenetworks.com/', 'http://flukenetworks.com/', 'https://flukenetworks.com/'];
+    $stripped = str_ireplace($domains, '/', $string);
+    return $stripped;
   }
 }

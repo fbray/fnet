@@ -1,9 +1,8 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: rositis
- * Date: 11/3/17
- * Time: 1:34 PM
+ * @file
+ * translation_references.view
  */
 
 $view = new view();
@@ -271,15 +270,15 @@ $handler->display->display_options['defaults']['row_plugin'] = FALSE;
 $handler->display->display_options['row_plugin'] = 'entityreference_fields';
 $handler->display->display_options['defaults']['row_options'] = FALSE;
 $handler->display->display_options['defaults']['arguments'] = FALSE;
-/* Contextual filter: Content: Products (field_products) */
-$handler->display->display_options['arguments']['field_products_target_id']['id'] = 'field_products_target_id';
-$handler->display->display_options['arguments']['field_products_target_id']['table'] = 'field_data_field_products';
-$handler->display->display_options['arguments']['field_products_target_id']['field'] = 'field_products_target_id';
-$handler->display->display_options['arguments']['field_products_target_id']['default_action'] = 'default';
-$handler->display->display_options['arguments']['field_products_target_id']['default_argument_type'] = 'node';
-$handler->display->display_options['arguments']['field_products_target_id']['summary']['number_of_records'] = '0';
-$handler->display->display_options['arguments']['field_products_target_id']['summary']['format'] = 'default_summary';
-$handler->display->display_options['arguments']['field_products_target_id']['summary_options']['items_per_page'] = '25';
+/* Contextual filter: Content: Products (field_related_products) */
+$handler->display->display_options['arguments']['field_related_products_target_id']['id'] = 'field_related_products_target_id';
+$handler->display->display_options['arguments']['field_related_products_target_id']['table'] = 'field_data_field_related_products';
+$handler->display->display_options['arguments']['field_related_products_target_id']['field'] = 'field_related_products_target_id';
+$handler->display->display_options['arguments']['field_related_products_target_id']['default_action'] = 'default';
+$handler->display->display_options['arguments']['field_related_products_target_id']['default_argument_type'] = 'node';
+$handler->display->display_options['arguments']['field_related_products_target_id']['summary']['number_of_records'] = '0';
+$handler->display->display_options['arguments']['field_related_products_target_id']['summary']['format'] = 'default_summary';
+$handler->display->display_options['arguments']['field_related_products_target_id']['summary_options']['items_per_page'] = '25';
 $handler->display->display_options['defaults']['filter_groups'] = FALSE;
 $handler->display->display_options['defaults']['filters'] = FALSE;
 /* Filter criterion: Content: Published */
