@@ -248,7 +248,6 @@ function findit_download($document_id = NULL, $locale = NULL, $source = NULL) {
         }
         break;
       case FindItResponse::SUCCESS:
-      echo "<pre>"; print_r($response); exit;
         findit_log_download($response);
         $url = $response->asset->url;
         $name = $response->asset->Name;
