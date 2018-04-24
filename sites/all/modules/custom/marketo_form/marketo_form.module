@@ -72,15 +72,15 @@ function marketo_form_preprocess_page(&$variables) {
     setcookie('fullweb', 1, 0, '/');
 
     $variables['title'] = html_entity_decode($variables['node']->title);
-    if (isset($variables['node']->field_mkt_banner_html[LANGUAGE_NONE][0]['value'])) {
+    if (isset($variables['node']->field_banner_html[LANGUAGE_NONE][0]['value'])) {
       $variables['page']['highlighted'] = "<div style='margin-left:auto;margin-right:auto;width:1000px'>";
-      $variables['page']['highlighted'] .= $variables['node']->field_mkt_banner_html[LANGUAGE_NONE][0]['value'];
+      $variables['page']['highlighted'] .= $variables['node']->field_banner_html[LANGUAGE_NONE][0]['value'];
       $variables['page']['highlighted'] .= "</div>";
-    } else if (isset($variables['node']->field_mkt_banner_img[LANGUAGE_NONE][0]['fid'])) {
-      $file = file_load($variables['node']->field_mkt_banner_img[LANGUAGE_NONE][0]['fid']);
+    } else if (isset($variables['node']->field_image[LANGUAGE_NONE][0]['fid'])) {
+      $file = file_load($variables['node']->field_image[LANGUAGE_NONE][0]['fid']);
       $uri = $file->uri;
       $url = file_create_url($uri);
-      $variables['page']['highlighted'] = "<img src=\"".$url."\" alt=\"".$variables['node']->field_mkt_banner_img[LANGUAGE_NONE][0]['alt']."\" title=\"".$variables['node']->field_mkt_banner_img[LANGUAGE_NONE][0]['alt']."\" width=\"1000px\" border=\"0\" />";
+      $variables['page']['highlighted'] = "<img src=\"".$url."\" alt=\"".$variables['node']->field_image[LANGUAGE_NONE][0]['alt']."\" title=\"".$variables['node']->field_image[LANGUAGE_NONE][0]['alt']."\" width=\"1000px\" border=\"0\" />";
     }
 
     /*
@@ -99,8 +99,8 @@ function marketo_form_preprocess_page(&$variables) {
 function marketo_form_preprocess_node(&$variables) {
   if (isset($variables['node']) && ($variables['node']->type == 'marketo_form')) {
     marketo_form_template_variables($variables);
-    if (isset($variables['node']->field_mkt_form_adtracker[LANGUAGE_NONE][0]['value'])) {
-      $variables['title_suffix'] = $variables['node']->field_mkt_form_adtracker[LANGUAGE_NONE][0]['value'];
+    if (isset($variables['node']->field_tracking_code[LANGUAGE_NONE][0]['value'])) {
+      $variables['title_suffix'] = $variables['node']->field_tracking_code[LANGUAGE_NONE][0]['value'];
     }
   }
 }
@@ -110,7 +110,7 @@ function marketo_form_page_build(&$page) {
 		$nodeId = arg(1);
 		$nodetype = isset($page['content']['system_main']['nodes'][$nodeId]['field_removenav']['#object']->type)?$page['content']['system_main']['nodes'][$nodeId]['field_removenav']['#object']->type:'';
 		if (isset($nodeId) && $nodetype=='marketo_form') {
-			$tracking_code = isset($page['content']['system_main']['nodes'][$nodeId]['#node']->field_mkt_form_adtracker['und'][0]['value'])?trim($page['content']['system_main']['nodes'][$nodeId]['#node']->field_mkt_form_adtracker['und'][0]['value']):'';
+			$tracking_code = isset($page['content']['system_main']['nodes'][$nodeId]['#node']->field_tracking_code['und'][0]['value'])?trim($page['content']['system_main']['nodes'][$nodeId]['#node']->field_mkt_form_adtracker['und'][0]['value']):'';
 			if ($tracking_code) {
 				$page['page_bottom']['marketo_form'] = array('#markup' => $tracking_code);
 			}
@@ -245,14 +245,14 @@ function marketo_form_template_variables(&$variables) {
   $node = $variables['node'];
   $lang = $_COOKIE['language'];
   $regLang = $_COOKIE['regLang'];
-  $myIFrameUrlField = "field_mkt_iframe_url_" . $node->field_mkt_frm_default_lang[LANGUAGE_NONE][0]['value'];
+  $myIFrameUrlField = "field_iframe_url_" . $node->field_mkt_frm_default_lang[LANGUAGE_NONE][0]['value'];
   $myIFrameUrl = $node->$myIFrameUrlField;
   $iFrameUrl = "";
   $bottomContent = "";
-  $iFrameHeight = trim($node->field_mkt_iframe_height[LANGUAGE_NONE][0]['value']);
+  $iFrameHeight = trim($node->field_iframe_height[LANGUAGE_NONE][0]['value']);
   if (isset($myIFrameUrl[LANGUAGE_NONE][0]['value'])) {
     $iFrameUrl = $myIFrameUrl[LANGUAGE_NONE][0]['value'];
-    $myContentField = "field_mkt_bot_content_" . $node->field_mkt_frm_default_lang[LANGUAGE_NONE][0]['value'];
+    $myContentField = "field_bottom_content_" . $node->field_mkt_frm_default_lang[LANGUAGE_NONE][0]['value'];
     $myContent = $node->$myContentField;
     $bottomContent = isset($myContent[LANGUAGE_NONE][0]['value']) ? $myContent[LANGUAGE_NONE][0]['value'] : '';
 
@@ -263,19 +263,18 @@ function marketo_form_template_variables(&$variables) {
       }
     }
     if ($iFrameLangType != $node->field_mkt_frm_default_lang[LANGUAGE_NONE][0]['value']) {
-      $newUrlField = "field_mkt_iframe_url_" . $iFrameLangType;
+      $newUrlField = "field_iframe_url_" . $iFrameLangType;
       $newUrl = $node->$newUrlField;
       if (isset($newUrl[LANGUAGE_NONE][0]['value'])) {
         $iFrameUrl = $newUrl[LANGUAGE_NONE][0]['value'];
-        $newContentField = "field_mkt_bot_content_" . $iFrameLangType;
+        $newContentField = "field_bottom_content_" . $iFrameLangType;
         $newContent = $node->$newContentField;
         $bottomContent = $newContent[LANGUAGE_NONE][0]['value'];
       }
     }
   }
-  if (strtolower($node->field_mkt_frm_display_footer[LANGUAGE_NONE][0]['value']) == '1') {
+  if (strtolower($node->field_display_footer[LANGUAGE_NONE][0]['value']) == '1') {
     $marketo_form_footer = variable_get('marketo_form_footer_' . strtolower($regLang), '');
-//    $sql = "SELECT format FROM {filter_formats} WHERE `name` = 'Full HTML'";
     $format = db_query("SELECT format FROM filter_format WHERE name = :name", array(':name' => 'Full HTML'))->fetchField();
     $marketo_form_footer = check_markup($marketo_form_footer, $format, $langcode = '' /* TODO Set this variable. */, FALSE);
   }
@@ -285,11 +284,10 @@ function marketo_form_template_variables(&$variables) {
   $marketo_form = marketo_form_get_form_html($iFrameUrl, $iFrameHeight);
   $ip_embargoed = false;
   $iFrameHeight = '100%';
-  if (isset($node->field_mkt_iframe_height[LANGUAGE_NONE][0]['value'])) {
-    $iFrameHeight = trim($node->field_mkt_iframe_height[LANGUAGE_NONE][0]['value']);
+  if (isset($node->field_iframe_height[LANGUAGE_NONE][0]['value'])) {
+    $iFrameHeight = trim($node->field_iframe_height[LANGUAGE_NONE][0]['value']);
   }
-  if ($node->field_mkt_export_ctrl[LANGUAGE_NONE][0]['value'] == "1") {
-    //$iFrameHeight = trim($node->field_mkt_iframe_height[LANGUAGE_NONE][0]['value']);
+  if ($node->field_export_control[LANGUAGE_NONE][0]['value'] == "1") {
     if (function_exists('findit_get_client_ip')) {
       $ip_address = findit_get_client_ip();
       $ip_embargoed = findit_embargoed_ip_address($ip_address);
@@ -304,7 +302,7 @@ function marketo_form_template_variables(&$variables) {
     }
   }
 
-  $do_not_translate = ($node->do_not_translate) ? 'class="OneLinkNoTx"' : '';
+  $do_not_translate = isset($node->do_not_translate) ? 'class="OneLinkNoTx"' : '';
   $variables['do_not_translate'] = $do_not_translate;
   $variables['marketo_form'] = $marketo_form;
   $variables['iFrameHeight'] = $iFrameHeight;
