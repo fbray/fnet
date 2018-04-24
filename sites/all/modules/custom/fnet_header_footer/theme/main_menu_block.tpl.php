@@ -20,9 +20,9 @@
 
             <div class="mega_nav_outer_sep">
               <div class="mega_nav_inner">
-                <div class="topnav_submenu_title"><?php print t('Roles'); ?></div>
+                <div class="topnav_submenu_title"><?php print l(t('Roles'), '/solutions/roles'); ?></div>
                 <div class="topnav_submenu_item">
-                  <a href="/expertise/role/Architects-Consultants-Designers"><?php print t('Architects, Consultants and Designers'); ?></a>
+                  <?php print l(t('Architects, Consultants and Designers'), '/expertise/role/architects-consultants-designers'); ?>
                 </div>
 								<div class="topnav_submenu_item">
                   <a href="/expertise/role/guide-to-contract-installers-and-installation"><?php print t('Contractors and Installers'); ?></a>
@@ -30,16 +30,12 @@
                 <div class="topnav_submenu_item">
                   <a href="/expertise/role/network-engineers"><?php print t('Network Engineers'); ?></a>
                 </div>
-								<br/>
-								<div class="" style="text-decoration: none; font-size: 13px; font-weight: bold;">
-                  <a href="/solutions/roles"><?php print t('See More &raquo; '); ?></a>
-                </div>   
               </div>
             </div>
 
             <div class="mega_nav_outer_sep">
               <div class="mega_nav_inner">
-                <div class="topnav_submenu_title"><?php print t('Learn About'); ?></div>
+                <div class="topnav_submenu_title"><?php print l(t('Learn About'), '/solutions/learn-about'); ?></div>
                 <div class="topnav_submenu_item">
                   <a href="/Expertise/Learn-About/Cable-Installation"><?php print t('Cable Installation Tools'); ?></a>
                 </div>
@@ -55,10 +51,6 @@
 								<div class="topnav_submenu_item">
                  <a href="/content/category-8-cable-testing"><?php print t('Category 8 Cable Testing'); ?></a>
                 </div>
-								<br/>
-								<div class="" style="text-decoration: none; font-size: 13px; font-weight: bold;">
-                  <a href="/solutions/learn-about"><?php print t('See More &raquo; '); ?></a>
-                </div>
 								<!-- <div class="topnav_submenu_item">
                   <a href="/Expertise/Learn-About/Twisted-Pair-Cabling-and-10-Gigabit-Cabling"><?php //print t('Twisted Pair Cabling and 10 Gigabit Cabling'); ?></a>
                 </div>
@@ -70,7 +62,7 @@
 
             <div class="mega_nav_outer">
               <div class="mega_nav_inner">
-                <div class="topnav_submenu_title"><?php print t('Case Studies'); ?></div>
+                <div class="topnav_submenu_title"><?php print l(t('Case Studies'), '/solutions/case-studies'); ?></div>
                 <div class="topnav_submenu_item">
                   <a href="/content/compucom-case-study"><?php print t('CompuCom Case Study'); ?></a>
                 </div>
@@ -86,10 +78,8 @@
                 <div class="topnav_submenu_item">
                   <a href="/content/twistnet-communications-ltd"><?php print t('Twistnet Communications Ltd'); ?></a>
                 </div>
-								<br/>
-								<div class="" style="text-decoration: none; font-size: 13px; font-weight: bold;">
-                  <a href="/solutions/case-studies"><?php print t('See More &raquo; '); ?></a>
-                </div> 
+
+
               </div>
             </div>
 
