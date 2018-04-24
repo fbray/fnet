@@ -611,61 +611,72 @@ $handler->display->display_options['fields']['mail']['table'] = 'users';
 $handler->display->display_options['fields']['mail']['field'] = 'mail';
 $handler->display->display_options['fields']['mail']['relationship'] = 'user_id';
 $handler->display->display_options['fields']['mail']['link_to_user'] = '0';
-/* Field: User: First Name */
-$handler->display->display_options['fields']['field_user_first_name']['id'] = 'field_user_first_name';
-$handler->display->display_options['fields']['field_user_first_name']['table'] = 'field_data_field_user_first_name';
-$handler->display->display_options['fields']['field_user_first_name']['field'] = 'field_user_first_name';
-$handler->display->display_options['fields']['field_user_first_name']['relationship'] = 'user_id';
-/* Field: User: Last Name */
-$handler->display->display_options['fields']['field_user_last_name']['id'] = 'field_user_last_name';
-$handler->display->display_options['fields']['field_user_last_name']['table'] = 'field_data_field_user_last_name';
-$handler->display->display_options['fields']['field_user_last_name']['field'] = 'field_user_last_name';
-$handler->display->display_options['fields']['field_user_last_name']['relationship'] = 'user_id';
-/* Field: User: Company */
-$handler->display->display_options['fields']['field_user_company']['id'] = 'field_user_company';
-$handler->display->display_options['fields']['field_user_company']['table'] = 'field_data_field_user_company';
-$handler->display->display_options['fields']['field_user_company']['field'] = 'field_user_company';
-$handler->display->display_options['fields']['field_user_company']['relationship'] = 'user_id';
-/* Field: User: Address line 1 */
-$handler->display->display_options['fields']['field_user_address_line_1']['id'] = 'field_user_address_line_1';
-$handler->display->display_options['fields']['field_user_address_line_1']['table'] = 'field_data_field_user_address_line_1';
-$handler->display->display_options['fields']['field_user_address_line_1']['field'] = 'field_user_address_line_1';
-$handler->display->display_options['fields']['field_user_address_line_1']['relationship'] = 'user_id';
-/* Field: User: Address line 2 */
-$handler->display->display_options['fields']['field_user_address_line_2']['id'] = 'field_user_address_line_2';
-$handler->display->display_options['fields']['field_user_address_line_2']['table'] = 'field_data_field_user_address_line_2';
-$handler->display->display_options['fields']['field_user_address_line_2']['field'] = 'field_user_address_line_2';
-$handler->display->display_options['fields']['field_user_address_line_2']['relationship'] = 'user_id';
-/* Field: User: City */
-$handler->display->display_options['fields']['field_user_city']['id'] = 'field_user_city';
-$handler->display->display_options['fields']['field_user_city']['table'] = 'field_data_field_user_city';
-$handler->display->display_options['fields']['field_user_city']['field'] = 'field_user_city';
-$handler->display->display_options['fields']['field_user_city']['relationship'] = 'user_id';
-/* Field: User: Province */
-$handler->display->display_options['fields']['field_user_province']['id'] = 'field_user_province';
-$handler->display->display_options['fields']['field_user_province']['table'] = 'field_data_field_user_province';
-$handler->display->display_options['fields']['field_user_province']['field'] = 'field_user_province';
-$handler->display->display_options['fields']['field_user_province']['relationship'] = 'user_id';
-/* Field: User: Country */
-$handler->display->display_options['fields']['field_user_country']['id'] = 'field_user_country';
-$handler->display->display_options['fields']['field_user_country']['table'] = 'field_data_field_user_country';
-$handler->display->display_options['fields']['field_user_country']['field'] = 'field_user_country';
-$handler->display->display_options['fields']['field_user_country']['relationship'] = 'user_id';
-/* Field: User: Zip/Postal code */
-$handler->display->display_options['fields']['field_user_postal_code']['id'] = 'field_user_postal_code';
-$handler->display->display_options['fields']['field_user_postal_code']['table'] = 'field_data_field_user_postal_code';
-$handler->display->display_options['fields']['field_user_postal_code']['field'] = 'field_user_postal_code';
-$handler->display->display_options['fields']['field_user_postal_code']['relationship'] = 'user_id';
+/* Field: Field: Address - First name */
+$handler->display->display_options['fields']['field_address_first_name']['id'] = 'field_address_first_name';
+$handler->display->display_options['fields']['field_address_first_name']['table'] = 'field_data_field_address';
+$handler->display->display_options['fields']['field_address_first_name']['field'] = 'field_address_first_name';
+$handler->display->display_options['fields']['field_address_first_name']['relationship'] = 'user_id';
+$handler->display->display_options['fields']['field_address_first_name']['label'] = 'First name';
+/* Field: Field: Address - Last name */
+$handler->display->display_options['fields']['field_address_last_name']['id'] = 'field_address_last_name';
+$handler->display->display_options['fields']['field_address_last_name']['table'] = 'field_data_field_address';
+$handler->display->display_options['fields']['field_address_last_name']['field'] = 'field_address_last_name';
+$handler->display->display_options['fields']['field_address_last_name']['relationship'] = 'user_id';
+$handler->display->display_options['fields']['field_address_last_name']['label'] = 'Last name';
+/* Field: Field: Address - Company */
+$handler->display->display_options['fields']['field_address_organisation_name']['id'] = 'field_address_organisation_name';
+$handler->display->display_options['fields']['field_address_organisation_name']['table'] = 'field_data_field_address';
+$handler->display->display_options['fields']['field_address_organisation_name']['field'] = 'field_address_organisation_name';
+$handler->display->display_options['fields']['field_address_organisation_name']['relationship'] = 'user_id';
+$handler->display->display_options['fields']['field_address_organisation_name']['label'] = 'Company';
+/* Field: Field: Address - Thoroughfare (i.e. Street address) */
+$handler->display->display_options['fields']['field_address_thoroughfare']['id'] = 'field_address_thoroughfare';
+$handler->display->display_options['fields']['field_address_thoroughfare']['table'] = 'field_data_field_address';
+$handler->display->display_options['fields']['field_address_thoroughfare']['field'] = 'field_address_thoroughfare';
+$handler->display->display_options['fields']['field_address_thoroughfare']['relationship'] = 'user_id';
+$handler->display->display_options['fields']['field_address_thoroughfare']['label'] = 'Address Line 1';
+/* Field: Field: Address - Premise (i.e. Apartment / Suite number) */
+$handler->display->display_options['fields']['field_address_premise']['id'] = 'field_address_premise';
+$handler->display->display_options['fields']['field_address_premise']['table'] = 'field_data_field_address';
+$handler->display->display_options['fields']['field_address_premise']['field'] = 'field_address_premise';
+$handler->display->display_options['fields']['field_address_premise']['relationship'] = 'user_id';
+$handler->display->display_options['fields']['field_address_premise']['label'] = 'Address Line 2';
+/* Field: Field: Address - Locality (i.e. City) */
+$handler->display->display_options['fields']['field_address_locality']['id'] = 'field_address_locality';
+$handler->display->display_options['fields']['field_address_locality']['table'] = 'field_data_field_address';
+$handler->display->display_options['fields']['field_address_locality']['field'] = 'field_address_locality';
+$handler->display->display_options['fields']['field_address_locality']['relationship'] = 'user_id';
+$handler->display->display_options['fields']['field_address_locality']['label'] = 'City';
+/* Field: Field: Address - Administrative area (i.e. State / Province) */
+$handler->display->display_options['fields']['field_address_administrative_area']['id'] = 'field_address_administrative_area';
+$handler->display->display_options['fields']['field_address_administrative_area']['table'] = 'field_data_field_address';
+$handler->display->display_options['fields']['field_address_administrative_area']['field'] = 'field_address_administrative_area';
+$handler->display->display_options['fields']['field_address_administrative_area']['relationship'] = 'user_id';
+$handler->display->display_options['fields']['field_address_administrative_area']['label'] = 'Province';
+$handler->display->display_options['fields']['field_address_administrative_area']['display_name'] = 1;
+/* Field: Field: Address - Country */
+$handler->display->display_options['fields']['field_address_country']['id'] = 'field_address_country';
+$handler->display->display_options['fields']['field_address_country']['table'] = 'field_data_field_address';
+$handler->display->display_options['fields']['field_address_country']['field'] = 'field_address_country';
+$handler->display->display_options['fields']['field_address_country']['relationship'] = 'user_id';
+$handler->display->display_options['fields']['field_address_country']['label'] = 'Country';
+$handler->display->display_options['fields']['field_address_country']['display_name'] = 1;
+/* Field: Field: Address - Postal code */
+$handler->display->display_options['fields']['field_address_postal_code']['id'] = 'field_address_postal_code';
+$handler->display->display_options['fields']['field_address_postal_code']['table'] = 'field_data_field_address';
+$handler->display->display_options['fields']['field_address_postal_code']['field'] = 'field_address_postal_code';
+$handler->display->display_options['fields']['field_address_postal_code']['relationship'] = 'user_id';
+$handler->display->display_options['fields']['field_address_postal_code']['label'] = 'ZIP/Postal code';
 /* Field: User: Job Role */
 $handler->display->display_options['fields']['field_user_job_role']['id'] = 'field_user_job_role';
 $handler->display->display_options['fields']['field_user_job_role']['table'] = 'field_data_field_user_job_role';
 $handler->display->display_options['fields']['field_user_job_role']['field'] = 'field_user_job_role';
 $handler->display->display_options['fields']['field_user_job_role']['relationship'] = 'user_id';
-/* Field: User: Phone */
-$handler->display->display_options['fields']['field_user_phone']['id'] = 'field_user_phone';
-$handler->display->display_options['fields']['field_user_phone']['table'] = 'field_data_field_user_phone';
-$handler->display->display_options['fields']['field_user_phone']['field'] = 'field_user_phone';
-$handler->display->display_options['fields']['field_user_phone']['relationship'] = 'user_id';
+/* Field: User: Telephone */
+$handler->display->display_options['fields']['field_user_telephone']['id'] = 'field_user_telephone';
+$handler->display->display_options['fields']['field_user_telephone']['table'] = 'field_data_field_user_telephone';
+$handler->display->display_options['fields']['field_user_telephone']['field'] = 'field_user_telephone';
+$handler->display->display_options['fields']['field_user_telephone']['relationship'] = 'user_id';
 /* Field: Content: Document ID */
 $handler->display->display_options['fields']['field_dam_document_id']['id'] = 'field_dam_document_id';
 $handler->display->display_options['fields']['field_dam_document_id']['table'] = 'field_data_field_dam_document_id';
@@ -676,12 +687,15 @@ $handler->display->display_options['fields']['title']['id'] = 'title';
 $handler->display->display_options['fields']['title']['table'] = 'node';
 $handler->display->display_options['fields']['title']['field'] = 'title';
 $handler->display->display_options['fields']['title']['relationship'] = 'asset_id';
-/* Field: Content: Storage file name */
-$handler->display->display_options['fields']['field_dam_storage_filename']['id'] = 'field_dam_storage_filename';
-$handler->display->display_options['fields']['field_dam_storage_filename']['table'] = 'field_data_field_dam_storage_filename';
-$handler->display->display_options['fields']['field_dam_storage_filename']['field'] = 'field_dam_storage_filename';
-$handler->display->display_options['fields']['field_dam_storage_filename']['relationship'] = 'asset_id';
-$handler->display->display_options['fields']['field_dam_storage_filename']['label'] = 'File name';
+/* Field: Content: Storage File Name */
+$handler->display->display_options['fields']['field_dam_storage_file_name']['id'] = 'field_dam_storage_file_name';
+$handler->display->display_options['fields']['field_dam_storage_file_name']['table'] = 'field_data_field_dam_storage_file_name';
+$handler->display->display_options['fields']['field_dam_storage_file_name']['field'] = 'field_dam_storage_file_name';
+$handler->display->display_options['fields']['field_dam_storage_file_name']['relationship'] = 'asset_id';
+$handler->display->display_options['fields']['field_dam_storage_file_name']['label'] = 'File Name';
+$handler->display->display_options['fields']['field_dam_storage_file_name']['settings'] = array(
+  'field_formatter_filter' => '',
+);
 /* Field: Findit Log: Date Downloaded */
 $handler->display->display_options['fields']['date_downloaded']['id'] = 'date_downloaded';
 $handler->display->display_options['fields']['date_downloaded']['table'] = 'findit_log';
@@ -696,30 +710,33 @@ $handler->display->display_options['filters']['date_downloaded']['operator'] = '
 $handler->display->display_options['filters']['date_downloaded']['exposed'] = TRUE;
 $handler->display->display_options['filters']['date_downloaded']['expose']['operator_id'] = 'date_downloaded_op';
 $handler->display->display_options['filters']['date_downloaded']['expose']['label'] = 'Downloaded between';
+$handler->display->display_options['filters']['date_downloaded']['expose']['description'] = 'Enter date in YYYY-MM-DD HH:MM:SS format e.g. 2018-01-20 59:59:20';
 $handler->display->display_options['filters']['date_downloaded']['expose']['operator'] = 'date_downloaded_op';
 $handler->display->display_options['filters']['date_downloaded']['expose']['identifier'] = 'date_downloaded';
 $handler->display->display_options['filters']['date_downloaded']['expose']['remember_roles'] = array(
   2 => '2',
-  5 => 0,
-  19 => 0,
-  1 => 0,
-  6 => 0,
-  20 => 0,
-  4 => 0,
-  7 => 0,
   3 => 0,
-  21 => 0,
-  18 => 0,
-  17 => 0,
-  12 => 0,
-  11 => 0,
-  14 => 0,
-  16 => 0,
+  7 => 0,
+  1 => 0,
   8 => 0,
-  10 => 0,
-  13 => 0,
-  15 => 0,
   9 => 0,
+  10 => 0,
+  11 => 0,
+  12 => 0,
+  14 => 0,
+  15 => 0,
+  16 => 0,
+  17 => 0,
+  18 => 0,
+  19 => 0,
+  20 => 0,
+  21 => 0,
+  6 => 0,
+  22 => 0,
+  23 => 0,
+  4 => 0,
+  5 => 0,
+  13 => 0,
 );
 /* Filter criterion: Content: Document ID (field_dam_document_id) */
 $handler->display->display_options['filters']['field_dam_document_id_value']['id'] = 'field_dam_document_id_value';
@@ -761,6 +778,41 @@ $handler->display->display_options['filters']['user_id']['table'] = 'findit_log'
 $handler->display->display_options['filters']['user_id']['field'] = 'user_id';
 $handler->display->display_options['filters']['user_id']['operator'] = '>';
 $handler->display->display_options['filters']['user_id']['value']['value'] = '0';
+/* Filter criterion: Content: Asset Type (field_asset_type) */
+$handler->display->display_options['filters']['field_asset_type_value']['id'] = 'field_asset_type_value';
+$handler->display->display_options['filters']['field_asset_type_value']['table'] = 'field_data_field_asset_type';
+$handler->display->display_options['filters']['field_asset_type_value']['field'] = 'field_asset_type_value';
+$handler->display->display_options['filters']['field_asset_type_value']['relationship'] = 'asset_id';
+$handler->display->display_options['filters']['field_asset_type_value']['exposed'] = TRUE;
+$handler->display->display_options['filters']['field_asset_type_value']['expose']['operator_id'] = 'field_asset_type_value_op';
+$handler->display->display_options['filters']['field_asset_type_value']['expose']['label'] = 'Asset Type';
+$handler->display->display_options['filters']['field_asset_type_value']['expose']['operator'] = 'field_asset_type_value_op';
+$handler->display->display_options['filters']['field_asset_type_value']['expose']['identifier'] = 'field_asset_type_value';
+$handler->display->display_options['filters']['field_asset_type_value']['expose']['remember_roles'] = array(
+  2 => '2',
+  3 => 0,
+  7 => 0,
+  1 => 0,
+  8 => 0,
+  9 => 0,
+  10 => 0,
+  11 => 0,
+  12 => 0,
+  14 => 0,
+  15 => 0,
+  16 => 0,
+  17 => 0,
+  18 => 0,
+  19 => 0,
+  20 => 0,
+  21 => 0,
+  6 => 0,
+  22 => 0,
+  23 => 0,
+  4 => 0,
+  5 => 0,
+  13 => 0,
+);
 
 /* Display: Page */
 $handler = $view->new_display('page', 'Page', 'page');

@@ -131,40 +131,6 @@ function findit_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/fnet/findit/log_csv'] = array(
-    'title' => 'Download Findit Log',
-    'description' => t('Download findit log as csv file'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('findit_log_extract_form'),
-    'access arguments' => array('download findit log'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 7,
-  );
-
-  if ($_SERVER['HTTP_HOST'] != 'www.flukenetworks.com') {
-    $items['admin/fnet/findit/test'] = array(
-      'title' => 'FindIt test',
-      'description' => "test findit module.",
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('findit_test'),
-      'access arguments' => array('administer findit'),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 10,
-      'file' => 'findit.test.inc',
-    );
-
-    $items['admin/fnet/findit/test_ocr'] = array(
-      'title' => 'FindIt test ocr',
-      'description' => "test findit module ocr.",
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('findit_test_ocr'),
-      'access arguments' => array('administer findit'),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 11,
-      'file' => 'findit.test.inc',
-    );
-  }
-
   return $items;
 }
 
@@ -282,6 +248,7 @@ function findit_download($document_id = NULL, $locale = NULL, $source = NULL) {
         }
         break;
       case FindItResponse::SUCCESS:
+      echo "<pre>"; print_r($response); exit;
         findit_log_download($response);
         $url = $response->asset->url;
         $name = $response->asset->Name;
@@ -379,18 +346,19 @@ function findit_check($document_number, $locale, $source = NULL) {
 
   $asset = new DigitalAsset($document_number, $locale);
   $response->asset = $asset;
+  
   if (!isset($asset->Id)) {
     $response->message = FindItResponse::NOT_FOUND;
     return $response;
   }
   // if source is view from the field skip the rest
-  if (strtolower($source) == 'vftf') {
-    $response->message = FindItResponse::SUCCESS;
+  if (strtolower($source) == 'pod') {
+    $response->message = FindItResponse::POD;
     return $response;
   }
   // if source is view from the field skip the rest
-  if (strtolower($source) == 'pod') {
-    $response->message = FindItResponse::POD;
+  if (strtolower($source) == 'vftf') {
+    $response->message = FindItResponse::SUCCESS;
     return $response;
   }
   // if we have a secret token skip the rest
@@ -1274,235 +1242,4 @@ $output_file_path = 'temporary://' . 'digital_asset_downloads.csv' ;
   drupal_add_http_header('Content-Type', 'text/csv');
   file_transfer($output_file_path, array());
 
-}
-
-function findit_log_extract_form($form, &$form_state) {
-  $form = array();
-  $form['start_date'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Start date'),
-    '#size' => 10,
-    '#required' => FALSE,
-    '#default_value' => date('m/d/Y', strtotime('-1 month')),
-    '#attributes' => array(
-      'class' => array('datepicker', 'notranslate'),
-      'readonly' => 'yes',
-    ),
-  );
-  $form['end_date'] = array(
-    '#type' => 'textfield',
-    '#title' => t('End date'),
-    '#size' => 10,
-    '#required' => FALSE,
-    '#default_value' => date('m/d/Y'),
-    '#attributes' => array(
-      'class' => array('datepicker', 'notranslate'),
-      'readonly' => 'yes',
-    ),
-  );
-  $form['document_id'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Document ID'),
-    '#size' => 10,
-    '#required' => FALSE,
-    '#default_value' => '',
-  );
-  $form['exclude_anon'] = array(
-    '#type' => 'select',
-    '#title' => t('Exclude anonymous users'),
-    '#options' => drupal_map_assoc(array('Yes', 'No')),
-    '#required' => FALSE,
-    '#default_value' => 'No',
-  );
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => 'Prepare Download',
-  );
-  $output_file_path = 'temporary://' . 'digital_asset_downloads.csv';
-  if (file_exists($output_file_path)) {
-    $file_date = date('m/d/Y H:i', filemtime($output_file_path));
-  }
-  else {
-    $file_date = 'No extract found.';
-  }
-  $form['last_update'] = array(
-    '#type' => 'item',
-    '#title' => t('Last extract file date'),
-    '#markup' => $file_date,
-  );
-  $form['download'] = array(
-    '#type' => 'button',
-    '#value' => 'Download File',
-    '#validate' => array(),
-    '#executes_submit_callback' => TRUE,
-    '#submit' => array('findit_download_log_file'),
-  );
-  return $form;
-}
-
-function findit_log_extract_form_submit($form, &$form_state) {
-  $start_date = strtotime($form_state['values']['start_date']);
-  $end_date = strtotime($form_state['values']['end_date']);
-  $document_id = $form_state['values']['document_id'];
-  $exclude_anon = $form_state['values']['exclude_anon'] == 'Yes';
-  //findit_produce_findit_log_extract($start_date, $end_date, $document_id, $exclude_anon);
-  $batch = array(
-    'title' => t('Producing findit log extract'),
-    'operations' => array(
-      array(
-        'findit_produce_findit_log_extract',
-        array($start_date, $end_date, $document_id, $exclude_anon)
-      ),
-    ),
-    'finished' => 'findit_batch_finished',
-  );
-  batch_set($batch);
-  batch_process();
-}
-
-function findit_download_log_file($form, &$form_state) {
-  $output_file_path = 'temporary://' . 'digital_asset_downloads.csv';
-  drupal_add_http_header('Content-Type', 'text/csv');
-  drupal_add_http_header('Content-Disposition', 'attachment; filename="findit_log.csv"');
-  file_transfer($output_file_path, array());
-}
-
-
-/*
-* Returns  CSV file with log extract
-*/
-function findit_produce_findit_log_extract($start_date, $end_date, $document_id = NULL, $exclude_anon = FALSE, &$context) {
-  $output_file_path = 'temporary://' . 'digital_asset_downloads.csv';
-  $batch_limit = 1000;
-  if (empty($context['sandbox'])) {
-    $context['sandbox']['progress'] = 0;
-    $context['sandbox']['current_date'] = $start_date;
-    $sql = "SELECT COUNT(*) FROM {findit_log} WHERE date_downloaded > :start AND date_downloaded <= :end ";
-    $arguments = array(
-      ':start' => $start_date,
-      ':end' => $end_date,
-    );
-    if ($exclude_anon) {
-      $sql .= 'AND user_id <> 0 ';
-    }
-    if (!empty($document_id)) {
-      $nid = digital_asset_get_document_nid($document_id);
-      $sql .= "AND asset_id = :asset_id";
-      $arguments[':asset_id'] = $nid;
-    }
-    $record_count = db_query($sql, $arguments)->fetchField();
-    $context['sandbox']['max'] = $record_count;
-    $output_file = fopen($output_file_path, 'w');
-    fputcsv($output_file, array(
-      'email',
-      'first_name',
-      'last_name',
-      'company',
-      'address_line_1',
-      'address_line_2',
-      'city',
-      'state',
-      'country',
-      'postal_code',
-      'phone',
-      'job_role',
-      'document_id',
-      'filename',
-      'title',
-      'download_date'
-    ));
-  }
-  else {
-    $output_file = fopen($output_file_path, 'a');
-  }
-  $query = db_select('findit_log', 'f')
-    ->fields('f')
-    ->condition('date_downloaded', $context['sandbox']['current_date'], '>=')
-    ->condition('date_downloaded', $end_date, '<=')
-    ->range(0, $batch_limit);
-  if ($exclude_anon) {
-    $query->condition('user_id', 0, '<>');
-  }
-  if (!empty($document_id)) {
-    $nid = digital_asset_get_document_nid($document_id);
-    $query->condition('asset_id', $nid);
-  }
-  $result = $query->execute();
-  $users = array();
-  $nodes = array();
-  $user = new stdClass();
-  $user->uid = 0;
-  $node = new stdClass();
-  $node->nid = 0;
-  foreach ($result as $row) {
-    if ($row->user_id != $user->uid) {
-      if (!isset($users[$row->user_id])) {
-        $user = user_load($row->user_id);
-        $users[$row->user_id] = $user;
-      }
-      else {
-        $user = $users[$row->user_id];
-      }
-    }
-    if ($row->asset_id != $node->nid) {
-      if (!isset($nodes[$row->asset_id])) {
-        $node = node_load($row->asset_id);
-        $nodes[$row->asset_id] = $node;
-      }
-      else {
-        $node = $nodes[$row->asset_id];
-      }
-    }
-
-    $document_id = fnet_common_get_field_value('node', $node, 'field_dam_document_id');
-    $filename = fnet_common_get_field_value('node', $node, 'field_dam_storage_filename');
-    $title = $node->title;
-    $date = date('Y-m-d H:i', $row->date_downloaded);
-    $data = array(
-      $user->mail,
-      fnet_common_get_field_value('user', $user, 'field_user_first_name'),
-      fnet_common_get_field_value('user', $user, 'field_user_last_name'),
-      fnet_common_get_field_value('user', $user, 'field_user_company'),
-      fnet_common_get_field_value('user', $user, 'field_user_address_line_1'),
-      fnet_common_get_field_value('user', $user, 'field_user_address_line_2'),
-      fnet_common_get_field_value('user', $user, 'field_user_city'),
-      fnet_common_get_field_value('user', $user, 'field_user_province'),
-      fnet_common_get_field_value('user', $user, 'field_user_country'),
-      fnet_common_get_field_value('user', $user, 'field_user_postal_code'),
-      fnet_common_get_field_value('user', $user, 'field_user_phone'),
-      fnet_common_get_field_value('user', $user, 'field_user_job_role'),
-      $document_id,
-      $filename,
-      $title,
-      $date,
-    );
-
-    fputcsv($output_file, $data);
-    $context['results'][] = date('Y-m-d', $row->date_downloaded);
-    $context['sandbox']['progress']++;
-    $context['sandbox']['current_date'] = $row->date_downloaded;
-    $context['message'] = 'Processed ' . $context['sandbox']['progress'] . ' of ' . $context['sandbox']['max'];
-  } // end foreach result
-  fclose($output_file);
-  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
-    $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
-  }
-  else {
-    $context['finished'] = 1;
-  }
-}
-
-function findit_batch_finished($success, $results, $operations) {
-  if ($success) {
-    drupal_set_message(t('Total records processed was %final', array('%final' => count($results))));
-  }
-  else {
-    // An error occurred.
-    // $operations contains the operations that remained unprocessed.
-    $error_operation = reset($operations);
-    drupal_set_message(t('An error occurred while processing @operation with arguments : @args', array(
-      '@operation' => $error_operation[0],
-      '@args' => print_r($error_operation[0], TRUE),
-    )));
-  }
 }
