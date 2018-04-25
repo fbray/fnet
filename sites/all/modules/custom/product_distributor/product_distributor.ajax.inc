@@ -382,6 +382,12 @@ function wheretobuy_get_delivery_types() {
   if ((isset($country_code)) && (isset($product_code))) {
 
     // Image section.
+
+    /*
+     * The current state of things shows that there is no usage of the field_prod_wtb_img field.
+     * Zip, zilch, none, nada. I declare this a candidate for removal.
+     * Ryan Ositis, 4/24/2018
+     */
     if ($product_code > 0) {
       $img_query = 'SELECT
         ctp.field_prod_wtb_img_fid fid,
@@ -411,30 +417,39 @@ function wheretobuy_get_delivery_types() {
       }
 
       // Use first carousel image if WTB image is not available.
-      // TODO: Look closely at this.
+      // Look closely at this. This is where the action really is.
+      /*
+      SELECT
+        ctp.field_prod_carousel_img_lg_1_fid,
+        f.uri
+      FROM node n, field_data_field_prod_carousel_img_lg_1 ctp
+      INNER JOIN file_managed f ON f.fid = ctp.field_prod_carousel_img_lg_1_fid
+      WHERE ctp.entity_id = n.nid AND ctp.revision_id = n.vid AND ctp.entity_id = 153089
+      */
       if (empty($image)) {
-        $idata = (object) db_query('SELECT ctp.field_prod_carousel_img_lg_1_fid, f.uri'
-          . ' FROM {node} n, {field_data_field_prod_carousel_img_lg_1} ctp'
-          . ' INNER JOIN {file_managed} f ON f.fid = ctp.field_prod_carousel_img_lg_1_fid'
-          . ' WHERE ctp.entity_id = n.nid AND ctp.revision_id = n.vid AND ctp.entity_id = :productCode ', [':productCode' => $product_code])->fetchObject();
+        $json_arr += ['image_source' => 'carousel'];
+        $image_query = "SELECT
+          ctp.field_prod_carousel_img_lg_1_fid AS fid,
+          f.uri AS uri
+        FROM node n 
+        INNER JOIN field_data_field_prod_carousel_img_lg_1 ctp ON ctp.entity_id = n.nid AND ctp.revision_id = n.vid
+        INNER JOIN file_managed f ON f.fid = ctp.field_prod_carousel_img_lg_1_fid
+        WHERE ctp.entity_id = :product";
+        $image_data = db_query($image_query, [':product' => $product_code])->fetchObject();
 
-        if (isset($idata->filepath)) {
+        if (isset($image_data->uri)) {
+          $metadata = file_load($image_data->fid);
           $image = theme_image([
-            'path' => $idata->filepath,
-            'width' => '',
-            'height' => '',
-            'alt' => '',
-            'title' => '',
+            'path' => $image_data->uri,
+            'width' => $metadata->width,
+            'height' => $metadata->height,
+            'alt' => $metadata->field_file_image_alt_text,
+            'title' => $metadata->field_file_image_title_text,
             'attributes' => [],
           ]);
-
+          // Add image to json array.
+          $json_arr += ['image' => $image];
         }
-      }
-      // Add image to json array.
-      if ($image != '') {
-        $json_arr += [
-          'image' => $image,
-        ];
       }
 
       // GET Flag to decide whether to show Price spider WTB button
@@ -564,6 +579,8 @@ function wheretobuy_get_delivery_types() {
     ];
   }
   echo json_encode($json_arr);
+  // dpm($json_arr);
+
 }
 
 /**
