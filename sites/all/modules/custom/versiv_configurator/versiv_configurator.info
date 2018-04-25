@@ -2,3 +2,7 @@ name = Versiv Configurator
 description = "Versiv Configurator functionality."
 package = Fluke Networks
 core = 7.x
+
+configure = admin/fnet/versiv_configurator
+
+dependencies[] = fnet_helper
