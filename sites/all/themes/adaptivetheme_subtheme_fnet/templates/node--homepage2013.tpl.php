@@ -153,7 +153,7 @@ hide($content['links']);
           <li class="content_hp_expertise_box_link"><a href="<?php print !empty($field_home13_exprle[0]['url']) ? $field_home13_exprle[0]['url'] : ''; ?>"><?php print !empty($field_home13_exprle[0]['title']) ? $field_home13_exprle[0]['title'].' &raquo;' : ''; ?></a></li>
           <li class="content_hp_expertise_box_link"><a href="<?php print !empty($field_home13_exprle[1]['url']) ? $field_home13_exprle[1]['url'] : ''; ?>"><?php print !empty($field_home13_exprle[1]['title']) ? $field_home13_exprle[1]['title'].' &raquo;' : ''; ?></a></li>
           <li class="content_hp_expertise_box_link"><a href="<?php print !empty($field_home13_exprle[2]['url']) ? $field_home13_exprle[2]['url'] : ''; ?>"><?php print !empty($field_home13_exprle[2]['title']) ? $field_home13_exprle[2]['title'].' &raquo;' : ''; ?></a></li>
-          <li class="content_hp_expertise_box_link"><a href="/solutions/roles">More &raquo;</a></li>
+          <li class="content_hp_expertise_box_link"><?php print l(t('More &raquo;'),'linkwarelive',array('html' => TRUE)); ?></li>
         </ul>
       </div>
     </div>
@@ -185,7 +185,7 @@ hide($content['links']);
 
     <div class="col-1-3">
       <div class="inner-box content_hp_industry_box_left">
-        <h3><?php print t('Cabling Certification'); ?></h3>
+        <h3><?php print l(t('Cabling Certification'),'cabling-certification'); ?></h3>
         <p><div style="font-weight: normal;"><?php print $field_category_description_1[0]['value']; ?></div></p>
         <ul>
           <?php foreach ($datacom_cabling_families as $datacom_cabling_family): ?>
@@ -199,7 +199,7 @@ hide($content['links']);
 
     <div class="col-1-3">
       <div class="inner-box content_hp_industry_box_left">
-        <h3><?php print t('Installation and Test'); ?></h3>
+        <h3><?php print l(t('Installation and Test'),'installation-and-test'); ?></h3>
         <p><div style="font-weight: normal;"><?php print $field_category_description_2[0]['value']; ?></div></p>
         <ul>
           <?php foreach ($installation_and_test_families as $installation_and_test_family): ?>
@@ -213,7 +213,7 @@ hide($content['links']);
 
     <div class="col-1-3">
       <div class="inner-box">
-        <h3><?php print t('Telecom Test'); ?></h3>
+        <h3><?php print l(t('Telecom Test'),'telecom-test'); ?></h3>
         <div style="font-weight: normal;"><p><?php print $field_category_description_3[0]['value']; ?></p></div>
         <ul>
           <?php foreach($telecom_families as $telecom_family): ?>
