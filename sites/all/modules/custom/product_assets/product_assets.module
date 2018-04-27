@@ -98,9 +98,7 @@ function product_assets_menu() {
 
   // Technical docs: Application notes.
   $items['support/application-notes'] = [
-    'title' => '',
-    'title callback' => 'product_assets_title_generator',
-    'title arguments' => ['Application Notes'],
+    'title' => t('Application Notes'),
     'page callback' => 'product_assets_technical_docs_page',
     'page arguments' => [1],
     'access callback' => TRUE,
@@ -531,7 +529,9 @@ function product_assets_technical_docs_page($op, $industry = -1) {
   if (function_exists('digital_asset_list_assets_by_type')) {
     $assets = digital_asset_list_assets_by_type($digital_asset_type, $language, $industry);
   }
-  $output = '<h2>' . ucwords($digital_asset_type) . "</h2>\n";
+  $asset_types = field_info_field('field_asset_type');
+  $allowed_values = list_allowed_values($asset_types);
+  $output = '<h2>' . $allowed_values[$digital_asset_type] . "</h2>\n";
   $form = drupal_get_form('product_assets_technical_documents_form');
   $output .= drupal_render($form);
   if (!$assets) {
