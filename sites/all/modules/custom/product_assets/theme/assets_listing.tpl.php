@@ -17,14 +17,16 @@
             <div class="asset-description"><?php echo $asset['desc']; ?></div>
           </div>
         </td>
-        <td><?php if (!empty($asset['file_link'])) {
-            echo $asset['file_link'];
-          } ?>
+        <td><?php if (!empty($asset['file_link'])): ?>
+            <?php echo $asset['file_link']; ?>
+            <?php endif; ?>
           <br/>
 
-          <div class="file-size"><?php if (!empty($asset['file_size'])) {
-              echo '(' . $asset['file_size'] . ')';
-            } ?></div>
+          <div class="file-size">
+            <?php if (!empty($asset['file_size'])): ?>
+              <?php echo '(' . $asset['file_size'] . ')'; ?>
+            <?php endif; ?>
+          </div>
         </td>
         <td>
           <?php if ($asset['lock_status']) : ?>
