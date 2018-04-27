@@ -16,11 +16,10 @@
   </div>
   <div class="digital-asset-form-section">
     <?php print drupal_render($form['author']); ?>
-    <?php print drupal_render($form['field_dam_asset_type']); ?>
+    <?php print drupal_render($form['field_asset_type']); ?>
     <?php print drupal_render($form['field_dam_export_controlled']); ?>
     <?php print drupal_render($form['field_dam_document_id']); ?>
     <?php print drupal_render($form['field_dam_revision_letter']); ?>
-    <?php print drupal_render($form['taxonomy_vocabulary_17']); ?>
   </div>
   <div class="digital-asset-form-section">
     <?php print drupal_render($form['field_dam_asset_file']); ?>
@@ -33,16 +32,13 @@
   <div class="digital-asset-form-section">
     <?php print drupal_render($form['field_dam_entitlement_level']); ?>
     <?php print drupal_render($form['field_dam_form_url']); ?>
-    <?php print drupal_render($form['field_dam_access_groups']); ?>
     <?php print drupal_render($form['field_dam_industry']); ?>
-    <?php print drupal_render($form['field_dam_new_industry']); ?>
-    <?php print drupal_render($form['field_dam_business_entity']); ?>
   </div>
   <div class="digital-asset-form-section clearfix">
-    <?php print drupal_render($form['field_dam_related_product']); ?>
+    <?php print drupal_render($form['field_related_product']); ?>
   </div>
   <div class="digital-asset-form-section clearfix">
-    <?php print drupal_render($form['field_dam_availability_date']); ?>
+    <?php print drupal_render($form['field_dam_availability_dates']); ?>
   </div>
   <div <?php if (!variable_get('digital_asset_show_hidden_fields')) print 'style="display: none;"' ?>>
     <?php print drupal_render($form['group_dam_ccs_printing']['field_dam_storage_filename_pod']); ?>
@@ -59,8 +55,8 @@
     <?php print drupal_render($form['field_dam_storage_filename']); ?>
     <?php print drupal_render($form['field_dam_file_size']); ?>
     <?php print drupal_render($form['field_dam_parent']); ?>
-    <?php print drupal_render($form['field_dam_original_filename']); ?>
-    <?php print drupal_render($form['taxonomy_vocabulary_19']); ?>
+    <?php print drupal_render($form['field_dam_original_file_name']); ?>
+    <?php print drupal_render($form['field_asset_tags']); ?>
   </div>
   <div>
     <?php print drupal_render_children($form); ?>
