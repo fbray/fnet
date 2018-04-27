@@ -44,3 +44,18 @@ function fnet_responsive_preprocess_page(&$variables) {
 function fnet_responsive_menu_tree__menu_main_header_menu(&$variables) {
   return '<ul class="menu nav navbar-nav" id="fnet-main-menu">' . $variables['tree'] . '</ul>';
 }
+
+/**
+ * Implements hook_form_views_exposed_form_alter().
+ *
+ * Ensures that exposed Select form elements are sorted alphabetically. This
+ * helps with Entity Reference select elements.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function fnet_responsive_form_views_exposed_form_alter(&$form, &$form_state){
+  if (isset($form['category']['#options'])) {
+    asort($form['category']['#options']);
+  }
+}
