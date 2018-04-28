@@ -1,17 +1,19 @@
 <?php
-// $Id$
+
+/**
+ * @file
+ * findit.module
+ *
+ * Drupal module to provide entitlement and export control for
+ * downloadable digital assets.
+ */
+
 require 'includes/DigitalAsset.php';
 require 'includes/OCREaseRequest.php';
 require 'includes/OCRLog.php';
-/**
- * @file
- * Drupal module to provide entitlement and export control for downloadable digital assets
- *
- */
 
 /**
- * Implementation of hook_menu
- * @return array
+ * Implements hook_menu().
  */
 function findit_menu() {
   $items = array();
@@ -135,10 +137,6 @@ function findit_menu() {
 }
 
 /**
- * Implementation of hook_perm
- * @return array
- */
-/**
  * Implements hook_permission().
  */
 function findit_permission() {
@@ -162,7 +160,10 @@ function findit_permission() {
  * Process a findit request.
  *
  * @param null $document_id
- * @param null $locale locale parsed from the url.
+ *   The id of the document.
+ * @param null $locale
+ *   Locale parsed from the url.
+ *
  * @return mixed
  */
 function findit_download($document_id = NULL, $locale = NULL, $source = NULL) {
@@ -179,21 +180,25 @@ function findit_download($document_id = NULL, $locale = NULL, $source = NULL) {
       case FindItResponse::FORM_GATED:
         drupal_goto($response->asset->FormProcessingURL);
         break;
+
       case FindItResponse::NOT_FOUND:
         $message = variable_get('findit_not_found_message', 'The file you requested could not be found.');
         drupal_set_message($message, 'warning');
         drupal_goto();
         break;
+
       case FindItResponse::NOT_AVAILABLE:
         $message = variable_get('findit_date_range_message', 'The file you requested in not currently available.');
         drupal_set_message($message, 'warning');
         drupal_goto();
         break;
+
       case FindItResponse::RESTRICTED:
         $message = variable_get('findit_restricted_message', 'Access to this file is restricted. Please contact support.');
         drupal_set_message($message);
         drupal_goto(variable_get('findit_restricted_redirect_path', ''));
         break;
+
       case FindItResponse::GOLD_REQUIRED:
         if ($response->account->uid == 0) {
           $message = variable_get('findit_login_required_message', 'You must be logged in to download this file.');
@@ -201,20 +206,24 @@ function findit_download($document_id = NULL, $locale = NULL, $source = NULL) {
           $destination = drupal_get_destination();
           $message = variable_get('findit_gold_required_message', 'A Gold support contract is required to download this file');
           drupal_set_message($message);
-          // TODO $destination needs to be an array of keys and values instead of a string.
+          // TODO $destination needs to be an array of keys and values
+          // instead of a string.
           drupal_goto('/user', array('query' => array($destination)));
         }
         $message = variable_get('findit_gold_required_message', 'A Gold support contract is required to download this file');
         drupal_set_message($message);
         drupal_goto(variable_get('findit_gold_required_redirect_path', ''));
         break;
+
       case FindItResponse::LOGIN_REQUIRED:
         $message = variable_get('findit_login_required_message', 'You must be logged in to download this file.');
         $destination = drupal_get_destination();
         drupal_set_message($message);
-        // TODO $destination needs to be an array of keys and values instead of a string.
+        // TODO $destination needs to be an array of keys and values
+        // instead of a string.
         drupal_goto('/user', array('query' => array($destination)));
         break;
+
       case FindItResponse::POD:
         if (!empty($response->asset->POD_url)) {
           $url = $response->asset->POD_url;
@@ -239,14 +248,15 @@ function findit_download($document_id = NULL, $locale = NULL, $source = NULL) {
           case 'CDN':
             return theme('findit_download', array(
               'document_url' => $url . findit_level3_query_string($path),
-              'document_name' => $name
+              'document_name' => $name,
             ));
-            break;
+
           case 'edoc':
             drupal_goto($url);
             break;
         }
         break;
+
       case FindItResponse::SUCCESS:
         findit_log_download($response);
         $url = $response->asset->url;
@@ -261,10 +271,11 @@ function findit_download($document_id = NULL, $locale = NULL, $source = NULL) {
             else {
               return theme('findit_download', array(
                 'document_url' => $url . findit_level3_query_string($response->asset->CDN_Path),
-                'document_name' => $name
+                'document_name' => $name,
               ));
             }
             break;
+
           case 'edoc':
             drupal_goto($url);
             break;
@@ -272,7 +283,6 @@ function findit_download($document_id = NULL, $locale = NULL, $source = NULL) {
         break;
     }
   }
-  return;
 }
 
 function findit_log_download(FindItResponse $response) {
@@ -287,13 +297,7 @@ function findit_log_download(FindItResponse $response) {
 }
 
 /**
- * Implementation of hook_theme
- *
- * @param $existing
- * @param $type
- * @param $theme
- * @param $path
- * @return array
+ * Implements hook_theme().
  */
 function findit_theme($existing, $type, $theme, $path) {
   $base = array(
@@ -317,21 +321,23 @@ function findit_theme($existing, $type, $theme, $path) {
 
 /**
  * Implements hook_preprocess_HOOK().
- * TODO: Uhh, we implement this theme hook inside this module. Why overrride in our own damn module?
- * TODO: Move this into the theme template.
- * @param $variables
+ *
+ * TODO: Uhh, we implement this theme hook inside this module.
+ * Why overrride in our own damn module?
+ * Move this into the theme template.
  */
 function template_preprocess_findit_flash(&$variables) {
-  //drupal_add_js(drupal_get_path('module', 'findit') . '/js/swfobject.js', 'module');
   $script = 'swfobject.registerObject("findit_flash", "9", "' . drupal_get_path('module', 'findit') . '/js/expressInstall.swf")';
-  //drupal_add_js($script, 'inline');
 }
 
 /**
- * Check to insure that a download request is valid and that the user is entitled to the file.
+ * Check that download request is valid and that user is entitled to the file.
  *
- * @param $document_number - ID of the file
- * @param $locale - Language of the requested file default en-us
+ * @param $document_number
+ *   ID of the file.
+ * @param $locale
+ *   Language of the requested file default en-us.
+ *
  * @return FindItResponse
  */
 function findit_check($document_number, $locale, $source = NULL) {
@@ -345,22 +351,22 @@ function findit_check($document_number, $locale, $source = NULL) {
 
   $asset = new DigitalAsset($document_number, $locale);
   $response->asset = $asset;
-  
+
   if (!isset($asset->Id)) {
     $response->message = FindItResponse::NOT_FOUND;
     return $response;
   }
-  // if source is view from the field skip the rest
+  // If source is view from the field skip the rest.
   if (strtolower($source) == 'pod') {
     $response->message = FindItResponse::POD;
     return $response;
   }
-  // if source is view from the field skip the rest
+  // If source is view from the field skip the rest.
   if (strtolower($source) == 'vftf') {
     $response->message = FindItResponse::SUCCESS;
     return $response;
   }
-  // if we have a secret token skip the rest
+  // If we have a secret token skip the rest.
   $token = isset($_GET['token']) ? $_GET['token'] : NULL;;
   if (findit_validate_token($token, $document_number)) {
     if (empty($ip_address)) {
@@ -374,7 +380,7 @@ function findit_check($document_number, $locale, $source = NULL) {
     return $response;
   }
 
-  //if we have a valid auth cookie skip the rest
+  // If we have a valid auth cookie skip the rest.
   if (findit_validate_auth_cookie($document_number)) {
     $response->message = FindItResponse::SUCCESS;
     return $response;
@@ -436,9 +442,8 @@ function findit_check($document_number, $locale, $source = NULL) {
   }
 
   // TODO: Internationalize the message with t().
-
   if ($asset->ExportCompliance) {
-    // As defined in /includes/UserProfile.php
+    // As defined in /includes/UserProfile.php.
     $profile = new UserProfile($account->uid);
     if ((strlen($profile->last_name) < 2) || (strlen($profile->company) < 2) || (!$profile->is_complete())) {
       $message = t('Fluke Networks policy for downloads requires that we collect your name, address, and company name. Before downloading, please provide this information by updating your profile below.');
@@ -460,9 +465,9 @@ function findit_check($document_number, $locale, $source = NULL) {
     }
 
     // Generate the OCR Request.
-    // TODO: Switch to Addressfield
+    // TODO: Switch to Addressfield.
     $ocr = new OCREaseRequest();
-    //check the individual
+    // Check the individual.
     $ocr->uid = $account->uid;
     $ocr->entity_type = 'I';
     $key = 'FNET_' . $account->mail;
@@ -485,14 +490,14 @@ function findit_check($document_number, $locale, $source = NULL) {
         $message .= '<br/>' . $key . ' : ' . $value;
       }
       watchdog('findit', 'OCR Error: %message Key: %key State: %state Country: %country', array(
-          '%message' => $message,
-          '%key' => $ocr->key_nm,
-          '%state' => $profile->province,
-          '%country' => $profile->country,
-        ), WATCHDOG_ERROR);
+        '%message' => $message,
+        '%key' => $ocr->key_nm,
+        '%state' => $profile->province,
+        '%country' => $profile->country,
+      ), WATCHDOG_ERROR);
     }
     findit_write_ocr_log($ocr, $asset, $account, $entity_type = 'I');
-    //check the company
+    // Check the company.
     $key = 'FNET_' . $profile->company . '_' . $profile->city;;
     $key = str_replace(' ', '_', $key);
     $key = preg_replace('/[\x00\x21\x22\x23\x24\x25\x26\x27\x28\x29\x2A\x2B\x2C\x2D\x2E\x2F]/im', '', $key);
@@ -502,11 +507,11 @@ function findit_check($document_number, $locale, $source = NULL) {
     $company_approved = $ocr->approve();
     if ($ocr->error()) {
       watchdog('findit', 'OCR Error: %message Key: %key State: %state Country: %country', array(
-          '%message' => $message,
-          '%key' => $ocr->key_nm,
-          '%state' => $profile->province,
-          '%country' => $profile->country,
-        ), WATCHDOG_ERROR);
+        '%message' => $message,
+        '%key' => $ocr->key_nm,
+        '%state' => $profile->province,
+        '%country' => $profile->country,
+      ), WATCHDOG_ERROR);
     }
     findit_write_ocr_log($ocr, $asset, $account, $entity_type = 'C');
 
@@ -522,12 +527,14 @@ function findit_check($document_number, $locale, $source = NULL) {
 }
 
 /**
- * Write an entry to the log that tracks export validation checks
+ * Write an entry to the log that tracks export validation checks.
  *
  * @param OCREaseRequest $ocr
  * @param DigitalAsset $asset
- * @param $account - user account
- * @param $entity_type - 'I' for individual or 'C' for company
+ * @param $account
+ *   User account.
+ * @param $entity_type
+ *   'I' for individual or 'C' for company.
  */
 function findit_write_ocr_log(OCREaseRequest $ocr, $asset, $account, $entity_type) {
   $log = new OCRLog();
@@ -543,7 +550,7 @@ function findit_write_ocr_log(OCREaseRequest $ocr, $asset, $account, $entity_typ
 }
 
 /**
- * Check to see if an ip address if located in an embargoed country
+ * Check to see if an ip address if located in an embargoed country.
  *
  * @param $ip_address
  * @return bool
@@ -576,15 +583,16 @@ function findit_embargoed_ip_address($ip_address) {
       case 200:
       case 302:
       case 307:
-        // Results are in the form:
-        //   Country Name:<Country Code>:<ip address>:<embargo flag>
-        //
-        // Example:
-        //   Cuba:CU:169.158.0.0:YES
+        /*
+         * Results are in the form:
+         *   Country Name:<Country Code>:<ip address>:<embargo flag>
+         *
+         * Example:
+         *   Cuba:CU:169.158.0.0:YES
+         */
         $response = explode(':', $result->data);
         $embargoed = (strtoupper($response[3]) == 'YES') ? TRUE : FALSE;
         return $embargoed;
-        break;
 
       case 403:
       case 404:
@@ -599,9 +607,10 @@ function findit_embargoed_ip_address($ip_address) {
 }
 
 /**
- * Use different methods to determine user's ip address
+ * Use different methods to determine user's ip address.
  *
- * @return string - ip address
+ * @return string
+ *   IP address.
  */
 function findit_get_client_ip() {
   $ip_address = '';
@@ -628,29 +637,33 @@ function findit_get_client_ip() {
 }
 
 /**
- * Open 'local' file and stream it to user's browser
+ * Open 'local' file and stream it to user's browser.
  *
- * @param $file_url - local file uri
- * @param $filename - filename for user's downloaded file
+ * @param string $file_url
+ *   Local file uri.
+ * @param string $filename
+ *   Filename for user's downloaded file.
  */
 function findit_stream_file($file_url, $filename) {
   $response = drupal_http_request($file_url, array(
     'headers' => array(),
-    '' => 60
+    '' => 60,
   ));
   switch ($response->code) {
     case 200:
       break;
+
     case 404:
       watchdog('findit', 'http GET returned 404 for url:%url', array('%url' => $file_url), WATCHDOG_NOTICE);
       drupal_not_found();
       break;
+
     default:
       watchdog('findit', 'http GET returned %code:%error for url:%url', array(
-          '%code' => $response->code,
-          '%error' => $response->error,
-          '%url' => $file_url,
-        ), WATCHDOG_NOTICE);
+        '%code' => $response->code,
+        '%error' => $response->error,
+        '%url' => $file_url,
+      ), WATCHDOG_NOTICE);
       drupal_set_message('There was a problem retrieving the file you requested. The problem has been reported and should be corrected soon.');
       drupal_goto($_SERVER['HTTP_REFERER']);
       break;
@@ -661,13 +674,15 @@ function findit_stream_file($file_url, $filename) {
   }
 
   $headers = $response->headers;
-  // loop through headers and pick out the ones we want to echo.  Intentionally skip the first one.
+  // Loop through headers and pick out the ones we want to echo.
+  // Intentionally skip the first one.
   $content_type = '';
   foreach ($headers as $header => $value) {
     switch ($header) {
       case 'content-type':
         $content_type = trim($value);
         break;
+
       case 'content-length':
       case 'date':
       case 'last-modified':
@@ -683,40 +698,42 @@ function findit_stream_file($file_url, $filename) {
 }
 
 /**
- * Drop cookie for authentication at Level 3
+ * Drop cookie for authentication at Level 3.
  *
- * @param $url
+ * @param string $url
+ *   The url.
  */
 function findit_level3_auth_cookie($url) {
   global $cookie_domain;
   header("Set-Cookie: CDNAuth=$url; Domain=$cookie_domain; Path=/; Max-Age=3600");
-  //setrawcookie() chokes if you send it cookie content with spaces, So we use header() instead.
-  //setrawcookie('CDNAuth', $url, time() + 60 * 60, '/', $cookie_domain);
 }
 
 /**
- * TODO: Level 3 will be deprecated with Pantheon. Need a plan to deal with that.
- * @param $filepath
+ * TODO: Level 3 will be deprecated w/ Pantheon. Need a plan to deal with that.
+ *
+ * @param string $filepath
+ *   The path to the file.
+ *
  * @return string
  */
 function findit_level3_query_string($filepath) {
 
-  // use rawurlencode to replace spaces in filenames
+  // Use rawurlencode to replace spaces in filenames.
   $parts = explode('/', $filepath);
   $last = count($parts) - 1;
   $parts[$last] = rawurlencode($parts[$last]);
   $filepath = implode('/', $parts);
 
-  // Customer Secret number
+  // Customer Secret number.
   $secret_number = variable_get('findit_level3_shared_secret_number', 0);
 
-  // Customer Secret Key
+  // Customer Secret Key.
   $key = variable_get('findit_level3_shared_secret_string', 'fIndIt_level3_sh@red_secret_string');
 
-  // token expiration time (in seconds)
+  // Token expiration time (in seconds).
   $delay = variable_get('findit_level3_valid_time_interval', 15) * 60;
 
-  //start offset (five minutes) to allow for some difference in system clocks
+  // Start offset (five minutes) to allow for some difference in system clocks.
   $start_offset = 5 * 60;
 
   // Set start_time to current time minus start_offset (Format: YYYYMMDDHHmmss)
@@ -725,11 +742,11 @@ function findit_level3_query_string($filepath) {
   // Set end_time to current time plus delay (Format: YYYYMMDDHHmmss)
   $end_time = gmdate('YmdHis', time() + $delay);
 
-  // the URI to authenticate
+  // The URI to authenticate.
   $uri = '/' . $filepath . "?nvb=" . $start_time . "&nva=" . $end_time;
 
   // Compute the hash code
-  // Note: the sample code they gave us strips the hash at 20 characters
+  // Note: the sample code they gave us strips the hash at 20 characters.
   $hash = substr(hash_hmac("sha1", $uri, $key), 0, 20);
 
   $query = "?nvb=" . $start_time . "&nva=" . $end_time . "&token=" . $secret_number . $hash;
@@ -737,9 +754,7 @@ function findit_level3_query_string($filepath) {
 }
 
 /**
- * Drop cookie for authentication local files
- *
- * @param $url
+ * Drop cookie for authentication local files.
  */
 function findit_local_auth_cookie($document_id) {
   global $cookie_domain;
@@ -753,7 +768,7 @@ function findit_validate_auth_cookie($document_id) {
 }
 
 /**
- * Return list of 'ocr_status' values for views filter
+ * Return list of 'ocr_status' values for views filter.
  *
  * @return array
  */
@@ -768,15 +783,13 @@ function findit_ocr_status_options() {
     'Approved',
     'On hold',
     'Denied',
-    'Overridden'
+    'Overridden',
   ));
   return array_merge($table_options, $default_options);
 }
 
 /**
- * Implementation of hook_views_api().
- *
- * @return array
+ * Implements hook_views_api().
  */
 function findit_views_api() {
   return array(
@@ -806,6 +819,9 @@ function findit_delete_ocr_log_entry($form, &$form_state, $uid, $entity_type) {
   return $form;
 }
 
+/**
+ * Implements hook_form_submit().
+ */
 function findit_delete_ocr_log_entry_submit($form, &$form_state) {
   $uid = check_plain($form_state['values']['uid']);
   $entity_type = check_plain($form_state['values']['entity_type']);
@@ -839,7 +855,7 @@ function findit_process_ocr_holds() {
   $output .= "<p>Processing records with DPL list date before $cutoff_date_formatted</p>";
   $result = db_query($sql, array(
     ':date' => $cutoff_date,
-    ':count' => $max_checks
+    ':count' => $max_checks,
   ));
   $output .= "<p>";
   foreach ($result as $row) {
@@ -878,7 +894,7 @@ function findit_process_ocr_holds() {
       $on_hold = FALSE;
       $result2 = db_query("SELECT uid, ocr_status FROM ocr_log WHERE uid = :uid AND entity_type <> :entity_type", array(
         ':uid' => $log->uid,
-        ':entity_type' => $log->entity_type
+        ':entity_type' => $log->entity_type,
       ));
       foreach ($result2 as $row2) {
         switch (strtolower($row2->ocr_status)) {
@@ -906,7 +922,7 @@ function findit_process_ocr_holds() {
 }
 
 /**
- * Send email to user who has been cleared by export compliance
+ * Send email to user who has been cleared by export compliance.
  *
  * @param $email
  * @param $locale
@@ -927,11 +943,7 @@ function findit_send_approval_email($email, $locale, $document_id) {
 }
 
 /**
- * Implementation of hook_mail
- *
- * @param $key
- * @param $message
- * @param $params
+ * Implements hook_mail().
  */
 function findit_mail($key, &$message, $params) {
   switch ($key) {
@@ -947,10 +959,12 @@ function findit_mail($key, &$message, $params) {
 }
 
 /**
- * Implementation of hook_cron.  Recheck OCR 'holds' and send email.
+ * Implements hook_cron().
+ *
+ * Recheck OCR 'holds' and send email.
  */
 function findit_cron() {
-  // don't run more than four times a day
+  // Don't run more than four times a day.
   $last_run = variable_get('findit_cron_last', 0);
   $run_next = strtotime('+24 hours', $last_run);
   if (REQUEST_TIME < $run_next) {
@@ -961,7 +975,7 @@ function findit_cron() {
   }
   $result = findit_process_ocr_holds();
   watchdog('findit', $result);
-  //purge old records from ocr log
+  // Purge old records from ocr log.
   $history = '- ' . variable_get('findit_ocr_log_history', 5) . ' days';
   $age_date = strtotime($history);
   $result = db_delete('ocr_log')
@@ -969,30 +983,30 @@ function findit_cron() {
     ->execute();
   if ($result) {
     watchdog('findit', 'History before %date purged from ocr_log, %rows rows deleted. ', array(
-        '%rows' => $result,
-        '%date' => date('Y-m-d H:i:s', $age_date),
-      ), WATCHDOG_INFO);
+      '%rows' => $result,
+      '%date' => date('Y-m-d H:i:s', $age_date),
+    ), WATCHDOG_INFO);
   }
   else {
     watchdog('findit', 'Error deleting records from ocr_log', array(), WATCHDOG_ERROR);
   }
-  //purge error records from ocr log
+  // Purge error records from ocr log.
   $result = db_delete('ocr_log')->condition('ocr_status', 'error')->execute();
   if ($result) {
     watchdog('findit', 'Deleted %rows error %records from ocr_log. ', array(
-        '%rows' => $result,
-        '%records' => format_plural($result, 'record', 'records'),
-      ), WATCHDOG_INFO);
+      '%rows' => $result,
+      '%records' => format_plural($result, 'record', 'records'),
+    ), WATCHDOG_INFO);
   }
   else {
     watchdog('findit', 'Error deleting records from ocr_log', array(), WATCHDOG_ERROR);
   }
-  //reset ocr_check_count if profile has changed
+  // Reset ocr_check_count if profile has changed.
   $query = db_select('ocr_log', 'l')
     ->fields('l', array(
       'oid',
       'uid',
-      'date_updated'
+      'date_updated',
     ))
     ->condition('ocr_status', 'on hold')
     ->condition('ocr_check_count', 1, '>');
@@ -1004,8 +1018,8 @@ function findit_cron() {
     }
     if ($profile->changed > $row->updated) {
       db_update('ocr_log')->fields(array(
-          'ocr_check_count' => 0,
-        ))->condition('oid', $row->oid)->execute();
+        'ocr_check_count' => 0,
+      ))->condition('oid', $row->oid)->execute();
     }
   }
 }
@@ -1023,9 +1037,6 @@ function findit_filter($op, $delta = 0, $format = -1, $text = '', $cache_id = 0)
 
     case "process":
       $server = $_SERVER['SERVER_NAME'];
-//      $pattern = '%http://Support\.FlukeNetworks\.com/Find_It\.asp\?Src=FNet&Style=82&Document=(\d*)%i';
-//      $replacement = "http://$server/findit/en-us/$1";
-//      $text = preg_replace($pattern, $replacement, $text);
       $pattern = '%http://myaccount\.flukenetworks\.com/FNet/(..-..)/findit\?Document=(\d*)%i';
       $replacement = "http://$server/findit/$1/$2";
       $text = preg_replace($pattern, $replacement, $text);
@@ -1046,6 +1057,9 @@ function findit_validate_token($token, $document_number) {
   }
 }
 
+/**
+ * Implements hook_form().
+ */
 function findit_generate_download_url_form($form, &$form_state) {
   $form['document_id'] = array(
     '#type' => 'textfield',
@@ -1075,6 +1089,9 @@ function findit_generate_download_url_form($form, &$form_state) {
   return $form;
 }
 
+/**
+ * Implements hook_form_validate().
+ */
 function findit_generate_download_url_form_validate($form, &$form_state) {
   $document_id = $form_state['values']['document_id'];
   $asset = new DigitalAsset($document_id, NULL);
@@ -1084,6 +1101,9 @@ function findit_generate_download_url_form_validate($form, &$form_state) {
   }
 }
 
+/**
+ * Implements hook_form_submit().
+ */
 function findit_generate_download_url_form_submit($form, &$form_state) {
   $document_id = $form_state['values']['document_id'];
   $asset = new DigitalAsset($document_id, NULL);
@@ -1134,7 +1154,7 @@ function findit_get_ocr_mx_state($state_code) {
 }
 
 /**
- * Class FindItResponse
+ * Class FindItResponse.
  *
  * Simple class for results of findit check.
  */
@@ -1150,24 +1170,27 @@ class FindItResponse {
   const SUCCESS = 'Success';
 
   /**
-   * @var - Status or error message
+   * Status or error message.
+   *
+   * @var message
    */
   public $message;
   /**
-   * @var - The digital asset for which the check was performed
+   * The digital asset for which the check was performed.
+   *
+   * @var asset
    */
   public $asset;
   public $account;
+
 }
 
-
-
-/*
-* Returns  CSV file with log extract
-*/
+/**
+ * Returns CSV file with log extract.
+ */
 function findit_produce_ocr_log_extract() {
 
-$output_file_path = 'temporary://' . 'digital_asset_downloads.csv' ;
+  $output_file_path = 'temporary://' . 'digital_asset_downloads.csv';
 
   $output_file = fopen($output_file_path, 'w');
   fputcsv($output_file, array(
@@ -1188,54 +1211,50 @@ $output_file_path = 'temporary://' . 'digital_asset_downloads.csv' ;
     'title',
   ));
   $sql = "SELECT * from {ocr_log} where entity_type='I' and ocr_status='Approved'  ";
-  // change asset query to EFQ
-/*  $asset_sql = 'SELECT title, field_dam_storage_filename_value FROM content_type_digital_asset
-      INNER JOIN node ON content_type_digital_asset.vid = node.vid AND content_type_digital_asset.nid = node.nid WHERE field_dam_document_id_value = :id ';
-      */
 
   $result = db_query($sql);
 
-    foreach ($result as $row) {
+  foreach ($result as $row) {
 
     $user = user_load($row->uid);
     $document_ids = explode(',', $row->document_id);
 
     $query = new EntityFieldQuery();
     $query->entityCondition('entity_type', 'node')
-          ->propertyCondition('type', 'digital_asset')
-//          ->propertyCondition('status', NODE_PUBLISHED)
-          ->fieldCondition('field_dam_document_id', 'value', $document_ids , 'IN');
+      ->propertyCondition('type', 'digital_asset')
+      ->fieldCondition('field_dam_document_id', 'value', $document_ids, 'IN');
     $nodes_array = $query->execute();
     $nids = array_keys($nodes_array['node']);
     $nodes = node_load_multiple($nids);
 
     foreach ($nodes as $node) {
 
-          $document_id = fnet_common_get_field_value('node', $node, 'field_dam_document_id');
-          $filename = fnet_common_get_field_value('node', $node, 'field_dam_storage_filename');
-          $title = $node->title;
-          $data = array(
-            $user->mail,
-            fnet_common_get_field_value('user', $user, 'field_user_first_name'),
-            fnet_common_get_field_value('user', $user, 'field_user_last_name'),
-            fnet_common_get_field_value('user', $user, 'field_user_company'),
-            fnet_common_get_field_value('user', $user, 'field_user_address_line_1'),
-            fnet_common_get_field_value('user', $user, 'field_user_address_line_2'),
-            fnet_common_get_field_value('user', $user, 'field_user_city'),
-            fnet_common_get_field_value('user', $user, 'field_user_province'),
-            fnet_common_get_field_value('user', $user, 'field_user_country'),
-            fnet_common_get_field_value('user', $user, 'field_user_postal_code'),
-            fnet_common_get_field_value('user', $user, 'field_user_phone'),
-            fnet_common_get_field_value('user', $user, 'field_user_job_role'),
-            $document_id,
-            $filename,
-            $title,
-          );
+      $document_id = fnet_common_get_field_value('node', $node, 'field_dam_document_id');
+      $filename = fnet_common_get_field_value('node', $node, 'field_dam_storage_filename');
+      $title = $node->title;
+      $data = array(
+        $user->mail,
+        fnet_common_get_field_value('user', $user, 'field_user_first_name'),
+        fnet_common_get_field_value('user', $user, 'field_user_last_name'),
+        fnet_common_get_field_value('user', $user, 'field_user_company'),
+        fnet_common_get_field_value('user', $user, 'field_user_address_line_1'),
+        fnet_common_get_field_value('user', $user, 'field_user_address_line_2'),
+        fnet_common_get_field_value('user', $user, 'field_user_city'),
+        fnet_common_get_field_value('user', $user, 'field_user_province'),
+        fnet_common_get_field_value('user', $user, 'field_user_country'),
+        fnet_common_get_field_value('user', $user, 'field_user_postal_code'),
+        fnet_common_get_field_value('user', $user, 'field_user_phone'),
+        fnet_common_get_field_value('user', $user, 'field_user_job_role'),
+        $document_id,
+        $filename,
+        $title,
+      );
 
-          fputcsv($output_file, $data);
-  } // end foreach node
-
-  } // end foreach result
+      fputcsv($output_file, $data);
+      // End foreach node.
+    }
+    // End foreach result.
+  }
   fclose($output_file);
 
   drupal_add_http_header('Content-Type', 'text/csv');
