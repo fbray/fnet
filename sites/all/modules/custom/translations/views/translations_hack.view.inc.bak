@@ -1,4 +1,11 @@
 <?php
+/**
+ * This is a backup of the actual Translations Hack view, which exist in the
+ * FNET Common module. This is here for historical reasons and can be used in
+ * an emergency.
+ *
+ * Ryan Ositis 4/30/2018
+ */
 $view = new view();
 $view->name = 'translations_hack';
 $view->description = '';
