@@ -33,6 +33,7 @@ function sales_insider_menu() {
     'title' => t('Sales Insider'),
     'page callback' => '_sales_insider_initial_content',
     'access arguments' => ['access content'],
+    'delivery callback' => '_sales_insider_deliver_html_page',
     'type' => MENU_CALLBACK,
   ];
 
@@ -57,6 +58,7 @@ function sales_insider_menu() {
     'description' => t('Extranet Sales Tools'),
     'page callback' => '_sales_insider_sales_tool_page',
     'access arguments' => ['access extranet'],
+    'delivery callback' => '_sales_insider_deliver_html_page',
     'type' => MENU_NORMAL_ITEM,
     'menu_name' => 'extranet',
   ];
@@ -67,6 +69,7 @@ function sales_insider_menu() {
     'page callback' => '_sales_insider_contacts_page',
     'access arguments' => ['access extranet'],
     'type' => MENU_NORMAL_ITEM,
+    'delivery callback' => '_sales_insider_deliver_html_page',
     'menu_name' => 'extranet',
   ];
 
@@ -126,6 +129,18 @@ function sales_insider_menu() {
   ];
 
   return $items;
+}
+
+/**
+ * Delivery callback to direct to user login page.
+ *
+ * @param $page_callback_result
+ */
+function _sales_insider_deliver_html_page($page_callback_result) {
+  if ($page_callback_result == MENU_ACCESS_DENIED) {
+    drupal_goto('/user');
+  }
+  drupal_deliver_html_page($page_callback_result);
 }
 
 /**
