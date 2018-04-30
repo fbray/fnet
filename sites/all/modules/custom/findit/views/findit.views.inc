@@ -1,13 +1,12 @@
 <?php
-// $Id$
+
 /**
  * @file
  * Describe the purpose of the file here.
- *
  */
+
 /**
- * Implementation of hook_views_data
- * @return array
+ * Implements hook_views_data().
  */
 function findit_views_data() {
   $data = array();
@@ -307,5 +306,3 @@ function findit_views_data() {
 
   return $data;
 }
-
-
