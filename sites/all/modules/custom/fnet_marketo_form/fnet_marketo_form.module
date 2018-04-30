@@ -92,4 +92,20 @@ function fnet_marketo_form_template_variables(&$variables) {
   }
   // The Marketo instance key.
   $variables['marketo_key'] = variable_get('marketo_api_munchkin_key', '709-HGB-925');
+
+  // The Marketo Prefill Unifying Domains and their Marketo counterparts.
+  $environments = array(
+    'flukenetworks.com' => "//info.flukenetworks.com/Form-Prefill-Guided-Landing-Page.html",
+  );
+
+  // Get the current server domain, stripping protocol.
+  $domain = preg_replace('/^[^.]*\./', '', $GLOBALS['base_url']);
+  // Assign to a template variable.
+  $variables['domain'] = $domain;
+  // Default marketo instance template variable to dev counterpart.
+  $variables['marketo_lp'] = '//info-test.flukenetworks7dev.danahertm.com/Test_embedded-form-LP.html';
+  // Change marketo instance template variable if PROD domain.
+  if (isset($environments[$domain])) {
+    $variables['marketo_lp'] = $environments[$domain];
+  }
 }

@@ -63,7 +63,7 @@
             }
           });
         }
-        receiveFormDTO("flukenetworks.com", "http://info.flukenetworks.com/Form-Prefill-Guided-Landing-Page.html", "mktoPreFillFields");
+        receiveFormDTO("<?php print $domain; ?>", "<?php print $marketo_lp; ?>", "mktoPreFillFields");
 
         MktoForms2.loadForm("//app-sjo.marketo.com", "<?php print $marketo_key ?>", <?php print $form_number ?>, function(form) {
           form.onSuccess(function(values, followUpUrl) {
