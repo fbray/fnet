@@ -1,18 +1,21 @@
-; $Id$
 name = Product Assets
 description = Provides support pages for FNET
-package = Fluke Networks
-version = "7.x-1.1"
 core = 7.x
-
+package = Fluke Networks
+version = 7.x-1.1
+dependencies[] = better_exposed_filters
+dependencies[] = ctools
 dependencies[] = digital_asset
-dependencies[] = views
+dependencies[] = ems
 dependencies[] = entityreference
 dependencies[] = features
 dependencies[] = image
 dependencies[] = options
+dependencies[] = strongarm
 dependencies[] = text
-
+dependencies[] = views
+stylesheets[all][] = product_assets.css
+features[ctools][] = strongarm:strongarm:1
 features[ctools][] = views:views_default:3.0
 features[features_api][] = api:2
 features[field_base][] = field_expertise_image
@@ -30,10 +33,19 @@ features[field_instance][] = node-expertise-field_language_override_exp
 features[field_instance][] = node-expertise-field_product_category
 features[field_instance][] = node-expertise-field_related_products
 features[node][] = expertise
+features[variable][] = diff_enable_revisions_page_node_expertise
+features[variable][] = diff_show_preview_changes_node_expertise
+features[variable][] = diff_view_mode_preview_node_expertise
+features[variable][] = field_bundle_settings_node__expertise
+features[variable][] = language_content_type_expertise
+features[variable][] = menu_options_expertise
+features[variable][] = menu_parent_expertise
+features[variable][] = node_options_expertise
+features[variable][] = node_preview_expertise
+features[variable][] = node_submitted_expertise
+features[variable][] = xmlsitemap_settings_node_expertise
 features[views_view][] = support
 features_exclude[field_base][body] = body
 features_exclude[field_base][field_related_products] = field_related_products
 features_exclude[field_base][field_intro] = field_intro
 features_exclude[field_base][field_product_category] = field_product_category
-
-stylesheets[all][] = product_assets.css
