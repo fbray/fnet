@@ -92,4 +92,34 @@ function fnet_marketo_form_template_variables(&$variables) {
   }
   // The Marketo instance key.
   $variables['marketo_key'] = variable_get('marketo_api_munchkin_key', '709-HGB-925');
+
+  // The Marketo Prefill Unifying Domains and their Marketo counterparts.
+  $environments = array(
+    'live' => "//info.flukenetworks.com/Form-Prefill-Guided-Landing-Page.html",
+    'test' => "//info-test.flukenetworks7tst.danahertm.com/Test_embedded-form-LP.html",
+    'dev-' => "//info-test.flukenetworks7dev.danahertm.com/Test_embedded-form-LP.html",
+    'local' => "//info-test.flukenetworks7dev.danahertm.com/Test_embedded-form-LP.html",
+  );
+
+  // Get the current server protocol, subdomain, and domain.
+  preg_match('/(https?\:\/\/)?(.+?\.)([^\/]*)/', $GLOBALS['base_url'], $matches);
+  $domain = $matches[3];
+  // Match Pantheon environment to correct Marketo counterpart.
+  if (strpos($domain, 'pantheon') !== FALSE) {
+    $env = substr($matches[2], 0, 4);
+  }
+  // Match production environment to Marketo counterpart.
+  elseif (strpos($domain, 'flukenetworks') !== FALSE) {
+    $env = 'live';
+  }
+  // Any other domains are considered local test environments.
+  else {
+    $env = 'local';
+  }
+
+  // Assign domain to a template variable.
+  $variables['domain'] = $domain;
+
+  // Change marketo instance template variable based on environment.
+  $variables['marketo_lp'] = $environments[$env];
 }
