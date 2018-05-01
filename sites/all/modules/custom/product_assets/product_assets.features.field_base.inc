@@ -155,7 +155,7 @@ function product_assets_field_default_field_bases() {
         'view' => array(
           'args' => array(),
           'display_name' => 'language_reference',
-          'view_name' => 'expertise',
+          'view_name' => 'translations_hack',
         ),
       ),
       'target_type' => 'node',
