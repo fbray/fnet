@@ -220,10 +220,23 @@ function digital_asset_permission() {
 }
 
 /**
+ * Implements hook_form_alter().
+ */
+function digital_asset_form_alter(&$form, &$form_state, $form_id) {
+  switch($form_id) {
+    case 'digital_asset_node_form':
+      // Sort the Related Products.
+      asort($form['field_related_products'][LANGUAGE_NONE]['#options']);
+      break;
+    default:
+      break;
+  }
+}
+
+/**
  * Implements hook_form_FORM_ID_alter().
  */
 function digital_asset_form_digital_asset_node_form_alter(&$form, &$form_state) {
-  global $user;
   /* For testing
   if (module_exists('devel')) {
     dpm($form);
@@ -246,7 +259,7 @@ function digital_asset_form_digital_asset_node_form_alter(&$form, &$form_state) 
   ];
   $form['storage_filename'] = [
     '#type' => 'value',
-    '#value' => fnet_common_get_field_value('digital_asset', $node, 'field_dam_storage_filename'),
+    '#value' => fnet_common_get_field_value('digital_asset', $node, 'field_dam_storage_file_name'),
   ];
   $form['storage_file_folder_pod'] = [
     '#type' => 'value',
@@ -257,23 +270,21 @@ function digital_asset_form_digital_asset_node_form_alter(&$form, &$form_state) 
     '#value' => fnet_common_get_field_value('digital_asset', $node, 'field_dam_storage_filename_pod'),
   ];
 
-  $form['field_dam_storage_filename']['#default_value'] = fnet_common_get_field_value('digital_asset', $node, 'field_dam_storage_filename');
+  $form['field_dam_storage_file_name']['#default_value'] = fnet_common_get_field_value('digital_asset', $node, 'field_dam_storage_file_name');
   if (isset($node->field_dam_parent[LANGUAGE_NONE][0]['nid'])) {
     $parent_node = node_load(fnet_common_get_field_value('digital_asset', $node, 'field_dam_parent', 'nid'));
     $form['title']['#default_value'] = (empty($node->title)) ? $parent_node->title : $node->title;
     $form['body_field']['body']['#default_value'] = (empty($node->body)) ? $parent_node->body : $node->body;
-    $form['field_dam_asset_type'][LANGUAGE_NONE]['#default_value'][0] = (empty($node->field_dam_asset_type[LANGUAGE_NONE][0]['value'])) ? fnet_common_get_field_value('node', $parent_node, 'field_dam_asset_type', 'value') : fnet_common_get_field_value('node', $node, 'field_dam_asset_type', 'value');
+    $form['field_asset_type'][LANGUAGE_NONE]['#default_value'][0] = (empty($node->field_asset_type[LANGUAGE_NONE][0]['value'])) ? fnet_common_get_field_value('node', $parent_node, 'field_asset_type', 'value') : fnet_common_get_field_value('node', $node, 'field_asset_type', 'value');
     $form['field_dam_entitlement_level'][LANGUAGE_NONE]['#default_value'][0] = (empty($node->field_dam_entitlement_level[LANGUAGE_NONE][0]['value'])) ? fnet_common_get_field_value('node', $parent_node, 'field_dam_entitlement_level', 'value') : fnet_common_get_field_value('node', $node, 'field_dam_entitlement_level', 'value');
-    $form['field_dam_access_groups'][LANGUAGE_NONE]['#default_value'][0] = (empty($node->field_dam_access_groups[LANGUAGE_NONE][0]['value'])) ? fnet_common_get_field_value('node', $parent_node, 'field_dam_access_groups', 'value') : fnet_common_get_field_value('node', $node, 'field_dam_access_groups', 'value');
     $form['field_dam_industry'][LANGUAGE_NONE]['#default_value'][0] = (empty($node->field_dam_industry[LANGUAGE_NONE][0]['value'])) ? fnet_common_get_field_value('node', $parent_node, 'field_dam_industry', 'value') : fnet_common_get_field_value('node', $node, 'field_dam_industry', 'value');
-    if (empty($node->field_dam_related_product[LANGUAGE_NONE])) {
-      if (!empty($parent_node->field_dam_related_product[LANGUAGE_NONE])) {
-        foreach ($parent_node->field_dam_related_product[LANGUAGE_NONE] as $value) {
-          $form['field_dam_related_product'][LANGUAGE_NONE]['#default_value'][] = $value['nid'];
+    if (empty($node->field_related_products[LANGUAGE_NONE])) {
+      if (!empty($parent_node->field_related_products[LANGUAGE_NONE])) {
+        foreach ($parent_node->field_related_products[LANGUAGE_NONE] as $value) {
+          $form['field_related_products'][LANGUAGE_NONE]['#default_value'][] = $value['nid'];
         }
       }
     }
-    $form['field_dam_business_entity'][LANGUAGE_NONE]['#default_value'][0] = (empty($node->field_dam_business_entity[LANGUAGE_NONE][0]['value'])) ? fnet_common_get_field_value('node', $parent_node, 'field_dam_business_entity', 'value') : fnet_common_get_field_value('node', $node, 'field_dam_business_entity', 'value');
   }
 
   unset($form['actions']['submit']['#submit']);
@@ -360,6 +371,7 @@ function digital_asset_node_form($form, &$form_state, $node, $is_child = FALSE) 
     dpm($form);
   }
   */
+
   if (!empty($form['#submit']) && is_array($form['#submit'])) {
     if (!in_array('digital_asset_node_form_submit', $form['#submit'])) {
       $form['#submit'][] = 'digital_asset_node_form_submit';
@@ -397,24 +409,35 @@ function digital_asset_node_form_validate($form, &$form_state) {
   $values = &$form_state['values'];
   $is_insert = empty($form['#node']->nid);
   $is_update = !$is_insert;
-  if (!empty($values['field_dam_asset_file'][LANGUAGE_NONE][0]['fid'])) {
+  $filename_query = 'SELECT filename FROM file_managed WHERE fid = :fid';
+  if (!empty($values['field_asset_file'][LANGUAGE_NONE][0]['fid'])) {
+    $filename = db_query($filename_query, [':fid' => $values['field_asset_file'][LANGUAGE_NONE][0]['fid']])
+      ->fetchField();
+    /*
     $query = db_select('file_managed', 'f')
       ->fields('f', ['filename'])
       ->condition('fid', $values['field_dam_asset_file'][LANGUAGE_NONE][0]['fid']);
     $filename = $query->execute()->fetchField();
+    */
   }
   else {
     $filename = '';
   }
+
   if (!empty($values['field_dam_asset_file_pod'][LANGUAGE_NONE][0]['fid'])) {
+    $pod_filename = db_query($filename_query, [':fid' => $values['field_dam_asset_file_pod'][LANGUAGE_NONE][0]['fid']])
+      ->fetchField();
+    /*
     $query = db_select('file_managed', 'f')
       ->fields('f', ['filename'])
       ->condition('fid', $values['field_dam_asset_file_pod'][LANGUAGE_NONE][0]['fid']);
     $pod_filename = $query->execute()->fetchField();
+    */
   }
   else {
     $pod_filename = '';
   }
+
   if ($is_update) {
     if ($values['field_dam_document_id'][LANGUAGE_NONE][0]['value'] != $form['#node']->field_dam_document_id[LANGUAGE_NONE][0]['value']) {
       form_set_error('field_dam_document_id', "You can't change the Document Id of an existing asset");
@@ -444,7 +467,7 @@ function digital_asset_node_form_validate($form, &$form_state) {
   if (!empty($filename)) {
     if ($values['field_dam_keep_original_filename'][LANGUAGE_NONE][0]['value']) {
       $storage_filename = $filename;
-      $values['field_dam_storage_filename'][LANGUAGE_NONE][0]['value'] = $storage_filename;
+      $values['field_dam_storage_file_name'][LANGUAGE_NONE][0]['value'] = $storage_filename;
     }
     else {
       if (!empty($filename)) {
@@ -453,7 +476,7 @@ function digital_asset_node_form_validate($form, &$form_state) {
         $storage_filename .= $values['field_dam_revision_letter'][LANGUAGE_NONE][0]['value'] . '-';
         $storage_filename .= $values['field_dam_language'][LANGUAGE_NONE][0]['value'] . '.' . $ext;
         $storage_filename = strtolower($storage_filename);
-        $values['field_dam_storage_filename'][LANGUAGE_NONE][0]['value'] = $storage_filename;
+        $values['field_dam_storage_file_name'][LANGUAGE_NONE][0]['value'] = $storage_filename;
       }
       if (!empty($pod_filename)) {
         $ext = pathinfo($pod_filename, PATHINFO_EXTENSION);
@@ -461,12 +484,12 @@ function digital_asset_node_form_validate($form, &$form_state) {
         $pod_storage_filename .= $values['field_dam_revision_letter'][LANGUAGE_NONE][0]['value'] . '-';
         $pod_storage_filename .= $values['field_dam_language'][LANGUAGE_NONE][0]['value'] . '-pod.' . $ext;
         $pod_storage_filename = strtolower($pod_storage_filename);
-        $values['field_dam_storage_filename_pod'][LANGUAGE_NONE][0]['value'] = $pod_storage_filename;
+        $values['field_dam_storage_file_name_pod'][LANGUAGE_NONE][0]['value'] = $pod_storage_filename;
       }
     }
   }
   if ($is_insert) {
-    if (!empty($values['field_dam_asset_file'][LANGUAGE_NONE][0]['fid'])) {
+    if (!empty($values['field_asset_file'][LANGUAGE_NONE][0]['fid'])) {
       $values['field_dam_cdn_status'][LANGUAGE_NONE][0]['value'] = 'Pending';
     }
     else {
@@ -479,7 +502,7 @@ function digital_asset_node_form_validate($form, &$form_state) {
     }
   }
   else {
-    if (!empty($values['field_dam_asset_file'][LANGUAGE_NONE][0]['fid'])) {
+    if (!empty($values['field_asset_file'][LANGUAGE_NONE][0]['fid'])) {
       $values['field_dam_cdn_status'][LANGUAGE_NONE][0]['value'] = 'Pending';
     }
     if (!empty($values['field_dam_asset_file_pod'][LANGUAGE_NONE][0]['fid'])) {
@@ -487,19 +510,19 @@ function digital_asset_node_form_validate($form, &$form_state) {
     }
   }
 
-  $start_date = $values['field_dam_availability_date'][LANGUAGE_NONE][0]['value'];
+  $start_date = $values['field_dam_availability_dates'][LANGUAGE_NONE][0]['value'];
 
-  $end_date = $values['field_dam_availability_date'][LANGUAGE_NONE][0]['value2'];
+  $end_date = $values['field_dam_availability_dates'][LANGUAGE_NONE][0]['value2'];
   if (($end_date == $start_date) || empty($end_date)) {
     $start = strtotime($start_date);
     // Twenty years.
     $end = $start + (20 * 365.25 * 24 * 60 * 60);
-    $values['field_dam_availability_date'][LANGUAGE_NONE][0]['value2'] = date('Y-m-d\TH:i:s', $end);
+    $values['field_dam_availability_dates'][LANGUAGE_NONE][0]['value2'] = date('Y-m-d\TH:i:s', $end);
   }
-  if (strtolower($values['field_dam_asset_type'][LANGUAGE_NONE][0]['value']) == 'product software') {
+  if (strtolower($values['field_asset_type'][LANGUAGE_NONE][0]['value']) == 'product software') {
     $values['field_dam_export_controlled'][LANGUAGE_NONE][0]['value'] = TRUE;
   }
-  if (((strtolower($values['field_dam_asset_type'][LANGUAGE_NONE][0]['value']) == 'webcasts') || (strtolower($values['field_dam_asset_type'][LANGUAGE_NONE][0]['value']) == 'white papers')) && (empty($values['field_dam_industry'][LANGUAGE_NONE][0]['value']))) {
+  if (((strtolower($values['field_asset_type'][LANGUAGE_NONE][0]['value']) == 'webcasts') || (strtolower($values['field_asset_type'][LANGUAGE_NONE][0]['value']) == 'white papers')) && (empty($values['field_dam_industry'][LANGUAGE_NONE][0]['value']))) {
     form_set_error('field_dam_industry', 'Industry must be selected for Webcasts and White Papers.');
   }
 }
@@ -512,6 +535,9 @@ function digital_asset_node_form_submit($form, &$form_state) {
   $node = (object) $form_state['values'];
 
   // These need INT values, will error on empty strings (''), so removing.
+  if (fnet_common_get_field_value('node', $node, 'field_dam_quantity') == '') {
+    unset($node->field_dam_quantity);
+  }
   if (fnet_common_get_field_value('node', $node, 'field_dam_order_quantity_max') == '') {
     unset($node->field_dam_order_quantity_max);
   }
@@ -521,6 +547,14 @@ function digital_asset_node_form_submit($form, &$form_state) {
   if (fnet_common_get_field_value('node', $node, 'field_dam_file_size') == '') {
     unset($node->field_dam_file_size);
   }
+  if (fnet_common_get_field_value('node', $node, 'field_dam_parent') == '') {
+    unset($node->field_dam_parent);
+  }
+
+  // Set the translation node to 0. Why? So it doesn't throw an error. Ugh.
+  $node->tnid = 0;
+  // Make sure Pathauto doesn't get in the way here.
+  $node->path['pathauto'] = 0;
 
   $node = node_submit($node);
   $form_state['node'] = $node;
@@ -566,10 +600,10 @@ function digital_asset_node_form_submit($form, &$form_state) {
   digital_asset_ccs_spreadsheet_update($node_before, $node);
 
   // Queue for upload to cdn.
-  if (!empty($node->field_dam_asset_file[LANGUAGE_NONE][0]['fid'])) {
+  if (!empty($node->field_asset_file[LANGUAGE_NONE][0]['fid'])) {
     digital_asset_queue_for_ftp($node);
   }
-  if (!empty($node->field_dam_asset_file_pod[LANGUAGE_NONE][0]['fid'])) {
+  if (!empty($node->field_asset_file_pod[LANGUAGE_NONE][0]['fid'])) {
     digital_asset_queue_for_ftp($node, 'put', $pod = TRUE);
   }
 }
@@ -579,10 +613,10 @@ function digital_asset_node_form_submit($form, &$form_state) {
  */
 function digital_asset_node_delete($node) {
   if ($node->type == 'digital_asset') {
-    if (!empty($node->field_dam_storage_filename[LANGUAGE_NONE][0]['value'])) {
+    if (!empty($node->field_dam_storage_file_name[LANGUAGE_NONE][0]['value'])) {
       digital_asset_queue_for_ftp($node, 'delete', $pod = FALSE);
     }
-    if (!empty($node->field_dam_storage_filename_pod[LANGUAGE_NONE][0]['value'])) {
+    if (!empty($node->field_dam_storage_file_name_pod[LANGUAGE_NONE][0]['value'])) {
       digital_asset_queue_for_ftp($node, 'delete', $pod = TRUE);
     }
   }
@@ -682,7 +716,7 @@ function digital_asset_queue_for_ftp($node, $operation = 'put', $pod = FALSE) {
   $record->pod = $pod;
   if ($pod) {
     $remote_file_folder = variable_get('digital_asset_cdn_upload_folder_pod', '');
-    $remote_filename = fnet_common_get_field_value('node', $node, 'field_dam_storage_filename_pod', 'value');
+    $remote_filename = fnet_common_get_field_value('node', $node, 'field_dam_storage_file_name_pod', 'value');
     if (!empty($node->field_dam_asset_file_pod[LANGUAGE_NONE][0]['fid'])) {
       $query = db_select('file_managed', 'f')
         ->fields('f', [
@@ -699,7 +733,7 @@ function digital_asset_queue_for_ftp($node, $operation = 'put', $pod = FALSE) {
   }
   else {
     $remote_file_folder = variable_get('digital_asset_cdn_upload_folder', '');
-    $remote_filename = fnet_common_get_field_value('node', $node, 'field_dam_storage_filename', 'value');
+    $remote_filename = fnet_common_get_field_value('node', $node, 'field_dam_storage_file_name', 'value');
     if (!empty($node->field_dam_asset_file[LANGUAGE_NONE][0]['fid'])) {
       $query = db_select('file_managed', 'f')
         ->fields('f', [
@@ -1039,7 +1073,7 @@ function digital_asset_get_related_products($document_nid) {
   $products = [];
   $query = "SELECT p.field_related_products_target_id AS nid, n.title AS title
     FROM field_data_field_related_products p
-    JOIN node n ON n.nid = p.entity_id
+    JOIN node n ON n.nid = p.field_related_products_target_id
     WHERE p.entity_id = :document_nid";
   $result = db_query($query, [':document_nid' => $document_nid]);
   if ($result) {

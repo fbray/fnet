@@ -1,0 +1,154 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: mositis
+ * Date: 2/8/2017
+ * Time: 2:49 PM
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ */
+
+/*
+ * Implementation of hook_form_FORM_ID_alter().
+ */
+function gdigital_asset_form_digital_asset_node_form_alter(&$form, &$form_state, $form_id) {
+  module_load_include('module', 'gnode');
+  $node = $form_state['node'];
+
+  $groups = gnode_node_groups($node);
+  $gids = array_keys($groups);
+
+  $can_bypass_access = user_access('bypass group access');
+
+  // If the user can't bypass group access, have a nid, and no gids, we
+  // are on either on an ungrouped node edit form. In such a case we do not show
+  // anything.
+  if (!$can_bypass_access && empty($node->group) && !empty($node->nid)) {
+    return;
+  }
+
+  // Otherwise add a vertical tab for group selection.
+  $form['group_settings'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Group settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#group' => 'additional_settings',
+    '#attributes' => [
+      'class' => ['node-form-group-information'],
+    ],
+    '#attached' => [
+      'js' => [drupal_get_path('module', 'gnode') . '/misc/gnode.js'],
+    ],
+    '#tree' => TRUE,
+    '#weight' => -50,
+  ];
+
+  $form['group_settings']['existing_gids'] = [
+    '#type' => 'value',
+    '#value' => $gids,
+    '#parent' => ['group_settings'],
+  ];
+
+  // Find out which form API element we should be using.
+  $element_type = $can_bypass_access
+    ? variable_get('gnode_group_choice_admin_element', 'auto_complete')
+    : variable_get('gnode_group_choice_standard_element', 'select');
+
+  // Use a helper function to generate the form element.
+  $element_function = "_gnode_generate_node_form_group_{$element_type}_element";
+  $element = function_exists($element_function) ? $element_function($node) : [];
+
+  if (empty($element) || !is_array($element)) {
+    // The user is not able to change the group for this node so don't show
+    // the form controls.
+    $form['group_settings']['#access'] = FALSE;
+    return;
+  }
+
+  // Add the group select form element to the form.
+  $form['group_settings'] += $element;
+
+  // Tack on the appropriate submit function.
+  array_unshift($form['#submit'], 'gdigital_asset_node_form_submit');
+}
+
+/**
+ * Implements hook_node_validate().
+ *
+ * Validates and processes the 'parent group' field.
+ *
+ * @see gnode_form_node_form_alter()
+ * @param $node
+ * @param $form
+ * @param $form_state
+ */
+function gdigital_asset_node_form_validate($node, $form, &$form_state) {
+  // If the user was presented with an autocomplete, we need to map the selected
+  // group name to a group id in the form state so the submit handler can rely
+  // on it being set.
+  module_load_include('module', 'gnode');
+  module_load_include('inc', 'group', 'group');
+  if (!empty($form_state['values']['group_settings']['group'])) {
+
+    if (!empty($values['group_auto_complete'])) {
+      // Retrieve the group id from the name suffix.
+      if ($specified_gids = group_autocomplete_result_gid($form_state['values']['group_settings']['group_auto_complete'])) {
+        $form_state['values']['group_settings']['gid'] = $specified_gids;
+      }
+      // Throw an error if the gid could not be retrieved.
+      else {
+        form_set_error('group_settings][group_auto_complete', t('Group name not found'));
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_node_submit().
+ *
+ * 1. Bypass group access users can set any groups for this node.
+ * 2. If it is a new node, the user can add the node to any group they have
+ *    create access to.
+ * 3. If it is an existing node, the user can change the groups a node is in
+ *    only for groups they are an administrator of.
+ * 4. If the user cannot globally create nodes of this type then they must
+ *    select at least one node.
+ *
+ * @see gnode_form_node_form_alter()
+ * @param $form
+ * @param $form_state
+ */
+function gdigital_asset_node_form_submit($form, &$form_state) {
+// function gdigital_asset_node_submit($node, $form, &$form_state) {
+  $node = $form_state['node'];
+
+  module_load_include('module', 'gnode');
+  if ((!empty($form_state['values']['group_settings'])) && ($node->type == 'digital_asset')) {
+    $has_bypass = user_access('bypass group access');
+    $specified_gids = empty($form_state['values']['group_settings']['gid']) ? [] : $form_state['values']['group_settings']['gid'];
+
+    $specified_gids = is_array($specified_gids) ? $specified_gids : [$specified_gids];
+    $specified_gids = array_filter($specified_gids, '_gnode_specified_groups_result_clean');
+
+    if (!$has_bypass && !empty($node->nid)) {
+      // If the user is missing has_bypass then they cannot change the group
+      // is in for groups they are not the administrator of.
+      // The previous groups for this node are stored on the form.
+      $existing_gids = $form_state['values']['group_settings']['existing_gids'];
+
+      foreach ($existing_gids as $existing_gid) {
+        if (!isset($specified_gids[$existing_gid])) {
+          // This node is in a group the user is not an administrator of.
+          $specified_gids[] = $existing_gid;
+        }
+      }
+    }
+
+    $form_state['values']['group'] = _gnode_is_multiple() ? $specified_gids : reset($specified_gids);
+  }
+  elseif (isset($node->group)) {
+    unset($node->group);
+  }
+}

@@ -76,7 +76,7 @@ function digital_asset_add($parent = NULL) {
   if ($parent) {
     $node_extra = [
       'field_dam_parent' => [LANGUAGE_NONE => [['nid' => $parent->nid]]],
-      'field_dam_asset_type' => $parent->field_dam_asset_type,
+      'field_asset_type' => $parent->field_asset_type,
       'field_dam_entitlement_level' => $parent->field_dam_entitlement_level,
       // DEPRECATED.
       // 'field_dam_asset_groups' => $parent->field_dam_access_groups,
@@ -174,8 +174,8 @@ function digital_asset_page_view_form($form, &$form_state, $node) {
     '#markup' => fnet_common_get_field_value('digital_asset', $node, 'body', 'value'),
   ];
   $tags = '';
-  if (isset($node->taxonomy_vocabulary_17) && is_array($node->taxonomy_vocabulary_17)) {
-    foreach ($node->taxonomy_vocabulary_17 as $key => $term) {
+  if (isset($node->field_asset_tags) && is_array($node->field_asset_tags)) {
+    foreach ($node->field_asset_tags as $key => $term) {
       $tags .= ', ' . $term->name;
     }
     $tags = trim($tags, " \t\n\r\0\x0B,");
@@ -234,6 +234,7 @@ function digital_asset_page_view_form($form, &$form_state, $node) {
 
   $edoc_url = fnet_common_get_field_value('digital_asset', $node, 'field_dam_edoc_url', 'url');
   if (!empty($edoc_url)) {
+    // Make sure the domain isn't interfering.
     $link = str_replace('http://www.flukenetworks.com/', '', $edoc_url);
     $link = l($edoc_url, $link, ['attributes' => ['target' => '_blank']]);
     $form['edoc_url'] = [
@@ -250,7 +251,7 @@ function digital_asset_page_view_form($form, &$form_state, $node) {
     if (function_exists('findit_level3_auth_cookie')) {
       findit_level3_auth_cookie($url);
     }
-    $filename = fnet_common_get_field_value('digital_asset', $node, 'field_dam_storage_filename', 'value');
+    $filename = fnet_common_get_field_value('digital_asset', $node, 'field_dam_storage_file_name', 'value');
     $link = l($filename, $url, ['attributes' => ['target' => '_blank']]);
     $form['storage_filename'] = [
       '#type' => 'item',
@@ -281,16 +282,20 @@ function digital_asset_page_view_form($form, &$form_state, $node) {
       '#markup' => format_size(fnet_common_get_field_value('digital_asset', $node, 'field_dam_file_size', 'value')),
     ];
   }
+
+  $asset_type_field = field_info_field('field_asset_type');
+  $asset_type_labels = list_allowed_values($asset_type_field);
+  $asset_type_value = fnet_common_get_field_value('digital_asset', $node, 'field_asset_type', 'value');
   $form['asset_type'] = [
     '#type' => 'item',
     '#title' => t('Asset Type'),
-    '#markup' => ucwords(fnet_common_get_field_value('digital_asset', $node, 'field_dam_asset_type', 'value')),
+    '#markup' => $asset_type_labels[$asset_type_value],
   ];
   if (($node->field_dam_export_controlled[LANGUAGE_NONE][0]['value'] == 1) || (strtolower($node->field_dam_export_controlled[LANGUAGE_NONE][0]['value']) == 'yes')) {
-    $export_controlled = 'Yes';
+    $export_controlled = t('Yes');
   }
   else {
-    $export_controlled = 'No';
+    $export_controlled = t('No');
   }
   $form['export_controlled'] = [
     '#type' => 'item',
@@ -325,16 +330,6 @@ function digital_asset_page_view_form($form, &$form_state, $node) {
     '#type' => 'item',
     '#title' => t('Industry'),
     '#markup' => fnet_common_get_field_value('digital_asset', $node, 'field_dam_industry', 'value'),
-  ];
-  $form['new_industry'] = [
-    '#type' => 'item',
-    '#title' => t('New Industry'),
-    '#markup' => fnet_common_get_field_value('digital_asset', $node, 'field_dam_new_industry', 'value'),
-  ];
-  $options = [
-    'dci' => 'DCI',
-    'ent' => 'Enterprise',
-    'all' => 'All',
   ];
 
   $form['bulk_fulfillment'] = [
@@ -616,12 +611,14 @@ function digital_asset_asset_query($parameters) {
     ->orderByHeader($header)
     ->execute();
   $data = [];
+  $asset_types = field_info_field('field_asset_type');
+  $allowed_values = list_allowed_values($asset_types);
   foreach ($result as $row) {
     $data[] = [
       l($row->field_dam_document_id_value, 'digital_asset/' . $row->nid),
       fnet_helper_iso_language_to_english($row->field_dam_language_value),
       $row->title,
-      ucwords($row->field_asset_type_value),
+      $allowed_values[$row->field_asset_type_value],
       ucwords($row->field_dam_document_status_value),
       $owners[$row->uid],
       date('m/d/Y', $row->created),

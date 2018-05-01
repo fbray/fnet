@@ -1,0 +1,10 @@
+core = 7.x
+description = "Enables Groups functionality for Digital Asset nodes"
+name = "Digital Asset Groups"
+package = "Fluke Networks"
+;project = "digital_asset"
+version = "7.x-1.0"
+
+dependencies[] = fnet_common
+dependencies[] = group
+dependencies[] = gnode
