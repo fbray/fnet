@@ -104,10 +104,10 @@
  * later using the render() function. Install the Devel module and use
  * <?php dsm($content); ?> to find variable names to hide() or render().
  */
-$page=FALSE;
+// $page=FALSE;
 hide($content['comments']);
 hide($content['links']);
-hide($content['title']);
+hide($content['field_display_title']);
 ?>
 <article id="node-<?php print $node->nid; ?>" class="<?php print $classes; ?> clearfix"<?php print $attributes; ?>>
   <div<?php print $content_attributes; ?>>
