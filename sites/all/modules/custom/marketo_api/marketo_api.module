@@ -44,7 +44,7 @@ function marketo_api_admin_form() {
     '#title' => t('Marketo API configuration'),
     '#description' => t('These values can be retrieved from the !my_marketo page
       under Admin -> SOAP API. An older copy of the information also ships
-      with this module.', array('!my_marketo' => l('My Marketo', 'https://app-o.marketo.com'))),
+      with this module.', array('!my_marketo' => l(t('My Marketo'), 'https://app-o.marketo.com'))),
     '#collapsible' => TRUE,
   );
   $form['marketo_api_api']['marketo_api_api_endpoint'] = array(
@@ -64,6 +64,12 @@ function marketo_api_admin_form() {
     '#title' => t('Encryption key'),
     '#description' => t('Marketo key'),
     '#default_value' => variable_get('marketo_api_api_key', FALSE),
+  );
+  $form['marketo_api_api']['marketo_api_munchkin_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Marketo Instance key'),
+    '#description' => t('The key for which Marketo instance to use for Munchkin. Ex: 709-HGB-925'),
+    '#default_value' => variable_get('marketo_api_munchkin_key', '709-HGB-925'),
   );
 
   $form['marketo_api_alert'] = array(
@@ -176,14 +182,14 @@ function _marketo_api_save_temporarily($marketo_data) {
       'product' => $marketo_data['Comments__c'],
     ))
     ->execute();
-  return $result;  
+  return $result;
 }
 
 /**
  * @return mixed
  */
 function _marketo_api_get_stored() {
-  $sql = "SELECT 
+  $sql = "SELECT
     mid,
     created,
     firstname AS FirstName,
@@ -196,7 +202,7 @@ function _marketo_api_get_stored() {
     postal_code AS PostalCode,
     country AS Country,
     telephone AS Phone,
-    email AS Email, 
+    email AS Email,
     product AS Comments__c
     FROM marketo";
   $results = db_query($sql)->fetch();
