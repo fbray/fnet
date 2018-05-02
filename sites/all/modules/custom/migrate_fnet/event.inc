@@ -81,6 +81,11 @@ class FNETEventMigration extends FNETNode7Migration {
       return FALSE;
     }
 
+    // Set the sort order field to accomodate the weight field.
+    if (!is_null($row->field_event_priority)) {
+      $row->field_event_priority = $row->field_event_priority[0];
+    }
+
     $row->body = $this->stripDomain($row->body);
     $row->body = str_ireplace('/flukenetworks.com/files', '/default/files', $row->body);
     $row->body = str_ireplace('/flukenetworks.com/theme', '/all/theme', $row->body);

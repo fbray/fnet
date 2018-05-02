@@ -54,11 +54,26 @@ class FNETMicrositeStoryMigration extends FNETNode7Migration {
 
   }
 
+  /**
+   * @return \QueryConditionInterface
+   */
+  protected function query() {
+    $query = parent::query();
+
+    // Join weight table
+    $query->join('weight_weights', 'w', 'w.entity_id = n.nid');
+    $query->fields('w', ['weight']);
+
+    return $query;
+  }
+
   public function prepareRow($row) {
     // Always include this snippet, in case our parent class decides to ignore the row
     if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
+    print_r($row->weight);
+    // $row->weight = $row->weight[0];
 
     // Check the various fields. Remove the hard URLs.
     $row->body = $this->stripDomain($row->body);

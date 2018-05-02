@@ -82,6 +82,20 @@ class FNETPromotionMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_promotion_type', 'taxonomy_vocabulary_5')
       ->sourceMigration('PromotionType');
 
+  }
 
+  /**
+   * @param $row
+   * @return bool
+   */
+  public function prepareRow($row) {
+    // Always include this snippet, in case our parent class decides to ignore the row
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+    // Set the sort order field to accomodate the weight field.
+    if (!is_null($row->field_promo_priority)) {
+      $row->field_promo_priority = $row->field_promo_priority[0];
+    }
   }
 }

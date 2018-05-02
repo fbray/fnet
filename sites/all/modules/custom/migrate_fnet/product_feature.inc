@@ -53,6 +53,7 @@ class FNETProductFeatureMigration extends DrupalNode7Migration {
       return FALSE;
     }
 
+    $row->field_feature_sortorder = $row->field_feature_sortorder[0];
     $row->body = $this->stripDomain($row->body);
     $row->body = str_ireplace('/flukenetworks.com/files', '/default/files', $row->body);
     $row->body = str_ireplace('/flukenetworks.com/theme', '/all/theme', $row->body);

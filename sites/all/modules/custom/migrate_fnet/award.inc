@@ -66,6 +66,8 @@ class FNETAwardMigration extends FNETNode7Migration {
       return FALSE;
     }
 
+    $row->field_award_sort = $row->field_award_sort[0];
+
     $row->body = $this->stripDomain($row->body);
     $row->body = str_ireplace('/flukenetworks.com/files', '/default/files', $row->body);
     $row->body = str_ireplace('/flukenetworks.com/theme', '/all/theme', $row->body);

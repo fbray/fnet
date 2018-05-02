@@ -213,6 +213,7 @@ class FNETProductCategoryMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_trial_type_2', 'field_industry_trial_type_2');
     $this->addFieldMapping('field_trial_type_3', 'field_industry_trial_type_3');
 
+    // TODO: This field is empty. I hereby deprecate this in the name of the king!
     $this->addFieldMapping('field_products_rhn_box', 'field_industry_product_box');
     $this->addFieldMapping('field_products_rhn_box:format', 'field_industry_product_box:format')
       ->defaultValue('full_html');

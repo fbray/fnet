@@ -462,6 +462,9 @@ class FNETProductDisplayMigration extends DrupalNode7Migration {
     $this->addFieldMapping('field_product_family', 'field_product_family')
       ->sourceMigration('ProductFamily');
 
+    $this->addFieldMapping('field_product_language_override', 'field_prod_language')
+      ->sourceMigration('ProductLanguage');
+
     // Related Products entity reference
     $this->addFieldMapping('field_related_products', 'field_prod_relatedprod')
       ->sourceMigration('ProductDisplay');

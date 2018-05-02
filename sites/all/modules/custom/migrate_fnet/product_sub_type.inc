@@ -29,9 +29,9 @@ class FNETProductSubTypeMigration extends DrupalNode7Migration {
       ->issueGroup(t('DNM'));
 
     // Individual Fields
-    $this->addFieldMapping('field_expertise_intro', 'field_expertise_intro');
-    $this->addFieldMapping('field_expertise_relatedcontent', 'field_expertise_related_content');
-    $this->addFieldMapping('weight', 'field_expertise_sortorder');
+    $this->addFieldMapping('weight', 'field_productsub_sortorder');
+    $this->addFieldMapping('body:language', 'body:language')
+      ->defaultValue(LANGUAGE_NONE);
 
     // Image Fields
     $this->addFieldMapping('field_image', 'field_productsub_image')
@@ -70,6 +70,13 @@ class FNETProductSubTypeMigration extends DrupalNode7Migration {
     if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
+    // Remove the extra zero off of the sort order field to accomodate the weight field.
+    if (!is_null($row->field_productsub_sortorder)) {
+      $row->field_productsub_sortorder = ($row->field_productsub_sortorder[0] / 10);
+    }
+    // Strip out <strong></strong> tags from the title.
+    $html = ['<strong>', '</strong>'];
+    $row->title = str_ireplace($html, '', $row->title);
 
     $row->body = $this->stripDomain($row->body);
     $row->body = str_ireplace('/flukenetworks.com/files', '/default/files', $row->body);

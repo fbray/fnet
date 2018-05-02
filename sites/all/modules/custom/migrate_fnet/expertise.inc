@@ -76,7 +76,7 @@ class FNETExpertiseMigration extends FNETNode7Migration {
     }
     // Remove the extra zero off of the sort order field to accomodate the weight field.
     if (!is_null($row->field_expertise_sortorder)) {
-      $row->field_expertise_sortorder[0] = ($row->field_expertise_sortorder[0] / 10);
+      $row->field_expertise_sortorder = ($row->field_expertise_sortorder[0] / 10);
     }
 
     // Check the various fields. Remove the hard URLs.
