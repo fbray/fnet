@@ -1,11 +1,11 @@
 <?php
-// $Id$
 
 /**
  * @file
+ * marketo_api.module
+ *
  * Simple Marketo API. Only useful functions at this point are user_get() and
  * user_sync(). May add more functionality as needed.
- *
  */
 
 /*
@@ -14,7 +14,7 @@
  */
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function marketo_api_menu() {
 
@@ -32,8 +32,6 @@ function marketo_api_menu() {
 
 /**
  * Module configuration admin form.
- *
- * @return mixed
  */
 function marketo_api_admin_form() {
   // TODO: Add some sort of status to this.
@@ -44,7 +42,7 @@ function marketo_api_admin_form() {
     '#title' => t('Marketo API configuration'),
     '#description' => t('These values can be retrieved from the !my_marketo page
       under Admin -> SOAP API. An older copy of the information also ships
-      with this module.', array('!my_marketo' => l('My Marketo', 'https://app-o.marketo.com'))),
+      with this module.', array('!my_marketo' => l(t('My Marketo'), 'https://app-o.marketo.com'))),
     '#collapsible' => TRUE,
   );
   $form['marketo_api_api']['marketo_api_api_endpoint'] = array(
@@ -64,6 +62,12 @@ function marketo_api_admin_form() {
     '#title' => t('Encryption key'),
     '#description' => t('Marketo key'),
     '#default_value' => variable_get('marketo_api_api_key', FALSE),
+  );
+  $form['marketo_api_api']['marketo_api_munchkin_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Marketo Instance key'),
+    '#description' => t('The key for which Marketo instance to use for Munchkin. Ex: 709-HGB-925'),
+    '#default_value' => variable_get('marketo_api_munchkin_key', '709-HGB-925'),
   );
 
   $form['marketo_api_alert'] = array(
@@ -98,15 +102,14 @@ function marketo_api_admin_form() {
 }
 
 /**
- * Map incoming data to corresponding Marketo values and update the Marketo DB
+ * Map incoming data to corresponding Marketo values and update the Marketo DB.
  *
- * @param $email - user email to be used as the record primary key
- *
- * @param $marketo_data - array of data whose keys map directly to Marketo field
- *  names.
- *
+ * @param string $email
+ *   User email to be used as the record primary key.
+ * @param array $marketo_data
+ *   Array of data whose keys map directly to Marketo field names.
  */
-function marketo_api_user_sync($email, $marketo_data) {
+function marketo_api_user_sync($email, array $marketo_data) {
 
   if (empty($email)) {
     watchdog('marketo_api', 'Request to sync user with no email address. Data:
@@ -123,10 +126,8 @@ function marketo_api_user_sync($email, $marketo_data) {
   // the new value (I'm assumming that's how it works anyway)
   $marketo_data['Email'] = isset($data['email']) ? $marketo_data['email'] : $email;
 
-  // Tag our API submissions
+  // Tag our API submissions.
   $marketo_data['SubmittedbyAPI'] = 'checked';
-
-  // return TRUE;
 
   /* REMOVING THIS TO PREVENT SENDING TO MARKETO. */
   $marketo_client = marketo_api_client();
@@ -137,7 +138,8 @@ function marketo_api_user_sync($email, $marketo_data) {
   }
   else {
     $record = _marketo_api_save_temporarily($marketo_data);
-    // TODO: Change alert email to remove personal information. Provide an administrative link instead.
+    // TODO: Change alert email to remove personal information.
+    // Provide an administrative link instead.
     _marketo_api_alert($marketo_data);
     if ($record) {
       // Not yet implemented.
@@ -152,12 +154,17 @@ function marketo_api_user_sync($email, $marketo_data) {
 }
 
 /**
- * @param $email
- * @param $marketo_data
+ * Temporarily save data in database before sending to Marketo.
+ *
+ * @param array $marketo_data
+ *   The data from the form.
+ *
  * @return \DatabaseStatementInterface|int
+ *   Value of database return.
+ *
  * @throws \Exception
  */
-function _marketo_api_save_temporarily($marketo_data) {
+function _marketo_api_save_temporarily(array $marketo_data) {
   // Don't worry about possible duplicates. Marketo will deal with them.
   $result = db_insert('marketo')
     ->fields(array(
@@ -176,14 +183,17 @@ function _marketo_api_save_temporarily($marketo_data) {
       'product' => $marketo_data['Comments__c'],
     ))
     ->execute();
-  return $result;  
+  return $result;
 }
 
 /**
+ * Grab database stored Marketo data.
+ *
  * @return mixed
+ *   The results from the Marketo database table.
  */
 function _marketo_api_get_stored() {
-  $sql = "SELECT 
+  $sql = "SELECT
     mid,
     created,
     firstname AS FirstName,
@@ -196,7 +206,7 @@ function _marketo_api_get_stored() {
     postal_code AS PostalCode,
     country AS Country,
     telephone AS Phone,
-    email AS Email, 
+    email AS Email,
     product AS Comments__c
     FROM marketo";
   $results = db_query($sql)->fetch();
@@ -207,14 +217,18 @@ function _marketo_api_get_stored() {
 /**
  * Task for re-contacting Marketo.
  *
- * @param $item
+ * @param array $item
+ *   Marketo Data.
+ *
  * @return bool
+ *   Status of send.
  */
-function _marketo_api_retry_send($item) {
+function _marketo_api_retry_send(array $item) {
   // TODO: send each item to Marketo
   // If it fails, keep it in the database.
   $marketo_client = marketo_api_client();
-  $result = $marketo_client->syncLead($item->email, $item); // $item being the array of data from the database.
+  // $item being the array of data from the database.
+  $result = $marketo_client->syncLead($item->email, $item);
   if (isset($result->result->syncStatus->status)) {
     return TRUE;
   }
@@ -226,10 +240,11 @@ function _marketo_api_retry_send($item) {
 }
 
 /**
- * Retrieve a complete record for a Marketo user
+ * Retrieve a complete record for a Marketo user.
  *
- * @param (string) $key - the key that will be used to do the lookup. It can be one of
- * the following:
+ * @param string $key
+ *   The key that will be used to do the lookup. It can be one of
+ *   the following:
  *
  *   IDNUM - Marketo user ID
  *   COOKIE - Marketo cookie value
@@ -239,25 +254,26 @@ function _marketo_api_retry_send($item) {
  *   SFDCCONTACTID - Unknown
  *   SFDCLEADID - Unknown
  *   SFDCLEADOWNERID - Unknown
- *   SFDCOPPTYID - Unknown
+ *   SFDCOPPTYID - Unknown.
+ * @param string $value
+ *   The unique value for a given user that corresponds to the
+ *   specified $key.
  *
- * @param (string) $value - the unique value for a given user that corresponds to the
- * specified $key
+ * @return object
+ *   Complete user record in the following format:
  *
- * @return - (object) complete user record in the following format:
- *
- * - Id - User record ID
- * - Email - User email
- * - ForeignSysPersonId - Unknown
- * - ForeignSysType - Unknown
- * - leadAttributeList - Array of user attributes: KEY_NAME(TYPE, VALUE)
+ *   Id - User record ID
+ *   Email - User email
+ *   ForeignSysPersonId - Unknown
+ *   ForeignSysType - Unknown
+ *   leadAttributeList - Array of user attributes: KEY_NAME(TYPE, VALUE)
  */
 function marketo_api_user_get($key, $value) {
   $marketo_client = marketo_api_client();
   $record = $marketo_client->getLead(strtoupper($key), $value);
 
   $cleaned_record = array();
-  // make the key the attribute name instead of numeric
+  // Make the key the attribute name instead of numeric.
   if (count($record->leadAttributeList) > 0) {
     foreach ($record->leadAttributeList->attribute as $val) {
       $attrName = $val->attrName;
@@ -272,18 +288,18 @@ function marketo_api_user_get($key, $value) {
 }
 
 /**
- * Wrapper for Marketo SOAP API
+ * Wrapper for Marketo SOAP API.
  *
  * Call the API directly and access additional methods.
  *
- * @return object Configured Marketo client object
- *
+ * @return object
+ *   Configured Marketo client object.
  */
 function marketo_api_client() {
 
-  include_once('./' . drupal_get_path('module', 'marketo_api') . '/Marketo_SOAP_PHP_API.php');
+  include_once './' . drupal_get_path('module', 'marketo_api') . '/Marketo_SOAP_PHP_API.php';
 
-  // Setup the client
+  // Setup the client.
   $accessKey = variable_get('marketo_api_api_user_id', FALSE);
   $secretKey = variable_get('marketo_api_api_key', FALSE);
   $soapEndPoint = variable_get('marketo_api_api_endpoint', FALSE);
@@ -330,7 +346,7 @@ function _marketo_api_alert($marketo_data) {
     $command .= '$marketo_data[\'' . $key . '\'] = \'' . $value . "';\n";
   }
 
-  //need to fix this for general cases
+  // Need to fix this for general cases.
   $command .= '$email = \'' . $marketo_data['Email'] . "';\n";
   $command .= 'marketo_api_user_sync($email, $marketo_data);';
 
@@ -345,12 +361,10 @@ function _marketo_api_alert($marketo_data) {
     'headers' => array(),
   );
   fnet_helper_mail_send($message);
-
-  return;
 }
 
 /**
- * Manual sync to Marketo to make sure it's them and not me
+ * Manual sync to Marketo to make sure it's them and not me.
  *
  * Test a broken request: _marketo_api_sync_test(array('BOGUSKEY' => 1));
  */
@@ -359,7 +373,7 @@ function _marketo_api_sync_test($marketo_data = array()) {
   $first_name = str_shuffle('aeotzu');
   $last_name = str_shuffle('harryslaughter');
 
-  // We don't want to set empty values and possibly overwrite existing values
+  // We don't want to set empty values and possibly overwrite existing values.
   $email = 'user' . $rand_int . '@example.com';
   $marketo_data['FirstName'] = ucfirst($first_name);
   $marketo_data['LastName'] = ucfirst($last_name);
@@ -378,6 +392,9 @@ function _marketo_api_sync_test($marketo_data = array()) {
   print "done";
 }
 
+/**
+ * Request a campaign from Marketo.
+ */
 function marketo_api_request_campaign($program_name, $campaign_name, $email, $tokens = array()) {
 
   if (empty($email)) {
@@ -405,7 +422,7 @@ function marketo_api_request_campaign($program_name, $campaign_name, $email, $to
     $marketo_data = array(
       'Program Name' => $program_name,
       'Campaign Name' => $campaign_name,
-      'Email' => $email
+      'Email' => $email,
     );
     $marketo_data = array_merge($marketo_data, $tokens);
     _marketo_api_alert($marketo_data);
@@ -413,6 +430,9 @@ function marketo_api_request_campaign($program_name, $campaign_name, $email, $to
   }
 }
 
+/**
+ * Get campaigns for source.
+ */
 function marketo_api_get_campaigns_for_source($name = NULL, $exact = FALSE) {
 
   $marketo_client = marketo_api_client();
