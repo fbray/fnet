@@ -120,8 +120,8 @@ function product_distributor_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => -9,
   ];
-  $items['admin/content/wtb-location-query'] = [
-    'title' => 'WTB location query',
+  $items['admin/fnet/wtb/wtb-location-query'] = [
+    'title' => 'Location query',
     'page callback' => 'product_distributor_location_query',
     'access arguments' => ['export distributors'],
     'type' => MENU_NORMAL_ITEM,
@@ -129,20 +129,20 @@ function product_distributor_menu() {
   ];
 
   // TODO: Is this needed?
-  $items['admin/content/countries-regions'] = [
+  $items['admin/fnet/wtb/countries-regions'] = [
     'title' => 'Countries & Regions',
     'description' => 'List of Countries and Regions.',
     'page callback' => 'wtb_countries_regions_listing',
     'file' => 'product_distributor.admin.inc',
     'access arguments' => ['view countries-regions list'],
   ];
-  $items['admin/content/countries-regions/configure'] = [
+  $items['admin/fnet/wtb/countries-regions/configure'] = [
     'title' => 'Countries & Regions',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -11,
   ];
 
-  $items['admin/content/product-distributor-sync/configure'] = [
+  $items['admin/fnet/wtb/product-distributor-sync/configure'] = [
     'title' => 'Update distributors',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'access arguments' => ['view countries-regions list'],

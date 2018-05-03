@@ -4,7 +4,6 @@
  * @file
  * where_to_buy.view.inc
  */
-
 $view = new view();
 $view->name = 'distributor';
 $view->description = 'Views around Distributors, their locations, and the Where to Buy section.';
@@ -222,7 +221,139 @@ $handler->display->display_options['filters']['field_address_country']['expose']
 
 /* Display: Distributor Locations */
 $handler = $view->new_display('page', 'Distributor Locations', 'page');
+$handler->display->display_options['defaults']['title'] = FALSE;
+$handler->display->display_options['title'] = 'Distributor Locations';
 $handler->display->display_options['display_description'] = 'Locations of Distributors for Where to Buy';
+$handler->display->display_options['defaults']['relationships'] = FALSE;
+/* Relationship: Entity Reference: Referenced Entity */
+$handler->display->display_options['relationships']['field_product_distributor_groups_target_id']['id'] = 'field_product_distributor_groups_target_id';
+$handler->display->display_options['relationships']['field_product_distributor_groups_target_id']['table'] = 'field_data_field_product_distributor_groups';
+$handler->display->display_options['relationships']['field_product_distributor_groups_target_id']['field'] = 'field_product_distributor_groups_target_id';
+$handler->display->display_options['defaults']['filter_groups'] = FALSE;
+$handler->display->display_options['defaults']['filters'] = FALSE;
+/* Filter criterion: Content: Published */
+$handler->display->display_options['filters']['status']['id'] = 'status';
+$handler->display->display_options['filters']['status']['table'] = 'node';
+$handler->display->display_options['filters']['status']['field'] = 'status';
+$handler->display->display_options['filters']['status']['value'] = 1;
+$handler->display->display_options['filters']['status']['group'] = 1;
+$handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+/* Filter criterion: Content: Type */
+$handler->display->display_options['filters']['type']['id'] = 'type';
+$handler->display->display_options['filters']['type']['table'] = 'node';
+$handler->display->display_options['filters']['type']['field'] = 'type';
+$handler->display->display_options['filters']['type']['value'] = array(
+  'distributor_location' => 'distributor_location',
+);
+$handler->display->display_options['filters']['type']['group'] = 1;
+/* Filter criterion: Content: Title */
+$handler->display->display_options['filters']['title_1']['id'] = 'title_1';
+$handler->display->display_options['filters']['title_1']['table'] = 'node';
+$handler->display->display_options['filters']['title_1']['field'] = 'title';
+$handler->display->display_options['filters']['title_1']['relationship'] = 'field_product_distributor_groups_target_id';
+$handler->display->display_options['filters']['title_1']['operator'] = 'contains';
+$handler->display->display_options['filters']['title_1']['group'] = 1;
+$handler->display->display_options['filters']['title_1']['exposed'] = TRUE;
+$handler->display->display_options['filters']['title_1']['expose']['operator_id'] = 'title_1_op';
+$handler->display->display_options['filters']['title_1']['expose']['label'] = 'Distributor Name';
+$handler->display->display_options['filters']['title_1']['expose']['operator'] = 'title_1_op';
+$handler->display->display_options['filters']['title_1']['expose']['identifier'] = 'title_1';
+$handler->display->display_options['filters']['title_1']['expose']['remember_roles'] = array(
+  2 => '2',
+  3 => 0,
+  7 => 0,
+  1 => 0,
+  8 => 0,
+  9 => 0,
+  10 => 0,
+  11 => 0,
+  12 => 0,
+  14 => 0,
+  15 => 0,
+  16 => 0,
+  17 => 0,
+  18 => 0,
+  19 => 0,
+  20 => 0,
+  21 => 0,
+  6 => 0,
+  22 => 0,
+  23 => 0,
+  4 => 0,
+  5 => 0,
+  13 => 0,
+);
+/* Filter criterion: Content: Title */
+$handler->display->display_options['filters']['title']['id'] = 'title';
+$handler->display->display_options['filters']['title']['table'] = 'node';
+$handler->display->display_options['filters']['title']['field'] = 'title';
+$handler->display->display_options['filters']['title']['operator'] = 'contains';
+$handler->display->display_options['filters']['title']['group'] = 1;
+$handler->display->display_options['filters']['title']['exposed'] = TRUE;
+$handler->display->display_options['filters']['title']['expose']['operator_id'] = 'title_op';
+$handler->display->display_options['filters']['title']['expose']['label'] = 'Location Name';
+$handler->display->display_options['filters']['title']['expose']['operator'] = 'title_op';
+$handler->display->display_options['filters']['title']['expose']['identifier'] = 'title';
+$handler->display->display_options['filters']['title']['expose']['remember_roles'] = array(
+  2 => '2',
+  3 => 0,
+  7 => 0,
+  1 => 0,
+  8 => 0,
+  9 => 0,
+  10 => 0,
+  11 => 0,
+  12 => 0,
+  14 => 0,
+  15 => 0,
+  16 => 0,
+  17 => 0,
+  18 => 0,
+  19 => 0,
+  20 => 0,
+  21 => 0,
+  6 => 0,
+  22 => 0,
+  23 => 0,
+  4 => 0,
+  5 => 0,
+  13 => 0,
+);
+/* Filter criterion: Field: Address - Country */
+$handler->display->display_options['filters']['field_address_country']['id'] = 'field_address_country';
+$handler->display->display_options['filters']['field_address_country']['table'] = 'field_data_field_address';
+$handler->display->display_options['filters']['field_address_country']['field'] = 'field_address_country';
+$handler->display->display_options['filters']['field_address_country']['group'] = 1;
+$handler->display->display_options['filters']['field_address_country']['exposed'] = TRUE;
+$handler->display->display_options['filters']['field_address_country']['expose']['operator_id'] = 'field_address_country_op';
+$handler->display->display_options['filters']['field_address_country']['expose']['label'] = 'Country';
+$handler->display->display_options['filters']['field_address_country']['expose']['operator'] = 'field_address_country_op';
+$handler->display->display_options['filters']['field_address_country']['expose']['identifier'] = 'field_address_country';
+$handler->display->display_options['filters']['field_address_country']['expose']['remember_roles'] = array(
+  2 => '2',
+  3 => 0,
+  7 => 0,
+  1 => 0,
+  8 => 0,
+  9 => 0,
+  10 => 0,
+  11 => 0,
+  12 => 0,
+  14 => 0,
+  15 => 0,
+  16 => 0,
+  17 => 0,
+  18 => 0,
+  19 => 0,
+  20 => 0,
+  21 => 0,
+  6 => 0,
+  22 => 0,
+  23 => 0,
+  4 => 0,
+  5 => 0,
+  13 => 0,
+);
 $handler->display->display_options['path'] = 'admin/content/wtb-distributor-locations';
 
 /* Display: Do Not Distribute */
