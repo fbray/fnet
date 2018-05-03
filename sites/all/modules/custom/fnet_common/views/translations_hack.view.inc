@@ -344,16 +344,42 @@ $handler->display->display_options['defaults']['style_options'] = FALSE;
 $handler->display->display_options['defaults']['row_plugin'] = FALSE;
 $handler->display->display_options['row_plugin'] = 'entityreference_fields';
 $handler->display->display_options['defaults']['row_options'] = FALSE;
+$handler->display->display_options['defaults']['fields'] = FALSE;
+/* Field: Content: Language/Region */
+$handler->display->display_options['fields']['field_language_region']['id'] = 'field_language_region';
+$handler->display->display_options['fields']['field_language_region']['table'] = 'field_data_field_language_region';
+$handler->display->display_options['fields']['field_language_region']['field'] = 'field_language_region';
+$handler->display->display_options['fields']['field_language_region']['label'] = '';
+$handler->display->display_options['fields']['field_language_region']['element_label_colon'] = FALSE;
+/* Field: Content: Nid */
+$handler->display->display_options['fields']['nid']['id'] = 'nid';
+$handler->display->display_options['fields']['nid']['table'] = 'node';
+$handler->display->display_options['fields']['nid']['field'] = 'nid';
+$handler->display->display_options['fields']['nid']['label'] = '';
+$handler->display->display_options['fields']['nid']['alter']['alter_text'] = TRUE;
+$handler->display->display_options['fields']['nid']['alter']['text'] = '(Right Click to Edit in New Window)';
+$handler->display->display_options['fields']['nid']['alter']['make_link'] = TRUE;
+$handler->display->display_options['fields']['nid']['alter']['path'] = 'node/[nid]/edit';
+$handler->display->display_options['fields']['nid']['element_label_colon'] = FALSE;
+/* Field: Content: Title */
+$handler->display->display_options['fields']['title']['id'] = 'title';
+$handler->display->display_options['fields']['title']['table'] = 'node';
+$handler->display->display_options['fields']['title']['field'] = 'title';
+$handler->display->display_options['fields']['title']['label'] = '';
+$handler->display->display_options['fields']['title']['exclude'] = TRUE;
+$handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
+$handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
+$handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
 $handler->display->display_options['defaults']['arguments'] = FALSE;
-/* Contextual filter: Content: Products (field_related_products) */
-$handler->display->display_options['arguments']['field_related_products_target_id']['id'] = 'field_related_products_target_id';
-$handler->display->display_options['arguments']['field_related_products_target_id']['table'] = 'field_data_field_related_products';
-$handler->display->display_options['arguments']['field_related_products_target_id']['field'] = 'field_related_products_target_id';
-$handler->display->display_options['arguments']['field_related_products_target_id']['default_action'] = 'default';
-$handler->display->display_options['arguments']['field_related_products_target_id']['default_argument_type'] = 'node';
-$handler->display->display_options['arguments']['field_related_products_target_id']['summary']['number_of_records'] = '0';
-$handler->display->display_options['arguments']['field_related_products_target_id']['summary']['format'] = 'default_summary';
-$handler->display->display_options['arguments']['field_related_products_target_id']['summary_options']['items_per_page'] = '25';
+/* Contextual filter: Content: Product (field_source_product) */
+$handler->display->display_options['arguments']['field_source_product_target_id']['id'] = 'field_source_product_target_id';
+$handler->display->display_options['arguments']['field_source_product_target_id']['table'] = 'field_data_field_source_product';
+$handler->display->display_options['arguments']['field_source_product_target_id']['field'] = 'field_source_product_target_id';
+$handler->display->display_options['arguments']['field_source_product_target_id']['default_action'] = 'default';
+$handler->display->display_options['arguments']['field_source_product_target_id']['default_argument_type'] = 'node';
+$handler->display->display_options['arguments']['field_source_product_target_id']['summary']['number_of_records'] = '0';
+$handler->display->display_options['arguments']['field_source_product_target_id']['summary']['format'] = 'default_summary';
+$handler->display->display_options['arguments']['field_source_product_target_id']['summary_options']['items_per_page'] = '25';
 $handler->display->display_options['defaults']['filter_groups'] = FALSE;
 $handler->display->display_options['defaults']['filters'] = FALSE;
 /* Filter criterion: Content: Published */
