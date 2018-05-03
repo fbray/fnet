@@ -160,9 +160,13 @@ function globallink_field() {
         'field' => 'field_type',
         'data' => t('Field Type'),
       ),
+      'bundle' => array(
+        'field' => 'bundle',
+        'data' => t('Bundle'),
+      )
     );
 
-    $ignore_field_types = array('list_boolean', 'file', 'taxonomy_term_reference', 'entityreference');
+    $ignore_field_types = array('list_boolean', 'file', 'taxonomy_term_reference', 'entityreference','list_integer');
     $query = db_select('globallink_field_config', 'tf')
     ->fields('tf')
     ->condition('content_type', $selected_value, '=')
@@ -352,6 +356,7 @@ function globallink_update_gl_field_config($type, $fids) {
   db_update('globallink_field_config')
   ->fields(array('translatable' => 0))
   ->condition('content_type', $type, '=')
+  ->condition('field_type', 'field_collection', '!=')
   ->execute();
 
   foreach ($fids as $fid) {
@@ -405,6 +410,7 @@ function globallink_insert_gl_field_config($field_name, $content_type, $entity_t
           case 'file':
           case 'taxonomy_term_reference':
 	  case 'entityreference':
+          case 'list_integer':
           case 'field_collection':
             break;
           default:
@@ -450,6 +456,7 @@ function globallink_insert_gl_field_config($field_name, $content_type, $entity_t
         case 'list_boolean':
         case 'file':
 	case 'entityreference':
+        case 'list_integer':
         case 'taxonomy_term_reference':
           break;
         case 'field_collection':
@@ -503,7 +510,10 @@ function globallink_insert_fc_fields($node_type) {
   foreach ($keys as $field_name) {
     $field_info = field_info_field($field_name);
 
-    if ($field_info['type'] != 'field_collection') {
+    if ($field_info['type'] != 'field_collection' || $field_info['translatable'] == 0) {
+      continue;
+    }
+    if (globallink_is_field_configured_for_translation($entity_type, $node_type, $field_name, $node_type)) {
       continue;
     }
 
@@ -515,7 +525,7 @@ function globallink_insert_fc_fields($node_type) {
       'field_name' => $field_name,
       'field_type' => $field_info['type'],
       'field_label' => $field_arr[$field_name]['label'],
-      'translatable' => 0,
+      'translatable' => 1,
     ))->execute();
 
     $fc_field_infos = field_info_instances('field_collection_item');
@@ -524,9 +534,9 @@ function globallink_insert_fc_fields($node_type) {
       $fc_items = array_keys($fc_field_infos[$field_name]);
 
       foreach ($fc_items as $fc_item) {
-          if (globallink_is_field_configured_for_translation('field_collection_item', $field_name, $fc_item, $node_type)) {
-              continue;
-          }
+        if (globallink_is_field_configured_for_translation('field_collection_item', $field_name, $fc_item, $node_type)) {
+          continue;
+        }
         globallink_insert_fc_item_fields($node_type, $field_name, $fc_item);
       }
     }
@@ -550,6 +560,7 @@ function globallink_insert_fc_item_fields($content_type, $parent_field_name, $fi
   switch ($fc_field_info['type']) {
     case 'list_boolean':
     case 'file':
+    case 'list_integer':
     case 'taxonomy_term_reference':
       break;
     case 'field_collection':
@@ -561,7 +572,7 @@ function globallink_insert_fc_item_fields($content_type, $parent_field_name, $fi
         'field_name' => $field_name,
         'field_type' => $fc_field_info['type'],
         'field_label' => $fc_field_instance['label'],
-        'translatable' => 0,
+        'translatable' => 1,
       ))->execute();
 
       $fc_field_infos = field_info_instances('field_collection_item');
@@ -570,6 +581,9 @@ function globallink_insert_fc_item_fields($content_type, $parent_field_name, $fi
         $fc_items = array_keys($fc_field_infos[$field_name]);
 
         foreach ($fc_items as $fc_item) {
+          if (globallink_is_field_configured_for_translation('field_collection_item', $field_name, $fc_item, $content_type)) {
+            continue;
+          }
           globallink_insert_fc_item_fields($content_type, $field_name, $fc_item);
         }
       }

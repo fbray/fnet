@@ -8,9 +8,9 @@ dependencies[] = globallink
 package = GlobalLink
 php = 5.2.5
 
-; Information added by Drupal.org packaging script on 2017-09-19
-version = "7.x-6.6"
+; Information added by Drupal.org packaging script on 2018-03-27
+version = "7.x-6.7"
 core = "7.x"
 project = "globallink"
-datestamp = "1505813953"
+datestamp = "1522141689"
 

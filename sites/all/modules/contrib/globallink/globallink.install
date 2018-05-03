@@ -3190,3 +3190,10 @@ function globallink_update_7310() {
   db_create_table('globallink_log', $schema['globallink_log']);
 }
 
+function globallink_update_7670() {
+  $delete_field_types = ['paragraphs', 'entityreference', 'list_integer', 'list_text', 'taxonomy_term_reference', 'list_boolean', 'boolean', 'list_float'];
+  db_delete('globallink_field_config')
+    ->condition('field_type' , $delete_field_types , 'IN')
+    ->execute();
+}
+

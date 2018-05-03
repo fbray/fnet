@@ -803,8 +803,19 @@ function globallink_get_pending_fields($content_type, $entity_type = NULL) {
     }
     if ($field_name != 'metatag' && $field_name != 'title' && empty($sum_field)) {
       $field = field_info_field($field_name);
+      if ($field['type'] == 'field_collection') {
+        $query = db_select('field_config', 'tf')
+            ->fields('tf')
+            ->condition('field_name', $field_name, '=')
+            ->condition('translatable', '1', '=')
+            ->condition('type', 'field_collection', '=');
+        $results = $query->execute();
+        if ($results->rowCount() == 0) {
+          continue;
+        }
+      }
 
-      if ($field['type'] != 'list_boolean' && $field['type'] != 'file' && $field['type'] != 'taxonomy_term_reference' && $field['type'] != 'entityreference') {
+      if ($field['type'] != 'list_boolean' && $field['type'] != 'file' && $field['type'] != 'taxonomy_term_reference' && $field['type'] != 'entityreference' && $field['type'] != 'list_integer') {
         if (!isset($config_fields[$field_name])) {
           $field_arr[$field_name] = $field_info['label'];
         }

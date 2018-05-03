@@ -507,7 +507,7 @@ function globallink_entity_get_translated_enties($pd4, &$globallink_arr) {
 
         if (isset($globallink->targetXML)) {
           $count++;
-          globallink_entity_update($globallink);
+          globallink_entity_update_entity($globallink);
 
           if ($globallink->status != 'Error') {
             globallink_send_download_confirmation($globallink->targetTicket, $pd4);
@@ -616,7 +616,7 @@ function globallink_entity_update_status(&$globallink) {
  * @param array $t_arr
  *   The translated array.  Defaults to NULL.
  */
-function globallink_entity_update($globallink, $t_arr = NULL) {
+function globallink_entity_update_entity($globallink, $t_arr = NULL) {
   module_load_include('inc', 'globallink', 'globallink');
   $target_nid = '';
   $target_vid = '';
@@ -643,7 +643,6 @@ function globallink_entity_update($globallink, $t_arr = NULL) {
 
     $globallink->nid = $target_nid;
     $globallink->vid = $target_vid;
-
     $node = node_load($target_nid, $target_vid);
 
     if (isset($translated_arr['title'])) {
@@ -661,19 +660,17 @@ function globallink_entity_update($globallink, $t_arr = NULL) {
     }
 
     $nodepath = drupal_lookup_path('alias', 'node/' . $target_nid);
-
     if ($nodepath) {
+      if (module_exists('pathauto')) {
+        $path['pathauto'] = 0;
+        $node->path['pathauto'] = 0;
+      }
       if (!empty($translated_arr['path'])) {
         $path = array('alias' => $translated_arr['path'], 'source' => 'node/' . $target_nid, 'language' => $target_lang);
       }
       else {
         $path = array('alias' => $nodepath, 'source' => 'node/' . $target_nid, 'language' => $target_lang);
       }
-
-      if (module_exists('pathauto')) {
-        $path['pathauto'] = FALSE;
-      }
-
       path_save($path);
     }
 
@@ -696,6 +693,7 @@ function globallink_entity_update($globallink, $t_arr = NULL) {
           $n_metatag = &$node->metatags;
 
           foreach ($metatags_names as $name) {
+            $n_metatag[$target_lang][$name] = $node->metatags[$node->language][$name];
             if (isset($target_metatag_arr[$name]) && isset($target_metatag_arr[$name][0])) {
               $gl_obj = $target_metatag_arr[$name]['0'];
 
@@ -1089,7 +1087,16 @@ function globallink_entity_save_translated_entity_with_fields(&$node, $translati
     }
     
   }
-
+//Non translatable fields will be updated to source values.
+  $nonconfigs = field_info_instances('node', $node->type);
+  foreach ($nonconfigs as $key => $value) {
+    if (!(array_key_exists($value['field_name'], $config_fields))) {
+      $source_lang = $node->language;
+      if (isset($node->{$value['field_name']}[$source_lang])) {
+        $node->{$value['field_name']}[$target_lang] = $node->{$value['field_name']}[$source_lang];
+      }
+    }
+  }
   foreach ($translation_arr as $field => $values) {
     if (!is_array($values)) {
       continue;
@@ -1168,9 +1175,10 @@ function globallink_entity_save_translated_entity_with_fields(&$node, $translati
   if ($is_hook_enabled == 1) {
     globallink_update_node_hook($node, $node);
   }
-
+  
+$handler = entity_translation_get_handler('node', $node);
   // Set new translation data
-  $node->translations->data[$target_lang] = array(
+  $translation = array(
     'entity_type' => 'node',
     'entity_id' => $node->nid,
     'language' => $target_lang, // Target language
@@ -1181,19 +1189,15 @@ function globallink_entity_save_translated_entity_with_fields(&$node, $translati
     'created' => $node->created,
     'changed' => $node->changed, // Date of the first node save
   );
-
-  $node->revision = variable_get('globallink_entity_create_revisions', 0);
-
-  // Save new translation data
-  $success = globallink_entity_save($node);
-  if ($success) {
-    if (module_exists('field_collection') && isset($translation_arr['field_collection'])) {
-      $nid = $node->translations->data[$target_lang]['entity_id'];
-      $node_fc = node_load($nid);
-      globallink_entity_save_field_collections($node_fc, $translation_arr, $target_lang);
-    }
+  if (module_exists('field_collection') && isset($translation_arr['field_collection'])) {
+    globallink_entity_save_field_collections($node, $translation_arr, $target_lang);
   }
 
+  $node->revision = variable_get('globallink_entity_create_revisions', 0);
+  $handler->setTranslation($translation, $node);
+  $handler->saveTranslations();
+  // Save new translation data
+  $success = globallink_entity_save($node);
   return $success;
 }
 
@@ -1477,12 +1481,16 @@ function globallink_entity_generate_xml_document($node, $target_arr, $tnid = NUL
 
     if (module_exists('metatag')) {
       if (isset($node->metatags)) {
+        $ignore_metatags = ['geo.position', 'icbm', 'rating', 'referrer', 'revisit-after','content-language'];
         if ($for_display) {
           if (!empty($node->metatags[$node->language])) {
             $metatags = $node->metatags[$node->language];
 
             foreach ($metatags as $name => $value) {
-              if (isset($value['value'])) {
+              if (isset($value['value']) && !is_array($value['value'])) {
+                if (in_array($name, $ignore_metatags)) {
+                  continue;
+                }
                 globallink_insert_child_element($dom, $root, 'metatag', $value['value'], array('entity_type' => 'node', 'name' => $name, 'label' => 'Metatag - ' . ucwords($name)));
               }
             }
@@ -1493,7 +1501,10 @@ function globallink_entity_generate_xml_document($node, $target_arr, $tnid = NUL
             $metatags = $node->metatags[$node->language];
 
             foreach ($metatags as $name => $value) {
-              if (isset($value['value'])) {
+              if (isset($value['value']) && !is_array($value['value'])) {
+                if (in_array($name, $ignore_metatags)) {
+                  continue;
+                }
                 globallink_insert_child_element($dom, $root, 'metatag', $value['value'], array('entity_type' => 'node', 'name' => $name, 'label' => 'Metatag - ' . ucwords($name)));
               }
             }

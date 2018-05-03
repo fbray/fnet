@@ -1469,7 +1469,7 @@ function globallink_save_translated_node_with_fields($node, &$tnode, $t_arr) {
 
   if ($success) {
     if (module_exists('field_collection') && isset($t_arr['field_collection'])) {
-      globallink_save_field_collections($node, $tnode, $t_arr);
+      globallink_save_field_collections($node, $tnode, $t_arr,$t_target_lang);
     }
   }
 
@@ -1486,7 +1486,7 @@ function globallink_save_translated_node_with_fields($node, &$tnode, $t_arr) {
  * @param array $t_arr
  *   The translated array.
  */
-function globallink_save_field_collections($node, $tnode, $t_arr) {
+function globallink_save_field_collections($node, $tnode, $t_arr, $target_lang) {
   $field_arr = field_info_instances('node', $node->type);
 
   $keys = array_keys($field_arr);
@@ -1503,7 +1503,7 @@ function globallink_save_field_collections($node, $tnode, $t_arr) {
             if (isset($entity_id_arr['value'])) {
               $fc_entity_id = $entity_id_arr['value'];
 
-              globallink_save_field_collections_recursively('node', $tnode, $fc_entity_id, $t_arr['field_collection'][$field]);
+              globallink_save_field_collections_recursively('node', $tnode, $fc_entity_id, $t_arr['field_collection'][$field], $target_lang);
             }
           }
         }
@@ -1524,7 +1524,7 @@ function globallink_save_field_collections($node, $tnode, $t_arr) {
  * @param array $translated_fc_arr
  *   The array of translated field collections.
  */
-function globallink_save_field_collections_recursively($entity_type, $host_entity, $fc_entity_id, $translated_fc_arr) {
+function globallink_save_field_collections_recursively($entity_type, $host_entity, $fc_entity_id, $translated_fc_arr, $target_lang) {
   $field_collection_item_entity = entity_load_unchanged('field_collection_item', $fc_entity_id);
 
   if (!$field_collection_item_entity) {
@@ -1552,10 +1552,12 @@ function globallink_save_field_collections_recursively($entity_type, $host_entit
       case 'file':
       case 'taxonomy_term_reference':
         continue 2;
+          
       case 'field_collection':
         if (isset($field_collection_item_array[$key]) && isset($field_collection_item_array[$key][LANGUAGE_NONE])) {
           $field_data_arr = $field_collection_item_array[$key][LANGUAGE_NONE];
           $new_field_collection_arr[$key][LANGUAGE_NONE] = $field_data_arr;
+          $new_field_collection_arr[$key][$target_lang] = $field_data_arr;
         }
 
         break;
@@ -1584,15 +1586,23 @@ function globallink_save_field_collections_recursively($entity_type, $host_entit
                 'value' => $translated_content,
                 'format' => $format
               );
+              $new_field_collection_arr[$key][$target_lang][$delta] = array(
+                'value' => $translated_content,
+                'format' => $format
+              );
             }
             else {
               $new_field_collection_arr[$key][LANGUAGE_NONE][$delta] = array(
+                'value' => $translated_content
+              );
+              $new_field_collection_arr[$key][$target_lang][$delta] = array(
                 'value' => $translated_content
               );
             }
           }
           else {
             $new_field_collection_arr[$key][LANGUAGE_NONE][$delta] = $field_data;
+            $new_field_collection_arr[$key][$target_lang][$delta] = $field_data;
           }
         }
     }
@@ -1601,10 +1611,14 @@ function globallink_save_field_collections_recursively($entity_type, $host_entit
   if ($entity_type != 'node') {
     $host_entity->tpt_skip = TRUE;
   }
-
   $field_collection_item = entity_create('field_collection_item', $new_field_collection_arr); // Create new field collection item.
-  $field_collection_item->setHostEntity($entity_type, $host_entity); // Attach it to the node.
+  $field_collection_item->setHostEntity($entity_type, $host_entity, $target_lang); // Attach it to the node.
   $field_collection_item->save(TRUE); // Save field-collection item
+  $host_entity->{$new_field_collection_arr['field_name']}[$target_lang][0] = array(
+    'value' => $field_collection_item->item_id,
+    'revision_id' => $field_collection_item->revision_id,
+  );
+  //entity_save($entity_type, $host_entity);
 
   field_attach_presave($entity_type, $host_entity);
   field_attach_update($entity_type, $host_entity);
@@ -1623,7 +1637,7 @@ function globallink_save_field_collections_recursively($entity_type, $host_entit
             if (isset($entity_id_arr['value'])) {
               $fc_entity_id = $entity_id_arr['value'];
 
-              globallink_save_field_collections_recursively('field_collection_item', $field_collection_item, $fc_entity_id, $translated_fc_arr);
+              globallink_save_field_collections_recursively('field_collection_item', $field_collection_item, $fc_entity_id, $translated_fc_arr, $target_lang);
             }
           }
         }

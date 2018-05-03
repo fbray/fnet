@@ -590,312 +590,279 @@ function globallink_taxonomy_get_translated($pd4, &$globallink_arr) {
       }
 
       if ($vocab->i18n_mode == I18N_MODE_LOCALIZE) {
-                if ($override_localize == 1) {
+        if ($override_localize == 1 && $entity_version['version'] == '7.x-1.0-beta5') {
                     // Use i18n fields translation
-                    $source_locale = $term->language;
-                    $fields = get_configured_fields_for_taxonomy($vocab->machine_name);
-                    $field_names = array_keys($fields);
+          $source_locale = $term->language;
+          $fields = get_configured_fields_for_taxonomy($vocab->machine_name);
+          $field_names = array_keys($fields);
 
-                    foreach ($field_names as $fieldName) {
-                        if ($fieldName == 'metatags') {
-                            if (empty($translated_arr[$fieldName])) {
-                                if (isset($term->$fieldName) && isset($term->{$fieldName}[$source_locale])) {
-                                    $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$source_locale];
-                                }
-                                continue;
-                            }
-                            foreach ($translated_arr['metatags'] as $metatag) {
-
-                                if (key($metatag) !== LANGUAGE_NONE) {
-                                    $t_field_lang = key($metatag);
-                                }
-
-                                if (empty($term->{$fieldName}[$target_locale]) && $target_locale != LANGUAGE_NONE) {
-                                    $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$t_field_lang];
-                                }
-
-                                $t_field_arr = $metatag[$source_locale];
-                                $mt_name = $t_field_arr->fieldName;
-                                if (empty($t_field_arr->translatedContent)) {
-                                    continue;
-                                }
-
-                                if (empty($term->{$fieldName}[$target_locale][$mt_name])) {
-                                    continue;
-                                }
-
-                                $translation = $t_field_arr->translatedContent;
-                                $term->{$fieldName}[$target_locale][$mt_name]['value'] = $translation;
-                            }
-                            continue;
-                        }
-                        $t_field_lang = LANGUAGE_NONE;
-                        if (empty($translated_arr[$fieldName])) {
-                            if (isset($term->$fieldName) && isset($term->{$fieldName}[$source_locale])) {
-                                $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$source_locale];
-                            }
-                            continue;
-                        }
-
-                        if (key($translated_arr[$fieldName]) !== LANGUAGE_NONE) {
-                            $t_field_lang = key($translated_arr[$fieldName]);
-                        }
-
-                        if (empty($term->{$fieldName}[$target_locale]) && $target_locale != LANGUAGE_NONE) {
-                            $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$t_field_lang];
-                        }
-
-                        $t_field_arr = $translated_arr[$fieldName][$source_locale];
-                        foreach ($term->{$fieldName}[$target_locale] as $delta => $fp_field) {
-                            if (empty($t_field_arr[$delta])) {
-                                continue;
-                            }
-
-                            $translation = $t_field_arr[$delta]->translatedContent;
-                            $term->{$fieldName}[$target_locale][$delta]['value'] = $translation;
-                        }
-                    }
-
-                    if (!isset($term->translations->data[$target_locale])) {
-                        $term->translations->data[$target_locale] = array(
-                          'language' => $target_locale, // Target language
-                          'source' => $term->language, // Source language
-                          'uid' => $term->translations->data[$term->language]['uid'],
-                          'status' => variable_get('globallink_publish_node', 0), // publish translation
-                          'created' => $term->translations->data[$term->language]['created'],
-                        );
-                        $term->translations->hook[$target_locale] = array(
-                          'hook' => 'insert',
-                          'date' => NULL,
-                        );
-                    }
-                    else {
-                        $term->translations->data[$target_locale]['status'] = variable_get('globallink_publish_node', 0); // publish translation
-                        $term->translations->hook[$target_locale] = array(
-                          'hook' => 'update',
-                          'date' => NULL,
-                        );
-                    }
+          foreach ($field_names as $fieldName) {
+            if ($fieldName == 'metatags') {
+              if (empty($translated_arr[$fieldName])) {
+                if (isset($term->$fieldName) && isset($term->{$fieldName}[$source_locale])) {
+                  $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$source_locale];
                 }
-                else {
-                    unset($term->tid);
-                    $term->language = $target_locale;
-                    $new_term = taxonomy_term_save($term);
-                    if ($new_term != 1) {
-                        form_set_error('', check_plain('Unable to save new term for ' . $bid . ' where language is ' . $target_locale));
-                        continue;
-                    }
-                    // Use strings for name and description
-                    foreach ($translated_arr as $attribute => $translations) {
-                        if ($attribute == 'name') {
-                            $term->name = $translations['translation'];
-                        }
-                        elseif ($attribute == 'description') {
-                            $term->description = $translations['translation'];
-                        }
-                        elseif ($attribute == 'path') {
-                            $term->path['pathauto'] = FALSE;
-                            $uri = taxonomy_term_uri($term);
-                            $new_path = path_load($uri['path']);
-                            $new_path['alias'] = $translations['translation'];
-                            path_save($new_path);
-                        }
-                    }
+                continue;
+              }
+              foreach ($translated_arr['metatags'] as $metatag) {
+                if (key($metatag) !== LANGUAGE_NONE) {
+                  $t_field_lang = key($metatag);
+                }
+                if (empty($term->{$fieldName}[$target_locale]) && $target_locale != LANGUAGE_NONE) {
+                  $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$t_field_lang];
+                }
+                $t_field_arr = $metatag[$source_locale];
+                $mt_name = $t_field_arr->fieldName;
+                if (empty($t_field_arr->translatedContent)) {
+                  continue;
+                }
+                if (empty($term->{$fieldName}[$target_locale][$mt_name])) {
+                  continue;
+                }
+                $translation = $t_field_arr->translatedContent;
+                $term->{$fieldName}[$target_locale][$mt_name]['value'] = $translation;
+              }
+              continue;
             }
+            $t_field_lang = LANGUAGE_NONE;
+            if (empty($translated_arr[$fieldName])) {
+              if (isset($term->$fieldName) && isset($term->{$fieldName}[$source_locale])) {
+                $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$source_locale];
+              }
+              continue;
+            }
+            if (key($translated_arr[$fieldName]) !== LANGUAGE_NONE) {
+              $t_field_lang = key($translated_arr[$fieldName]);
+            }
+            if (empty($term->{$fieldName}[$target_locale]) && $target_locale != LANGUAGE_NONE) {
+              $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$t_field_lang];
+            }
+            $t_field_arr = $translated_arr[$fieldName][$source_locale];
+            foreach ($term->{$fieldName}[$target_locale] as $delta => $fp_field) {
+              if (empty($t_field_arr[$delta])) {
+                continue;
+              }
+              $translation = $t_field_arr[$delta]->translatedContent;
+              $term->{$fieldName}[$target_locale][$delta]['value'] = $translation;
+            }
+          }
+          if (!isset($term->translations->data[$target_locale])) {
+            $term->translations->data[$target_locale] = array(
+              'language' => $target_locale, // Target language
+              'source' => $term->language, // Source language
+              'uid' => $term->translations->data[$term->language]['uid'],
+              'status' => variable_get('globallink_publish_node', 0), // publish translation
+              'created' => $term->translations->data[$term->language]['created'],
+            );
+            $term->translations->hook[$target_locale] = array(
+              'hook' => 'insert',
+              'date' => NULL,
+            );
+          }
+          else {
+            $term->translations->data[$target_locale]['status'] = variable_get('globallink_publish_node', 0); // publish translation
+            $term->translations->hook[$target_locale] = array(
+              'hook' => 'update',
+              'date' => NULL,
+            );
+          }
         }
-            else if (($entity_version['version'] == '7.x-1.0-beta6' && $vocab->i18n_mode == I18N_MODE_ENTITY_TRANSLATION) || ($entity_version['version'] == '7.x-1.0-beta5' && $vocab->i18n_mode == I18N_MODE_TRANSLATE)) {
+        else {
+          unset($term->tid);
+          $term->language = $target_locale;
+          $new_term = taxonomy_term_save($term);
+          if ($new_term != 1) {
+            form_set_error('', check_plain('Unable to save new term for ' . $bid . ' where language is ' . $target_locale));
+            continue;
+          }
+                    // Use strings for name and description
+          foreach ($translated_arr as $attribute => $translations) {
+            if ($attribute == 'name') {
+              $term->name = $translations['translation'];
+            }
+            elseif ($attribute == 'description') {
+              $term->description = $translations['translation'];
+            }
+            elseif ($attribute == 'path') {
+              $term->path['pathauto'] = FALSE;
+              $uri = taxonomy_term_uri($term);
+              $new_path = path_load($uri['path']);
+              $new_path['alias'] = $translations['translation'];
+              path_save($new_path);
+            }
+          }
+        }
+      }
+      else if (($entity_version['version'] != '7.x-1.0-beta5' && $vocab->i18n_mode == I18N_MODE_ENTITY_TRANSLATION) || ($entity_version['version'] == '7.x-1.0-beta5' && $vocab->i18n_mode == I18N_MODE_TRANSLATE)) {
                         // Use i18n fields translation
-                        $source_locale = $term->language;
-                        $fields = get_configured_fields_for_taxonomy($vocab->machine_name);
-                        $field_names = array_keys($fields);
-
-                        foreach ($field_names as $fieldName) {
-                            if ($fieldName == 'metatags') {
-                                if (empty($translated_arr[$fieldName])) {
-                                    if (isset($term->$fieldName) && isset($term->{$fieldName}[$source_locale])) {
-                                        $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$source_locale];
-                                    }
-                                    continue;
-                                }
-                                foreach ($translated_arr['metatags'] as $metatag) {
-
-                                    if (key($metatag) !== LANGUAGE_NONE) {
-                                        $t_field_lang = key($metatag);
-                                    }
-
-                                    if (empty($term->{$fieldName}[$target_locale]) && $target_locale != LANGUAGE_NONE) {
-                                        $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$t_field_lang];
-                                    }
-
-                                    $t_field_arr = $metatag[$source_locale];
-                                    $mt_name = $t_field_arr->fieldName;
-                                    if (empty($t_field_arr->translatedContent)) {
-                                        continue;
-                                    }
-
-                                    if (empty($term->{$fieldName}[$target_locale][$mt_name])) {
-                                        continue;
-                                    }
-
-                                    $translation = $t_field_arr->translatedContent;
-                                    $term->{$fieldName}[$target_locale][$mt_name]['value'] = $translation;
-                                }
-                                continue;
-                            }
-                            $t_field_lang = LANGUAGE_NONE;
-                            if (empty($translated_arr[$fieldName])) {
-                                if (isset($term->$fieldName) && isset($term->{$fieldName}[$source_locale])) {
-                                    $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$source_locale];
-                                }
-                                continue;
-                            }
-
-                            if (key($translated_arr[$fieldName]) !== LANGUAGE_NONE) {
-                                $t_field_lang = key($translated_arr[$fieldName]);
-                            }
-
-                            if (empty($term->{$fieldName}[$target_locale]) && $target_locale != LANGUAGE_NONE) {
-                                $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$t_field_lang];
-                            }
-
-                            $t_field_arr = $translated_arr[$fieldName][$source_locale];
-                            foreach ($term->{$fieldName}[$target_locale] as $delta => $fp_field) {
-                                if (empty($t_field_arr[$delta])) {
-                                    continue;
-                                }
-
-                                $translation = $t_field_arr[$delta]->translatedContent;
-                                $term->{$fieldName}[$target_locale][$delta]['value'] = $translation;
-                            }
-                        }
-                        if (!isset($term->translations->data[$target_locale])) {
-                            $term->translations->data[$target_locale] = array(
-                                'language' => $target_locale, // Target language
-                                'source' => $term->language, // Source language
-                                'uid' => $term->translations->data[$term->language]['uid'],
-                                'status' => variable_get('transperfect_publish_node', 0), // publish translation
-                                'created' => $term->translations->data[$term->language]['created'],
-                            );
-                            $term->translations->hook[$target_locale] = array(
-                                'hook' => 'insert',
-                                'date' => NULL,
-                            );
-                        } else {
-                            $term->translations->data[$target_locale]['status'] = variable_get('transperfect_publish_node', 0); // publish translation
-                            $term->translations->hook[$target_locale] = array(
-                                'hook' => 'update',
-                                'date' => NULL,
-                            );
-                        }
-                    }
-                    else if ($vocab->i18n_mode == I18N_MODE_TRANSLATE && $entity_version['version'] == '7.x-1.0-beta6') {
-                      $vocabulary = $term->vocabulary_machine_name;
-                      $translation_set = !empty($term->i18n_tsid) ? i18n_translation_set_load($term->i18n_tsid) : NULL;
-                      if ($translation_set == NULL) {
-                        $translation_set = i18n_translation_set_create('taxonomy_term', $vocabulary)->add_item($term);
-                      }
-                      $tsid = $translation_set->tsid;
-                      $source_locale = $term->language;
-                      $term->i18n_tsid = $tsid;
-                      taxonomy_term_save($term);
-                      $set = 0;
-
+        $source_locale = $term->language;
+        $fields = get_configured_fields_for_taxonomy($vocab->machine_name);
+        $field_names = array_keys($fields);
+        foreach ($field_names as $fieldName) {
+          if ($fieldName == 'metatags') {
+            if (empty($translated_arr[$fieldName])) {
+              if (isset($term->$fieldName) && isset($term->{$fieldName}[$source_locale])) {
+                $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$source_locale];
+              }
+              continue;
+            }
+            foreach ($translated_arr['metatags'] as $metatag) {
+              if (key($metatag) !== LANGUAGE_NONE) {
+                $t_field_lang = key($metatag);
+              }
+              if (empty($term->{$fieldName}[$target_locale]) && $target_locale != LANGUAGE_NONE) {
+                $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$t_field_lang];
+              }
+              $t_field_arr = $metatag[$source_locale];
+              $mt_name = $t_field_arr->fieldName;
+              if (empty($t_field_arr->translatedContent)) {
+                continue;
+              }
+              if (empty($term->{$fieldName}[$target_locale][$mt_name])) {
+                continue;
+              }
+              $translation = $t_field_arr->translatedContent;
+              $term->{$fieldName}[$target_locale][$mt_name]['value'] = $translation;
+            }
+            continue;
+          }
+          $t_field_lang = LANGUAGE_NONE;
+          if (empty($translated_arr[$fieldName])) {
+            if (isset($term->$fieldName) && isset($term->{$fieldName}[$source_locale])) {
+              $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$source_locale];
+            }
+            continue;
+          }
+          if (key($translated_arr[$fieldName]) !== LANGUAGE_NONE) {
+            $t_field_lang = key($translated_arr[$fieldName]);
+          }
+          if (empty($term->{$fieldName}[$target_locale]) && $target_locale != LANGUAGE_NONE) {
+            $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$t_field_lang];
+          }
+          $t_field_arr = $translated_arr[$fieldName][$source_locale];
+          foreach ($term->{$fieldName}[$target_locale] as $delta => $fp_field) {
+            if (empty($t_field_arr[$delta])) {
+              continue;
+            }
+            $translation = $t_field_arr[$delta]->translatedContent;
+            $term->{$fieldName}[$target_locale][$delta]['value'] = $translation;
+          }
+        }
+        if (!isset($term->translations->data[$target_locale])) {
+          $term->translations->data[$target_locale] = array(
+            'language' => $target_locale, // Target language
+            'source' => $term->language, // Source language
+            'uid' => $term->translations->data[$term->language]['uid'],
+            'status' => variable_get('transperfect_publish_node', 0), // publish translation
+            'created' => $term->translations->data[$term->language]['created'],
+          );
+          $term->translations->hook[$target_locale] = array(
+            'hook' => 'insert',
+            'date' => NULL,
+          );
+        }
+        else {
+          $term->translations->data[$target_locale]['status'] = variable_get('transperfect_publish_node', 0); // publish translation
+          $term->translations->hook[$target_locale] = array(
+            'hook' => 'update',
+            'date' => NULL,
+          );
+        }
+      }
+      else if ($vocab->i18n_mode == I18N_MODE_TRANSLATE && $entity_version['version'] != '7.x-1.0-beta5') {
+        $vocabulary = $term->vocabulary_machine_name;
+        $translation_set = !empty($term->i18n_tsid) ? i18n_translation_set_load($term->i18n_tsid) : NULL;
+        if ($translation_set == NULL) {
+          $translation_set = i18n_translation_set_create('taxonomy_term', $vocabulary)->add_item($term);
+        }
+        $tsid = $translation_set->tsid;
+        $source_locale = $term->language;
+        $term->i18n_tsid = $tsid;
+        taxonomy_term_save($term);
+        $set = 0;
                       //Added the condition here for loading existing term, so that it gets updated and not recreated.
-                      $trans_set = $translation_set->load_translations();
-                      $keys = array_keys($trans_set);
-                      foreach ($keys as $key) {
-                        if ($key == $target_locale) {
-                          $term = taxonomy_term_load($trans_set[$key]->tid);
-                          $set = 1;
-                        }
-                      }
-
-                      if ($set != 1) {
-                          unset($term->tid);
-                          $term->language = $target_locale;
-                          $term->i18n_tsid = $tsid;
-                          $new_term = taxonomy_term_save($term);
-
-                          if ($new_term != 1) {
-                            form_set_error('', check_plain('Unable to save new term for ' . $bid . ' where language is ' . $target_locale));
-                            continue;
-                          }
-                      }
-                                              // Use i18n fields translation
-
-                        $fields = get_configured_fields_for_taxonomy($vocab->machine_name);
-                        $field_names = array_keys($fields);
-                        $term->i18n_tsid = $tsid;
-
-                        foreach ($field_names as $fieldName) {
-                            if ($fieldName == 'metatags') {
-                                if (empty($translated_arr[$fieldName])) {
-                                    if (isset($term->$fieldName) && isset($term->{$fieldName}[$source_locale])) {
-                                        $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$source_locale];
-                                    }
-                                    continue;
-                                }
-                                foreach ($translated_arr['metatags'] as $metatag) {
-
-                                    if (key($metatag) !== LANGUAGE_NONE) {
-                                        $t_field_lang = key($metatag);
-                                    }
-
-                                    if (empty($term->{$fieldName}[$target_locale]) && $target_locale != LANGUAGE_NONE) {
-                                        $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$t_field_lang];
-                                    }
-
-                                    $t_field_arr = $metatag[$source_locale];
-                                    $mt_name = $t_field_arr->fieldName;
-                                    if (empty($t_field_arr->translatedContent)) {
-                                        continue;
-                                    }
-
-                                    if (empty($term->{$fieldName}[$target_locale][$mt_name])) {
-                                        continue;
-                                    }
-
-                                    $translation = $t_field_arr->translatedContent;
-                                    $term->{$fieldName}[$target_locale][$mt_name]['value'] = $translation;
-                                }
-                                continue;
-                            }
-                            $t_field_lang = LANGUAGE_NONE;
-                            $t_field_arr = $translated_arr[$fieldName][$source_locale];
-                            foreach ($term->{$fieldName}[$source_locale] as $delta => $fp_field) {
-                                if (empty($t_field_arr[$delta])) {
-                                    continue;
-                                }
-
-                                $translation = $t_field_arr[$delta]->translatedContent;
-                                $term->{$fieldName}[$target_locale][$delta]['value'] = $translation;
-                                $term->{$fieldName}[$source_locale][$delta]['value'] = $translation;
-                            }
-                        }
-                    }
-                    else {
-                        continue;
-                    }
+        $trans_set = $translation_set->load_translations();
+        $keys = array_keys($trans_set);
+        foreach ($keys as $key) {
+          if ($key == $target_locale) {
+            $term = taxonomy_term_load($trans_set[$key]->tid);
+            $set = 1;
+          }
+        }
+        if ($set != 1) {
+          unset($term->tid);
+          $term->language = $target_locale;
+          $term->i18n_tsid = $tsid;
+          $new_term = taxonomy_term_save($term);
+          if ($new_term != 1) {
+            form_set_error('', check_plain('Unable to save new term for ' . $bid . ' where language is ' . $target_locale));
+            continue;
+          }
+        }
+                // Use i18n fields translation
+        $fields = get_configured_fields_for_taxonomy($vocab->machine_name);
+        $field_names = array_keys($fields);
+        $term->i18n_tsid = $tsid;
+        foreach ($field_names as $fieldName) {
+          if ($fieldName == 'metatags') {
+            if (empty($translated_arr[$fieldName])) {
+              if (isset($term->$fieldName) && isset($term->{$fieldName}[$source_locale])) {
+                $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$source_locale];
+              }
+              continue;
+            }
+            foreach ($translated_arr['metatags'] as $metatag) {
+              if (key($metatag) !== LANGUAGE_NONE) {
+                $t_field_lang = key($metatag);
+              }
+              if (empty($term->{$fieldName}[$target_locale]) && $target_locale != LANGUAGE_NONE) {
+                $term->{$fieldName}[$target_locale] = $term->{$fieldName}[$t_field_lang];
+              }
+              $t_field_arr = $metatag[$source_locale];
+              $mt_name = $t_field_arr->fieldName;
+              if (empty($t_field_arr->translatedContent)) {
+                continue;
+              }
+              if (empty($term->{$fieldName}[$target_locale][$mt_name])) {
+                continue;
+              }
+              $translation = $t_field_arr->translatedContent;
+              $term->{$fieldName}[$target_locale][$mt_name]['value'] = $translation;
+            }
+            continue;
+          }
+          $t_field_lang = LANGUAGE_NONE;
+          $t_field_arr = $translated_arr[$fieldName][$source_locale];
+          foreach ($term->{$fieldName}[$source_locale] as $delta => $fp_field) {
+            if (empty($t_field_arr[$delta])) {
+              continue;
+            }
+            $translation = $t_field_arr[$delta]->translatedContent;
+            $term->{$fieldName}[$target_locale][$delta]['value'] = $translation;
+            $term->{$fieldName}[$source_locale][$delta]['value'] = $translation;
+          }
+        }
+      }
+      else {
+        continue;
+      }
       taxonomy_term_save($term);
       globallink_taxonomy_update_status($globallink);
       globallink_send_download_confirmation($globallink->targetTicket, $pd4);
     }
     catch (SoapFault $se) {
       $count--;
-
       globallink_taxonomy_update_status($globallink, 'Error');
       watchdog('GlobalLink', 'SOAP Exception - %function - Code[%faultcode], Message[%faultstring]', array('%function' => __FUNCTION__, '%faultcode' => $se->faultcode, '%faultstring' => $se->faultstring), WATCHDOG_ERROR);
       form_set_error('', t('Web Services Error: @faultcode - @faultstring', array('@faultcode' => $se->faultcode, '@faultstring' => $se->faultstring)));
     }
     catch (Exception $e) {
       $count--;
-
       globallink_taxonomy_update_status($globallink, 'Error');
       watchdog('GlobalLink', 'Exception - %function - File[%file], Line[%line], Code[%code], Message[%message]', array('%function' => __FUNCTION__, '%file' => $e->getFile(), '%line' => $e->getLine(), '%code' => $e->getCode(), '%message' => $e->getMessage()), WATCHDOG_ERROR);
       form_set_error('', t('Error: @message', array('@message' => $e->getMessage())));
     }
   }
-
   return $count;
 }
 
@@ -1462,26 +1429,26 @@ function get_taxonomy_fields($taxonomy_type) {
 }
 
 function globallink_get_all_translatable_taxonomy_types_and_names() {
-    $override_localize = variable_get('globallink_override_localize', 0);
-    $entity_version = system_get_info('module', 'entity_translation');
-    $entity_info = entity_get_info('taxonomy_term');
-    $arr = array();
-    if (isset($entity_info) && isset($entity_info['bundles'])) {
-        $bundles = $entity_info['bundles'];
-        foreach ($bundles as $key => $bundle) {
-          $vocab = taxonomy_vocabulary_machine_name_load($key);
-          if ($entity_version['version'] == '7.x-1.0-beta6') {
-            if (($vocab->i18n_mode == I18N_MODE_TRANSLATE) || ($vocab->i18n_mode == I18N_MODE_ENTITY_TRANSLATION)) {
-              $arr['tax:' . $key] = $bundle['label'];
-            }
-          }
-          elseif ($entity_version['version'] == '7.x-1.0-beta5') {
-            if (($vocab->i18n_mode == I18N_MODE_TRANSLATE) || ($vocab->i18n_mode == I18N_MODE_LOCALIZE && $override_localize == 1)) {
-              $arr['tax:' . $key] = $bundle['label'];
-            }
-          }
+  $override_localize = variable_get('globallink_override_localize', 0);
+  $entity_version = system_get_info('module', 'entity_translation');
+  $entity_info = entity_get_info('taxonomy_term');
+  $arr = array();
+  if (isset($entity_info) && isset($entity_info['bundles'])) {
+    $bundles = $entity_info['bundles'];
+    foreach ($bundles as $key => $bundle) {
+      $vocab = taxonomy_vocabulary_machine_name_load($key);
+      if ($entity_version['version'] == '7.x-1.0-beta5') {
+        if (($vocab->i18n_mode == I18N_MODE_TRANSLATE) || ($vocab->i18n_mode == I18N_MODE_LOCALIZE && $override_localize == 1)) {
+          $arr['tax:' . $key] = $bundle['label'];
         }
-        asort($arr);
+      }
+      else {
+        if (($vocab->i18n_mode == I18N_MODE_TRANSLATE) || ($vocab->i18n_mode == I18N_MODE_ENTITY_TRANSLATION)) {
+          $arr['tax:' . $key] = $bundle['label'];
+        }
+      }
     }
-    return $arr;
+    asort($arr);
+  }
+  return $arr;
 }

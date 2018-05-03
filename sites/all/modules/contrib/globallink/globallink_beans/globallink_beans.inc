@@ -213,6 +213,7 @@ function globallink_beans_get_xml($bid, $target_arr) {
           ));
         }
         globallink_beans_traverse_fields_and_field_collections('bean', $bean->type, $parent_fc, $bean->type, $bean->bid, $field_values, $field, $dom, $root, $bean, $target_arr, $language);
+        continue;
       }
     }
     if (array_key_exists($field, $configured_fields) && $configured_fields[$field]->translatable == 1) {
