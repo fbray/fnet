@@ -104,6 +104,10 @@
 /*
  * Access check: Extranet users only.
  */
+
+// Display Title override.
+$title = isset($node->field_display_title[$node->language][0]['value']) ? $node->field_display_title[$node->language][0]['value'] : $title;
+
 if (!user_access('access extranet')) {
   drupal_goto('/extranet-access-denied');
 }
