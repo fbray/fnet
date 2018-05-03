@@ -17,6 +17,7 @@ dependencies[] = number
 dependencies[] = options
 dependencies[] = path_patterns
 dependencies[] = smart_trim
+dependencies[] = strongarm
 dependencies[] = text
 dependencies[] = views
 dependencies[] = weight

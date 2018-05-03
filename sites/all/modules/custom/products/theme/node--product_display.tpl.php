@@ -666,6 +666,7 @@ $product_case_studies = $content['product_case_studies'];
                   </tr>
                   </thead>
 
+                  <?php $i = 0; ?>
                   <?php foreach($moas as $moa): ?>
                     <?php $support_options = module_invoke('products', 'support_by_moa', $moa->nid);
                     if (!empty($support_options)) {
@@ -678,14 +679,16 @@ $product_case_studies = $content['product_case_studies'];
                         <?php print $moa->node_title; ?>
                         <?php if ($support_options): ?>
                           <div class="show-support-link"><?php print $support_link; ?>
-                            <span class="gs_pointer">&raquo;</span></div>
+                            <span class="gs_pointer">&raquo;</span>
+                          </div>
                         <?php endif; ?>
                       </td>
                       <td>
                         <div>
                           <?php if(isset($moa->field_body[0]['raw']['value'])): ?>
                             <?php print $moa->field_body[0]['raw']['value']; ?>
-                          <?php endif; ?></div>
+                          <?php endif; ?>
+                        </div>
                       </td>
                     </tr>
                     <?php if($support_options): ?>
@@ -694,12 +697,12 @@ $product_case_studies = $content['product_case_studies'];
                         <td colspan="2"
                             style="padding-top: 0px;padding-bottom: 0px;">
                           <div class="support-options show-support">
-                            <div
-                              class="show-support-div"><?php print $support_options; ?></div>
+                            <div class="show-support-div"><?php print $support_options; ?></div>
                           </div>
                         </td>
                       </tr>
                     <?php endif; ?>
+                    <?php $i++; ?>
                   <?php endforeach; ?>
 
                 </table>
