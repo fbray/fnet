@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * products.features.field_instance.inc
@@ -7778,7 +7777,7 @@ function products_field_default_field_instances() {
       'enable_tokens' => 1,
       'entity_translation_sync' => FALSE,
       'rel_remove' => 'default',
-      'title' => 'optional',
+      'title' => 'none',
       'title_label_use_field_label' => 0,
       'title_maxlength' => 128,
       'title_value' => '',

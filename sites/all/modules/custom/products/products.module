@@ -10,16 +10,6 @@
 include_once 'products.features.inc';
 
 /**
- * Implements hook_views_api().
- */
-function products_views_api() {
-  return array(
-    'api' => 3.0,
-    'path' => drupal_get_path('module', 'products') . '/views',
-  );
-}
-
-/**
  * Implements hook_theme().
  */
 function products_theme($existing, $type, $theme, $path) {
@@ -386,7 +376,7 @@ function products_language_override(&$node) {
 
   // Get all the selected language override nodes associated with the default
   // node through the node reference field.
-  $language_override_field_values = fnet_common_get_field_values('product', $node, 'field_prod_language');
+  $language_override_field_values = fnet_common_get_field_values('product_display', $node, 'field_product_language_override');
 
   $override_nids = array();
   foreach ($language_override_field_values as $value) {
@@ -410,7 +400,7 @@ function products_language_override(&$node) {
   // reglang matches user's reglang.
   foreach ($override_nodes as $language_override_field_item) {
 
-    $language_override_field_item_reglang = fnet_common_get_field_value('productlanguage', $language_override_field_item, 'field_prodlang_language');
+    $language_override_field_item_reglang = fnet_common_get_field_value('product_language', $language_override_field_item, 'field_language_region');
 
     // Compare lang node's reglang value with user's reglang value.
     if (strpos($language_override_field_item_reglang, $regLang) !== FALSE) {
@@ -424,7 +414,6 @@ function products_language_override(&$node) {
   }
 
   // Perform language override node field substitutions if necessary.
-  // TODO: Change field names here.
   if (!is_null($qualified_language_override_node)) {
     // Fetch override content.
     /*
@@ -450,35 +439,35 @@ function products_language_override(&$node) {
       // go ahead and perform content substitution.
     }
     elseif (
-      (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title') && fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url'))
-      || (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 1) && fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 1))
-      || (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 2) && fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 2))
-      || (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 3) && fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 3))
+      (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'title') && fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'url'))
+      || (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'title', 1) && fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'url', 1))
+      || (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'title', 2) && fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'url', 2))
+      || (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'title', 3) && fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'url', 3))
     ) {
 
       // Substitutions for button one.
-      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["title"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title');
-      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["display_url"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url');
-      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["attributes"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'attributes');
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["title"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'title');
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["display_url"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'url');
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["attributes"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'attributes');
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][0]["translate"] = FALSE;
       $node->cta_btn_translate[0] = FALSE;
 
       // Substitutions for button two.
-      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["title"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 1);
-      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["display_url"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 1);
-      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["attributes"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'attributes', 1);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["title"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'title', 1);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["display_url"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'url', 1);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["attributes"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'attributes', 1);
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][1]["translate"] = FALSE;
 
       // Substitutions for button three.
-      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["title"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 2);
-      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["display_url"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 2);
-      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["attributes"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'attributes', 2);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["title"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'title', 2);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["display_url"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'url', 2);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["attributes"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'attributes', 2);
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][2]["translate"] = FALSE;
 
       // Substitutions for button four.
-      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["title"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'title', 3);
-      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["display_url"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'url', 3);
-      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["attributes"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_btn_calltoaction', 'attributes', 3);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["title"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'title', 3);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["display_url"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'url', 3);
+      $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["attributes"] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_btn_calltoaction', 'attributes', 3);
       $node->field_prod_btn_calltoaction[LANGUAGE_NONE][3]["translate"] = FALSE;
 
     }
@@ -486,18 +475,46 @@ function products_language_override(&$node) {
     /*
      * Product Video and Video Thumbnail
      */
-    if (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_img_t_1', 'filename')) {
+    if (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_img_t_1', 'filename')) {
 
-      $node->field_prod_video_img_t_1[0]['filename'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_img_t_1', 'filename');
-      $node->field_prod_video_img_t_1[0]['uri'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_img_t_1', 'uri');
-      $node->field_prod_video_img_t_1[0]['alt'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_img_t_1', 'alt');
+      $node->field_prod_video_img_t_1[LANGUAGE_NONE][0]['filename'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_img_t_1', 'filename');
+      $node->field_prod_video_img_t_1[LANGUAGE_NONE][0]['uri'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_img_t_1', 'uri');
+      $node->field_prod_video_img_t_1[LANGUAGE_NONE][0]['alt'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_img_t_1', 'alt');
 
-      $node->field_prod_video_youtube_url[0]['url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_youtube_url', 'url');
-      $node->field_prod_video_youtube_url[0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_youtube_url', 'url');
+      $node->field_prod_video_youtube_url[LANGUAGE_NONE][0]['url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_youtube_url', 'url');
+      $node->field_prod_video_youtube_url[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_youtube_url', 'url');
 
-      $node->field_prod_video_lg_1[0]['filename'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_lg_1', 'filename');
-      $node->field_prod_video_lg_1[0]['uri'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_lg_1', 'uri');
-      $node->field_prod_video_lg_1[0]['filemime'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_video_lg_1', 'filemime');
+      $node->field_prod_video_lg_1[LANGUAGE_NONE][0]['filename'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_lg_1', 'filename');
+      $node->field_prod_video_lg_1[LANGUAGE_NONE][0]['uri'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_lg_1', 'uri');
+      $node->field_prod_video_lg_1[LANGUAGE_NONE][0]['filemime'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_lg_1', 'filemime');
+    }
+
+    /*
+     * Product Custom tab
+     */
+    for ($i = 1; $i <= 5; $i++) {
+      if (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_ctab_name_' . $i, 'value')) {
+        $node->{"field_prod_ctab_name_" . $i}[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_ctab_name_' . $i, 'value');
+        $node->{"field_prod_ctab_data_" . $i}[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_ctab_data_' . $i, 'value');
+        $node->{"field_prod_ctab_link_" . $i}[LANGUAGE_NONE][0]['url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_ctab_link_' . $i, 'url');
+      }
+    }
+
+    /*
+     * Product Carousel Images and Sort order
+     */
+    for ($i = 1; $i <= 10; $i++) {
+      if (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_carousel_img_lg_' . $i, 'filename')) {
+        $node->{"field_prod_carousel_img_lg_" . $i}[LANGUAGE_NONE][0]['filename'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_carousel_img_lg_' . $i, 'filename');
+        $node->{"field_prod_carousel_img_lg_" . $i}[LANGUAGE_NONE][0]['uri'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_carousel_img_lg_' . $i, 'uri');
+        $node->{"field_prod_carousel_img_lg_" . $i}[LANGUAGE_NONE][0]['alt'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_carousel_img_lg_' . $i, 'alt');
+
+        $node->{"field_prod_carousel_img_t_" . $i}[LANGUAGE_NONE][0]['filename'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_carousel_img_t_' . $i, 'filename');
+        $node->{"field_prod_carousel_img_t_" . $i}[LANGUAGE_NONE][0]['uri'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_carousel_img_t_' . $i, 'uri');
+        $node->{"field_prod_carousel_img_t_" . $i}[LANGUAGE_NONE][0]['alt'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_carousel_img_t_' . $i, 'alt');
+
+        $node->{"field_prod_carousel_img_srt_" . $i}[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_carousl_img_srt_' . $i, 'value');
+      }
     }
 
     /*
@@ -522,37 +539,37 @@ function products_language_override(&$node) {
       // go ahead and perform content substitution.
     }
     elseif (
-      fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_1', 'title')
-      || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_2', 'title')
-      || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_3', 'title')
-      || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_4', 'title')
+      fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_link_1', 'title')
+      || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_link_2', 'title')
+      || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_link_3', 'title')
+      || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_link_4', 'title')
     ) {
 
       $node->field_prod_sol_title[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_title', 'value');
       $noTranslation["field_prod_solutions"] = TRUE;
 
-      $node->field_prod_sol_link_1[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_1', 'title');
-      $node->field_prod_sol_link_1[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_1', 'display_url');
-      $node->field_prod_sol_link_1[LANGUAGE_NONE][0]['attributes'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_1', 'attributes');
-      $node->field_prod_sol_desc_1[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_desc_1', 'value');
+      $node->field_prod_sol_link_1[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_link_1', 'title');
+      $node->field_prod_sol_link_1[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_link_1', 'display_url');
+      $node->field_prod_sol_link_1[LANGUAGE_NONE][0]['attributes'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_link_1', 'attributes');
+      $node->field_prod_sol_desc_1[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_desc_1', 'value');
       $node->field_prod_sol_desc_1[LANGUAGE_NONE][0]['translate'] = FALSE;
 
-      $node->field_prod_sol_link_2[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_2', 'title');
-      $node->field_prod_sol_link_2[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_2', 'display_url');
-      $node->field_prod_sol_link_2[LANGUAGE_NONE][0]['attributes'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_2', 'attributes');
-      $node->field_prod_sol_desc_2[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_desc_2', 'value');
+      $node->field_prod_sol_link_2[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_link_2', 'title');
+      $node->field_prod_sol_link_2[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_link_2', 'display_url');
+      $node->field_prod_sol_link_2[LANGUAGE_NONE][0]['attributes'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_link_2', 'attributes');
+      $node->field_prod_sol_desc_2[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_desc_2', 'value');
       $node->field_prod_sol_desc_2[LANGUAGE_NONE][0]['translate'] = FALSE;
 
-      $node->field_prod_sol_link_3[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_3', 'title');
-      $node->field_prod_sol_link_3[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_3', 'display_url');
-      $node->field_prod_sol_link_3[LANGUAGE_NONE][0]['attributes'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_3', 'attributes');
-      $node->field_prod_sol_desc_3[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_desc_3', 'value');
+      $node->field_prod_sol_link_3[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_link_3', 'title');
+      $node->field_prod_sol_link_3[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_link_3', 'display_url');
+      $node->field_prod_sol_link_3[LANGUAGE_NONE][0]['attributes'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_link_3', 'attributes');
+      $node->field_prod_sol_desc_3[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_desc_3', 'value');
       $node->field_prod_sol_desc_3[LANGUAGE_NONE][0]['translate'] = FALSE;
 
-      $node->field_prod_sol_link_4[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_4', 'title');
-      $node->field_prod_sol_link_4[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_4', 'display_url');
-      $node->field_prod_sol_link_4[LANGUAGE_NONE][0]['attributes'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_link_4', 'attributes');
-      $node->field_prod_sol_desc_4[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_sol_desc_4', 'value');
+      $node->field_prod_sol_link_4[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_link_4', 'title');
+      $node->field_prod_sol_link_4[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_link_4', 'display_url');
+      $node->field_prod_sol_link_4[LANGUAGE_NONE][0]['attributes'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_link_4', 'attributes');
+      $node->field_prod_sol_desc_4[LANGUAGE_NONE][0]['value'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_sol_desc_4', 'value');
       $node->field_prod_sol_desc_4[LANGUAGE_NONE][0]['translate'] = FALSE;
 
     }
@@ -562,21 +579,21 @@ function products_language_override(&$node) {
      */
 
     if (
-      fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'title')
-      || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'title', 1)
-      || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'title', 2)
+      fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_wtb_online', 'title')
+      || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_wtb_online', 'title', 1)
+      || fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_wtb_online', 'title', 2)
     ) {
 
-      $node->field_prod_wtb_online[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'title');
-      $node->field_prod_wtb_online[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'url');
+      $node->field_prod_wtb_online[LANGUAGE_NONE][0]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_wtb_online', 'title');
+      $node->field_prod_wtb_online[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_wtb_online', 'url');
       $node->field_prod_wtb_online[LANGUAGE_NONE][0]['translate'] = FALSE;
 
-      $node->field_prod_wtb_online[LANGUAGE_NONE][1]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'title', 1);
-      $node->field_prod_wtb_online[LANGUAGE_NONE][1]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'url', 1);
+      $node->field_prod_wtb_online[LANGUAGE_NONE][1]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_wtb_online', 'title', 1);
+      $node->field_prod_wtb_online[LANGUAGE_NONE][1]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_wtb_online', 'url', 1);
       $node->field_prod_wtb_online[LANGUAGE_NONE][1]['translate'] = FALSE;
 
-      $node->field_prod_wtb_online[LANGUAGE_NONE][2]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'title', 2);
-      $node->field_prod_wtb_online[LANGUAGE_NONE][2]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prodlang_wtb_online', 'url', 2);
+      $node->field_prod_wtb_online[LANGUAGE_NONE][2]['title'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_wtb_online', 'title', 2);
+      $node->field_prod_wtb_online[LANGUAGE_NONE][2]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_wtb_online', 'url', 2);
       $node->field_prod_wtb_online[LANGUAGE_NONE][2]['translate'] = FALSE;
     }
   }
