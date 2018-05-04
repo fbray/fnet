@@ -33,12 +33,6 @@ function fnet_ma_help($path, $arg) {
  */
 function fnet_ma_init() {
   module_load_include('inc', 'fnet_ma', 'includes/fnet_ma.common_functions');
-  // drupal_add_css(drupal_get_path('module', 'fnet_ma') . '/css/fnet_ma.css');
-  // drupal_add_js(drupal_get_path('module', 'fnet_ma') . '/js/fnet_ma.js');
-  drupal_add_library('system', 'ui.datepicker');  // TODO: Replace with Date picker from Date module?
-  $script = '(function($) {$( "input.datepicker" ).datepicker({dateFormat: \'mm/dd/yy\'});})(jQuery);';
-  drupal_add_js($script, ['type' => 'inline', 'scope' => 'footer']);
-  // drupal_add_js(drupal_get_path('module', 'fnet_ma') . '/js/fnet_ma_downloads_updates.js');
 }
 
 /**
@@ -552,7 +546,13 @@ function fnet_ma_myaccount_home() {
             </div>";
 
   $support_incidents = fnet_ma_fetch_support_incidents(365, NULL, TRUE);
-  $support_incidents_html = theme("tabular_support_incident_display", ['support_incidents' => $support_incidents]);
+  try {
+    $support_incidents_html = theme("tabular_support_incident_display", ['support_incidents' => $support_incidents]);
+  }
+  catch (Exception $e) {
+    watchdog('My Account', $e->getMessage());
+  }
+
   $html .= "<div id = 'support-incident-summary-section'>" . $support_incidents_html . "</div>";
 
   $html .= '<br />';
@@ -672,13 +672,21 @@ function fnet_ma_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
-/* Redirect user to my account page after resetting password (Forgot password) or 
+/**
+ * Redirect user to my account page after resetting password (Forgot password) or
  * updating profile (when user logs in for first time)
+ *
+ * @param $form
+ * @param $form_state
  */
 function fnet_ma_myaccount_user_submit($form, &$form_state) {
 	$form_state['redirect'] = 'myaccount';
 }
 
+/**
+ * @param $form
+ * @param $form_state
+ */
 function fnet_ma_user_login_submit($form, &$form_state) {
   if ( substr($form['#action'], 0, 9)  != '/extranet')  $form_state['redirect'] = 'myaccount';
 }
@@ -731,6 +739,10 @@ function fnet_ma_change_user_login_form($form, &$form_state) {
 
 /**
  * This function adds extra contents on the forgot password form.
+ *
+ * @param $form
+ * @param $form_state
+ * @return mixed
  */
 function fnet_ma_change_user_forgot_password_form($form, &$form_state) {
   $form['name']['#description'] = t('Enter the email address you registered with to reset your password.');
@@ -1124,7 +1136,6 @@ function fnet_ma_fetch_support_incidents($days_history = 30, $asset_id = NULL, $
  */
 function fnet_ma_report_product_incidents($form_state = [], $operation = '') {
   $form_values = $form_state['values'];
-  global $user;
   if ($operation == 'insert') {
     $result = fnet_sfdc_insert_support_incident($form_values);
     if ($result) {
