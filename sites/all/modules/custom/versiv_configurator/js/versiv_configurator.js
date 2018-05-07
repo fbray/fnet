@@ -507,7 +507,7 @@ function() {
 																}
                             $("<img />").appendTo(o).on("load", function(n) {
                                 $(this).addClass("loaded")
-                            }).attr("src", "http://www.flukenetworks.com/sites/flukenetworks.com/files" + "/" + prod_image.toLowerCase() + "-sm.png")
+                            }).attr("src", "/sites/all/files" + "/" + prod_image.toLowerCase() + "-sm.png")
                         })
 
 												var regCountryCookie = getCookie("regCountry") ? getCookie("regCountry") : "";
@@ -521,6 +521,7 @@ function() {
 													$('li#ps-wtb-btn').html('<div class="ps-widget ps-wtb-versiv" ps-sku="'+gt[0]+'"></div>');
 													setTimeout(function(){PriceSpider.rebind();},500);
 												}else{
+												    alert(regCountryCookie);
 													$('li#ps-wtb-btn').html('<div style="padding: 0 3.5em;text-transform: uppercase;text-shadow: 0 1px 1px rgba(255,255,255,0.75);line-height: 60px;"><a href="http://www.flukenetworks.com/content/request-versiv-demo/?ls=versiv_config&amp;lsd=RequestaDemo" style="color: rgb(0, 0, 0);font-size: 18px;font-weight: bold;" target="_blank">Request Demo</a></div>');
 												}
                     }), $("#summary-required").append(_.map(o, function(n) {

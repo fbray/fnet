@@ -670,7 +670,7 @@ body.bom #bom {
     -webkit-appearance: none;
     -moz-appearance:none;
     font-weight:bold;
-    padding:0 2em;
+    padding:0 1.5em;
     height:60px;
     line-height:60px;
     text-transform:uppercase;
