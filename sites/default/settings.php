@@ -647,3 +647,9 @@ if (!defined('PANTHEON_ENVIRONMENT')) {
     include $local_settings;
   }
 }
+if (isset($_SERVER['PANTHEON_ENVIRONMENT'])) {
+  if ($_SERVER['PANTHEON_ENVIRONMENT'] === 'dev') {
+    $domain = $_SERVER['HTTP_HOST'];
+    setcookie('NO_CACHE', '1', time()+0, $_SERVER['REQUEST_URI'], $domain);
+  }
+}
