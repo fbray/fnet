@@ -15,6 +15,16 @@ function ems_ctools_plugin_api($module = NULL, $api = NULL) {
 }
 
 /**
+ * Implements hook_views_api().
+ */
+function ems_views_api() {
+  return array(
+    'api' => 3.0,
+    'path' => drupal_get_path('module', 'ems') . '/views',
+  );
+}
+
+/**
  * Implements hook_node_info().
  */
 function ems_node_info() {
