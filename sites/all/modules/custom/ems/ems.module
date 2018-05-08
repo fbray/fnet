@@ -68,19 +68,6 @@ function ems_menu() {
     'access arguments' => ['edit any registration'],
     'type' => MENU_CALLBACK,
   ];
-  /*
-   * Shut down as a security flaw!
-   * TODO: Move this to an administrative function and change the access!
-   */
-  /*
-  $items['ems/registration/test'] = array(
-    'title' => 'test event registration',
-    'page callback' => 'ems_marketo_test',
-    'page arguments' => array(),
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
-  );
-  */
   $items['ems/registration/thank_you/%'] = [
     'title' => 'Thank you for registering',
     'page callback' => 'ems_registration_thank_you',
@@ -179,18 +166,20 @@ function ems_registration_thank_you($event_occurrence_id) {
 /**
  * Returns a html when an event is full.
  *
- * @param null $event_occurrence_id
+ * @param int|null $event_occurrence_id
  *   The nid of the event occurence.
  *
  * @return string
- *   Event full message to be displayed as page
+ *   Event full message to be displayed as page.
+ *
  * @throws \Exception
  */
 function ems_registration_event_full($event_occurrence_id = NULL) {
   if ($event_occurrence_id) {
     try {
       $output = theme('event_summary', ['event_occurrence_id' => $event_occurrence_id]);
-    } catch (Exception $e) {
+    }
+    catch (Exception $e) {
       watchdog('Event Management System', $e->getMessage());
     }
   }
@@ -212,8 +201,10 @@ function ems_registration_event_full($event_occurrence_id = NULL) {
  *
  * @param int $event_occurrence_id
  *   Node id of the event_occurrence to be listed.
+ *
  * @return string
  *   HTML for page body.
+ *
  * @throws \Exception
  */
 function ems_registration_list($event_occurrence_id) {
@@ -395,7 +386,6 @@ function ems_registration_list_csv($event_occurrence_id) {
     fputcsv($fh, $record);
   }
   fclose($fh);
-  // $csv->output(TRUE, 'registration.csv', $rows, $fields);
 
 }
 
@@ -407,13 +397,14 @@ function ems_registration_list_csv($event_occurrence_id) {
  *
  * @param string $op
  *   Operation being preformed. Can be 'add' or 'edit'.
- * @param $event_occurrence_id
+ * @param int $event_occurrence_id
  *   Node id for the event_occurrence.
  * @param null|int $registrant_id
  *   If the operation is 'edit', the id of the registration to edit.
  *
  * @return string
  *   HTML for page containing the registration form.
+ *
  * @throws \Exception
  */
 function ems_registration_page($op, $event_occurrence_id, $registrant_id = NULL) {
@@ -469,7 +460,8 @@ function ems_registration_page($op, $event_occurrence_id, $registrant_id = NULL)
  *
  * @param string $form
  *   The name of the form.
- * @param $form_state
+ * @param string $form_state
+ *   The state of the form.
  * @param string $op
  *   The operation being performed, add or edit.
  * @param object $event_occurrence
@@ -478,6 +470,7 @@ function ems_registration_page($op, $event_occurrence_id, $registrant_id = NULL)
  *   A registration object.
  *
  * @return array
+ *   A renderable form.
  */
 function ems_registration_form($form, $form_state, $op, $event_occurrence, $registration) {
   // Make sure the properties of the $registration object are actually set.
@@ -630,7 +623,8 @@ function ems_registration_form($form, $form_state, $op, $event_occurrence, $regi
   $form['state'] = [
     '#type' => 'select',
     '#title' => t('State/Province'),
-    '#default_value' => ['fnord'], // $default_state,
+    // $default_state.
+    '#default_value' => ['fnord'],
     '#required' => FALSE,
     '#options' => $state_options,
     '#prefix' => '<div id="state-wrapper" >',
@@ -683,8 +677,6 @@ function ems_registration_form($form, $form_state, $op, $event_occurrence, $regi
  * Implements hook_form_validate().
  *
  * Performs validation for the ems_registration_form.
- * @param $form
- * @param $form_state
  */
 function ems_registration_form_validate($form, &$form_state) {
   $email = $form_state['values']['email'];
@@ -709,8 +701,6 @@ function ems_registration_form_validate($form, &$form_state) {
  * Implements hook_form_submit().
  *
  * Process submitted ems_registration_form.
- * @param $form
- * @param $form_state
  */
 function ems_registration_form_submit($form, &$form_state) {
   $values = $form_state['values'];
@@ -747,7 +737,7 @@ function ems_registration_form_submit($form, &$form_state) {
  * @param int $rid
  *   Registration id of the registration.
  *
- * @return object|stdClass
+ * @return object
  *   Either a populated registration object or an empty stdClass.
  */
 function ems_registration_load($event_occurrence, $rid) {
@@ -850,7 +840,7 @@ function ems_registration_save($values) {
  * @return int|bool
  *   Record rid if the add is successful or false.
  */
-function ems_add_registrant($values) {
+function ems_add_registrant(array $values) {
   $result = db_query("SELECT rid FROM {ems_registrant} WHERE email = :email", [':email' => $values['email']]);
   if ($result) {
     $rid = $result->fetchField();
@@ -896,9 +886,10 @@ function ems_add_registrant($values) {
  *   Array of values from a submitted registration form.
  *
  * @return array|bool
- *   Either an array containing values for registration status and cancellation token or false.
+ *   Either an array containing values for registration status and
+ *   cancellation token or false.
  */
-function ems_add_registration($rid, $values) {
+function ems_add_registration($rid, array $values) {
   $record = new stdClass();
   $record->nid = $values['nid'];
   $record->rid = $rid;
@@ -908,7 +899,7 @@ function ems_add_registration($rid, $values) {
   $registered = db_query("SELECT COUNT(*) FROM ems_registration WHERE nid = :nid AND (registration_status = :registration_status1 OR registration_status = :registration_status2)", [
     ':nid' => $record->nid,
     ':registration_status1' => 'registered',
-    ':registration_status2' => 'waitlist-registered'
+    ':registration_status2' => 'waitlist-registered',
   ])->fetchField();
   if (($registered < $values['max_reg'])) {
     $record->registration_status = 'registered';
@@ -930,13 +921,13 @@ function ems_add_registration($rid, $values) {
   }
   $update = db_query('SELECT cancellation_token FROM {ems_registration} WHERE rid = :rid AND nid = :nid', [
     ':rid' => $record->rid,
-    ':nid' => $record->nid
+    ':nid' => $record->nid,
   ])->fetchField();
   if ($update) {
     $record->cancellation_token = $update;
     $result = drupal_write_record('ems_registration', $record, [
       'nid',
-      'rid'
+      'rid',
     ]);
   }
   else {
@@ -957,7 +948,8 @@ function ems_add_registration($rid, $values) {
 /**
  * Confirm event registration cancel.
  *
- * @param $form
+ * @param string $form
+ *   The form array.
  * @param string $form_id
  *   Form name, required by Drupal.
  * @param string $token
@@ -988,7 +980,7 @@ function ems_registration_cancel_form($form, $form_id, $token) {
  * @param array $form_state
  *   Form state array passed by reference.
  */
-function ems_registration_cancel_form_submit($form_id, &$form_state) {
+function ems_registration_cancel_form_submit($form_id, array &$form_state) {
   $token = $form_state['values']['token'];
   ems_registration_cancel($token);
 }
@@ -1184,8 +1176,6 @@ function ems_register_from_waitlist($event_occurrence) {
 
 /**
  * Implements hook_node_load().
- * @param $nodes
- * @param $types
  */
 function ems_node_load($nodes, $types) {
   $our_types = [];
@@ -1219,9 +1209,6 @@ function ems_node_load($nodes, $types) {
 
 /**
  * Implements hook_node_view().
- * @param $node
- * @param $view_mode
- * @param $langcode
  */
 function ems_node_view($node, $view_mode, $langcode) {
   if ($node->type == 'event_occurrence') {
@@ -1240,7 +1227,6 @@ function ems_node_view($node, $view_mode, $langcode) {
 
 /**
  * Implements hook_node_delete().
- * @param $node
  */
 function ems_node_delete($node) {
   // If an event_occurrence node is being deleted,
@@ -1270,7 +1256,6 @@ function ems_node_delete($node) {
 
 /**
  * Implements hook_node_update().
- * @param $node
  */
 function ems_node_update($node) {
   if ($node->type == 'event_occurrence') {
@@ -1287,9 +1272,6 @@ function ems_node_update($node) {
 
 /**
  * Implements hook_form_alter().
- * @param $form
- * @param $form_state
- * @param $form_id
  */
 function ems_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'event_occurrence_node_form') {
@@ -1304,9 +1286,11 @@ function ems_form_alter(&$form, &$form_state, $form_id) {
  * with the right name, and is registered to receive requestCampaign.
  *
  * @param string $form_id
+ *   The name of the form.
  * @param array $form_state
+ *   The state of the form.
  */
-function ems_validate_marketo_program($form_id, &$form_state) {
+function ems_validate_marketo_program($form_id, array &$form_state) {
   $marketo_program = $form_state['values']['field_marketo_program'][LANGUAGE_NONE][0]['value'];
   if (!empty($marketo_program)) {
     $result = marketo_api_get_campaigns_for_source();
@@ -1350,14 +1334,12 @@ function ems_theme() {
       'variables' => [
         'event_occurrence_id' => NULL,
       ],
-      ],
+    ],
   ];
 }
 
 /**
  * Implements hook_preprocess_node().
- * @param $variables
- * @throws \Exception
  */
 function ems_preprocess_node(&$variables) {
   if ($variables['type'] == 'event_occurrence') {
@@ -1367,17 +1349,19 @@ function ems_preprocess_node(&$variables) {
     $link = l(t('Register for this event'), 'ems/registration/add/' . $variables['nid']);
     try {
       $buttons = theme('fnet_button', ['link' => $link, 'auto' => TRUE]);
-    } catch (Exception $e) {
+    }
+    catch (Exception $e) {
     }
     $admin_user = user_access('edit any registration');
     if ($admin_user) {
       $link = l(t('View registrations'), 'ems/registration/list/' . $variables['nid']);
       try {
         $buttons .= '<br/><br/>' . theme('fnet_button', [
-            'link' => $link,
-            'auto' => TRUE,
-          ]);
-      } catch (Exception $e) {
+          'link' => $link,
+          'auto' => TRUE,
+        ]);
+      }
+      catch (Exception $e) {
         watchdog('Event Management System', $e->getMessage());
       }
     }
@@ -1415,7 +1399,6 @@ function ems_preprocess_node(&$variables) {
 
 /**
  * Implements hook_preprocess_page().
- * @param $variables
  */
 function ems_preprocess_page(&$variables) {
   if (isset($variables['node']) && $variables['node']->type == 'event_occurrence') {
@@ -1427,10 +1410,10 @@ function ems_preprocess_page(&$variables) {
 /**
  * The preprocess function for theme_event_summary.
  *
- * @param $variables
+ * @param array $variables
  *   Page variables.
  */
-function template_preprocess_event_summary(&$variables) {
+function template_preprocess_event_summary(array &$variables) {
   $event_occurrence_id = $variables['event_occurrence_id'];
   $occurrence = node_load($event_occurrence_id);
   $variables['occurrence'] = $occurrence;
@@ -1438,6 +1421,9 @@ function template_preprocess_event_summary(&$variables) {
   $variables['intro'] = fnet_common_get_field_value('event', $variables['event'], 'field_intro', 'value');
 }
 
+/**
+ * Provide values for the ajax call.
+ */
 function ems_state_province_ajax($form, &$form_state) {
   return $form['state'];
 }
@@ -1447,7 +1433,9 @@ function ems_state_province_ajax($form, &$form_state) {
  *
  * Uses the Addressfield module for the list.
  *
- * @param $country_code
+ * @param string $country_code
+ *   The two letter country code.
+ *
  * @return array
  *   Associative array of state abbreviations and names.
  */
@@ -1487,6 +1475,7 @@ function ems_get_job_role_options() {
  * Test returning a Marketo user based on the _mkto_trk cookie.
  *
  * @return string
+ *   The values representing a user from Marketo.
  */
 function ems_marketo_test() {
   global $base_url, $base_path;
@@ -1508,10 +1497,15 @@ function ems_marketo_test() {
 }
 
 /**
- * @param $location
+ * Build a single string out of Location fields.
+ *
+ * @param array $location
+ *   The field instance representing location.
+ *
  * @return string
+ *   A single string representing the given location.
  */
-function ems_build_location_string($location) {
+function ems_build_location_string(array $location) {
   $output = '';
   $fields = ['name', 'street', 'city', 'province_name'];
   foreach ($fields as $field) {
