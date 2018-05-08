@@ -380,8 +380,8 @@ function products_language_override(&$node) {
 
   $override_nids = array();
   foreach ($language_override_field_values as $value) {
-    if (!empty($value['nid'])) {
-      $override_nids[] = $value['nid'];
+    if (!empty($value['target_id'])) {
+      $override_nids[] = $value['target_id'];
     }
   }
 
@@ -477,12 +477,12 @@ function products_language_override(&$node) {
      */
     if (fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_img_t_1', 'filename')) {
 
+      $node->field_prod_video_img_t_1[LANGUAGE_NONE][0]['fid'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_img_t_1', 'fid');
       $node->field_prod_video_img_t_1[LANGUAGE_NONE][0]['filename'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_img_t_1', 'filename');
       $node->field_prod_video_img_t_1[LANGUAGE_NONE][0]['uri'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_img_t_1', 'uri');
       $node->field_prod_video_img_t_1[LANGUAGE_NONE][0]['alt'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_img_t_1', 'alt');
 
       $node->field_prod_video_youtube_url[LANGUAGE_NONE][0]['url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_youtube_url', 'url');
-      $node->field_prod_video_youtube_url[LANGUAGE_NONE][0]['display_url'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_youtube_url', 'url');
 
       $node->field_prod_video_lg_1[LANGUAGE_NONE][0]['filename'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_lg_1', 'filename');
       $node->field_prod_video_lg_1[LANGUAGE_NONE][0]['uri'] = fnet_common_get_field_value('product_language', $qualified_language_override_node, 'field_prod_video_lg_1', 'uri');
