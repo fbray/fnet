@@ -21,9 +21,20 @@ function fnet_news_events_field_default_field_instances() {
       'default' => array(
         'label' => 'hidden',
         'module' => 'text',
-        'settings' => array(),
+        'settings' => array(
+          'field_formatter_filter' => NULL,
+        ),
         'type' => 'text_plain',
         'weight' => 2,
+      ),
+      'search_result' => array(
+        'label' => 'hidden',
+        'module' => 'text',
+        'settings' => array(
+          'field_formatter_filter' => NULL,
+        ),
+        'type' => 'text_plain',
+        'weight' => 1,
       ),
       'teaser' => array(
         'label' => 'hidden',
@@ -72,6 +83,20 @@ function fnet_news_events_field_default_field_instances() {
         ),
         'type' => 'date_default',
         'weight' => 1,
+      ),
+      'search_result' => array(
+        'label' => 'hidden',
+        'module' => 'date',
+        'settings' => array(
+          'format_type' => 'default',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => 0,
+        ),
+        'type' => 'date_default',
+        'weight' => 3,
       ),
       'teaser' => array(
         'label' => 'hidden',
@@ -130,6 +155,13 @@ function fnet_news_events_field_default_field_instances() {
         'type' => 'hidden',
         'weight' => 3,
       ),
+      'search_result' => array(
+        'label' => 'hidden',
+        'module' => 'link',
+        'settings' => array(),
+        'type' => 'link_default',
+        'weight' => 2,
+      ),
       'teaser' => array(
         'label' => 'hidden',
         'settings' => array(),
@@ -184,14 +216,27 @@ function fnet_news_events_field_default_field_instances() {
       'default' => array(
         'label' => 'hidden',
         'module' => 'text',
-        'settings' => array(),
+        'settings' => array(
+          'field_formatter_filter' => NULL,
+        ),
+        'type' => 'text_default',
+        'weight' => 0,
+      ),
+      'search_result' => array(
+        'label' => 'hidden',
+        'module' => 'text',
+        'settings' => array(
+          'field_formatter_filter' => NULL,
+        ),
         'type' => 'text_default',
         'weight' => 0,
       ),
       'teaser' => array(
         'label' => 'hidden',
         'module' => 'text',
-        'settings' => array(),
+        'settings' => array(
+          'field_formatter_filter' => NULL,
+        ),
         'type' => 'text_default',
         'weight' => 1,
       ),
@@ -250,6 +295,12 @@ function fnet_news_events_field_default_field_instances() {
         'type' => 'hidden',
         'weight' => 4,
       ),
+      'search_result' => array(
+        'label' => 'hidden',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 4,
+      ),
       'teaser' => array(
         'label' => 'hidden',
         'settings' => array(),
@@ -284,7 +335,9 @@ function fnet_news_events_field_default_field_instances() {
       'default' => array(
         'label' => 'hidden',
         'module' => 'text',
-        'settings' => array(),
+        'settings' => array(
+          'field_formatter_filter' => NULL,
+        ),
         'type' => 'text_default',
         'weight' => 1,
       ),

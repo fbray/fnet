@@ -15,6 +15,16 @@ function fnet_news_events_ctools_plugin_api($module = NULL, $api = NULL) {
 }
 
 /**
+ * Implements hook_views_api().
+ */
+function fnet_news_events_views_api($module = NULL, $api = NULL) {
+  return array(
+    "api" => "3.0",
+    "path" => drupal_get_path('module', 'fnet_news_events') . '/views',
+  );
+}
+
+/**
  * Implements hook_node_info().
  */
 function fnet_news_events_node_info() {
