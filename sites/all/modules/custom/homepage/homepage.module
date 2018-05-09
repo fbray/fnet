@@ -4,6 +4,8 @@
  * Code for the Homepage module.
  */
 
+include_once 'homepage.features.inc';
+
 /**
  * Implements hook_preprocess_page().
  *
