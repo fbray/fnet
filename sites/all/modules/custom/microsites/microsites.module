@@ -1,16 +1,22 @@
 <?php
+
+/**
+ * @file
+ * microsites.module
+ */
+
 /*
- * The Page Story and Page Article content types should be here. They really should be
- * structured differently, so if you are reading this, please understand
- * that it wasn't my mess...well, not as much, really, and that I tried to clean
- * it up in the time allotted.
+ * The Page Story and Page Article content types should be here. They really
+ * should be structured differently, so if you are reading this, please
+ * understand that it wasn't my mess...well, not as much, really, and that I
+ * tried to clean it up in the time allotted.
  *
- * At the time of this writitng, I'm trying to get the site to be hosted on Pantheon.
- * I've also had a hell of a month, being sick almost every day. I hope I can
- * hang on.
+ * At the time of this writitng, I'm trying to get the site to be hosted
+ * on Pantheon. I've also had a hell of a month, being sick almost every day.
+ * I hope I can hang on.
  *
- * Let's add a menu for Linkware Live and hook_block for some various other stuff.
- * Maybe we'll add a short template for giggles.
+ * Let's add a menu for Linkware Live and hook_block for some various other
+ * stuff. Maybe we'll add a short template for giggles.
  *
  * Thanks for understanding.
  *
@@ -21,8 +27,6 @@ include_once 'microsites.features.inc';
 
 /**
  * Implements hook_block_info().
- *
- * @return mixed
  */
 function microsites_block_info() {
   $block['linkwarelive_footer'] = [
@@ -36,16 +40,13 @@ function microsites_block_info() {
 
 /**
  * Implements hook_block_view().
- *
- * @param $delta
- * @return array
  */
 function microsites_block_view($delta) {
   $block = [];
   switch ($delta) {
     case 'linkwarelive_footer':
       $block['subject'] = NULL;
-      try{
+      try {
         $block['content'] = theme('linkwarelive_footer');
       }
       catch (Exception $e) {
@@ -58,8 +59,6 @@ function microsites_block_view($delta) {
 
 /**
  * Implements hook_theme().
- *
- * @return array
  */
 function microsites_theme() {
   $base = [
@@ -67,16 +66,14 @@ function microsites_theme() {
   ];
   return [
     'linkwarelive_footer' => $base + [
-        'template' => 'linkwarelive_footer',
-        'variables' => [],
-      ],
+      'template' => 'linkwarelive_footer',
+      'variables' => [],
+    ],
   ];
 }
 
 /**
  * Implements hook_views_api().
- *
- * @return array
  */
 function microsites_views_api() {
   return [
