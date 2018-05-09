@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Code for the Knowledge Base module.
+ * Code for the Knowledge Base feature.
  */
 
 include_once 'knowledgebase.features.inc';
