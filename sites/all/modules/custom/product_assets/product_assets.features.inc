@@ -15,6 +15,17 @@ function product_assets_ctools_plugin_api($module = NULL, $api = NULL) {
 }
 
 /**
+ * Implements hook_views_api().
+ */
+function product_assets_views_api($module = NULL, $api = NULL) {
+  return [
+    'api' => 3.0,
+    'path' => drupal_get_path('module', 'product_assets') . '/views',
+    'template path' => drupal_get_path('module', 'product_assets') . '/theme',
+  ];
+}
+
+/**
  * Implements hook_node_info().
  */
 function product_assets_node_info() {

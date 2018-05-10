@@ -99,10 +99,10 @@ $handler->display->display_options['fields']['field_dam_document_status']['table
 $handler->display->display_options['fields']['field_dam_document_status']['field'] = 'field_dam_document_status';
 $handler->display->display_options['fields']['field_dam_document_status']['label'] = 'Status';
 /* Field: Content: Asset Type */
-$handler->display->display_options['fields']['field_dam_asset_type']['id'] = 'field_dam_asset_type';
-$handler->display->display_options['fields']['field_dam_asset_type']['table'] = 'field_data_field_dam_asset_type';
-$handler->display->display_options['fields']['field_dam_asset_type']['field'] = 'field_dam_asset_type';
-$handler->display->display_options['fields']['field_dam_asset_type']['settings'] = array(
+$handler->display->display_options['fields']['field_asset_type']['id'] = 'field_asset_type';
+$handler->display->display_options['fields']['field_asset_type']['table'] = 'field_data_field_asset_type';
+$handler->display->display_options['fields']['field_asset_type']['field'] = 'field_asset_type';
+$handler->display->display_options['fields']['field_asset_type']['settings'] = array(
   'bypass_access' => 0,
   'link' => 0,
 );
@@ -402,10 +402,10 @@ $handler->display->display_options['fields']['title']['field'] = 'title';
 $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
 $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
 /* Field: Content: Asset Type */
-$handler->display->display_options['fields']['field_dam_asset_type']['id'] = 'field_dam_asset_type';
-$handler->display->display_options['fields']['field_dam_asset_type']['table'] = 'field_data_field_dam_asset_type';
-$handler->display->display_options['fields']['field_dam_asset_type']['field'] = 'field_dam_asset_type';
-$handler->display->display_options['fields']['field_dam_asset_type']['settings'] = array(
+$handler->display->display_options['fields']['field_asset_type']['id'] = 'field_asset_type';
+$handler->display->display_options['fields']['field_asset_type']['table'] = 'field_data_field_asset_type';
+$handler->display->display_options['fields']['field_asset_type']['field'] = 'field_asset_type';
+$handler->display->display_options['fields']['field_asset_type']['settings'] = array(
   'bypass_access' => 0,
   'link' => 0,
 );
@@ -528,17 +528,17 @@ $handler->display->display_options['filters']['field_related_products_target_id'
   5 => 0,
   13 => 0,
 );
-/* Filter criterion: Content: Asset Type (field_dam_asset_type) */
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['id'] = 'field_dam_asset_type_target_id';
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['table'] = 'field_data_field_dam_asset_type';
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['field'] = 'field_dam_asset_type_target_id';
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['exposed'] = TRUE;
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['expose']['operator_id'] = 'field_dam_asset_type_target_id_op';
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['expose']['label'] = 'Asset Type';
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['expose']['operator'] = 'field_dam_asset_type_target_id_op';
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['expose']['identifier'] = 'field_dam_asset_type_target_id';
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['expose']['multiple'] = TRUE;
-$handler->display->display_options['filters']['field_dam_asset_type_target_id']['expose']['remember_roles'] = array(
+/* Filter criterion: Content: Asset Type (field_asset_type) */
+$handler->display->display_options['filters']['field_asset_type_target_id']['id'] = 'field_asset_type_target_id';
+$handler->display->display_options['filters']['field_asset_type_target_id']['table'] = 'field_data_field_asset_type';
+$handler->display->display_options['filters']['field_asset_type_target_id']['field'] = 'field_asset_type_target_id';
+$handler->display->display_options['filters']['field_asset_type_target_id']['exposed'] = TRUE;
+$handler->display->display_options['filters']['field_asset_type_target_id']['expose']['operator_id'] = 'field_asset_type_target_id_op';
+$handler->display->display_options['filters']['field_asset_type_target_id']['expose']['label'] = 'Asset Type';
+$handler->display->display_options['filters']['field_asset_type_target_id']['expose']['operator'] = 'field_asset_type_target_id_op';
+$handler->display->display_options['filters']['field_asset_type_target_id']['expose']['identifier'] = 'field_asset_type_target_id';
+$handler->display->display_options['filters']['field_asset_type_target_id']['expose']['multiple'] = TRUE;
+$handler->display->display_options['filters']['field_asset_type_target_id']['expose']['remember_roles'] = array(
   2 => '2',
   3 => 0,
   7 => 0,
@@ -835,10 +835,10 @@ $handler->display->display_options['fields']['title']['field'] = 'title';
 $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
 $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
 /* Field: Content: Asset Type */
-$handler->display->display_options['fields']['field_dam_asset_type']['id'] = 'field_dam_asset_type';
-$handler->display->display_options['fields']['field_dam_asset_type']['table'] = 'field_data_field_dam_asset_type';
-$handler->display->display_options['fields']['field_dam_asset_type']['field'] = 'field_dam_asset_type';
-$handler->display->display_options['fields']['field_dam_asset_type']['settings'] = array(
+$handler->display->display_options['fields']['field_asset_type']['id'] = 'field_asset_type';
+$handler->display->display_options['fields']['field_asset_type']['table'] = 'field_data_field_asset_type';
+$handler->display->display_options['fields']['field_asset_type']['field'] = 'field_asset_type';
+$handler->display->display_options['fields']['field_asset_type']['settings'] = array(
   'bypass_access' => 0,
   'link' => 0,
 );

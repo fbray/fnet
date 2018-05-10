@@ -1,61 +1,62 @@
 <?php
+
 /**
  * @file
- * ems.strongarm.inc
+ * microsites.strongarm.inc
  */
 
 /**
  * Implements hook_strongarm().
  */
-function ems_strongarm() {
+function microsites_strongarm() {
   $export = array();
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'diff_enable_revisions_page_node_event';
+  $strongarm->name = 'diff_enable_revisions_page_node_microsite_page';
   $strongarm->value = 1;
-  $export['diff_enable_revisions_page_node_event'] = $strongarm;
+  $export['diff_enable_revisions_page_node_microsite_page'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'diff_enable_revisions_page_node_event_occurrence';
+  $strongarm->name = 'diff_enable_revisions_page_node_microsite_story';
   $strongarm->value = 1;
-  $export['diff_enable_revisions_page_node_event_occurrence'] = $strongarm;
+  $export['diff_enable_revisions_page_node_microsite_story'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'diff_show_preview_changes_node_event';
+  $strongarm->name = 'diff_show_preview_changes_node_microsite_page';
   $strongarm->value = 1;
-  $export['diff_show_preview_changes_node_event'] = $strongarm;
+  $export['diff_show_preview_changes_node_microsite_page'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'diff_show_preview_changes_node_event_occurrence';
+  $strongarm->name = 'diff_show_preview_changes_node_microsite_story';
   $strongarm->value = 1;
-  $export['diff_show_preview_changes_node_event_occurrence'] = $strongarm;
+  $export['diff_show_preview_changes_node_microsite_story'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'diff_view_mode_preview_node_event';
+  $strongarm->name = 'diff_view_mode_preview_node_microsite_page';
   $strongarm->value = 'full';
-  $export['diff_view_mode_preview_node_event'] = $strongarm;
+  $export['diff_view_mode_preview_node_microsite_page'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'diff_view_mode_preview_node_event_occurrence';
+  $strongarm->name = 'diff_view_mode_preview_node_microsite_story';
   $strongarm->value = 'full';
-  $export['diff_view_mode_preview_node_event_occurrence'] = $strongarm;
+  $export['diff_view_mode_preview_node_microsite_story'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'field_bundle_settings_node__event';
+  $strongarm->name = 'field_bundle_settings_node__microsite_page';
   $strongarm->value = array(
     'view_modes' => array(
       'teaser' => array(
@@ -63,66 +64,6 @@ function ems_strongarm() {
       ),
       'full' => array(
         'custom_settings' => FALSE,
-      ),
-      'rss' => array(
-        'custom_settings' => FALSE,
-      ),
-      'search_index' => array(
-        'custom_settings' => FALSE,
-      ),
-      'search_result' => array(
-        'custom_settings' => TRUE,
-      ),
-      'diff_standard' => array(
-        'custom_settings' => FALSE,
-      ),
-      'print' => array(
-        'custom_settings' => FALSE,
-      ),
-      'token' => array(
-        'custom_settings' => FALSE,
-      ),
-    ),
-    'extra_fields' => array(
-      'form' => array(
-        'metatags' => array(
-          'weight' => '15',
-        ),
-        'title' => array(
-          'weight' => '0',
-        ),
-        'path' => array(
-          'weight' => '11',
-        ),
-        'rabbit_hole' => array(
-          'weight' => '1',
-        ),
-        'redirect' => array(
-          'weight' => '12',
-        ),
-        'xmlsitemap' => array(
-          'weight' => '13',
-        ),
-        'language' => array(
-          'weight' => '10',
-        ),
-      ),
-      'display' => array(),
-    ),
-  );
-  $export['field_bundle_settings_node__event'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'field_bundle_settings_node__event_occurrence';
-  $strongarm->value = array(
-    'view_modes' => array(
-      'full' => array(
-        'custom_settings' => TRUE,
-      ),
-      'teaser' => array(
-        'custom_settings' => TRUE,
       ),
       'rss' => array(
         'custom_settings' => FALSE,
@@ -163,124 +104,184 @@ function ems_strongarm() {
         'xmlsitemap' => array(
           'weight' => '30',
         ),
+        'language' => array(
+          'weight' => '5',
+        ),
       ),
       'display' => array(),
     ),
   );
-  $export['field_bundle_settings_node__event_occurrence'] = $strongarm;
+  $export['field_bundle_settings_node__microsite_page'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'language_content_type_event';
+  $strongarm->name = 'field_bundle_settings_node__microsite_story';
+  $strongarm->value = array(
+    'view_modes' => array(
+      'full' => array(
+        'custom_settings' => TRUE,
+      ),
+      'teaser' => array(
+        'custom_settings' => TRUE,
+      ),
+      'rss' => array(
+        'custom_settings' => FALSE,
+      ),
+      'search_index' => array(
+        'custom_settings' => FALSE,
+      ),
+      'search_result' => array(
+        'custom_settings' => TRUE,
+      ),
+      'diff_standard' => array(
+        'custom_settings' => FALSE,
+      ),
+      'print' => array(
+        'custom_settings' => FALSE,
+      ),
+      'token' => array(
+        'custom_settings' => FALSE,
+      ),
+    ),
+    'extra_fields' => array(
+      'form' => array(
+        'metatags' => array(
+          'weight' => '11',
+        ),
+        'title' => array(
+          'weight' => '0',
+        ),
+        'path' => array(
+          'weight' => '8',
+        ),
+        'rabbit_hole' => array(
+          'weight' => '6',
+        ),
+        'redirect' => array(
+          'weight' => '9',
+        ),
+        'xmlsitemap' => array(
+          'weight' => '10',
+        ),
+        'language' => array(
+          'weight' => '7',
+        ),
+      ),
+      'display' => array(),
+    ),
+  );
+  $export['field_bundle_settings_node__microsite_story'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'language_content_type_microsite_page';
   $strongarm->value = '4';
-  $export['language_content_type_event'] = $strongarm;
+  $export['language_content_type_microsite_page'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'language_content_type_event_occurrence';
-  $strongarm->value = '0';
-  $export['language_content_type_event_occurrence'] = $strongarm;
+  $strongarm->name = 'language_content_type_microsite_story';
+  $strongarm->value = '4';
+  $export['language_content_type_microsite_story'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_options_event';
+  $strongarm->name = 'menu_options_microsite_page';
   $strongarm->value = array(
     0 => 'main-menu',
   );
-  $export['menu_options_event'] = $strongarm;
+  $export['menu_options_microsite_page'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_options_event_occurrence';
+  $strongarm->name = 'menu_options_microsite_story';
   $strongarm->value = array(
     0 => 'main-menu',
   );
-  $export['menu_options_event_occurrence'] = $strongarm;
+  $export['menu_options_microsite_story'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_parent_event';
+  $strongarm->name = 'menu_parent_microsite_page';
   $strongarm->value = 'main-menu:0';
-  $export['menu_parent_event'] = $strongarm;
+  $export['menu_parent_microsite_page'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_parent_event_occurrence';
+  $strongarm->name = 'menu_parent_microsite_story';
   $strongarm->value = 'main-menu:0';
-  $export['menu_parent_event_occurrence'] = $strongarm;
+  $export['menu_parent_microsite_story'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_options_event';
-  $strongarm->value = array(
-    0 => 'moderation',
-    1 => 'revision',
-  );
-  $export['node_options_event'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_options_event_occurrence';
+  $strongarm->name = 'node_options_microsite_page';
   $strongarm->value = array(
     0 => 'revision',
   );
-  $export['node_options_event_occurrence'] = $strongarm;
+  $export['node_options_microsite_page'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_event';
+  $strongarm->name = 'node_options_microsite_story';
+  $strongarm->value = array();
+  $export['node_options_microsite_story'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'node_preview_microsite_page';
   $strongarm->value = '1';
-  $export['node_preview_event'] = $strongarm;
+  $export['node_preview_microsite_page'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_event_occurrence';
+  $strongarm->name = 'node_preview_microsite_story';
   $strongarm->value = '1';
-  $export['node_preview_event_occurrence'] = $strongarm;
+  $export['node_preview_microsite_story'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_submitted_event';
+  $strongarm->name = 'node_submitted_microsite_page';
   $strongarm->value = 0;
-  $export['node_submitted_event'] = $strongarm;
+  $export['node_submitted_microsite_page'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_submitted_event_occurrence';
+  $strongarm->name = 'node_submitted_microsite_story';
   $strongarm->value = 0;
-  $export['node_submitted_event_occurrence'] = $strongarm;
+  $export['node_submitted_microsite_story'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'xmlsitemap_settings_node_event';
+  $strongarm->name = 'xmlsitemap_settings_node_microsite_page';
   $strongarm->value = array(
-    'status' => '1',
+    'status' => '0',
     'priority' => '0.5',
   );
-  $export['xmlsitemap_settings_node_event'] = $strongarm;
+  $export['xmlsitemap_settings_node_microsite_page'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'xmlsitemap_settings_node_event_occurrence';
+  $strongarm->name = 'xmlsitemap_settings_node_microsite_story';
   $strongarm->value = array(
-    'status' => '1',
+    'status' => '0',
     'priority' => '0.5',
   );
-  $export['xmlsitemap_settings_node_event_occurrence'] = $strongarm;
+  $export['xmlsitemap_settings_node_microsite_story'] = $strongarm;
 
   return $export;
 }

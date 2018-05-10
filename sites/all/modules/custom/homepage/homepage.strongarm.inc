@@ -1,64 +1,68 @@
 <?php
+
 /**
  * @file
- * ems.strongarm.inc
+ * homepage.strongarm.inc
  */
 
 /**
  * Implements hook_strongarm().
  */
-function ems_strongarm() {
+function homepage_strongarm() {
   $export = array();
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'diff_enable_revisions_page_node_event';
+  $strongarm->name = 'diff_enable_revisions_page_node_homepage2013';
   $strongarm->value = 1;
-  $export['diff_enable_revisions_page_node_event'] = $strongarm;
+  $export['diff_enable_revisions_page_node_homepage2013'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'diff_enable_revisions_page_node_event_occurrence';
+  $strongarm->name = 'diff_enable_revisions_page_node_homepage2013_language';
   $strongarm->value = 1;
-  $export['diff_enable_revisions_page_node_event_occurrence'] = $strongarm;
+  $export['diff_enable_revisions_page_node_homepage2013_language'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'diff_show_preview_changes_node_event';
+  $strongarm->name = 'diff_show_preview_changes_node_homepage2013';
   $strongarm->value = 1;
-  $export['diff_show_preview_changes_node_event'] = $strongarm;
+  $export['diff_show_preview_changes_node_homepage2013'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'diff_show_preview_changes_node_event_occurrence';
+  $strongarm->name = 'diff_show_preview_changes_node_homepage2013_language';
   $strongarm->value = 1;
-  $export['diff_show_preview_changes_node_event_occurrence'] = $strongarm;
+  $export['diff_show_preview_changes_node_homepage2013_language'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'diff_view_mode_preview_node_event';
+  $strongarm->name = 'diff_view_mode_preview_node_homepage2013';
   $strongarm->value = 'full';
-  $export['diff_view_mode_preview_node_event'] = $strongarm;
+  $export['diff_view_mode_preview_node_homepage2013'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'diff_view_mode_preview_node_event_occurrence';
+  $strongarm->name = 'diff_view_mode_preview_node_homepage2013_language';
   $strongarm->value = 'full';
-  $export['diff_view_mode_preview_node_event_occurrence'] = $strongarm;
+  $export['diff_view_mode_preview_node_homepage2013_language'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'field_bundle_settings_node__event';
+  $strongarm->name = 'field_bundle_settings_node__homepage2013';
   $strongarm->value = array(
     'view_modes' => array(
       'teaser' => array(
+        'custom_settings' => TRUE,
+      ),
+      'search_result' => array(
         'custom_settings' => TRUE,
       ),
       'full' => array(
@@ -69,9 +73,6 @@ function ems_strongarm() {
       ),
       'search_index' => array(
         'custom_settings' => FALSE,
-      ),
-      'search_result' => array(
-        'custom_settings' => TRUE,
       ),
       'diff_standard' => array(
         'custom_settings' => FALSE,
@@ -86,201 +87,172 @@ function ems_strongarm() {
     'extra_fields' => array(
       'form' => array(
         'metatags' => array(
-          'weight' => '15',
+          'weight' => '5',
         ),
         'title' => array(
           'weight' => '0',
         ),
         'path' => array(
-          'weight' => '11',
+          'weight' => '2',
         ),
         'rabbit_hole' => array(
           'weight' => '1',
         ),
         'redirect' => array(
-          'weight' => '12',
+          'weight' => '3',
         ),
         'xmlsitemap' => array(
-          'weight' => '13',
-        ),
-        'language' => array(
-          'weight' => '10',
+          'weight' => '4',
         ),
       ),
       'display' => array(),
     ),
   );
-  $export['field_bundle_settings_node__event'] = $strongarm;
+  $export['field_bundle_settings_node__homepage2013'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'field_bundle_settings_node__event_occurrence';
+  $strongarm->name = 'field_bundle_settings_node__homepage2013_language';
   $strongarm->value = array(
-    'view_modes' => array(
-      'full' => array(
-        'custom_settings' => TRUE,
-      ),
-      'teaser' => array(
-        'custom_settings' => TRUE,
-      ),
-      'rss' => array(
-        'custom_settings' => FALSE,
-      ),
-      'search_index' => array(
-        'custom_settings' => FALSE,
-      ),
-      'search_result' => array(
-        'custom_settings' => TRUE,
-      ),
-      'diff_standard' => array(
-        'custom_settings' => FALSE,
-      ),
-      'print' => array(
-        'custom_settings' => FALSE,
-      ),
-      'token' => array(
-        'custom_settings' => FALSE,
-      ),
-    ),
+    'view_modes' => array(),
     'extra_fields' => array(
       'form' => array(
         'metatags' => array(
-          'weight' => '40',
+          'weight' => '12',
         ),
         'title' => array(
-          'weight' => '-5',
-        ),
-        'path' => array(
-          'weight' => '30',
-        ),
-        'rabbit_hole' => array(
           'weight' => '0',
         ),
+        'path' => array(
+          'weight' => '9',
+        ),
+        'rabbit_hole' => array(
+          'weight' => '1',
+        ),
         'redirect' => array(
-          'weight' => '30',
+          'weight' => '10',
         ),
         'xmlsitemap' => array(
-          'weight' => '30',
+          'weight' => '11',
         ),
       ),
       'display' => array(),
     ),
   );
-  $export['field_bundle_settings_node__event_occurrence'] = $strongarm;
+  $export['field_bundle_settings_node__homepage2013_language'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'language_content_type_event';
-  $strongarm->value = '4';
-  $export['language_content_type_event'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'language_content_type_event_occurrence';
+  $strongarm->name = 'language_content_type_homepage2013';
   $strongarm->value = '0';
-  $export['language_content_type_event_occurrence'] = $strongarm;
+  $export['language_content_type_homepage2013'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_options_event';
+  $strongarm->name = 'language_content_type_homepage2013_language';
+  $strongarm->value = '0';
+  $export['language_content_type_homepage2013_language'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'menu_options_homepage2013';
   $strongarm->value = array(
     0 => 'main-menu',
   );
-  $export['menu_options_event'] = $strongarm;
+  $export['menu_options_homepage2013'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_options_event_occurrence';
+  $strongarm->name = 'menu_options_homepage2013_language';
   $strongarm->value = array(
     0 => 'main-menu',
   );
-  $export['menu_options_event_occurrence'] = $strongarm;
+  $export['menu_options_homepage2013_language'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_parent_event';
+  $strongarm->name = 'menu_parent_homepage2013';
   $strongarm->value = 'main-menu:0';
-  $export['menu_parent_event'] = $strongarm;
+  $export['menu_parent_homepage2013'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_parent_event_occurrence';
+  $strongarm->name = 'menu_parent_homepage2013_language';
   $strongarm->value = 'main-menu:0';
-  $export['menu_parent_event_occurrence'] = $strongarm;
+  $export['menu_parent_homepage2013_language'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_options_event';
-  $strongarm->value = array(
-    0 => 'moderation',
-    1 => 'revision',
-  );
-  $export['node_options_event'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_options_event_occurrence';
+  $strongarm->name = 'node_options_homepage2013';
   $strongarm->value = array(
     0 => 'revision',
   );
-  $export['node_options_event_occurrence'] = $strongarm;
+  $export['node_options_homepage2013'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_event';
+  $strongarm->name = 'node_options_homepage2013_language';
+  $strongarm->value = array(
+    0 => 'revision',
+  );
+  $export['node_options_homepage2013_language'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'node_preview_homepage2013';
   $strongarm->value = '1';
-  $export['node_preview_event'] = $strongarm;
+  $export['node_preview_homepage2013'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_event_occurrence';
+  $strongarm->name = 'node_preview_homepage2013_language';
   $strongarm->value = '1';
-  $export['node_preview_event_occurrence'] = $strongarm;
+  $export['node_preview_homepage2013_language'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_submitted_event';
+  $strongarm->name = 'node_submitted_homepage2013';
   $strongarm->value = 0;
-  $export['node_submitted_event'] = $strongarm;
+  $export['node_submitted_homepage2013'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_submitted_event_occurrence';
+  $strongarm->name = 'node_submitted_homepage2013_language';
   $strongarm->value = 0;
-  $export['node_submitted_event_occurrence'] = $strongarm;
+  $export['node_submitted_homepage2013_language'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'xmlsitemap_settings_node_event';
+  $strongarm->name = 'xmlsitemap_settings_node_homepage2013';
   $strongarm->value = array(
     'status' => '1',
     'priority' => '0.5',
   );
-  $export['xmlsitemap_settings_node_event'] = $strongarm;
+  $export['xmlsitemap_settings_node_homepage2013'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'xmlsitemap_settings_node_event_occurrence';
+  $strongarm->name = 'xmlsitemap_settings_node_homepage2013_language';
   $strongarm->value = array(
     'status' => '1',
     'priority' => '0.5',
   );
-  $export['xmlsitemap_settings_node_event_occurrence'] = $strongarm;
+  $export['xmlsitemap_settings_node_homepage2013_language'] = $strongarm;
 
   return $export;
 }

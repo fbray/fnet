@@ -1,10 +1,14 @@
 <?php
-// $Id: marketo_form.module 5830 2015-04-02 18:44:38Z jcaratoz $
+
+/**
+ * @file
+ * marketo_form.module
+ */
+
+include_once 'marketo_form.features.inc';
 
 /**
  * Implements hook_menu().
- *
- * @return mixed
  */
 function marketo_form_menu() {
   $items['admin/fnet/marketo_form'] = array(
@@ -21,8 +25,6 @@ function marketo_form_menu() {
 
 /**
  * Implements hook_permission().
- *
- * @return array
  */
 function marketo_form_permission() {
   return array(
@@ -34,7 +36,10 @@ function marketo_form_permission() {
 }
 
 /**
+ * Helper function to provide a list of regions.
+ *
  * @return array
+ *   A list of regions.
  */
 function marketo_get_regions() {
   $regions = array(
@@ -62,13 +67,11 @@ function marketo_get_regions() {
 
 /**
  * Implements hook_preprocess_page().
- *
- * @param $variables
  */
 function marketo_form_preprocess_page(&$variables) {
   if (isset($variables['node']) && ($variables['node']->type == 'marketo_form')) {
     // TODO: Deprecated. Remove when be.mobilized is turned off.
-    //setting cookie to stop be.mobilized from serving marketo form pages
+    // Setting cookie to stop be.mobilized from serving marketo form pages.
     setcookie('fullweb', 1, 0, '/');
 
     $variables['title'] = html_entity_decode($variables['node']->title);
@@ -76,25 +79,18 @@ function marketo_form_preprocess_page(&$variables) {
       $variables['page']['highlighted'] = "<div style='margin-left:auto;margin-right:auto;width:1000px'>";
       $variables['page']['highlighted'] .= $variables['node']->field_banner_html[LANGUAGE_NONE][0]['value'];
       $variables['page']['highlighted'] .= "</div>";
-    } else if (isset($variables['node']->field_image[LANGUAGE_NONE][0]['fid'])) {
+    }
+    elseif (isset($variables['node']->field_image[LANGUAGE_NONE][0]['fid'])) {
       $file = file_load($variables['node']->field_image[LANGUAGE_NONE][0]['fid']);
       $uri = $file->uri;
       $url = file_create_url($uri);
-      $variables['page']['highlighted'] = "<img src=\"".$url."\" alt=\"".$variables['node']->field_image[LANGUAGE_NONE][0]['alt']."\" title=\"".$variables['node']->field_image[LANGUAGE_NONE][0]['alt']."\" width=\"1000px\" border=\"0\" />";
+      $variables['page']['highlighted'] = "<img src=\"" . $url . "\" alt=\"" . $variables['node']->field_image[LANGUAGE_NONE][0]['alt'] . "\" title=\"" . $variables['node']->field_image[LANGUAGE_NONE][0]['alt'] . "\" width=\"1000px\" border=\"0\" />";
     }
-
-    /*
-    if ($variables['node']->field_removenav[LANGUAGE_NONE][0]['value'] == "1") {
-      $variables['page']['menu_bar'] = "";
-      $variables['page']['footer'] = "";
-    }
-    */
   }
 }
 
 /**
  * Implements hook_preprocess_node().
- * @param $variables
  */
 function marketo_form_preprocess_node(&$variables) {
   if (isset($variables['node']) && ($variables['node']->type == 'marketo_form')) {
@@ -105,22 +101,26 @@ function marketo_form_preprocess_node(&$variables) {
   }
 }
 
+/**
+ * Implements hook_page_build().
+ */
 function marketo_form_page_build(&$page) {
-	if (arg(0) == 'node' && is_numeric(arg(1))) {
-		$nodeId = arg(1);
-		$nodetype = isset($page['content']['system_main']['nodes'][$nodeId]['field_removenav']['#object']->type)?$page['content']['system_main']['nodes'][$nodeId]['field_removenav']['#object']->type:'';
-		if (isset($nodeId) && $nodetype=='marketo_form') {
-			$tracking_code = isset($page['content']['system_main']['nodes'][$nodeId]['#node']->field_tracking_code['und'][0]['value'])?trim($page['content']['system_main']['nodes'][$nodeId]['#node']->field_mkt_form_adtracker['und'][0]['value']):'';
-			if ($tracking_code) {
-				$page['page_bottom']['marketo_form'] = array('#markup' => $tracking_code);
-			}
-		}
-	}
+  if (arg(0) == 'node' && is_numeric(arg(1))) {
+    $nodeId = arg(1);
+    $nodetype = isset($page['content']['system_main']['nodes'][$nodeId]['field_removenav']['#object']->type) ? $page['content']['system_main']['nodes'][$nodeId]['field_removenav']['#object']->type : '';
+
+    if (isset($nodeId) && $nodetype == 'marketo_form') {
+      $tracking_code = isset($page['content']['system_main']['nodes'][$nodeId]['#node']->field_tracking_code['und'][0]['value']) ? trim($page['content']['system_main']['nodes'][$nodeId]['#node']->field_mkt_form_adtracker['und'][0]['value']) : '';
+
+      if ($tracking_code) {
+        $page['page_bottom']['marketo_form'] = array('#markup' => $tracking_code);
+      }
+    }
+  }
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Helper function to generate the HTML for a form.
  */
 function marketo_form_get_form_html($iFrameUrl, $iFrameHeight) {
   if (empty($iFrameUrl)) {
@@ -159,24 +159,22 @@ function marketo_form_get_form_html($iFrameUrl, $iFrameHeight) {
   else {
     $myUrl = parse_url($iFrameUrl);
     $html = preg_replace('/(<!DOCTYPE html PUBLIC)(.*)(>)/', '', $html);
-    $html = str_ireplace('<!DOCTYPE html>', '', $html); // Possible variation.
+    // Possible variation.
+    $html = str_ireplace('<!DOCTYPE html>', '', $html);
     $html = str_ireplace('<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">', '', $html);
-    $html = str_ireplace('<html lang="en">', '', $html); // Possible variation.
+    // Possible variation.
+    $html = str_ireplace('<html lang="en">', '', $html);
     $html = str_ireplace('</html>', '', $html);
     $html = str_ireplace('<meta http-equiv="content-type" content="text/html; charset=UTF-8" />', '', $html);
     $html = str_ireplace('<head>', '', $html);
     $html = str_ireplace('</head>', '', $html);
-//    $html = str_ireplace('<body id="bodyId" class="mktEditable">', '', $html);
-//    $html = str_ireplace('<body id="bodyId" class="mktEditable" align="center" >', '', $html); // Possible variation.
     $html = preg_replace('/(<body)(.*)(>)/', '', $html);
     $html = str_ireplace('</body>', '', $html);
     $html = preg_replace('%src="//(.*)/%mU', 'src="http://\1/', $html);
     $html = str_ireplace('href="/', 'href="http://' . $myUrl["host"] . '/', $html);
     $html = str_ireplace('src="/', 'src="http://' . $myUrl["host"] . '/', $html);
     $html = preg_replace('/(name="_mkt_trk" value=")(id:[0-9A-Z]+\-[0-9A-Z]+\-[0-9A-Z]+)(")/', '${1}$3', $html);
-    //$html = preg_replace('/([a-z\-]+)(\.marketo\.com)/', $myUrl["host"], $html);
     $html = preg_replace('/(<\!--Google -->)(.*)(urchinTracker)(.*)(-->)/s', '', $html);
-//    $html = preg_replace('%<script type="text/javascript" src="http://info.flukenetworks.com/js/public/jquery-latest.min.js"></script>%im', '', $html);
     $html = preg_replace('%action="/%sim', 'action="http://info.flukenetworks.com/', $html);
 
     if (function_exists('findit_local_auth_cookie')) {
@@ -197,22 +195,27 @@ function marketo_form_get_form_html($iFrameUrl, $iFrameHeight) {
 }
 
 /**
+ * Helper function to dynamically create a query.
+ *
  * @return string
+ *   The generated query.
  */
 function marketo_form_build_query_string() {
   $query_string = "";
   $query_parameter = array();
+  $types = array('document', 'ls', 'lsd', 'gclid', 'epi');
   if (!empty($_SERVER['QUERY_STRING'])) {
     $pairs = explode("&", $_SERVER['QUERY_STRING']);
     foreach ($pairs as $pair) {
       list($variable, $value) = explode("=", $pair);
-      if (in_array(strtolower($variable), array('document', 'ls', 'lsd', 'gclid', 'epi'))) {
+      if (in_array(strtolower($variable), $types)) {
         switch ($variable) {
           case 'document':
             if (!is_numeric($value)) {
               $value = '';
             }
             break;
+
           default:
             if ((strlen($value) > 256) || (stripos($value, '/proc') !== FALSE)) {
               $value = '';
@@ -239,9 +242,12 @@ function marketo_form_build_query_string() {
 }
 
 /**
- * @param $variables
+ * Helper function to generate variables for the template.
+ *
+ * @param array $variables
+ *   The current nodes variables.
  */
-function marketo_form_template_variables(&$variables) {
+function marketo_form_template_variables(array &$variables) {
   $node = $variables['node'];
   $lang = $_COOKIE['language'];
   $regLang = $_COOKIE['regLang'];
@@ -282,7 +288,7 @@ function marketo_form_template_variables(&$variables) {
     $marketo_form_footer = '';
   }
   $marketo_form = marketo_form_get_form_html($iFrameUrl, $iFrameHeight);
-  $ip_embargoed = false;
+  $ip_embargoed = FALSE;
   $iFrameHeight = '100%';
   if (isset($node->field_iframe_height[LANGUAGE_NONE][0]['value'])) {
     $iFrameHeight = trim($node->field_iframe_height[LANGUAGE_NONE][0]['value']);

@@ -1,41 +1,40 @@
 <?php
-
 /**
  * @file
- * knowledgebase.strongarm.inc
+ * digital_asset.strongarm.inc
  */
 
 /**
  * Implements hook_strongarm().
  */
-function knowledgebase_strongarm() {
+function digital_asset_strongarm() {
   $export = array();
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'diff_enable_revisions_page_node_knowledge_base_article';
+  $strongarm->name = 'diff_enable_revisions_page_node_digital_asset';
   $strongarm->value = 1;
-  $export['diff_enable_revisions_page_node_knowledge_base_article'] = $strongarm;
+  $export['diff_enable_revisions_page_node_digital_asset'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'diff_show_preview_changes_node_knowledge_base_article';
+  $strongarm->name = 'diff_show_preview_changes_node_digital_asset';
   $strongarm->value = 1;
-  $export['diff_show_preview_changes_node_knowledge_base_article'] = $strongarm;
+  $export['diff_show_preview_changes_node_digital_asset'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'diff_view_mode_preview_node_knowledge_base_article';
+  $strongarm->name = 'diff_view_mode_preview_node_digital_asset';
   $strongarm->value = 'full';
-  $export['diff_view_mode_preview_node_knowledge_base_article'] = $strongarm;
+  $export['diff_view_mode_preview_node_digital_asset'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'field_bundle_settings_node__knowledge_base_article';
+  $strongarm->name = 'field_bundle_settings_node__digital_asset';
   $strongarm->value = array(
     'view_modes' => array(
       'teaser' => array(
@@ -66,108 +65,94 @@ function knowledgebase_strongarm() {
     'extra_fields' => array(
       'form' => array(
         'metatags' => array(
-          'weight' => '9',
+          'weight' => '26',
         ),
         'title' => array(
           'weight' => '0',
         ),
         'path' => array(
-          'weight' => '6',
+          'weight' => '3',
         ),
         'rabbit_hole' => array(
-          'weight' => '4',
+          'weight' => '2',
         ),
         'redirect' => array(
-          'weight' => '7',
+          'weight' => '4',
         ),
         'xmlsitemap' => array(
-          'weight' => '8',
-        ),
-        'language' => array(
           'weight' => '5',
         ),
+        'language' => array(
+          'weight' => '0',
+        ),
       ),
-      'display' => array(),
+      'display' => array(
+        'language' => array(
+          'search_result' => array(
+            'weight' => '4',
+            'visible' => FALSE,
+          ),
+        ),
+      ),
     ),
   );
-  $export['field_bundle_settings_node__knowledge_base_article'] = $strongarm;
+  $export['field_bundle_settings_node__digital_asset'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'i18n_node_default_language_for_knowledge_base_article';
-  $strongarm->value = '-- current --';
-  $export['i18n_node_default_language_for_knowledge_base_article'] = $strongarm;
+  $strongarm->name = 'language_content_type_digital_asset';
+  $strongarm->value = '2';
+  $export['language_content_type_digital_asset'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'i18n_node_extended_knowledge_base_article';
-  $strongarm->value = 1;
-  $export['i18n_node_extended_knowledge_base_article'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'i18n_node_options_knowledge_base_article';
-  $strongarm->value = array();
-  $export['i18n_node_options_knowledge_base_article'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'language_content_type_knowledge_base_article';
-  $strongarm->value = '4';
-  $export['language_content_type_knowledge_base_article'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'menu_options_knowledge_base_article';
+  $strongarm->name = 'menu_options_digital_asset';
   $strongarm->value = array(
     0 => 'main-menu',
   );
-  $export['menu_options_knowledge_base_article'] = $strongarm;
+  $export['menu_options_digital_asset'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_parent_knowledge_base_article';
+  $strongarm->name = 'menu_parent_digital_asset';
   $strongarm->value = 'main-menu:0';
-  $export['menu_parent_knowledge_base_article'] = $strongarm;
+  $export['menu_parent_digital_asset'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_options_knowledge_base_article';
+  $strongarm->name = 'node_options_digital_asset';
   $strongarm->value = array(
     0 => 'revision',
   );
-  $export['node_options_knowledge_base_article'] = $strongarm;
+  $export['node_options_digital_asset'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_knowledge_base_article';
+  $strongarm->name = 'node_preview_digital_asset';
   $strongarm->value = '1';
-  $export['node_preview_knowledge_base_article'] = $strongarm;
+  $export['node_preview_digital_asset'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_submitted_knowledge_base_article';
-  $strongarm->value = 1;
-  $export['node_submitted_knowledge_base_article'] = $strongarm;
+  $strongarm->name = 'node_submitted_digital_asset';
+  $strongarm->value = 0;
+  $export['node_submitted_digital_asset'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'xmlsitemap_settings_node_knowledge_base_article';
+  $strongarm->name = 'xmlsitemap_settings_node_digital_asset';
   $strongarm->value = array(
-    'status' => '1',
+    'status' => '0',
     'priority' => '0.5',
   );
-  $export['xmlsitemap_settings_node_knowledge_base_article'] = $strongarm;
+  $export['xmlsitemap_settings_node_digital_asset'] = $strongarm;
 
   return $export;
 }

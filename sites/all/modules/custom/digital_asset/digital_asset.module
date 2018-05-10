@@ -223,11 +223,12 @@ function digital_asset_permission() {
  * Implements hook_form_alter().
  */
 function digital_asset_form_alter(&$form, &$form_state, $form_id) {
-  switch($form_id) {
+  switch ($form_id) {
     case 'digital_asset_node_form':
       // Sort the Related Products.
       asort($form['field_related_products'][LANGUAGE_NONE]['#options']);
       break;
+
     default:
       break;
   }
@@ -237,11 +238,6 @@ function digital_asset_form_alter(&$form, &$form_state, $form_id) {
  * Implements hook_form_FORM_ID_alter().
  */
 function digital_asset_form_digital_asset_node_form_alter(&$form, &$form_state) {
-  /* For testing
-  if (module_exists('devel')) {
-    dpm($form);
-  }
-  */
   $form['#after_build'][] = 'digital_asset_node_form_after_build';
   $form['#cache'] = TRUE;
 
@@ -290,23 +286,6 @@ function digital_asset_form_digital_asset_node_form_alter(&$form, &$form_state) 
   unset($form['actions']['submit']['#submit']);
   unset($form['actions']['preview']);
   $form['actions']['delete']['#submit'] = ['digital_asset_node_form_delete_submit'];
-
-  // Taken from the bad function digital_asset_node_form()
-  // Find if this is a child node.
-  /*
-  if (fnet_common_get_field_value('digital_asset', $node, 'field_dam_parent', 'nid')) {
-    $form['#theme'] = array('digital_asset_child_node_form');
-  }
-  drupal_set_title(digital_asset_page_title($node));
-  if (!empty($form['#submit']) && is_array($form['#submit'])) {
-    if (!in_array('digital_asset_node_form_submit', $form['#submit'])) {
-      $form['#submit'][] = 'digital_asset_node_form_submit';
-    }
-  }
-  else {
-    $form['#submit'] = array('digital_asset_node_form_submit');
-  }
-  */
 }
 
 /**
@@ -366,11 +345,6 @@ function digital_asset_theme() {
 function digital_asset_node_form($form, &$form_state, $node, $is_child = FALSE) {
   form_load_include($form_state, 'inc', 'node', 'node.pages');
   $form = node_form($form, $form_state, $node);
-  /* For Testing
-  if (module_exists('devel')) {
-    dpm($form);
-  }
-  */
 
   if (!empty($form['#submit']) && is_array($form['#submit'])) {
     if (!in_array('digital_asset_node_form_submit', $form['#submit'])) {
@@ -387,21 +361,6 @@ function digital_asset_node_form($form, &$form_state, $node, $is_child = FALSE) 
   return $form;
 }
 
-/*
-if (fnet_common_get_field_value('digital_asset', $node, 'field_dam_parent', 'nid')) {
-    $form['#theme'] = array('digital_asset_child_node_form');
-  }
-  drupal_set_title(digital_asset_page_title($node));
-  if (!empty($form['#submit']) && is_array($form['#submit'])) {
-    if (!in_array('digital_asset_node_form_submit', $form['#submit'])) {
-      $form['#submit'][] = 'digital_asset_node_form_submit';
-    }
-  }
-  else {
-    $form['#submit'] = array('digital_asset_node_form_submit');
-  }
- */
-
 /**
  * Implements hook_node_form_validate().
  */
@@ -413,12 +372,6 @@ function digital_asset_node_form_validate($form, &$form_state) {
   if (!empty($values['field_asset_file'][LANGUAGE_NONE][0]['fid'])) {
     $filename = db_query($filename_query, [':fid' => $values['field_asset_file'][LANGUAGE_NONE][0]['fid']])
       ->fetchField();
-    /*
-    $query = db_select('file_managed', 'f')
-      ->fields('f', ['filename'])
-      ->condition('fid', $values['field_dam_asset_file'][LANGUAGE_NONE][0]['fid']);
-    $filename = $query->execute()->fetchField();
-    */
   }
   else {
     $filename = '';
@@ -427,12 +380,6 @@ function digital_asset_node_form_validate($form, &$form_state) {
   if (!empty($values['field_dam_asset_file_pod'][LANGUAGE_NONE][0]['fid'])) {
     $pod_filename = db_query($filename_query, [':fid' => $values['field_dam_asset_file_pod'][LANGUAGE_NONE][0]['fid']])
       ->fetchField();
-    /*
-    $query = db_select('file_managed', 'f')
-      ->fields('f', ['filename'])
-      ->condition('fid', $values['field_dam_asset_file_pod'][LANGUAGE_NONE][0]['fid']);
-    $pod_filename = $query->execute()->fetchField();
-    */
   }
   else {
     $pod_filename = '';
@@ -643,12 +590,9 @@ function digital_asset_init() {
 }
 
 /**
- * Node delete confirm form.
+ * Implements hook_delete_confirm().
  *
- * @param $form
- * @param $form_state
- * @param $node
- * @return mixed
+ * Node delete confirm form from Drupal 6.
  */
 function digital_asset_delete_confirm($form, &$form_state, $node) {
   $form['nid'] = [
@@ -676,9 +620,6 @@ function digital_asset_node_form_delete_submit($form, &$form_state) {
 
 /**
  * Node delete submit.
- *
- * @param $form
- * @param $form_state
  */
 function digital_asset_delete_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
@@ -783,8 +724,10 @@ function digital_asset_queue_for_ftp($node, $operation = 'put', $pod = FALSE) {
 /**
  * Delete local file after ftp to CDN.
  *
- * @param $nid
+ * @param int $nid
+ *   The ID of the node.
  * @param bool $pod
+ *
  * @throws \Exception
  */
 function digital_asset_delete_local_file($nid, $pod = FALSE) {
@@ -1315,31 +1258,6 @@ function digital_asset_list_assets_by_type($type, $language = 'en', $industry = 
  * @param $type
  * @return array
  */
-/*
-SELECT
-	p.field_pcatid_value,
-	n.title
-FROM field_data_field_pcatid AS p
-INNER JOIN node n ON p.revision_id = n.vid
-WHERE
-	n.nid IN
-(
-  SELECT DISTINCT
-				fp.field_related_products_target_id
-			FROM
-				field_data_field_asset_type a
-			INNER JOIN node AS n ON a.revision_id = n.vid
-			INNER JOIN field_data_field_related_products AS fp ON fp.revision_id = n.vid
-			WHERE a.field_asset_type_value IN ('manual')
-			ORDER BY
-				fp.field_related_products_target_id ASC
-		)
-  AND p.field_pcatid_value IS NOT NULL
-AND n.status = 1
-ORDER BY n.title
-
-fp.field_product_product_id IS NOT NULL
-*/
 function digital_asset_get_products_with_assets($type) {
   $result_set = [];
   $sql = "SELECT
@@ -1384,7 +1302,6 @@ function digital_asset_list_by_product($pcat_id, $language = 'en', $asset_type =
     $asset_type = [$asset_type];
   }
   // TODO: Clean this up and test for results.
-
   $gold_number = check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_gold_number')));
   $gold_pin = check_plain(trim(fnet_common_get_field_value('user', $user, 'field_user_gold_pin')));
   $is_covered = fnet_sfdc_category_has_gold_coverage($gold_number, $gold_pin, $pcat_id);
@@ -1659,14 +1576,4 @@ function digital_asset_languages() {
     'vi' => 'Vietnamese',
   ];
   return $languages;
-}
-
-/**
- * Implements hook_views_api().
- */
-function digital_asset_views_api() {
-  return [
-    'api' => 3.0,
-    'path' => drupal_get_path('module', 'digital_asset') . '/views',
-  ];
 }
