@@ -10,11 +10,6 @@ include_once DRUPAL_ROOT . '/includes/locale.inc';
 include_once 'ems.features.inc';
 
 /**
- * @file
- * ems.module
- */
-
-/**
  * @defgroup ems
  * @ingroup
  * @{
