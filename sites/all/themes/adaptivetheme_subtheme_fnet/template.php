@@ -8,19 +8,20 @@
  * such preprocess, process, alters, and theme function overrides.
  *
  * Preprocess and process functions are used to modify or create variables for
- * templates and theme functions. They are a common theming tool in Drupal, often
- * used as an alternative to directly editing or adding code to templates. Its
- * worth spending some time to learn more about these functions - they are a
- * powerful way to easily modify the output of any template variable.
+ * templates and theme functions. They are a common theming tool in Drupal,
+ * often used as an alternative to directly editing or adding code to
+ * templates. It's worth spending some time to learn more about these
+ * functions - they are a powerful way to easily modify the output of any
+ * template variable.
  *
- * Preprocess and Process Functions SEE: http://drupal.org/node/254940#variables-processor
- * 1. Rename each function and instance of "adaptivetheme_subtheme_fnet" to match
- *    your subthemes name, e.g. if your theme name is "footheme" then the function
- *    name will be "footheme_preprocess_hook". Tip - you can search/replace
+ * Preprocess and Process Functions
+ * SEE: http://drupal.org/node/254940#variables-processor
+ * 1. Rename each function and instance of "adaptivetheme_subtheme" to match
+ *    your subthemes name, e.g. if your theme name is "foo" then the function
+ *    name will be "foo_preprocess_hook". Tip - you can search/replace
  *    on "adaptivetheme_subtheme_fnet".
  * 2. Uncomment the required function to use.
  */
-
 
 /**
  * Preprocess variables for the html template.
@@ -34,11 +35,15 @@ function adaptivetheme_subtheme_fnet_preprocess_html(&$vars) {
   // Add a body class for the active theme name.
   // $vars['classes_array'][] = drupal_html_class($theme_key);
 
-  // Browser/platform sniff - adds body classes such as ipad, webkit, chrome etc.
+  // Browser/platform sniff - add body classes such as ipad, webkit, chrome etc.
   // $vars['classes_array'][] = css_browser_selector();
 
 }
-// */
+ */
+
+/**
+ * Implements theme_preprocess_html().
+ */
 function adaptivetheme_subtheme_fnet_preprocess_html(&$vars) {
   $occupied_column_one = !empty($vars['page']['content_column_one']);
   $occupied_column_two = !empty($vars['page']['content_column_two']);
@@ -46,7 +51,8 @@ function adaptivetheme_subtheme_fnet_preprocess_html(&$vars) {
   if ($occupied_column_one && $occupied_column_two && $occupied_column_three) {
     $vars['classes_array'][] = 'nested-content-columns-3';
 
-  } elseif (
+  }
+  elseif (
     ($occupied_column_one && $occupied_column_two)
     || ($occupied_column_one && $occupied_column_three)
     || ($occupied_column_two && $occupied_column_three)
@@ -54,40 +60,29 @@ function adaptivetheme_subtheme_fnet_preprocess_html(&$vars) {
 
     $vars['classes_array'][] = 'nested-content-columns-2';
   }
-	 $pskey = array(
+  $pskey = array(
     '#type' => 'html_tag',
     '#tag' => 'meta',
     '#attributes' => array('name' => 'ps-key', 'content' => '1805-58b8e43945e86b24009d412a'),
   );
-	drupal_add_html_head($pskey,'ps-key');
-	$pscountry = array(
+  drupal_add_html_head($pskey, 'ps-key');
+  $pscountry = array(
     '#type' => 'html_tag',
     '#tag' => 'meta',
     '#attributes' => array('name' => 'ps-country', 'content' => 'US'),
   );
-	drupal_add_html_head($pscountry,'ps-country');
-	$pslangauge = array(
+  drupal_add_html_head($pscountry, 'ps-country');
+  $pslangauge = array(
     '#type' => 'html_tag',
     '#tag' => 'meta',
     '#attributes' => array('name' => 'ps-language', 'content' => 'en'),
   );
-	drupal_add_html_head($pslangauge,'ps-language'); 
+  drupal_add_html_head($pslangauge, 'ps-language');
 }
-
-
-/**
- * Process variables for the html template.
- */
-/* -- Delete this line if you want to use this function
-function adaptivetheme_subtheme_fnet_process_html(&$vars) {
-}
-// */
-
 
 /**
  * Override or insert variables for the page templates.
  */
-
 function adaptivetheme_subtheme_fnet_preprocess_page(&$vars) {
   $header = drupal_get_http_header('status');
   if ($header == "404 Not Found") {
@@ -103,49 +98,20 @@ function adaptivetheme_subtheme_fnet_preprocess_page(&$vars) {
   }
 }
 
-/*
-function adaptivetheme_subtheme_fnet_process_page(&$vars) {
-}
-// */
-
-
 /**
  * Override or insert variables into the node templates.
  */
-
 function adaptivetheme_subtheme_fnet_preprocess_node(&$vars, $hook) {
-  if($vars['view_mode'] == 'search_result') {
-    $vars['theme_hook_suggestions'][] = 'search_result';  // Default to the basic search result template.
+  if ($vars['view_mode'] == 'search_result') {
+    // Default to the basic search result template.
+    $vars['theme_hook_suggestions'][] = 'search_result';
     $vars['theme_hook_suggestions'][] = 'node__' . $vars['type'] . '__search_result';
   }
 }
 
-function adaptivetheme_subtheme_fnet_process_node(&$vars) {
-}
-
-
-
 /**
- * Override or insert variables into the comment templates.
+ * Implements theme_form_element().
  */
-/* -- Delete this line if you want to use these functions
-function adaptivetheme_subtheme_fnet_preprocess_comment(&$vars) {
-}
-function adaptivetheme_subtheme_fnet_process_comment(&$vars) {
-}
-// */
-
-
-/**
- * Override or insert variables into the block templates.
- */
-/* -- Delete this line if you want to use these functions
-function adaptivetheme_subtheme_fnet_preprocess_block(&$vars) {
-}
-function adaptivetheme_subtheme_fnet_process_block(&$vars) {
-}
-// */
-
 function adaptivetheme_subtheme_fnet_form_element($variables) {
   $element = &$variables['element'];
 
@@ -165,16 +131,17 @@ function adaptivetheme_subtheme_fnet_form_element($variables) {
     $attributes['class'][] = 'form-type-' . strtr($element['#type'], '_', '-');
   }
   if (!empty($element['#name'])) {
-    $attributes['class'][] = 'form-item-' . strtr($element['#name'], array(' ' => '-', '_' => '-', '[' => '-', ']' => ''));
+    $attributes['class'][] = 'form-item-' . strtr($element['#name'],
+    array(' ' => '-', '_' => '-', '[' => '-', ']' => ''));
   }
   // Add a class for disabled elements to facilitate cross-browser styling.
   if (!empty($element['#attributes']['disabled'])) {
     $attributes['class'][] = 'form-disabled';
   }
 
-  $form_wrapper_id = (!empty($element['#id'])) ? $element['#id']."-wrapper" : '';
+  $form_wrapper_id = (!empty($element['#id'])) ? $element['#id'] . "-wrapper" : '';
 
-  $output = '<div' . drupal_attributes($attributes) . ' id="'.$form_wrapper_id.'">' . "\n";
+  $output = '<div' . drupal_attributes($attributes) . ' id="' . $form_wrapper_id . '">' . "\n";
 
   // If #title is not set, we don't display any label or required marker.
   if (!isset($element['#title'])) {
@@ -211,6 +178,9 @@ function adaptivetheme_subtheme_fnet_form_element($variables) {
   return $output;
 }
 
+/**
+ * Add classes to custom button.
+ */
 function adaptivetheme_subtheme_fnet_fnet_button($variables) {
   if (isset($variables['auto']) && $variables['auto']) {
     $button_class = 'btn_auto';
@@ -227,29 +197,31 @@ function adaptivetheme_subtheme_fnet_fnet_button($variables) {
   return $output;
 }
 
+/**
+ * Implements hook_theme().
+ */
 function adaptivetheme_subtheme_fnet_theme($existing, $type, $theme, $path) {
   return array(
     'fnet_button' => array(
       'link' => NULL,
       'auto' => NULL,
-    )
+    ),
   );
 }
-
 
 /**
  * Returns HTML for a breadcrumb trail.
  *
  * Adaptivetheme renders breadcrumbs as an ordered list (<ol>...</ol>), wrapping
- * crumbs in li elements and the seperators in span elements. Additionally .crumb,
+ * crumbs in li elements and seperators in span elements. Additionally .crumb,
  * .crumb-first and .crumb-last classes are printed on the li elements. We also
  * remove some silly breadcrumbs from various pages.
  *
- * @param $vars
+ * @param array $vars
  *   An associative array containing:
  *   - breadcrumb: An array containing the breadcrumb links.
  */
-function adaptivetheme_subtheme_fnet_breadcrumb($vars) {
+function adaptivetheme_subtheme_fnet_breadcrumb(array $vars) {
   global $theme_key;
   $theme_name = $theme_key;
   $breadcrumb = $vars['breadcrumb'];
@@ -273,7 +245,7 @@ function adaptivetheme_subtheme_fnet_breadcrumb($vars) {
 
       $separator = filter_xss_admin(at_get_setting('breadcrumb_separator', $theme_name));
 
-      // Push the page title onto the end of the breadcrumb array
+      // Push the page title onto the end of the breadcrumb array.
       if (at_get_setting('breadcrumb_title', $theme_name) == 1) {
         if ($page_title = drupal_get_title()) {
           $breadcrumb[] = '<span class="crumb-title">' . $page_title . '</span>';
