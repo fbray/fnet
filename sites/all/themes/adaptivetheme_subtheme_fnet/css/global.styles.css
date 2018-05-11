@@ -1160,6 +1160,11 @@ ul.action-links {
   color:#ffc20e;
 }
 
+.view-main-site-search .title {
+  text-align: left;
+  font-size: 1.25em;
+  margin: 20px 0;
+}
 
 
 /*
