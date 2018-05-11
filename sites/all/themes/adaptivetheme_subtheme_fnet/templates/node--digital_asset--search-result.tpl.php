@@ -15,11 +15,8 @@
 <?php print render($title_suffix); ?>
 <?php print render($content); ?>
 <section class="field field-type-list-text field-label-inline clearfix view-mode-search_result">
-  <h2 class="field-label"><?php print t('Last Updated:'); ?>  </h2>
+  <h2 class="field-label"><?php print t('Last Updated: '); ?>  </h2>
   <div class="field-items">
     <div class="field-item"> <?php print format_date($node->changed); ?></div>
   </div>
 </section>
-
-
-
