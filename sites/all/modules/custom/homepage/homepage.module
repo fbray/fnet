@@ -36,7 +36,8 @@ function homepage_preprocess_page(&$variables) {
     $query = "SELECT node.nid FROM {node} node
       JOIN {field_data_field_language_region} l ON l.entity_id = node.nid
       WHERE node.status = 1
-      AND l.field_language_region_value LIKE :reglang LIMIT 1";
+      AND l.field_language_region_value LIKE :reglang
+      AND node.type = 'homepage2013_language' LIMIT 1";
     $result = db_query($query, array(':reglang' => db_like($regLang) . '%'))->fetchField();
 
     if ($result) {
@@ -52,9 +53,9 @@ function homepage_preprocess_page(&$variables) {
     if (!is_null($qualified_language_override_node)) {
 
       // Fetch override banner content.
-      $home13lng_banners = fnet_common_get_field_values('homepage2013language', $qualified_language_override_node, 'field_home13lng_banner_html');
+      $home13lng_banners = fnet_common_get_field_values('homepage2013_language', $qualified_language_override_node, 'field_home13_banner_html');
       if (($home13lng_banners) && (count($home13lng_banners) > 0)) {
-        $default_node->field_home13_banner_html = $qualified_language_override_node->field_home13lng_banner_html;
+        $default_node->field_home13_banner_html = $qualified_language_override_node->field_home13_banner_html;
         $regLang_cookie = (isset($_COOKIE["regLang"])) ? $_COOKIE['regLang'] : 'No cookie';
         $log_variables = array(
           '%default' => $default_node->nid,
@@ -84,43 +85,43 @@ function homepage_preprocess_page(&$variables) {
       }
 
       // Fetch override expertise topic content.
-      $home13lng_exptp = fnet_common_get_field_values('homepage2013language', $qualified_language_override_node, 'field_home13_exptpc');
+      $home13lng_exptp = fnet_common_get_field_values('homepage2013_language', $qualified_language_override_node, 'field_home13_exptpc');
       if (($home13lng_exptp) && (count($home13lng_exptp) > 0)) {
         $default_node->field_home13_exptpc = $qualified_language_override_node->field_home13_exptpc;
       }
 
       // Fetch override expertise role content.
-      $home13lng_exprle = fnet_common_get_field_values('homepage2013language', $qualified_language_override_node, 'field_home13_exprle');
+      $home13lng_exprle = fnet_common_get_field_values('homepage2013_language', $qualified_language_override_node, 'field_home13_exprle');
       if (($home13lng_exprle) && (count($home13lng_exprle) > 0)) {
         $default_node->field_home13_exprle = $qualified_language_override_node->field_home13_exprle;
       }
 
       // Fetch override expertise industry content.
-      $home13lng_expind = fnet_common_get_field_values('homepage2013language', $qualified_language_override_node, 'field_home13_expind');
+      $home13lng_expind = fnet_common_get_field_values('homepage2013_language', $qualified_language_override_node, 'field_home13_expind');
       if (($home13lng_expind) && (count($home13lng_expind) > 0)) {
         $default_node->field_home13_expind = $qualified_language_override_node->field_home13_expind;
       }
 
       // Fetch override industry desc #1 content.
-      $home13lng_category_description_1 = fnet_common_get_field_values('homepage2013language', $qualified_language_override_node, 'field_home13_category_description_1');
+      $home13lng_category_description_1 = fnet_common_get_field_values('homepage2013_language', $qualified_language_override_node, 'field_category_description_1');
       if (($home13lng_category_description_1) && (count($home13lng_category_description_1) > 0)) {
-        $default_node->field_home13_category_description_1 = $qualified_language_override_node->field_home13_category_description_1;
+        $default_node->field_category_description_1 = $qualified_language_override_node->field_category_description_1;
       }
 
       // Fetch override industry desc #2 content.
-      $home13lng_category_description_2 = fnet_common_get_field_values('homepage2013language', $qualified_language_override_node, 'field_home13_category_description_2');
+      $home13lng_category_description_2 = fnet_common_get_field_values('homepage2013_language', $qualified_language_override_node, 'field_category_description_2');
       if (($home13lng_category_description_2) && (count($home13lng_category_description_2) > 0)) {
-        $default_node->field_home13_category_description_2 = $qualified_language_override_node->field_home13_category_description_2;
+        $default_node->field_category_description_2 = $qualified_language_override_node->field_category_description_2;
       }
 
       // Fetch override industry desc #3 content.
-      $home13lng_category_description_3 = fnet_common_get_field_values('homepage2013language', $qualified_language_override_node, 'field_home13_category_description_3');
+      $home13lng_category_description_3 = fnet_common_get_field_values('homepage2013_language', $qualified_language_override_node, 'field_category_description_3');
       if (($home13lng_category_description_3) && (count($home13lng_category_description_3) > 0)) {
-        $default_node->field_home13_category_description_3 = $qualified_language_override_node->field_home13_category_description_3;
+        $default_node->field_category_description_3 = $qualified_language_override_node->field_category_description_3;
       }
 
       // Fetch override ad content.
-      $home13lng_ads = fnet_common_get_field_values('homepage2013language', $qualified_language_override_node, 'field_home13_ads');
+      $home13lng_ads = fnet_common_get_field_values('homepage2013_language', $qualified_language_override_node, 'field_home13_ads');
       if (($home13lng_ads) && (count($home13lng_ads) > 0)) {
         $default_node->field_home13_ads = $qualified_language_override_node->field_home13_ads;
       }
