@@ -12,57 +12,50 @@
     <div id="footer_inner">
 
       <div class="footer_box">
-        <div class="footer_title"><a href="/solutions">SOLUTIONS</a></div>
-        <div class="footer_link"><a href="/solutions/roles"><?php print t('Roles'); ?></a></div>
-         <div class="footer_link"><a href="/solutions/learn-about"><?php print t('Learn About'); ?></a></div>
-        <div class="footer_link"><a href="/solutions/case-studies"><?php print t('Case Studies'); ?></a></div>
-        <div class="clear_15px">&nbsp;</div>
-        <div class="footer_title"><a href="/blog/cabling-chronicles"><?php print t('BLOG'); ?>:</a></div>
-        <div class="footer_link"><a href="/blog/cabling-chronicles"><?php print t('Cabling Chronicles'); ?></a></div>
+        <div class="footer_title"><?php print l(t('Solutions'), '/solutions'); ?></div>
+        <div class="footer_link"><?php print l(t('Roles'), '/solutions/roles'); ?></div>
+         <div class="footer_link"><?php print l(t('Learn About'), '/solutions/learn-about'); ?></div>
+        <div class="footer_link"><?php print l(t('Case Studies'), '/solutions/case-studies'); ?></div>
+        <div class="clear_15px"></div>
+        <div class="footer_title"><?php print l(t('Blog'), '/blog/cabling-chronicles'); ?></div>
+        <div class="footer_link"><?php print l(t('Cabling Chronicles'), '/blog/cabling-chronicles'); ?></div>
       </div>
 
       <div class="footer_box">
-        <div class="footer_title"><a href="/products">PRODUCTS</a></div>
-        <div class="footer_link"><a href="/cabling-certification"><?php print('Cabling Certification'); ?></a>
-        </div>
-        <div class="footer_link"><a href="/installation-and-test"><?php print t('Installation and Test'); ?></a>
-        </div>
-        <div class="footer_link"><a href="/telecom-test"><?php print t('Telecom Test'); ?></a></div>
-        <div class="footer_link"><a href="/product-finder"><?php print t('Product Finder'); ?></a>
-        </div>
-        <div class="footer_link"><a href="/products"><?php print ('See All Products'); ?></a></div>
-        <div class="footer_link"><a href="/promotions-home"><?php print ('Promotions'); ?></a></div>
+        <div class="footer_title"><?php print l(t('Products'), '/products'); ?></div>
+        <div class="footer_link"><?php print l(t('Cabling Certification'), '/cabling-certification'); ?></div>
+        <div class="footer_link"><?php print l(t('Installation and Test'), '/installation-and-test'); ?></div>
+        <div class="footer_link"><?php print l(t('Telecom Test'), '/telecom-test'); ?></div>
+        <div class="footer_link"><?php print l(t('Product Finder'), '/product-finder'); ?></div>
+        <div class="footer_link"><?php print l(t('See All Products'), '/products'); ?></div>
+        <div class="footer_link"><?php print l(t('Promotions'), '/promotions'); ?></div>
       </div>
 
       <div class="footer_box">
-        <div class="footer_title"><a href="/support">SUPPORT</a></div>
-        <div class="footer_link"><a href="/content/gold-product-support"><?php print t('Gold Product Support'); ?></a></div>
-        <div class="footer_link"><a href="/support/downloads"><?php print t('Downloads & Updates'); ?></a></div>
-        <div class="footer_link"><a href="/knowledge-base"><?php print t('Knowledge Base'); ?></a></div>
-        <div class="footer_link"><a href="/support/service-centers"><?php print t('Service
-            Centers'); ?></a></div>
-        <div class="footer_link"><a href="/content/standard-warranty"><?php print t('Warranty
-            Information'); ?></a></div>
-        <div class="footer_link"><a href="/support/application-notes"><?php print t('Application
-            Notes'); ?></a></div>
-        <div class="footer_link"><a href="/support/datasheets"><?php print t('Data Sheets'); ?></a>
-        </div>
-        <div class="footer_link"><a href="/support/manuals"><?php print t('Manuals'); ?></a></div>
+        <div class="footer_title"><?php print l(t('Support'), '/support'); ?></div>
+        <div class="footer_link"><?php print l(t('Gold Product Support'), '/content/gold-product-support'); ?></div>
+        <div class="footer_link"><?php print l(t('Downloads & Updates'), '/support/downloads'); ?></div>
+        <div class="footer_link"><?php print l(t('Knowledge Base'), '/knowledge-base'); ?></div>
+        <div class="footer_link"><?php print l(t('Service Centers'), '/support/service-centers'); ?></div>
+        <div class="footer_link"><?php print l(t('Warranty Information'), '/content/standard-warranty'); ?></div>
+        <div class="footer_link"><?php print l(t('Application Notes'), '/support/application-notes'); ?></div>
+        <div class="footer_link"><?php print l(t('Data Sheets'), '/support/datasheets'); ?></div>
+        <div class="footer_link"><?php print l(t('Manuals'), '/support/manuals'); ?></div>
       </div>
 
       <div class="footer_box">
-        <div class="footer_title"><a href="/community">COMMUNITY</a></div>
+        <div class="footer_title"><?php print l(t('Community'), '/community'); ?></div>
         <div class="clear_20px">&nbsp;</div>
-        <div class="footer_title"><a href="/about-us">ABOUT US</a></div>
-        <div class="footer_link"><a href="https://careers.fluke.com" target="_blank">Careers</a></div>
+        <div class="footer_title"><?php print l(t('About Us'), '/about-us'); ?></div>
+        <div class="footer_link"><?php print l(t('Careers'), 'https://careers.fluke.com', ['attributes' =>['target' => '_blank']]); ?></div>
       </div>
 
       <div class="footer_box">
-        <div class="footer_title"><a href="/news-events">NEWS &amp; EVENTS</a></div>
-        <div class="footer_link"><a href="/news-list">News Articles</a></div>
-        <div class="footer_link"><a href="/news-events/tradeshows">Upcoming Events</a></div>
-        <div class="footer_link"><a href="/news-events/training">Training</a></div>
-        <div class="footer_link"><a href="/news-events/workshops">Workshops</a></div>
+        <div class="footer_title"><?php print l(t('News & Events'),'/news-events'); ?></div>
+        <div class="footer_link"><?php print l(t('News Articles'), '/news-list'); ?></div>
+        <div class="footer_link"><?php print l(t('Upcoming Events'), '/news-events/tradeshows'); ?></div>
+        <div class="footer_link"><?php print l(t('Training'), '/news-events/training'); ?></div>
+        <div class="footer_link"><?php print l(t('Workshops'), '/news-events/workshops'); ?></div>
       </div>
     </div>
   </div>
