@@ -60,12 +60,13 @@ function industries_families_preprocess_node(&$variables) {
     $nid = $variables['node']->nid;
     $variables['industry_families'] = array();
     // Get the family nodes that are associated with a product category.
-    $query = "SELECT n.nid 
+    $query = "SELECT n.nid
       FROM node n
       JOIN field_data_field_product_category category ON category.entity_id = n.nid
       WHERE n.type = 'product_family'
+      AND category.field_product_category_target_id = :nid
       AND n.status = :published";
-    $result = db_query($query, array(':published' => NODE_PUBLISHED))->fetchAllAssoc('nid');
+    $result = db_query($query, array(':published' => NODE_PUBLISHED, ':nid' => $nid))->fetchAllAssoc('nid');
 
     if (count($result) > 0) {
       $variables['industry_families'] = node_load_multiple(array_keys($result));
@@ -306,4 +307,3 @@ function industries_families_case_studies($industry_nid) {
   }
   return $output;
 }
-
