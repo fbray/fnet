@@ -87,25 +87,25 @@ function microsites_strongarm() {
     'extra_fields' => array(
       'form' => array(
         'metatags' => array(
-          'weight' => '40',
+          'weight' => '7',
         ),
         'title' => array(
-          'weight' => '-5',
-        ),
-        'path' => array(
-          'weight' => '30',
-        ),
-        'rabbit_hole' => array(
           'weight' => '0',
         ),
+        'path' => array(
+          'weight' => '4',
+        ),
+        'rabbit_hole' => array(
+          'weight' => '2',
+        ),
         'redirect' => array(
-          'weight' => '30',
+          'weight' => '5',
         ),
         'xmlsitemap' => array(
-          'weight' => '30',
+          'weight' => '6',
         ),
         'language' => array(
-          'weight' => '5',
+          'weight' => '3',
         ),
       ),
       'display' => array(),
@@ -147,25 +147,25 @@ function microsites_strongarm() {
     'extra_fields' => array(
       'form' => array(
         'metatags' => array(
-          'weight' => '11',
+          'weight' => '12',
         ),
         'title' => array(
           'weight' => '0',
         ),
         'path' => array(
-          'weight' => '8',
-        ),
-        'rabbit_hole' => array(
-          'weight' => '6',
-        ),
-        'redirect' => array(
           'weight' => '9',
         ),
-        'xmlsitemap' => array(
+        'rabbit_hole' => array(
+          'weight' => '7',
+        ),
+        'redirect' => array(
           'weight' => '10',
         ),
+        'xmlsitemap' => array(
+          'weight' => '11',
+        ),
         'language' => array(
-          'weight' => '7',
+          'weight' => '8',
         ),
       ),
       'display' => array(),
