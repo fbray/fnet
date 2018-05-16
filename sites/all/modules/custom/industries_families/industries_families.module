@@ -1,19 +1,14 @@
 <?php
+
 /**
  * @file
  * Code for the industries_families module.
+ *
+ * TODO: Merge this module with the Products module. -rositis 10/11/2017
  */
 
-// TODO: Merge this module with the Products module. -rositis 10/11/2017
-
-function industries_families_help() {
-
-}
-
 /**
- * Implementation of hook_views_api()
- *
- * @return array
+ * Implements hook_views_api().
  */
 function industries_families_views_api() {
   return array(
@@ -23,9 +18,7 @@ function industries_families_views_api() {
 }
 
 /**
- * Implementation of hook_preprocess_page().
- *
- * @param $variables
+ * Implements hook_preprocess_page().
  */
 function industries_families_preprocess_page(&$variables) {
   if (isset($variables['node']) && ($variables['node']->type == 'product_category' || $variables['node']->type == 'product_family')) {
@@ -38,19 +31,20 @@ function industries_families_preprocess_page(&$variables) {
     drupal_add_library('system', 'ui.tabs');
 
     // Hide title for this content type.
-    // TODO: Only on non-admin pages
+    // TODO: Only on non-admin pages.
     $variables['title'] = '';
   }
 }
 
 /**
- * Implementation of hook_preprocess_node().
- * These variables will be processed through the node--product_category.tpl.php.
+ * Implements hook_preprocess_node().
  *
- * @param $variables
+ * These variables will be processed through the node--product_category.tpl.php.
  */
 function industries_families_preprocess_node(&$variables) {
-  if ($variables['view_mode'] != 'full') return;
+  if ($variables['view_mode'] != 'full') {
+    return;
+  }
   if (isset($variables['node']) && $variables['node']->type == 'product_category') {
 
     // Fetch the current user's region/language.
@@ -60,37 +54,42 @@ function industries_families_preprocess_node(&$variables) {
     $nid = $variables['node']->nid;
     $variables['industry_families'] = array();
     // Get the family nodes that are associated with a product category.
-    $query = "SELECT n.nid 
+    $query = "SELECT n.nid
       FROM node n
       JOIN field_data_field_product_category category ON category.entity_id = n.nid
       WHERE n.type = 'product_family'
+      AND category.field_product_category_target_id = :nid
       AND n.status = :published";
-    $result = db_query($query, array(':published' => NODE_PUBLISHED))->fetchAllAssoc('nid');
+    $result = db_query($query, array(':published' => NODE_PUBLISHED, ':nid' => $nid))->fetchAllAssoc('nid');
 
     if (count($result) > 0) {
       $variables['industry_families'] = node_load_multiple(array_keys($result));
     }
 
-    // TODO: Do the theming of the industry_families here and then simply barf them back into the variables.
-
-    // Get list of products by family related to this industry
+    // TODO: Do the theming of the industry_families here and then
+    // simply barf them back into the variables.
+    // Get list of products by family related to this industry.
     $products_by_family = array();
     foreach ($variables['industry_families'] as $family) {
       $product_list = views_get_view('product_family');
       $product_list->set_items_per_page(0);
-      $product_list->set_arguments(array($family->nid)); // , strtolower($regLang)
+      $product_list->set_arguments(array($family->nid));
+      // , strtolower($regLang)
       $product_list->set_display('products_by_family');
       $product_list->execute();
-      $products_by_family[] = array($family->nid, $family->title, $product_list->result);
+      $products_by_family[] = array(
+        $family->nid,
+        $family->title,
+        $product_list->result,
+      );
     }
     $variables['products_by_family'] = $products_by_family;
 
-    //get whitepapers
-    // dpm($variables['node']->title);
+    // Get whitepapers.
     $variables['whitepapers'] = industries_families_digital_assets($siteReg['lang'], $variables['node']->title, 'whitepapers');
-    //get webcasts
+    // Get webcasts.
     $variables['webcasts'] = industries_families_digital_assets($siteReg['lang'], $variables['node']->title, 'webcasts');
-    //get cse studies
+    // Get case studies.
     $variables['case_studies'] = industries_families_case_studies($variables['node']->nid);
     $industries_links = '';
     foreach (array('whitepapers', 'webcasts', 'case_studies') as $section) {
@@ -99,9 +98,11 @@ function industries_families_preprocess_node(&$variables) {
           case 'whitepapers':
             $industries_links .= '<a href="#white_papers">White Papers</a>';
             break;
+
           case 'webcasts':
             $industries_links .= '&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="#webcasts">Webcasts</a>';
             break;
+
           case 'case_studies':
             $industries_links .= '&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="#case_studies">Case Studies</a>';
             break;
@@ -111,68 +112,64 @@ function industries_families_preprocess_node(&$variables) {
     $variables['industries_links'] = $industries_links;
 
     // Language Overrides
-   // dpm($variables['node']);
-    // Hero banner
-
+    // Hero banner.
     $banners = array();
     $banners_lng = array();
 
-    for ($i = 1; $i <= 5 ; $i++) {
+    for ($i = 1; $i <= 5; $i++) {
       $banner_text = fnet_common_get_field_value('node', $variables['node'], 'field_family_banner_text_' . $i);
-      // dpm('Banner Text: ' . $banner_text);
-      if ( $banner_text) $banners[] = $banner_text;
+      if ($banner_text) {
+        $banners[] = $banner_text;
+      }
     }
 
-    // get industry_lang
+    // Get industry_lang.
     // TODO: Great. This crap again.
     $nodes_refs = fnet_common_get_field_values('node', $variables['node'], 'field_industry_language');
 
     $lang_nids = array();
-    foreach($nodes_refs as $nid_list) {
-        $lang_nids[] = $nid_list['nid'];
+    foreach ($nodes_refs as $nid_list) {
+      $lang_nids[] = $nid_list['nid'];
     }
 
     $field_industry_language_nodes = node_load_multiple($lang_nids);
 
     // TODO: The fields are named the same.
     if ($field_industry_language_nodes) {
-       $sub_fields = _get_field_substitution_array();
+      $sub_fields = _get_field_substitution_array();
     }
 
     foreach ($field_industry_language_nodes as $key => $field_industry_language_node) {
+      $field_langreg = fnet_common_get_field_value('node', $field_industry_language_node, 'field_indlang_language');
+      // Substring would be 'en-us', 'de-eu', etc..
+      if (substr($field_langreg, 0, 5) == $regLang) {
+        // Build hero banner array.
+        for ($i = 1; $i <= 5; $i++) {
+          $fieldname = 'field_banner_txt_' . $i;
+          $bannerval = fnet_common_get_field_value('node', $field_industry_language_node, $fieldname);
+          if ($bannerval) {
+            $banners_lng[] = $bannerval;
+          }
+        }
 
-        $field_langreg = fnet_common_get_field_value('node', $field_industry_language_node, 'field_indlang_language');
-        //  substring would be 'en-us', 'de-eu', etc..
-        if (substr($field_langreg,0,5) == $regLang) {
-
-            // build hero banner array
-            for ($i = 1; $i <= 5 ; $i++) {
-                $fieldname='field_banner_txt_' . $i;
-                $bannerval = fnet_common_get_field_value('node', $field_industry_language_node, $fieldname);
-                if ($bannerval)  $banners_lng[] = $bannerval;
+        // Loop over fields, either copy value from lang, or erase.
+        foreach ($sub_fields as $original => $translated) {
+          // If original field is set.
+          if (fnet_common_get_field_values('node', $variables['node'], $original)) {
+            if (fnet_common_get_field_values('node', $field_industry_language_node, $translated)) {
+              $variables['node']->$original = $field_industry_language_node->{$translated};
             }
+            else {
+              // Erase.
+              fnet_common_set_field_values(NULL, 'node', $variables['node'], $original);
+              // unset($variables[$original]);.
+            } // End if translated set.
+          } // End if original set.
+        } // End foreach field.
+      } // End if langreg match.
+    } // End foreach lang node.
 
-            // Loop over fields, either copy value from lang, or erase
-            foreach ($sub_fields as $original => $translated) {
-
-                      //if original field is set
-                      if (  fnet_common_get_field_values('node', $variables['node'], $original) ) {
-                        if ( fnet_common_get_field_values('node', $field_industry_language_node, $translated) ) {
-                                $variables['node']->$original = $field_industry_language_node->{$translated};
-                              } else {
-                                  // Erase
-                                  fnet_common_set_field_values(NULL, 'node', $variables['node'], $original);
-                                  //unset($variables[$original]);
-                        } // end if translated set
-                      } // end if original set
-
-            } // end foreach field
-
-         } // end if langreg match
-
-    } // end foreach lang node
-
-    $variables['banners'] = $banners_lng ? $banners_lng : $banners ;
+    $variables['banners'] = $banners_lng ? $banners_lng : $banners;
 
   } // end type = industry
 
@@ -182,14 +179,17 @@ function industries_families_preprocess_node(&$variables) {
 
     $regLang = (!isset($regLang)) ? $siteReg["regLang"] : 'en-us';
 
-    // Get list of products by family
+    // Get list of products by family.
     $product_list = views_get_view('product_family');
     $product_list->set_items_per_page(0);
     $product_list->set_arguments(array($variables['node']->nid));
     $product_list->set_display('families_by_product_category');
     $product_list->execute();
-    // dpm($product_list->result);
-    $products_by_family = array($variables['node']->nid, $variables['node']->title, $product_list->result);
+    $products_by_family = array(
+      $variables['node']->nid,
+      $variables['node']->title,
+      $product_list->result,
+    );
 
     $variables['products_by_family'] = $products_by_family;
     $node = $variables['node'];
@@ -205,14 +205,16 @@ function industries_families_preprocess_node(&$variables) {
   }
 }
 
-
 /**
- *  Helper function that returns array mapping industry field names to industry_lang's
+ * Helper function: Returns mapping of industry field names to industry_langs.
  *
  * @return array
+ *   Map of Industry field name to Industry Language.
  */
 function _get_field_substitution_array() {
-  // This might be unnecessary. The field names are the same in both Product Category and Product Category Language!
+  // This might be unnecessary.
+  // The field names are the same in both Product Category and
+  // Product Category Language!
   $all_field_names = array(
     'field_family_banner_srt_1' => '',
     'field_family_banner_srt_2' => '',
@@ -271,14 +273,17 @@ function _get_field_substitution_array() {
   return $all_field_names;
 }
 
-
+/**
+ * Helper function to return the digital assets related to a category.
+ */
 function industries_families_digital_assets($language, $product_category, $type) {
   // Make sure the type is lower case.
   $type = strtolower($type);
 
-  // Product Category
+  // Product Category.
   $assets = views_get_view('product_category', FALSE);
-  $assets->set_display($type); // Machine Name of the display.
+  // Machine Name of the display.
+  $assets->set_display($type);
   $assets->set_arguments(array($language, $product_category));
   $assets->pre_execute();
   $assets->execute();
@@ -292,6 +297,9 @@ function industries_families_digital_assets($language, $product_category, $type)
   return $table;
 }
 
+/**
+ * Helper function to return the case studies for a specific product category.
+ */
 function industries_families_case_studies($industry_nid) {
   $case_studies = views_get_view('product_category');
   $case_studies->set_display('case_studies');
@@ -306,4 +314,3 @@ function industries_families_case_studies($industry_nid) {
   }
   return $output;
 }
-
