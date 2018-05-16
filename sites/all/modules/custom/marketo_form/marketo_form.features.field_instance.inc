@@ -154,7 +154,7 @@ function marketo_form_field_default_field_instances() {
         'rows' => 5,
       ),
       'type' => 'text_textarea',
-      'weight' => 67,
+      'weight' => 68,
     ),
   );
 
@@ -252,7 +252,7 @@ function marketo_form_field_default_field_instances() {
         'rows' => 5,
       ),
       'type' => 'text_textarea',
-      'weight' => 61,
+      'weight' => 62,
     ),
   );
 
@@ -301,7 +301,7 @@ function marketo_form_field_default_field_instances() {
         'rows' => 5,
       ),
       'type' => 'text_textarea',
-      'weight' => 63,
+      'weight' => 64,
     ),
   );
 
@@ -350,7 +350,7 @@ function marketo_form_field_default_field_instances() {
         'rows' => 5,
       ),
       'type' => 'text_textarea',
-      'weight' => 77,
+      'weight' => 78,
     ),
   );
 
@@ -399,7 +399,7 @@ function marketo_form_field_default_field_instances() {
         'rows' => 5,
       ),
       'type' => 'text_textarea',
-      'weight' => 65,
+      'weight' => 66,
     ),
   );
 
@@ -448,7 +448,7 @@ function marketo_form_field_default_field_instances() {
         'rows' => 5,
       ),
       'type' => 'text_textarea',
-      'weight' => 69,
+      'weight' => 70,
     ),
   );
 
@@ -497,7 +497,7 @@ function marketo_form_field_default_field_instances() {
         'rows' => 5,
       ),
       'type' => 'text_textarea',
-      'weight' => 71,
+      'weight' => 72,
     ),
   );
 
@@ -546,7 +546,7 @@ function marketo_form_field_default_field_instances() {
         'rows' => 5,
       ),
       'type' => 'text_textarea',
-      'weight' => 73,
+      'weight' => 74,
     ),
   );
 
@@ -595,7 +595,7 @@ function marketo_form_field_default_field_instances() {
         'rows' => 5,
       ),
       'type' => 'text_textarea',
-      'weight' => 75,
+      'weight' => 76,
     ),
   );
 
@@ -648,6 +648,56 @@ function marketo_form_field_default_field_instances() {
       ),
       'type' => 'options_onoff',
       'weight' => 50,
+    ),
+  );
+
+  // Exported field_instance: 'node-marketo_form-field_do_not_translate'.
+  $field_instances['node-marketo_form-field_do_not_translate'] = array(
+    'bundle' => 'marketo_form',
+    'default_value' => array(
+      0 => array(
+        'value' => 1,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 37,
+      ),
+      'search_result' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_do_not_translate',
+    'label' => 'Do not translate',
+    'required' => 0,
+    'settings' => array(
+      'entity_translation_sync' => FALSE,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 1,
     ),
   );
 
@@ -985,7 +1035,7 @@ function marketo_form_field_default_field_instances() {
       'module' => 'link',
       'settings' => array(),
       'type' => 'link_field',
-      'weight' => 66,
+      'weight' => 67,
     ),
   );
 
@@ -1177,7 +1227,7 @@ function marketo_form_field_default_field_instances() {
       'module' => 'link',
       'settings' => array(),
       'type' => 'link_field',
-      'weight' => 62,
+      'weight' => 63,
     ),
   );
 
@@ -1241,7 +1291,7 @@ function marketo_form_field_default_field_instances() {
       'module' => 'link',
       'settings' => array(),
       'type' => 'link_field',
-      'weight' => 76,
+      'weight' => 77,
     ),
   );
 
@@ -1305,7 +1355,7 @@ function marketo_form_field_default_field_instances() {
       'module' => 'link',
       'settings' => array(),
       'type' => 'link_field',
-      'weight' => 64,
+      'weight' => 65,
     ),
   );
 
@@ -1369,7 +1419,7 @@ function marketo_form_field_default_field_instances() {
       'module' => 'link',
       'settings' => array(),
       'type' => 'link_field',
-      'weight' => 68,
+      'weight' => 69,
     ),
   );
 
@@ -1433,7 +1483,7 @@ function marketo_form_field_default_field_instances() {
       'module' => 'link',
       'settings' => array(),
       'type' => 'link_field',
-      'weight' => 70,
+      'weight' => 71,
     ),
   );
 
@@ -1497,7 +1547,7 @@ function marketo_form_field_default_field_instances() {
       'module' => 'link',
       'settings' => array(),
       'type' => 'link_field',
-      'weight' => 72,
+      'weight' => 73,
     ),
   );
 
@@ -1561,7 +1611,7 @@ function marketo_form_field_default_field_instances() {
       'module' => 'link',
       'settings' => array(),
       'type' => 'link_field',
-      'weight' => 74,
+      'weight' => 75,
     ),
   );
 
@@ -1890,6 +1940,7 @@ function marketo_form_field_default_field_instances() {
   t('Chinese iFrame URL');
   t('Default Language (Region)');
   t('Display Footer');
+  t('Do not translate');
   t('Do you want to display a static footer on the bottom of the left hand side of the screen?');
   t('Enable Share Buttons');
   t('English (EMEA) Bottom Content');

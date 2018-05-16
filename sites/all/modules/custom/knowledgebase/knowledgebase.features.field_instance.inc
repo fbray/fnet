@@ -72,7 +72,7 @@ function knowledgebase_field_default_field_instances() {
         'summary_rows' => 5,
       ),
       'type' => 'text_textarea_with_summary',
-      'weight' => 2,
+      'weight' => 3,
     ),
   );
 
@@ -122,6 +122,57 @@ function knowledgebase_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
+      'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-knowledge_base_article-field_do_not_translate'.
+  $field_instances['node-knowledge_base_article-field_do_not_translate'] = array(
+    'bundle' => 'knowledge_base_article',
+    'default_value' => array(
+      0 => array(
+        'value' => 1,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 3,
+      ),
+      'search_result' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_do_not_translate',
+    'label' => 'Do not translate',
+    'required' => 0,
+    'settings' => array(
+      'entity_translation_sync' => FALSE,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
       'weight' => 1,
     ),
   );
@@ -175,7 +226,7 @@ function knowledgebase_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -184,6 +235,7 @@ function knowledgebase_field_default_field_instances() {
   t('Article Author');
   t('Associate the Knowledge Base article with a product name by selecting from the 3rd level of the categorized list.');
   t('Body');
+  t('Do not translate');
   t('Fill out this field to override the author name that is displayed automatically. If left empty the author name will be taken automatically from the user account that originally created this article.');
   t('Knowledge Base');
 

@@ -66,25 +66,25 @@ function knowledgebase_strongarm() {
     'extra_fields' => array(
       'form' => array(
         'metatags' => array(
-          'weight' => '9',
+          'weight' => '10',
         ),
         'title' => array(
           'weight' => '0',
         ),
         'path' => array(
-          'weight' => '6',
-        ),
-        'rabbit_hole' => array(
-          'weight' => '4',
-        ),
-        'redirect' => array(
           'weight' => '7',
         ),
-        'xmlsitemap' => array(
+        'rabbit_hole' => array(
+          'weight' => '5',
+        ),
+        'redirect' => array(
           'weight' => '8',
         ),
+        'xmlsitemap' => array(
+          'weight' => '9',
+        ),
         'language' => array(
-          'weight' => '5',
+          'weight' => '6',
         ),
       ),
       'display' => array(),
