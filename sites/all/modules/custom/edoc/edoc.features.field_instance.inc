@@ -203,6 +203,86 @@ function edoc_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-edoc-field_do_not_translate'.
+  $field_instances['node-edoc-field_do_not_translate'] = array(
+    'bundle' => 'edoc',
+    'default_value' => array(
+      0 => array(
+        'value' => 1,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 25,
+      ),
+      'full' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+      'print' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+      'rss' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+      'search_index' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+      'search_result' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+      'token' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_do_not_translate',
+    'label' => 'Do not translate',
+    'required' => 0,
+    'settings' => array(
+      'entity_translation_sync' => FALSE,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 1,
+    ),
+  );
+
   // Exported field_instance: 'node-edoc-field_edoc_language_override'.
   $field_instances['node-edoc-field_edoc_language_override'] = array(
     'bundle' => 'edoc',
@@ -457,7 +537,7 @@ function edoc_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 59,
+      'weight' => 60,
     ),
   );
 
@@ -537,7 +617,7 @@ function edoc_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 57,
+      'weight' => 58,
     ),
   );
 
@@ -697,7 +777,7 @@ function edoc_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 58,
+      'weight' => 59,
     ),
   );
 
@@ -777,7 +857,7 @@ function edoc_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 56,
+      'weight' => 57,
     ),
   );
 
@@ -857,7 +937,7 @@ function edoc_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 60,
+      'weight' => 61,
     ),
   );
 
@@ -937,7 +1017,7 @@ function edoc_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 61,
+      'weight' => 62,
     ),
   );
 
@@ -1017,7 +1097,7 @@ function edoc_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 62,
+      'weight' => 63,
     ),
   );
 
@@ -1097,7 +1177,7 @@ function edoc_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 63,
+      'weight' => 64,
     ),
   );
 
@@ -1292,6 +1372,7 @@ function edoc_field_default_field_instances() {
 </ul>');
   t('Body');
   t('Brand');
+  t('Do not translate');
   t('Language Override');
   t('Literature ID - Chinese');
   t('Literature ID - English');
