@@ -66,25 +66,25 @@ function promotions_strongarm() {
     'extra_fields' => array(
       'form' => array(
         'metatags' => array(
-          'weight' => '16',
+          'weight' => '17',
         ),
         'title' => array(
-          'weight' => '5',
+          'weight' => '6',
         ),
         'path' => array(
-          'weight' => '13',
-        ),
-        'rabbit_hole' => array(
-          'weight' => '11',
-        ),
-        'redirect' => array(
           'weight' => '14',
         ),
-        'xmlsitemap' => array(
+        'rabbit_hole' => array(
+          'weight' => '12',
+        ),
+        'redirect' => array(
           'weight' => '15',
         ),
+        'xmlsitemap' => array(
+          'weight' => '16',
+        ),
         'language' => array(
-          'weight' => '12',
+          'weight' => '13',
         ),
       ),
       'display' => array(),
