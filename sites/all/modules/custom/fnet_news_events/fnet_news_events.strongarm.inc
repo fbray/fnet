@@ -86,22 +86,22 @@ function fnet_news_events_strongarm() {
     'extra_fields' => array(
       'form' => array(
         'metatags' => array(
-          'weight' => '9',
+          'weight' => '10',
         ),
         'title' => array(
           'weight' => '0',
         ),
         'path' => array(
-          'weight' => '6',
-        ),
-        'rabbit_hole' => array(
-          'weight' => '10',
-        ),
-        'redirect' => array(
           'weight' => '7',
         ),
-        'xmlsitemap' => array(
+        'rabbit_hole' => array(
+          'weight' => '11',
+        ),
+        'redirect' => array(
           'weight' => '8',
+        ),
+        'xmlsitemap' => array(
+          'weight' => '9',
         ),
       ),
       'display' => array(),
@@ -143,25 +143,25 @@ function fnet_news_events_strongarm() {
     'extra_fields' => array(
       'form' => array(
         'metatags' => array(
-          'weight' => '40',
+          'weight' => '7',
         ),
         'title' => array(
-          'weight' => '-5',
-        ),
-        'path' => array(
-          'weight' => '30',
-        ),
-        'rabbit_hole' => array(
           'weight' => '0',
         ),
+        'path' => array(
+          'weight' => '4',
+        ),
+        'rabbit_hole' => array(
+          'weight' => '2',
+        ),
         'redirect' => array(
-          'weight' => '30',
+          'weight' => '5',
         ),
         'xmlsitemap' => array(
-          'weight' => '30',
+          'weight' => '6',
         ),
         'language' => array(
-          'weight' => '5',
+          'weight' => '3',
         ),
       ),
       'display' => array(),
@@ -179,6 +179,13 @@ function fnet_news_events_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'i18n_node_default_language_for_press_release';
+  $strongarm->value = '-- current --';
+  $export['i18n_node_default_language_for_press_release'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'i18n_node_extended_award';
   $strongarm->value = 1;
   $export['i18n_node_extended_award'] = $strongarm;
@@ -186,9 +193,23 @@ function fnet_news_events_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'i18n_node_extended_press_release';
+  $strongarm->value = 1;
+  $export['i18n_node_extended_press_release'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'i18n_node_options_award';
   $strongarm->value = array();
   $export['i18n_node_options_award'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'i18n_node_options_press_release';
+  $strongarm->value = array();
+  $export['i18n_node_options_press_release'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
