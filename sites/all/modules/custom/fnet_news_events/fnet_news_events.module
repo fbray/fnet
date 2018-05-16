@@ -283,7 +283,7 @@ function fnet_news_events_block_view($delta = '') {
  */
 function get_news_html($range = NULL) {
 
-  //Set meta description for News list page
+  // Set meta description for News list page.
   $meta_newslist_desc = array(
     '#type' => 'html_tag',
     '#tag' => 'meta',
@@ -425,7 +425,7 @@ function get_awards_nids($regLang, $range = NULL) {
 function get_event_html($type, $range = NULL) {
   switch ($type) {
     case 'Training':
-      //Set meta description for Training list page
+      // Set meta description for Training list page.
       $meta_training_desc = array(
         '#type' => 'html_tag',
         '#tag' => 'meta',
@@ -436,8 +436,9 @@ function get_event_html($type, $range = NULL) {
       );
       drupal_add_html_head($meta_training_desc, 'meta_training_desc');
       break;
+
     case 'Workshops':
-      //Set meta description for Workshop list page
+      // Set meta description for Workshop list page.
       $meta_workshops_desc = array(
         '#type' => 'html_tag',
         '#tag' => 'meta',
@@ -447,10 +448,7 @@ function get_event_html($type, $range = NULL) {
         ),
       );
       drupal_add_html_head($meta_workshops_desc, 'meta_workshops_desc');
-      break;
-    default:
-      # code...
-      break;
+      break;      
   }
   $siteReg = module_invoke('fnet_helper', 'site_region');
   $regLang = $siteReg["regLang"];

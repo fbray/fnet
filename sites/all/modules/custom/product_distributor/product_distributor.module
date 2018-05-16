@@ -449,13 +449,13 @@ function wheretobuy_page() {
     'scope' => JS_DEFAULT,
   ]);
 
-  //Set meta description for WTB page
+  // Set meta description for WTB page.
   $meta_wtb_desc = array(
     '#type' => 'html_tag',
     '#tag' => 'meta',
     '#attributes' => array(
       'name' => 'description',
-      'content' => t('Customer can buy Fluke Networks product. Fluke Networks product are sold through a number of resellers. Customer can find their respective resellers by selecting country and product.'),
+      'content' => t('Customers can purchase Fluke Networks products through a wide number of resellers throughout the world. Customers can find the reseller closest to them by selecting their country and their desired product.'),
     ),
   );
   drupal_add_html_head($meta_wtb_desc, 'meta_wtb_desc');
