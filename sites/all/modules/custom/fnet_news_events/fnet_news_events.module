@@ -282,6 +282,18 @@ function fnet_news_events_block_view($delta = '') {
  *   The rendered node objects for display.
  */
 function get_news_html($range = NULL) {
+
+  // Set meta description for News list page.
+  $meta_newslist_desc = array(
+    '#type' => 'html_tag',
+    '#tag' => 'meta',
+    '#attributes' => array(
+      'name' => 'description',
+      'content' => t('This Fluke Networks article covers information about Fluke Networks news and press releases from 2018. Some examples headlines include: Fluke Networks Versiv™ Cabling Certification System, Fluke Networks DSX-8000 CableAnalyzer™, Fluke Networks Announces Procedure to Test IntellitoneTM Toner Modules, and New Fiber Solutions.'),
+    ),
+  );
+  drupal_add_html_head($meta_newslist_desc, 'meta_newslist_desc');
+
   $siteReg = module_invoke('fnet_helper', 'site_region');
   $regLang = $siteReg["regLang"];
 
@@ -411,7 +423,33 @@ function get_awards_nids($regLang, $range = NULL) {
  *   The rendered node objects for display.
  */
 function get_event_html($type, $range = NULL) {
+  switch ($type) {
+    case 'Training':
+      // Set meta description for Training list page.
+      $meta_training_desc = array(
+        '#type' => 'html_tag',
+        '#tag' => 'meta',
+        '#attributes' => array(
+          'name' => 'description',
+          'content' => t('Fluke Networks organizes one-day classroom training programs globally for certified Cabling Test Technicians. Here, you can find contact details per country. This program will help to improve cabling technician installer skills, effectiveness and productivity on the job in testing, and certifying and troubleshooting structured cabling systems.'),
+        ),
+      );
+      drupal_add_html_head($meta_training_desc, 'meta_training_desc');
+      break;
 
+    case 'Workshops':
+      // Set meta description for Workshop list page.
+      $meta_workshops_desc = array(
+        '#type' => 'html_tag',
+        '#tag' => 'meta',
+        '#attributes' => array(
+          'name' => 'description',
+          'content' => t('Fluke Networks organizes workshops on Testing and Troubleshooting, Enterprise and Datacenter, and Copper and Fiber Cabling. Here, you can register yourself for a free half day workshop and find the agenda of each workshop. Through workshops, you can learn how Versiv family products speed up cable certification and the troubleshooting process, step by step.'),
+        ),
+      );
+      drupal_add_html_head($meta_workshops_desc, 'meta_workshops_desc');
+      break;
+  }
   $siteReg = module_invoke('fnet_helper', 'site_region');
   $regLang = $siteReg["regLang"];
 
