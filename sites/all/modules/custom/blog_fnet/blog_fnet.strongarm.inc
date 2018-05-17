@@ -92,6 +92,27 @@ function blog_fnet_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'i18n_node_default_language_for_blog_article';
+  $strongarm->value = '-- current --';
+  $export['i18n_node_default_language_for_blog_article'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'i18n_node_extended_blog_article';
+  $strongarm->value = 1;
+  $export['i18n_node_extended_blog_article'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'i18n_node_options_blog_article';
+  $strongarm->value = array();
+  $export['i18n_node_options_blog_article'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'language_content_type_blog_article';
   $strongarm->value = '0';
   $export['language_content_type_blog_article'] = $strongarm;
