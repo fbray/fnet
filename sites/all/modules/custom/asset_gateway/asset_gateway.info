@@ -1,16 +1,46 @@
 name = Asset Gateway
-description = "A node primarily for capturing user data and redirecting the user to a target asset"
-package = Fluke Networks
+description = A node primarily for capturing user data and redirecting the user to a target asset.
 core = 7.x
-version = "7.x-1.1"
-
+package = Fluke Networks
+version = 7.x-1.0
+dependencies[] = ctools
+dependencies[] = edoc
+dependencies[] = features
 dependencies[] = findit
-dependencies[] = link
 dependencies[] = fnet_common
-
-
-
-
-
-
-
+dependencies[] = link
+dependencies[] = list
+dependencies[] = options
+dependencies[] = path_patterns
+dependencies[] = products
+dependencies[] = strongarm
+dependencies[] = text
+features[ctools][] = strongarm:strongarm:1
+features[features_api][] = api:2
+features[field_base][] = field_add_download_button
+features[field_base][] = field_ag_redirect
+features[field_base][] = field_ag_redirect_wait
+features[field_base][] = field_download_button_text
+features[field_instance][] = node-asset_gateway-body
+features[field_instance][] = node-asset_gateway-field_add_download_button
+features[field_instance][] = node-asset_gateway-field_ag_redirect
+features[field_instance][] = node-asset_gateway-field_ag_redirect_wait
+features[field_instance][] = node-asset_gateway-field_do_not_translate
+features[field_instance][] = node-asset_gateway-field_download_button_text
+features[field_instance][] = node-asset_gateway-field_tracking_code
+features[node][] = asset_gateway
+features[variable][] = diff_enable_revisions_page_node_asset_gateway
+features[variable][] = diff_show_preview_changes_node_asset_gateway
+features[variable][] = diff_view_mode_preview_node_asset_gateway
+features[variable][] = field_bundle_settings_node__asset_gateway
+features[variable][] = i18n_node_default_language_for_asset_gateway
+features[variable][] = i18n_node_extended_asset_gateway
+features[variable][] = i18n_node_options_asset_gateway
+features[variable][] = language_content_type_asset_gateway
+features[variable][] = menu_options_asset_gateway
+features[variable][] = menu_parent_asset_gateway
+features[variable][] = node_options_asset_gateway
+features[variable][] = node_preview_asset_gateway
+features[variable][] = node_submitted_asset_gateway
+features[variable][] = xmlsitemap_settings_node_asset_gateway
+project path = sites/all/modules/custom
