@@ -2,18 +2,18 @@
 
 /**
  * @file
- * knowledgebase.features.field_instance.inc
+ * blog_fnet.features.field_instance.inc
  */
 
 /**
  * Implements hook_field_default_field_instances().
  */
-function knowledgebase_field_default_field_instances() {
+function blog_fnet_field_default_field_instances() {
   $field_instances = array();
 
-  // Exported field_instance: 'node-knowledge_base_article-body'.
-  $field_instances['node-knowledge_base_article-body'] = array(
-    'bundle' => 'knowledge_base_article',
+  // Exported field_instance: 'node-blog_article-body'.
+  $field_instances['node-blog_article-body'] = array(
+    'bundle' => 'blog_article',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -31,13 +31,15 @@ function knowledgebase_field_default_field_instances() {
         'label' => 'hidden',
         'module' => 'smart_trim',
         'settings' => array(
-          'more_link' => FALSE,
+          'more_link' => 0,
           'more_text' => 'Read more',
           'summary_handler' => 'full',
           'trim_length' => 300,
-          'trim_link' => FALSE,
-          'trim_options' => array(),
-          'trim_preserve_tags' => '',
+          'trim_link' => 0,
+          'trim_options' => array(
+            'text' => 'text',
+          ),
+          'trim_preserve_tags' => '<p><a><style>',
           'trim_suffix' => '...',
           'trim_type' => 'chars',
         ),
@@ -72,26 +74,26 @@ function knowledgebase_field_default_field_instances() {
         'summary_rows' => 5,
       ),
       'type' => 'text_textarea_with_summary',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
-  // Exported field_instance:
-  // 'node-knowledge_base_article-field_article_author'.
-  $field_instances['node-knowledge_base_article-field_article_author'] = array(
-    'bundle' => 'knowledge_base_article',
+  // Exported field_instance: 'node-blog_article-field_blog_categories'.
+  $field_instances['node-blog_article-field_blog_categories'] = array(
+    'bundle' => 'blog_article',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => 'Fill out this field to override the author name that is displayed automatically. If left empty the author name will be taken automatically from the user account that originally created this article.',
+    'description' => '',
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'text',
+        'module' => 'entityreference',
         'settings' => array(
-          'field_formatter_filter' => NULL,
+          'bypass_access' => FALSE,
+          'link' => FALSE,
         ),
-        'type' => 'text_default',
-        'weight' => 2,
+        'type' => 'entityreference_label',
+        'weight' => 1,
       ),
       'search_result' => array(
         'label' => 'above',
@@ -103,33 +105,90 @@ function knowledgebase_field_default_field_instances() {
         'label' => 'above',
         'settings' => array(),
         'type' => 'hidden',
-        'weight' => 1,
+        'weight' => 0,
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_article_author',
-    'label' => 'Article Author',
-    'required' => 0,
+    'field_name' => 'field_blog_categories',
+    'label' => 'Blog Categories',
+    'required' => 1,
     'settings' => array(
+      'behaviors' => array(
+        'taxonomy-index' => array(
+          'status' => TRUE,
+        ),
+      ),
       'entity_translation_sync' => FALSE,
-      'text_processing' => 0,
       'user_register_form' => FALSE,
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'text',
-      'settings' => array(
-        'size' => 60,
-      ),
-      'type' => 'text_textfield',
-      'weight' => 2,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 3,
     ),
   );
 
-  // Exported field_instance:
-  // 'node-knowledge_base_article-field_do_not_translate'.
-  $field_instances['node-knowledge_base_article-field_do_not_translate'] = array(
-    'bundle' => 'knowledge_base_article',
+  // Exported field_instance: 'node-blog_article-field_blog_tags'.
+  $field_instances['node-blog_article-field_blog_tags'] = array(
+    'bundle' => 'blog_article',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 2,
+      ),
+      'search_result' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_blog_tags',
+    'label' => 'Blog Tags',
+    'required' => 0,
+    'settings' => array(
+      'behaviors' => array(
+        'taxonomy-index' => array(
+          'status' => TRUE,
+        ),
+      ),
+      'entity_translation_sync' => FALSE,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete_tags',
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-blog_article-field_do_not_translate'.
+  $field_instances['node-blog_article-field_do_not_translate'] = array(
+    'bundle' => 'blog_article',
     'default_value' => array(
       0 => array(
         'value' => 1,
@@ -176,67 +235,12 @@ function knowledgebase_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance:
-  // 'node-knowledge_base_article-field_knowledge_base'.
-  $field_instances['node-knowledge_base_article-field_knowledge_base'] = array(
-    'bundle' => 'knowledge_base_article',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => 'Associate the Knowledge Base article with a product name by selecting from the 3rd level of the categorized list.',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'entityreference',
-        'settings' => array(
-          'bypass_access' => FALSE,
-          'link' => FALSE,
-        ),
-        'type' => 'entityreference_label',
-        'weight' => 1,
-      ),
-      'search_result' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 2,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 2,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_knowledge_base',
-    'label' => 'Knowledge Base',
-    'required' => 1,
-    'settings' => array(
-      'behaviors' => array(
-        'taxonomy-index' => array(
-          'status' => TRUE,
-        ),
-      ),
-      'entity_translation_sync' => FALSE,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 4,
-    ),
-  );
-
   // Translatables
   // Included for use with string extractors like potx.
-  t('Article Author');
-  t('Associate the Knowledge Base article with a product name by selecting from the 3rd level of the categorized list.');
+  t('Blog Categories');
+  t('Blog Tags');
   t('Body');
   t('Do not translate');
-  t('Fill out this field to override the author name that is displayed automatically. If left empty the author name will be taken automatically from the user account that originally created this article.');
-  t('Knowledge Base');
 
   return $field_instances;
 }
