@@ -5,6 +5,8 @@
  * Code for the FNET Blog.
  */
 
+include_once 'blog_fnet.features.inc';
+
 /**
  * Implements hook_views_api().
  */
